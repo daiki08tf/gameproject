@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blade Vale - ハクスラ サバイバル</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="bar-row">
+      <div class="bar hp-bar"><div id="hpFill" class="fill"></div><span id="hpText" class="bar-text"></span></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar xp-bar"><div id="xpFill" class="fill"></div><span id="xpText" class="bar-text"></span></div>
+    </div>
+    <div id="stats">
+      <span id="levelText">Lv.1</span>
+      <span id="scoreText">Score: 0</span>
+      <span id="waveText">Wave 1</span>
+      <span id="timeText">00:00</span>
+    </div>
+  </div>
+
+  <!-- Start Screen -->
+  <div id="startScreen" class="overlay">
+    <div class="panel">
+      <h1>BLADE VALE</h1>
+      <p class="sub">押し寄せる魔物を斬り続けろ</p>
+      <ul class="howto">
+        <li><b>移動:</b> W A S D / 矢印キー</li>
+        <li><b>攻撃:</b> マウス方向へ左クリック（または Space）</li>
+        <li>敵を倒して XP オーブを集め、レベルアップして強くなろう</li>
+        <li>体力ポーションを拾って回復しよう</li>
+      </ul>
+      <button id="startBtn">ゲーム開始</button>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div id="gameOverScreen" class="overlay hidden">
+    <div class="panel">
+      <h1 class="over">GAME OVER</h1>
+      <p id="finalStats" class="sub"></p>
+      <button id="restartBtn">もう一度挑戦</button>
+    </div>
+  </div>
+
+  <!-- Level Up Toast -->
+  <div id="levelUpToast" class="toast hidden">LEVEL UP!</div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>
