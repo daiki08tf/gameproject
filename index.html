@@ -2,56 +2,140 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blade Vale - ハクスラ サバイバル</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Blade Vale - ハクスラRPG</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <canvas id="game"></canvas>
 
-  <!-- HUD -->
-  <div id="hud">
-    <div class="bar-row">
-      <div class="bar hp-bar"><div id="hpFill" class="fill"></div><span id="hpText" class="bar-text"></span></div>
-    </div>
-    <div class="bar-row">
-      <div class="bar xp-bar"><div id="xpFill" class="fill"></div><span id="xpText" class="bar-text"></span></div>
-    </div>
-    <div id="stats">
-      <span id="levelText">Lv.1</span>
-      <span id="scoreText">Score: 0</span>
-      <span id="waveText">Wave 1</span>
-      <span id="timeText">00:00</span>
-    </div>
-  </div>
-
-  <!-- Start Screen -->
-  <div id="startScreen" class="overlay">
+  <!-- ============ タイトル ============ -->
+  <section id="titleScreen" class="screen active">
     <div class="panel">
       <h1>BLADE VALE</h1>
-      <p class="sub">押し寄せる魔物を斬り続けろ</p>
-      <ul class="howto">
-        <li><b>移動:</b> W A S D / 矢印キー</li>
-        <li><b>攻撃:</b> マウス方向へ左クリック（または Space）</li>
-        <li>敵を倒して XP オーブを集め、レベルアップして強くなろう</li>
-        <li>体力ポーションを拾って回復しよう</li>
-      </ul>
-      <button id="startBtn">ゲーム開始</button>
+      <p class="sub">ステージを踏破し、職業を極めて勇者を目指せ</p>
+      <button id="titleStartBtn" class="btn-main">はじめる</button>
     </div>
-  </div>
+  </section>
 
-  <!-- Game Over Screen -->
-  <div id="gameOverScreen" class="overlay hidden">
+  <!-- ============ 拠点(ホーム) ============ -->
+  <section id="homeScreen" class="screen">
+    <header class="topbar">
+      <div class="player-summary">
+        <div class="job-badge" id="homeJobName">戦士</div>
+        <div class="lv-line"><span id="homeLevelText">Lv.1</span><span id="homeGoldText">💰 50</span></div>
+        <div class="bar xp-bar small"><div id="homeXpFill" class="fill"></div></div>
+      </div>
+    </header>
+    <div class="home-hero">⚔️</div>
+    <nav class="home-menu">
+      <button id="goStageBtn" class="menu-card">
+        <span class="menu-icon">🗺️</span><span>冒険へ出る</span>
+      </button>
+      <button id="goEquipBtn" class="menu-card">
+        <span class="menu-icon">🛡️</span><span>装備</span>
+      </button>
+      <button id="goJobBtn" class="menu-card">
+        <span class="menu-icon">📜</span><span>職業・転職</span>
+      </button>
+    </nav>
+  </section>
+
+  <!-- ============ ステージ選択 ============ -->
+  <section id="stageSelectScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="stageBackBtn">←</button>
+      <h2 id="chapterTitle">第1章</h2>
+    </header>
+    <div id="stageList" class="stage-list"></div>
+  </section>
+
+  <!-- ============ ステージ詳細/挑戦確認 ============ -->
+  <section id="stageConfirmScreen" class="screen">
     <div class="panel">
-      <h1 class="over">GAME OVER</h1>
-      <p id="finalStats" class="sub"></p>
-      <button id="restartBtn">もう一度挑戦</button>
+      <h2 id="confirmStageName">ステージ名</h2>
+      <p class="sub" id="confirmStageRec">推奨Lv 1</p>
+      <p id="confirmStageRewards" class="sub"></p>
+      <div class="confirm-actions">
+        <button class="btn-sub" id="confirmBackBtn">戻る</button>
+        <button class="btn-main" id="confirmStartBtn">出撃</button>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Level Up Toast -->
-  <div id="levelUpToast" class="toast hidden">LEVEL UP!</div>
+  <!-- ============ 戦闘 ============ -->
+  <section id="battleScreen" class="screen">
+    <canvas id="battleCanvas"></canvas>
 
-  <script src="js/game.js"></script>
+    <div class="battle-hud">
+      <div class="battle-topline">
+        <button id="retreatBtn" class="btn-icon">✕</button>
+        <span id="battleStageName">1-1</span>
+        <span id="enemyRemainText">残り 5</span>
+      </div>
+      <div class="bar hp-bar"><div id="battleHpFill" class="fill"></div><span id="battleHpText" class="bar-text"></span></div>
+      <div class="bar mp-bar"><div id="battleMpFill" class="fill"></div></div>
+      <div id="bossBar" class="boss-bar hidden">
+        <span id="bossNameText">ボス</span>
+        <div class="bar boss-hp-bar"><div id="bossHpFill" class="fill"></div></div>
+      </div>
+    </div>
+
+    <div id="joystickBase" class="joystick-base">
+      <div id="joystickKnob" class="joystick-knob"></div>
+    </div>
+
+    <div class="action-buttons">
+      <button id="skillBtn" class="action-btn skill-btn">
+        <span class="action-label" id="skillLabel">スキル</span>
+        <div class="cooldown-veil" id="skillCooldownVeil"></div>
+      </button>
+      <button id="ultBtn" class="action-btn ult-btn">
+        <span class="action-label">必殺</span>
+        <div class="cooldown-veil" id="ultCooldownVeil"></div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ リザルト ============ -->
+  <section id="resultScreen" class="screen">
+    <div class="panel">
+      <h1 id="resultTitle" class="over">STAGE CLEAR</h1>
+      <p id="resultStats" class="sub"></p>
+      <div id="resultItems" class="result-items"></div>
+      <div class="confirm-actions">
+        <button class="btn-sub" id="resultHomeBtn">拠点へ</button>
+        <button class="btn-main" id="resultRetryBtn">もう一度</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 装備 ============ -->
+  <section id="equipmentScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="equipBackBtn">←</button>
+      <h2>装備</h2>
+      <button class="btn-highlight" id="autoEquipBtn">⚡最強装備</button>
+    </header>
+    <div class="equip-layout">
+      <div class="paperdoll" id="paperdoll"></div>
+      <div class="equip-picker" id="equipPicker">
+        <p class="hint">スロットをタップして装備を選択</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 職業 ============ -->
+  <section id="jobsScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="jobsBackBtn">←</button>
+      <h2>職業</h2>
+    </header>
+    <div class="job-tiers" id="jobTiers"></div>
+  </section>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

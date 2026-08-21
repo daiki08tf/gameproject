@@ -1,0 +1,93 @@
+import { state } from './state.js';
+import { BattleScreen } from './battle.js';
+import { renderHome } from './screens/home.js';
+import { renderStageSelect, renderStageConfirm } from './screens/stageSelect.js';
+import { renderEquipment, autoEquipBest } from './screens/equipment.js';
+import { renderJobs } from './screens/jobs.js';
+import { renderResult } from './screens/result.js';
+import { Audio_ } from './audio.js';
+
+const battle = new BattleScreen();
+let pendingStage = null;
+let lastStageId = null;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  renderHome();
+  showScreen('homeScreen');
+}
+
+function goStageSelect() {
+  renderStageSelect((stage) => {
+    pendingStage = stage;
+    renderStageConfirm(stage);
+    showScreen('stageConfirmScreen');
+  });
+  showScreen('stageSelectScreen');
+}
+
+function startBattle(stage) {
+  lastStageId = stage.id;
+  showScreen('battleScreen');
+  battle.start(stage.id, (result) => {
+    renderResult(result);
+    showScreen('resultScreen');
+  });
+}
+
+// ---------------------------------------------------------
+// タイトル
+document.getElementById('titleStartBtn').addEventListener('click', () => {
+  Audio_.tap();
+  goHome();
+});
+
+// ---------------------------------------------------------
+// ホーム
+document.getElementById('goStageBtn').addEventListener('click', () => { Audio_.tap(); goStageSelect(); });
+document.getElementById('goEquipBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderEquipment();
+  showScreen('equipmentScreen');
+});
+document.getElementById('goJobBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderJobs();
+  showScreen('jobsScreen');
+});
+
+// ---------------------------------------------------------
+// ステージ選択／確認
+document.getElementById('stageBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+document.getElementById('confirmBackBtn').addEventListener('click', () => { Audio_.tap(); goStageSelect(); });
+document.getElementById('confirmStartBtn').addEventListener('click', () => {
+  Audio_.tap();
+  startBattle(pendingStage);
+});
+
+// ---------------------------------------------------------
+// 装備
+document.getElementById('equipBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+document.getElementById('autoEquipBtn').addEventListener('click', () => autoEquipBest());
+
+// ---------------------------------------------------------
+// 職業
+document.getElementById('jobsBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+
+// ---------------------------------------------------------
+// リザルト
+document.getElementById('resultHomeBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+document.getElementById('resultRetryBtn').addEventListener('click', () => {
+  Audio_.tap();
+  if (lastStageId) {
+    const found = pendingStage && pendingStage.id === lastStageId ? pendingStage : null;
+    startBattle(found || pendingStage);
+  }
+});
+
+// 初期表示
+showScreen('titleScreen');
