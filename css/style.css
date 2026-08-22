@@ -194,6 +194,7 @@ button { font-family: inherit; }
   cursor: pointer;
 }
 .stage-card.boss { border-color: rgba(230,66,90,0.5); background: rgba(230,66,90,0.08); }
+.stage-card.locked { opacity: 0.4; cursor: default; }
 .stage-card .name { font-weight: bold; }
 .stage-card .rec { font-size: 12px; opacity: 0.7; }
 .stage-card .cleared { color: var(--xp-color); font-size: 20px; }

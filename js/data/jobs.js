@@ -35,49 +35,49 @@ function mergeProfiles(profiles) {
 // 基本職 15種（プロファイル・スキルは手動定義）
 // ---------------------------------------------------------
 const BASIC_RAW = [
-  { id: 'warrior', name: '戦士', desc: 'HP・防御が高い前衛。剣と盾を扱う。',
+  { id: 'warrior', name: '戦士', desc: 'HP・防御が高い前衛。剣と盾を扱う。', weapon: 'sword',
     profile: { hp: 1.6, mp: 0.4, atk: 1.3, def: 1.6, mag: 0.3, spd: 0.8, crit: 0.8 },
     skill: { name: '渾身の一撃', type: 'damage', power: 22, mpCost: 6, cooldown: 3.2 } },
-  { id: 'fighter', name: '武闘家', desc: '攻撃と素早さに優れる拳闘士。',
+  { id: 'fighter', name: '武闘家', desc: '攻撃と素早さに優れる拳闘士。', weapon: 'knuckle',
     profile: { hp: 1.2, mp: 0.4, atk: 1.6, def: 0.9, mag: 0.3, spd: 1.3, crit: 1.4 },
     skill: { name: '連撃拳', type: 'damage', power: 18, mpCost: 6, cooldown: 2.6 } },
-  { id: 'mage', name: '魔法使い', desc: '攻撃魔法特化。打たれ弱い。',
+  { id: 'mage', name: '魔法使い', desc: '攻撃魔法特化。打たれ弱い。', weapon: 'staff',
     profile: { hp: 0.6, mp: 2.0, atk: 0.4, def: 0.5, mag: 2.0, spd: 0.8, crit: 0.7 },
     skill: { name: 'ファイアボルト', type: 'damage', power: 30, mpCost: 12, cooldown: 3.6 } },
-  { id: 'priest', name: '僧侶', desc: '回復・補助魔法を扱う支援職。',
+  { id: 'priest', name: '僧侶', desc: '回復・補助魔法を扱う支援職。', weapon: 'rod',
     profile: { hp: 0.9, mp: 1.8, atk: 0.5, def: 0.9, mag: 1.6, spd: 0.7, crit: 0.6 },
     skill: { name: 'ヒール', type: 'heal', power: 34, mpCost: 10, cooldown: 4.0 } },
-  { id: 'thief', name: '盗賊', desc: '素早さと回避に優れる。', passive: { drop: 1.15 },
+  { id: 'thief', name: '盗賊', desc: '素早さと回避に優れる。', passive: { drop: 1.15 }, weapon: 'dagger',
     profile: { hp: 0.8, mp: 0.6, atk: 1.1, def: 0.6, mag: 0.4, spd: 1.7, crit: 1.6 },
     skill: { name: 'くらやみ斬り', type: 'damage', power: 20, mpCost: 7, cooldown: 2.8 } },
-  { id: 'merchant', name: '商人', desc: '所持金・ドロップ率にボーナス。', passive: { gold: 1.3 },
+  { id: 'merchant', name: '商人', desc: '所持金・ドロップ率にボーナス。', passive: { gold: 1.3 }, weapon: 'sword',
     profile: { hp: 0.8, mp: 0.8, atk: 0.6, def: 0.7, mag: 0.6, spd: 0.8, crit: 0.9 },
     skill: { name: '黄金の一撃', type: 'damage', power: 16, mpCost: 5, cooldown: 2.4 } },
-  { id: 'hunter', name: '狩人', desc: '弓を使い対モンスターに強い。',
+  { id: 'hunter', name: '狩人', desc: '弓を使い対モンスターに強い。', weapon: 'bow',
     profile: { hp: 0.9, mp: 0.6, atk: 1.4, def: 0.7, mag: 0.5, spd: 1.3, crit: 1.3 },
     skill: { name: '貫通の矢', type: 'damage', power: 24, mpCost: 8, cooldown: 3.0 } },
-  { id: 'ninja', name: '忍者', desc: '素早く状態異常を得意とする。',
+  { id: 'ninja', name: '忍者', desc: '素早く状態異常を得意とする。', weapon: 'dagger',
     profile: { hp: 0.8, mp: 0.7, atk: 1.2, def: 0.6, mag: 0.6, spd: 1.8, crit: 1.5 },
     skill: { name: '分身斬り', type: 'damage', power: 26, mpCost: 9, cooldown: 3.0 } },
-  { id: 'bard', name: '吟遊詩人', desc: '鼓舞の歌で自身を強化する。',
+  { id: 'bard', name: '吟遊詩人', desc: '鼓舞の歌で自身を強化する。', weapon: 'instrument',
     profile: { hp: 0.8, mp: 1.3, atk: 0.6, def: 0.6, mag: 1.1, spd: 1.0, crit: 0.8 },
     skill: { name: '鼓舞の歌', type: 'buff', power: 26, mpCost: 10, cooldown: 6.0 } },
-  { id: 'dancer', name: '踊り子', desc: '幻惑の舞で敵を翻弄する。',
+  { id: 'dancer', name: '踊り子', desc: '幻惑の舞で敵を翻弄する。', weapon: 'instrument',
     profile: { hp: 0.7, mp: 1.1, atk: 0.7, def: 0.5, mag: 1.0, spd: 1.4, crit: 1.2 },
     skill: { name: '幻惑の舞', type: 'buff', power: 22, mpCost: 9, cooldown: 5.4 } },
-  { id: 'alchemist', name: '錬金術師', desc: '爆薬や状態異常攻撃を操る。',
+  { id: 'alchemist', name: '錬金術師', desc: '爆薬や状態異常攻撃を操る。', weapon: 'staff',
     profile: { hp: 0.7, mp: 1.5, atk: 0.8, def: 0.6, mag: 1.5, spd: 0.8, crit: 0.9 },
     skill: { name: '爆裂薬', type: 'damage', power: 28, mpCost: 11, cooldown: 3.4 } },
-  { id: 'scholar', name: '学者', desc: '弱点看破で経験値効率が良い。', passive: { exp: 1.2 },
+  { id: 'scholar', name: '学者', desc: '弱点看破で経験値効率が良い。', passive: { exp: 1.2 }, weapon: 'staff',
     profile: { hp: 0.7, mp: 1.4, atk: 0.5, def: 0.6, mag: 1.4, spd: 0.7, crit: 0.7 },
     skill: { name: '弱点看破', type: 'buff', power: 24, mpCost: 9, cooldown: 5.6 } },
-  { id: 'farmer', name: '農民', desc: '打たれ強く鎌を振り回す。', passive: { drop: 1.1 },
+  { id: 'farmer', name: '農民', desc: '打たれ強く鎌を振り回す。', passive: { drop: 1.1 }, weapon: 'axe',
     profile: { hp: 1.7, mp: 0.4, atk: 0.9, def: 1.3, mag: 0.3, spd: 0.7, crit: 0.6 },
     skill: { name: '鎌払い', type: 'damage', power: 20, mpCost: 6, cooldown: 2.8 } },
-  { id: 'craftsman', name: '大工', desc: '鉄壁の構えで守りを固める。',
+  { id: 'craftsman', name: '大工', desc: '鉄壁の構えで守りを固める。', weapon: 'axe',
     profile: { hp: 1.3, mp: 0.4, atk: 0.9, def: 1.5, mag: 0.4, spd: 0.6, crit: 0.6 },
     skill: { name: '鉄壁の構え', type: 'buff', power: 20, mpCost: 8, cooldown: 5.2 } },
-  { id: 'fortune', name: '占い師', desc: '運を操りクリティカルを引き寄せる。',
+  { id: 'fortune', name: '占い師', desc: '運を操りクリティカルを引き寄せる。', weapon: 'rod',
     profile: { hp: 0.7, mp: 1.2, atk: 0.6, def: 0.5, mag: 1.2, spd: 1.0, crit: 1.8 },
     skill: { name: '運命の逆転', type: 'buff', power: 20, mpCost: 8, cooldown: 5.0 } },
 ];
@@ -160,21 +160,21 @@ for (const raw of BASIC_RAW) {
 for (const raw of ADVANCED_RAW) {
   const reqJobs = raw.requires.map((id) => JOBS.get(id));
   const profile = mergeProfiles(reqJobs.map((j) => j.profile));
-  const job = { ...raw, tier: 'advanced', profile };
+  const job = { ...raw, tier: 'advanced', profile, weapon: reqJobs[0].weapon };
   job.skill = autoSkillFor(job);
   JOBS.set(raw.id, job);
 }
 for (const raw of SPECIAL_RAW) {
   const reqJobs = raw.requires.map((id) => JOBS.get(id));
   const profile = mergeProfiles(reqJobs.map((j) => j.profile));
-  const job = { ...raw, tier: 'special', profile };
+  const job = { ...raw, tier: 'special', profile, weapon: reqJobs[0].weapon };
   job.skill = autoSkillFor(job);
   JOBS.set(raw.id, job);
 }
 {
   const allSpecial = SPECIAL_RAW.map((r) => JOBS.get(r.id));
   const profile = mergeProfiles(allSpecial.map((j) => j.profile));
-  const job = { ...HERO_RAW, tier: 'hero', requires: [], profile };
+  const job = { ...HERO_RAW, tier: 'hero', requires: [], profile, weapon: 'sword' };
   job.skill = autoSkillFor(job);
   job.skill.name = '勇者の光';
   JOBS.set(HERO_RAW.id, job);

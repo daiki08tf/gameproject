@@ -3,7 +3,7 @@
    死亡してもリセットされない：レベル・職業・装備・所持品を保持
    ============================================================ */
 import { getJob, computeStats, isUnlocked, TIERS } from './data/jobs.js';
-import { getItem, powerScore, SLOTS } from './data/equipment.js';
+import { getItem, powerScore, SLOTS, weaponAffinityBonus } from './data/equipment.js';
 
 const SAVE_KEY = 'bladevale_save_v1';
 
@@ -108,7 +108,7 @@ class StateManager {
     return passive && passive.drop ? passive.drop : 1;
   }
 
-  // ---------- ステータス計算（職業ベース＋装備ボーナス） ----------
+  // ---------- ステータス計算（職業ベース＋装備ボーナス＋武器適性） ----------
   getStats() {
     const base = computeStats(this.currentJobId, this.currentLevel);
     const bonus = { hp: 0, mp: 0, atk: 0, def: 0, mag: 0, spd: 0, crit: 0 };
@@ -119,15 +119,29 @@ class StateManager {
       if (!item) continue;
       for (const k in item.stats) bonus[k] = (bonus[k] || 0) + item.stats[k];
     }
-    return {
-      hp: base.hp + bonus.hp,
-      mp: base.mp + bonus.mp,
-      atk: base.atk + bonus.atk,
-      def: base.def + bonus.def,
-      mag: base.mag + bonus.mag,
-      spd: base.spd + bonus.spd,
+    const stats = {
+      hp: Math.round(base.hp + bonus.hp),
+      mp: Math.round(base.mp + bonus.mp),
+      atk: Math.round(base.atk + bonus.atk),
+      def: Math.round(base.def + bonus.def),
+      mag: Math.round(base.mag + bonus.mag),
+      spd: Math.round((base.spd + bonus.spd) * 10) / 10,
       critPct: Math.min(75, base.critPct + bonus.crit * 0.8),
     };
+    const weaponItem = getItem(this.data.equipped.weapon);
+    const affinity = weaponAffinityBonus(weaponItem, this.currentJob.weapon);
+    if (affinity) stats[affinity.stat] = Math.round(stats[affinity.stat] * affinity.mult);
+    return stats;
+  }
+
+  // 装備中の固有アイテムが持つ特殊効果を全て集める（戦闘エンジンから参照）
+  getEquippedEffects() {
+    const effects = [];
+    for (const slot of SLOTS) {
+      const item = getItem(this.data.equipped[slot]);
+      if (item && item.effects) effects.push(...item.effects);
+    }
+    return effects;
   }
 
   // ---------- 装備・インベントリ ----------

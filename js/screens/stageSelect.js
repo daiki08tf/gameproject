@@ -2,8 +2,8 @@ import { CHAPTERS } from '../data/stages.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 
-export function renderStageSelect(onPick) {
-  const chapter = CHAPTERS[0];
+export function renderStageSelect(chapterIndex, onPick) {
+  const chapter = CHAPTERS[chapterIndex];
   document.getElementById('chapterTitle').textContent = chapter.name;
   const list = document.getElementById('stageList');
   list.innerHTML = '';

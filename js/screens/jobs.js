@@ -1,4 +1,5 @@
 import { jobsByTier, isUnlocked, unlockRequirementText, TIERS } from '../data/jobs.js';
+import { WEAPON_TYPES } from '../data/equipment.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 
@@ -39,7 +40,7 @@ export function renderJobs() {
           <div class="job-card-name">${job.name}${mastered ? '<span class="mastered-badge">★マスター</span>' : ''}</div>
           <div class="job-card-lv">${unlocked ? `Lv.${prog.level}` : '???'}</div>
         </div>
-        <div class="job-card-req">${job.desc || ''}</div>
+        <div class="job-card-req">${job.desc || ''}${job.weapon ? `（得意武器：${WEAPON_TYPES[job.weapon].name}）` : ''}</div>
         ${unlocked ? `<div class="bar xp-bar small"><div class="fill" style="width:${pct}%"></div></div>` : ''}
         ${!unlocked ? `<div class="job-card-req">解放条件: ${unlockRequirementText(job.id)}</div>` : ''}
         ${tierInfo.masteryLv ? `<div class="job-card-req">マスター基準 Lv.${tierInfo.masteryLv} / 転職可能 Lv.${tierInfo.changeableLv}</div>` : ''}

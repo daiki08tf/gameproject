@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { getItem, RARITY, powerScore } from '../data/equipment.js';
+import { getItem, RARITY, powerScore, WEAPON_TYPES } from '../data/equipment.js';
 import { Audio_ } from '../audio.js';
 
 const SLOT_LABELS = {
@@ -14,7 +14,17 @@ const SLOT_BASE_TYPE = {
 let selectedSlot = null;
 
 function statLine(item) {
-  return Object.entries(item.stats).map(([k, v]) => `${k.toUpperCase()}+${v}`).join(' ');
+  const stats = Object.entries(item.stats).map(([k, v]) => `${k.toUpperCase()}+${v}`).join(' ');
+  const parts = [stats];
+  if (item.weaponType) {
+    const wt = WEAPON_TYPES[item.weaponType];
+    const match = state.currentJob.weapon === item.weaponType;
+    parts.push(`${wt.name}${match ? '（適性◎+8%）' : ''}`);
+  }
+  if (item.effects) {
+    for (const eff of item.effects) parts.push(`✨${eff.name}: ${eff.desc}`);
+  }
+  return parts.join(' / ');
 }
 
 export function renderEquipment() {

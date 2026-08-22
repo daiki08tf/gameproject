@@ -1,6 +1,7 @@
 import { state } from './state.js';
 import { BattleScreen } from './battle.js';
 import { renderHome } from './screens/home.js';
+import { renderChapterSelect } from './screens/chapterSelect.js';
 import { renderStageSelect, renderStageConfirm } from './screens/stageSelect.js';
 import { renderEquipment, autoEquipBest } from './screens/equipment.js';
 import { renderJobs } from './screens/jobs.js';
@@ -10,6 +11,7 @@ import { Audio_ } from './audio.js';
 const battle = new BattleScreen();
 let pendingStage = null;
 let lastStageId = null;
+let currentChapterIndex = 0;
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
@@ -21,8 +23,16 @@ function goHome() {
   showScreen('homeScreen');
 }
 
-function goStageSelect() {
-  renderStageSelect((stage) => {
+function goChapterSelect() {
+  renderChapterSelect((chapterIndex) => {
+    goStageSelect(chapterIndex);
+  });
+  showScreen('chapterSelectScreen');
+}
+
+function goStageSelect(chapterIndex) {
+  currentChapterIndex = chapterIndex;
+  renderStageSelect(chapterIndex, (stage) => {
     pendingStage = stage;
     renderStageConfirm(stage);
     showScreen('stageConfirmScreen');
@@ -48,7 +58,7 @@ document.getElementById('titleStartBtn').addEventListener('click', () => {
 
 // ---------------------------------------------------------
 // ホーム
-document.getElementById('goStageBtn').addEventListener('click', () => { Audio_.tap(); goStageSelect(); });
+document.getElementById('goStageBtn').addEventListener('click', () => { Audio_.tap(); goChapterSelect(); });
 document.getElementById('goEquipBtn').addEventListener('click', () => {
   Audio_.tap();
   renderEquipment();
@@ -61,9 +71,10 @@ document.getElementById('goJobBtn').addEventListener('click', () => {
 });
 
 // ---------------------------------------------------------
-// ステージ選択／確認
-document.getElementById('stageBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
-document.getElementById('confirmBackBtn').addEventListener('click', () => { Audio_.tap(); goStageSelect(); });
+// 章選択／ステージ選択／確認
+document.getElementById('chapterBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+document.getElementById('stageBackBtn').addEventListener('click', () => { Audio_.tap(); goChapterSelect(); });
+document.getElementById('confirmBackBtn').addEventListener('click', () => { Audio_.tap(); goStageSelect(currentChapterIndex); });
 document.getElementById('confirmStartBtn').addEventListener('click', () => {
   Audio_.tap();
   startBattle(pendingStage);

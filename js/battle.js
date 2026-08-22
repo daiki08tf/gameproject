@@ -76,6 +76,10 @@ export class BattleScreen {
     this.skillLabel.textContent = this.job.skill.name;
     this.skillCd = 0;
     this.ultReady = false;
+    this.effects = state.getEquippedEffects();
+    this.hasteUntil = 0;
+    this.hasteBonus = 0;
+    this.awakenMult = 1;
 
     this.enemies = [];
     this.particles = [];
@@ -140,6 +144,7 @@ export class BattleScreen {
 
     if (this.skillCd > 0) this.skillCd -= dt;
     this._updateActionButtons();
+    this._updatePassiveEffects();
 
     if (this.player.hp <= 0) {
       this._endRun(false, false);
@@ -154,7 +159,8 @@ export class BattleScreen {
     const v = this.joystick.vector;
     const len = Math.hypot(v.x, v.y);
     if (len > 0.05) {
-      const speed = 190 + this.player.spd * 3;
+      const hasteMult = this.hasteUntil && performance.now() < this.hasteUntil ? 1 + this.hasteBonus : 1;
+      const speed = (190 + this.player.spd * 3) * hasteMult;
       const nx = v.x / Math.max(len, 1);
       const ny = v.y / Math.max(len, 1);
       this.player.x += nx * speed * dt;
@@ -176,13 +182,24 @@ export class BattleScreen {
       if (target) {
         this.player.attackTimer = this.player.attackCooldown;
         this.player.facing = Math.atan2(target.y - this.player.y, target.x - this.player.x);
-        const dmg = this._rollDamage(this.player.atk * this.player.buffAtkMult, target.def);
+        const dmg = this._rollDamage(this.player.atk * this.player.buffAtkMult * this.awakenMult, target.def);
         this._dealDamage(target, dmg);
         this._spawnParticles(target.x, target.y, '#ffffff', 5, 120, 0.2);
         Audio_.swing();
         this.player.ultGauge = Math.min(100, this.player.ultGauge + dmg * 0.4);
       }
     }
+  }
+
+  _effectsOf(trigger) {
+    return this.effects.filter((e) => e.trigger === trigger);
+  }
+
+  _updatePassiveEffects() {
+    const awaken = this._effectsOf('passive').find((e) => e.kind === 'damageBoost');
+    if (!awaken) { this.awakenMult = 1; return; }
+    const active = this.player.hp / this.player.maxHp <= awaken.threshold;
+    this.awakenMult = active ? 1 + awaken.power : 1;
   }
 
   _nearestEnemy(maxRange) {
@@ -257,6 +274,7 @@ export class BattleScreen {
         this.player.ultGauge = Math.min(100, this.player.ultGauge + dmg * 0.8);
         Audio_.playerHurt();
         this._spawnParticles(this.player.x, this.player.y, '#ff5566', 7, 140, 0.3);
+        this._applyOnHurtEffects(e);
       }
     }
     this.enemies = this.enemies.filter((e) => !e.dead);
@@ -265,6 +283,21 @@ export class BattleScreen {
   }
 
   _dealDamage(enemy, dmg) {
+    this._applyRawDamage(enemy, dmg);
+
+    for (const eff of this._effectsOf('onHit')) {
+      if (Math.random() > eff.chance) continue;
+      if (eff.kind === 'lifesteal') {
+        this.player.hp = Math.min(this.player.maxHp, this.player.hp + dmg * eff.power);
+      } else if (eff.kind === 'burnDamage' && !enemy.dead) {
+        const burn = Math.round(this.player.atk * eff.power);
+        this._applyRawDamage(enemy, burn);
+        this._spawnParticles(enemy.x, enemy.y, '#ff7a3c', 6, 140, 0.25);
+      }
+    }
+  }
+
+  _applyRawDamage(enemy, dmg) {
     enemy.hp -= dmg;
     enemy.hitFlash = 0.12;
     if (enemy.hp <= 0 && !enemy.dead) {
@@ -279,6 +312,20 @@ export class BattleScreen {
       if (expRes.leveledUp) this._toast('LEVEL UP!');
       this._rollDrop();
       if (enemy.boss) { this.boss = null; this.bossBar.classList.add('hidden'); }
+    }
+  }
+
+  _applyOnHurtEffects(attacker) {
+    for (const eff of this._effectsOf('onHurt')) {
+      if (Math.random() > eff.chance) continue;
+      if (eff.kind === 'counter' && !attacker.dead) {
+        const counterDmg = Math.round(this.player.atk * eff.power);
+        this._applyRawDamage(attacker, counterDmg);
+        this._spawnParticles(attacker.x, attacker.y, '#ffcf6b', 6, 140, 0.25);
+      } else if (eff.kind === 'haste') {
+        this.hasteBonus = eff.power;
+        this.hasteUntil = performance.now() + eff.duration * 1000;
+      }
     }
   }
 
@@ -310,7 +357,7 @@ export class BattleScreen {
     if (skill.type === 'damage') {
       const targets = this._nearbyEnemies(150, 3);
       for (const t of targets) {
-        const dmg = this._rollDamage(skill.power + this.player.atk * 0.4 + this.player.mag * 0.6, t.def);
+        const dmg = this._rollDamage((skill.power + this.player.atk * 0.4 + this.player.mag * 0.6) * this.awakenMult, t.def);
         this._dealDamage(t, dmg);
       }
       this._spawnParticles(this.player.x, this.player.y, '#8ee9ff', 16, 220, 0.35);
@@ -332,7 +379,7 @@ export class BattleScreen {
     this.player.ultGauge = 0;
     Audio_.ultimate();
     const targets = this._nearbyEnemies(240, 99);
-    const dmg = Math.round((this.player.atk + this.player.mag) * 2.2 + 40);
+    const dmg = Math.round(((this.player.atk + this.player.mag) * 2.2 + 40) * this.awakenMult);
     for (const t of targets) this._dealDamage(t, dmg);
     this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.maxHp * 0.12);
     this.shake = 0.6;
