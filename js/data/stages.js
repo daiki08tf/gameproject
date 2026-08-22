@@ -60,6 +60,16 @@ const CHAPTER_1 = {
         { itemId: 'rune_effect_counter', weight: 1 },
       ],
     },
+    {
+      id: '1-B', name: '隠し谷（ゴブリンの頭目）', recLevel: 5, branch: true, requires: '1-3',
+      waves: [
+        { type: 'grunt', count: 3, interval: 1.2 },
+        { type: 'branch_goblin_chief', count: 1, interval: 0 },
+      ],
+      rewards: { gold: 70, exp: 55 },
+      firstClear: { itemId: 'ac_valley_e' },
+      dropTable: [],
+    },
   ],
 };
 
@@ -124,6 +134,20 @@ function buildChapter(ch) {
         ] : []),
     },
   ];
+  if (ch.branch) {
+    stages.push({
+      id: `${ch.num}-B`, name: `${ch.name}：隠し道（${ch.branch.enemyName}）`,
+      recLevel: Math.round(ch.recLevel[0] + (ch.recLevel[1] - ch.recLevel[0]) * 0.5),
+      branch: true, requires: `${ch.num}-3`,
+      waves: [
+        { type: normalId, count: 3, interval: 1.2 },
+        { type: `${ch.id}_branchboss`, count: 1, interval: 0 },
+      ],
+      rewards: scaleReward({ gold: 70, exp: 55 }, mult),
+      firstClear: { itemId: `${ch.id}_branch` },
+      dropTable: [],
+    });
+  }
   return { id: ch.id, name: `第${ch.num}章 ${ch.name}`, stages };
 }
 

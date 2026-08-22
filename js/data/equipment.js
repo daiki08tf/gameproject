@@ -29,6 +29,8 @@ export const WEAPON_TYPES = {
   rod:        { name: '錫杖', atk: 0.3, mag: 1.4, spd: 0.4, crit: 0.5, affinityStat: 'mag' },
 };
 const AFFINITY_BONUS = 0.08;
+// この体数を装備して倒すと、その武器種は全職業で使えるようになる
+export const WEAPON_MASTERY_THRESHOLD = 300;
 
 const BASE_POWER = { weapon: 4, shield: 4, head: 3, body: 4, accessory: 3 };
 const SLOT_TEMPLATE = {
@@ -67,6 +69,7 @@ const RAW_ITEMS = [
   { id: 'ac_amulet_r', name: '守りのお守り', slot: 'accessory', rarity: 'rare', stats: { def: 2, hp: 4 } },
   { id: 'ac_charm_e', name: '幸運のお守り', slot: 'accessory', rarity: 'epic', stats: { crit: 4, spd: 2 } },
   { id: 'ac_relic_l', name: '古の秘宝', slot: 'accessory', rarity: 'legendary', stats: { atk: 3, mag: 3, crit: 3 } },
+  { id: 'ac_valley_e', name: '隠し谷の指輪', slot: 'accessory', rarity: 'epic', stats: { atk: 3, def: 3, hp: 8 } },
 ];
 
 const ITEMS = new Map();
@@ -145,6 +148,14 @@ for (const ch of CHAPTER_SPECS) {
   };
   ITEMS.set(`${ch.id}_named_${it.named.slot}`, buildNamed(it.named));
   if (it.named2) ITEMS.set(`${ch.id}_named2_${it.named2.slot}`, buildNamed(it.named2));
+
+  if (ch.branch) {
+    const branchRarity = ch.final ? 'legendary' : 'epic';
+    ITEMS.set(`${ch.id}_branch`, {
+      id: `${ch.id}_branch`, name: ch.branch.itemName, slot: 'accessory', rarity: branchRarity,
+      stats: makeAccessoryStats(it.accessoryArchetype, branchRarity, ch.num),
+    });
+  }
 }
 
 export function getItem(id) { return ITEMS.get(id); }

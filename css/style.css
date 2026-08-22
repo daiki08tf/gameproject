@@ -195,6 +195,7 @@ button { font-family: inherit; }
 }
 .stage-card.boss { border-color: rgba(230,66,90,0.5); background: rgba(230,66,90,0.08); }
 .stage-card.locked { opacity: 0.4; cursor: default; }
+.stage-card.branch { border-color: rgba(176,110,242,0.5); background: rgba(176,110,242,0.08); }
 .stage-card .name { font-weight: bold; }
 .stage-card .rec { font-size: 12px; opacity: 0.7; }
 .stage-card .cleared { color: var(--xp-color); font-size: 20px; }
@@ -318,6 +319,7 @@ button { font-family: inherit; }
   cursor: pointer;
 }
 .pick-row.equipped button { background: rgba(230,66,90,0.4); }
+.pick-row button[disabled] { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); cursor: default; }
 
 /* ---------------------------------------------------------
    職業
@@ -335,7 +337,7 @@ button { font-family: inherit; }
 .job-card.locked { opacity: 0.45; }
 .job-card-top { display: flex; justify-content: space-between; align-items: center; }
 .job-card-name { font-weight: bold; }
-.job-card-name .mastered-badge { color: var(--xp-color); margin-left: 4px; }
+.mastered-badge { color: var(--xp-color); margin-left: 4px; }
 .job-card-lv { font-size: 12px; opacity: 0.8; }
 .job-card .bar { margin-top: 6px; }
 .job-card-req { font-size: 11px; opacity: 0.65; margin-top: 4px; }

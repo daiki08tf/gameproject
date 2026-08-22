@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { getItem, RARITY, powerScore, WEAPON_TYPES } from '../data/equipment.js';
+import { getItem, RARITY, powerScore, WEAPON_TYPES, WEAPON_MASTERY_THRESHOLD } from '../data/equipment.js';
 import { Audio_ } from '../audio.js';
 
 const SLOT_LABELS = {
@@ -88,17 +88,20 @@ export function renderEquipment() {
   for (const c of candidates) {
     if (c.equipped) continue;
     const item = getItem(c.id);
+    const locked = item.weaponType && !state.canUseWeaponType(item.weaponType);
     const row = document.createElement('div');
     row.className = 'pick-row';
     row.innerHTML = `
-      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${state.data.inventory[c.id]}</div><div class="item-stats">${statLine(item)}</div></div>
-      <button data-action="equip">装備</button>
+      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${state.data.inventory[c.id]}</div><div class="item-stats">${statLine(item)}${locked ? `<br>🔒 職業「${state.currentJob.name}」では装備不可（あと${WEAPON_MASTERY_THRESHOLD - state.weaponKillCount(item.weaponType)}体撃破でマスター）` : ''}</div></div>
+      <button data-action="equip" ${locked ? 'disabled' : ''}>装備</button>
     `;
-    row.querySelector('button').addEventListener('click', () => {
-      state.equipItem(selectedSlot, c.id);
-      Audio_.tap();
-      renderEquipment();
-    });
+    if (!locked) {
+      row.querySelector('button').addEventListener('click', () => {
+        state.equipItem(selectedSlot, c.id);
+        Audio_.tap();
+        renderEquipment();
+      });
+    }
     picker.appendChild(row);
   }
 

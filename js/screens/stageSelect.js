@@ -8,17 +8,22 @@ export function renderStageSelect(chapterIndex, onPick) {
   const list = document.getElementById('stageList');
   list.innerHTML = '';
   for (const stage of chapter.stages) {
+    const locked = stage.requires && !state.isStageCleared(stage.requires);
     const card = document.createElement('div');
-    card.className = 'stage-card' + (stage.boss ? ' boss' : '');
+    card.className = 'stage-card'
+      + (stage.boss ? ' boss' : '')
+      + (stage.branch ? ' branch' : '')
+      + (locked ? ' locked' : '');
     const cleared = state.isStageCleared(stage.id);
+    const icon = stage.branch ? '🔀 ' : (stage.boss ? '👑 ' : '');
     card.innerHTML = `
       <div>
-        <div class="name">${stage.boss ? '👑 ' : ''}${stage.name}</div>
-        <div class="rec">推奨Lv ${stage.recLevel}</div>
+        <div class="name">${icon}${locked ? '???' : stage.name}</div>
+        <div class="rec">${locked ? '本編ステージ3をクリアすると出現' : `推奨Lv ${stage.recLevel}`}</div>
       </div>
       <div class="cleared">${cleared ? '★' : ''}</div>
     `;
-    card.addEventListener('click', () => { Audio_.tap(); onPick(stage); });
+    if (!locked) card.addEventListener('click', () => { Audio_.tap(); onPick(stage); });
     list.appendChild(card);
   }
 }

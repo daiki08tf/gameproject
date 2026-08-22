@@ -22,6 +22,7 @@ export const CHAPTER_SPECS = [
       weaponEpic: '大樹の牙',
       named: { name: '狼王の逆咬み', slot: 'weapon', effect: 'counter' },
     },
+    branch: { enemyName: '古狼の頭目', itemName: '深緑の護符' },
   },
   {
     num: 3, id: 'ch3', name: '忘れられた遺跡', recLevel: [14, 20],
@@ -33,6 +34,7 @@ export const CHAPTER_SPECS = [
       weaponEpic: '守護者の杖',
       named: { name: 'ゴーレムの核石', slot: 'accessory', effect: 'awaken' },
     },
+    branch: { enemyName: '朽ちた騎士長', itemName: '守護の指輪' },
   },
   {
     num: 4, id: 'ch4', name: '凍てつく霊峰', recLevel: [20, 27],
@@ -44,6 +46,7 @@ export const CHAPTER_SPECS = [
       weaponEpic: '竜氷の弓',
       named: { name: 'フロストドラゴンの牙', slot: 'weapon', effect: 'haste' },
     },
+    branch: { enemyName: '氷狼の王', itemName: '氷結の護符' },
   },
   {
     num: 5, id: 'ch5', name: '灼熱の火山', recLevel: [27, 34],
@@ -55,6 +58,7 @@ export const CHAPTER_SPECS = [
       weaponEpic: '炎帝の斧',
       named: { name: 'サラマンダーの鱗', slot: 'body', effect: 'burn' },
     },
+    branch: { enemyName: '炎トカゲの長', itemName: '灼熱の指輪' },
   },
   {
     num: 6, id: 'ch6', name: '底なし沼地', recLevel: [34, 41],
@@ -66,6 +70,7 @@ export const CHAPTER_SPECS = [
       weaponEpic: '女王の拳甲',
       named: { name: '女王の毒牙', slot: 'weapon', effect: 'lifesteal' },
     },
+    branch: { enemyName: '沼の主', itemName: '沼霧の指輪' },
   },
   {
     num: 7, id: 'ch7', name: '天空の遺跡都市', recLevel: [41, 48],
@@ -77,6 +82,7 @@ export const CHAPTER_SPECS = [
       weaponEpic: '天翔ける竪琴',
       named: { name: 'グリフォンの風切羽', slot: 'accessory', effect: 'haste' },
     },
+    branch: { enemyName: 'グリフォンの長', itemName: '天翔の護符' },
   },
   {
     num: 8, id: 'ch8', name: '深淵の魔界', recLevel: [48, 56],
@@ -88,6 +94,7 @@ export const CHAPTER_SPECS = [
       weaponEpic: '大公爵の錫杖',
       named: { name: '堕天使の羽根', slot: 'body', effect: 'lifesteal' },
     },
+    branch: { enemyName: '悪魔兵長', itemName: '深淵の指輪' },
   },
   {
     num: 9, id: 'ch9', name: '虚無の狭間', recLevel: [56, 65],
@@ -99,6 +106,7 @@ export const CHAPTER_SPECS = [
       weaponEpic: '番人の大剣',
       named: { name: '虚空の瞳', slot: 'accessory', effect: 'awaken' },
     },
+    branch: { enemyName: '虚無の影主', itemName: '虚空の護符' },
   },
   {
     num: 10, id: 'ch10', name: '勇者の試練', recLevel: [65, 80], final: true,
@@ -111,6 +119,7 @@ export const CHAPTER_SPECS = [
       named: { name: '魔王の心臓', slot: 'accessory', effect: 'awaken' },
       named2: { name: '不死鳥の羽', slot: 'body', effect: 'lifesteal' },
     },
+    branch: { enemyName: '闇の騎士長', itemName: '勇者候補の証' },
   },
 ];
 

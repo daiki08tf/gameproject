@@ -3,7 +3,7 @@
    死亡してもリセットされない：レベル・職業・装備・所持品を保持
    ============================================================ */
 import { getJob, computeStats, isUnlocked, TIERS } from './data/jobs.js';
-import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel } from './data/equipment.js';
+import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, WEAPON_MASTERY_THRESHOLD } from './data/equipment.js';
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
 
@@ -20,6 +20,7 @@ function defaultSave() {
     equipped: { weapon: 'wp_sword_n', shield: null, head: null, body: null, accessory1: null, accessory2: null },
     weaponEnhance: {},
     runeSockets: {},
+    weaponMastery: {},
     reincarnations: 0,
     stageProgress: {},
   };
@@ -186,6 +187,10 @@ class StateManager {
     const prev = this.data.equipped[slot];
     if (itemId) {
       if ((this.data.inventory[itemId] || 0) <= 0) return false;
+      if (slot === 'weapon') {
+        const item = getItem(itemId);
+        if (item && item.weaponType && !this.canUseWeaponType(item.weaponType)) return false;
+      }
       this.data.inventory[itemId] -= 1;
       if (this.data.inventory[itemId] <= 0) delete this.data.inventory[itemId];
     }
@@ -211,6 +216,7 @@ class StateManager {
         if (remaining <= 0) continue;
         const item = getItem(id);
         if (!item || item.slot !== slotType) continue;
+        if (slotType === 'weapon' && item.weaponType && !this.canUseWeaponType(item.weaponType)) continue;
         const score = powerScore(item);
         if (score > bestScore) { bestScore = score; best = id; }
       }
@@ -243,6 +249,22 @@ class StateManager {
     }
     this.data.inventory = newBag;
     this.data.equipped = newEquipped;
+    this.save();
+  }
+
+  // ---------- 武器種マスター（職業の装備制限） ----------
+  weaponKillCount(weaponType) { return this.data.weaponMastery[weaponType] || 0; }
+
+  isWeaponMastered(weaponType) { return this.weaponKillCount(weaponType) >= WEAPON_MASTERY_THRESHOLD; }
+
+  // 現在の職業がその武器種を装備できるか（自分の得意武器 or マスター済みの武器種）
+  canUseWeaponType(weaponType) {
+    return this.currentJob.weapon === weaponType || this.isWeaponMastered(weaponType);
+  }
+
+  addWeaponKill(weaponType) {
+    if (!weaponType) return;
+    this.data.weaponMastery[weaponType] = (this.data.weaponMastery[weaponType] || 0) + 1;
     this.save();
   }
 

@@ -13,12 +13,17 @@ export const ENEMY_TYPES = {
     name: 'オークキング', hp: 420, atk: 16, def: 8, speed: 68, radius: 34, color: '#e0553a',
     xp: 120, gold: 150, boss: true,
   },
+  branch_goblin_chief: {
+    name: 'ゴブリンの頭目', hp: 150, atk: 20, def: 9, speed: 70, radius: 26, color: '#d68b3a',
+    xp: 40, gold: 25, boss: true,
+  },
 };
 
 const NORMAL_BASE = { hp: 26, atk: 6, def: 2, speed: 95, radius: 15, color: '#c9505f', xp: 6, gold: 4 };
 const FAST_BASE = { hp: 14, atk: 4, def: 0, speed: 180, radius: 11, color: '#e0c94a', xp: 5, gold: 3 };
 const TANK_BASE = { hp: 70, atk: 11, def: 5, speed: 62, radius: 22, color: '#8a5cd6', xp: 14, gold: 8 };
 const BOSS_BASE = { hp: 420, atk: 16, def: 8, speed: 68, radius: 34, color: '#e0553a', xp: 120, gold: 150, boss: true };
+const BRANCH_BASE = { hp: 150, atk: 20, def: 9, speed: 70, radius: 26, color: '#d68b3a', xp: 40, gold: 25, boss: true };
 
 function scale(base, name, mult) {
   return {
@@ -37,4 +42,5 @@ for (const ch of CHAPTER_SPECS) {
   ENEMY_TYPES[`${ch.id}_fast`] = scale(FAST_BASE, ch.enemies.fast, mult);
   ENEMY_TYPES[`${ch.id}_tank`] = scale(TANK_BASE, ch.enemies.tank, mult);
   ENEMY_TYPES[`${ch.id}_boss`] = scale(BOSS_BASE, ch.enemies.boss, mult);
+  if (ch.branch) ENEMY_TYPES[`${ch.id}_branchboss`] = scale(BRANCH_BASE, ch.branch.enemyName, mult);
 }

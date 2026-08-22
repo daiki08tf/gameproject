@@ -1,6 +1,7 @@
 import { state } from '../state.js';
-import { getItem, RARITY } from '../data/equipment.js';
+import { getItem, RARITY, WEAPON_TYPES, WEAPON_MASTERY_THRESHOLD } from '../data/equipment.js';
 import { getRune, craftableRunes } from '../data/runes.js';
+import { jobsByTier } from '../data/jobs.js';
 import { Audio_ } from '../audio.js';
 
 let activeTab = 'enhance';
@@ -26,7 +27,7 @@ export function renderBlacksmith() {
   content.innerHTML = '';
   if (activeTab === 'enhance') renderEnhanceTab(content);
   else if (activeTab === 'rune') renderRuneTab(content);
-  else renderRebirthTab(content);
+  else renderMasteryTab(content);
 }
 
 // ---------------------------------------------------------
@@ -178,26 +179,34 @@ function renderCraftSection(content) {
 }
 
 // ---------------------------------------------------------
-// 転生タブ
+// 武器熟練タブ
 // ---------------------------------------------------------
-function renderRebirthTab(content) {
-  const n = state.data.reincarnations;
-  const cost = state.reincarnationCost();
-  const canDo = state.data.gold >= cost.gold && state.data.manastone >= cost.manastone;
+function renderMasteryTab(content) {
+  const hint = document.createElement('p');
+  hint.className = 'hint';
+  hint.textContent = 'その武器種を装備して敵を倒すと熟練度が貯まる。マスターすると以後どの職業でも装備できるようになる。';
+  content.appendChild(hint);
 
-  const panel = document.createElement('div');
-  panel.className = 'rebirth-panel';
-  panel.innerHTML = `
-    <div class="rebirth-count">${n}</div>
-    <div class="rebirth-bonus">転生回数：全ステータス +${n * 3}%（永続）</div>
-    <p class="sub">次の転生コスト：💰${cost.gold} ／ 💎${cost.manastone}</p>
-    <button class="btn-main" id="doReincarnateBtn" ${canDo ? '' : 'disabled'}>転生する</button>
-  `;
-  content.appendChild(panel);
-  const btn = panel.querySelector('#doReincarnateBtn');
-  if (btn) {
-    btn.addEventListener('click', () => {
-      if (state.reincarnate()) { Audio_.jobMastered(); renderBlacksmith(); }
-    });
+  const jobsByWeapon = {};
+  for (const job of jobsByTier('basic')) {
+    (jobsByWeapon[job.weapon] = jobsByWeapon[job.weapon] || []).push(job.name);
+  }
+
+  for (const typeId in WEAPON_TYPES) {
+    const wt = WEAPON_TYPES[typeId];
+    const kills = state.weaponKillCount(typeId);
+    const mastered = state.isWeaponMastered(typeId);
+    const pct = Math.min(100, (kills / WEAPON_MASTERY_THRESHOLD) * 100);
+    const card = document.createElement('div');
+    card.className = 'forge-card';
+    card.innerHTML = `
+      <div class="forge-card-top">
+        <div class="forge-card-name">${wt.name}${mastered ? '<span class="mastered-badge">★マスター済み</span>' : ''}</div>
+        <div>${Math.min(kills, WEAPON_MASTERY_THRESHOLD)}/${WEAPON_MASTERY_THRESHOLD}</div>
+      </div>
+      <div class="forge-card-sub">得意職業: ${(jobsByWeapon[typeId] || []).join('・') || '-'}</div>
+      <div class="bar xp-bar small"><div class="fill" style="width:${pct}%"></div></div>
+    `;
+    content.appendChild(card);
   }
 }

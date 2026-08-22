@@ -6,6 +6,7 @@ import { renderStageSelect, renderStageConfirm } from './screens/stageSelect.js'
 import { renderEquipment, autoEquipBest } from './screens/equipment.js';
 import { renderJobs } from './screens/jobs.js';
 import { renderBlacksmith, initBlacksmithTabs } from './screens/blacksmith.js';
+import { renderRebirth } from './screens/rebirth.js';
 import { renderResult } from './screens/result.js';
 import { Audio_ } from './audio.js';
 
@@ -75,6 +76,11 @@ document.getElementById('goBlacksmithBtn').addEventListener('click', () => {
   renderBlacksmith();
   showScreen('blacksmithScreen');
 });
+document.getElementById('goRebirthBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderRebirth();
+  showScreen('rebirthScreen');
+});
 
 // ---------------------------------------------------------
 // 章選択／ステージ選択／確認
@@ -99,6 +105,10 @@ document.getElementById('jobsBackBtn').addEventListener('click', () => { Audio_.
 // 鍛冶屋
 document.getElementById('blacksmithBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 initBlacksmithTabs();
+
+// ---------------------------------------------------------
+// 転生の祭壇
+document.getElementById('rebirthBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 
 // ---------------------------------------------------------
 // リザルト

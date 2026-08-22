@@ -77,6 +77,8 @@ export class BattleScreen {
     this.skillCd = 0;
     this.ultReady = false;
     this.effects = state.getEquippedEffects();
+    const equippedWeapon = getItem(state.data.equipped.weapon);
+    this.weaponType = equippedWeapon ? equippedWeapon.weaponType : null;
     this.hasteUntil = 0;
     this.hasteBonus = 0;
     this.awakenMult = 1;
@@ -312,6 +314,7 @@ export class BattleScreen {
       if (expRes.leveledUp) this._toast('LEVEL UP!');
       this._rollDrop();
       this._rollManastone(enemy);
+      if (this.weaponType) state.addWeaponKill(this.weaponType);
       if (enemy.boss) { this.boss = null; this.bossBar.classList.add('hidden'); }
     }
   }
