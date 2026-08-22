@@ -5,7 +5,8 @@
 import { state } from './state.js';
 import { findStage } from './data/stages.js';
 import { ENEMY_TYPES } from './data/enemies.js';
-import { getItem } from './data/equipment.js';
+import { getItem, RARITY, rarityIndex } from './data/equipment.js';
+import { getRune } from './data/runes.js';
 import { DAMAGE_BUCKET, ECONOMY } from './data/balance.js';
 import { Joystick } from './joystick.js';
 import { Audio_ } from './audio.js';
@@ -376,9 +377,24 @@ export class BattleScreen {
       if (r <= 0) {
         state.addItem(d.itemId, 1);
         this.runItems.push(d.itemId);
+        this._announceDrop(d.itemId);
         return;
       }
     }
+  }
+
+  // レア以上のドロップは、戦闘を止めずにトースト演出だけで知らせる（Phase 6）
+  _announceDrop(itemId) {
+    const item = getItem(itemId);
+    if (item) {
+      if (rarityIndex(item.rarity) < rarityIndex('epic')) return; // epic未満は演出なし
+      const stars = '★'.repeat(rarityIndex(item.rarity));
+      this._toast(`${stars} ${item.name}`, RARITY[item.rarity].color);
+      if (rarityIndex(item.rarity) >= rarityIndex('legendary')) Audio_.jobMastered();
+      return;
+    }
+    const rune = getRune(itemId);
+    if (rune) this._toast(`✨ ${rune.name}`);
   }
 
   _useSkill() {
@@ -471,9 +487,10 @@ export class BattleScreen {
     this.remainEl.textContent = `残り ${Math.max(0, remain)}`;
   }
 
-  _toast(msg) {
+  _toast(msg, color) {
     const el = document.getElementById('toast');
     el.textContent = msg;
+    el.style.color = color || '';
     el.classList.remove('hidden');
     el.style.animation = 'none';
     void el.offsetWidth;

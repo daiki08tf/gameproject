@@ -38,6 +38,25 @@ function renderLootFilterRow() {
   }
 }
 
+// 装備比較UI（Phase 6）：候補装備を現在装備と比べたステータス差分・総合戦力差分を表示する
+function compareLine(candidate, current) {
+  if (!current) return ''; // 何も装備していなければ比較対象がない
+  const keys = new Set([...Object.keys(candidate.stats), ...Object.keys(current.stats)]);
+  const parts = [];
+  for (const k of keys) {
+    const diff = Math.round(((candidate.stats[k] || 0) - (current.stats[k] || 0)) * 10) / 10;
+    if (diff === 0) continue;
+    const cls = diff > 0 ? 'stat-up' : 'stat-down';
+    parts.push(`<span class="${cls}">${k.toUpperCase()}${diff > 0 ? '↑' : '↓'}${Math.abs(diff)}</span>`);
+  }
+  const scoreDiff = Math.round(powerScore(candidate) - powerScore(current));
+  const statsPart = parts.length ? `<div class="compare-line">${parts.join(' ')}</div>` : '';
+  const scorePart = scoreDiff !== 0
+    ? `<div class="compare-line compare-score ${scoreDiff > 0 ? 'stat-up' : 'stat-down'}">総合戦力 ${scoreDiff > 0 ? '↑' : '↓'}${Math.abs(scoreDiff)}</div>`
+    : '';
+  return statsPart + scorePart;
+}
+
 function statLine(item) {
   const stats = Object.entries(item.stats).map(([k, v]) => `${k.toUpperCase()}+${v}`).join(' ');
   const parts = [stats];
@@ -115,13 +134,14 @@ export function renderEquipment() {
     picker.appendChild(row);
   }
 
+  const currentItemForCompare = currentId ? getItem(currentId) : null;
   for (const c of visibleCandidates) {
     const item = getItem(c.id);
     const locked = item.weaponType && !state.canUseWeaponType(item.weaponType);
     const row = document.createElement('div');
     row.className = 'pick-row';
     row.innerHTML = `
-      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${state.data.inventory[c.id]}</div><div class="item-stats">${statLine(item)}${locked ? `<br>🔒 職業「${state.currentJob.name}」では装備不可（あと${WEAPON_MASTERY_THRESHOLD - state.weaponKillCount(item.weaponType)}体撃破でマスター）` : ''}</div></div>
+      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${state.data.inventory[c.id]}</div><div class="item-stats">${statLine(item)}${locked ? `<br>🔒 職業「${state.currentJob.name}」では装備不可（あと${WEAPON_MASTERY_THRESHOLD - state.weaponKillCount(item.weaponType)}体撃破でマスター）` : ''}</div>${compareLine(item, currentItemForCompare)}</div>
       <button data-action="equip" ${locked ? 'disabled' : ''}>装備</button>
     `;
     if (!locked) {

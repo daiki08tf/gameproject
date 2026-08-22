@@ -1,12 +1,16 @@
-import { getItem, RARITY } from '../data/equipment.js';
+import { getItem, RARITY, rarityIndex } from '../data/equipment.js';
 import { getRune } from '../data/runes.js';
 
 // ドロップは装備アイテムだけでなくルーンの場合もあるため、両方から解決する
+// レアリティが高いほど★の数を増やし、一目で価値が分かるようにする（Phase 6）
 function resolveDrop(itemId) {
   const item = getItem(itemId);
-  if (item) return { name: item.name, color: RARITY[item.rarity].color };
+  if (item) {
+    const stars = '★'.repeat(rarityIndex(item.rarity));
+    return { name: `${stars ? stars + ' ' : ''}${item.name}`, color: RARITY[item.rarity].color };
+  }
   const rune = getRune(itemId);
-  if (rune) return { name: rune.name, color: 'var(--accent)' };
+  if (rune) return { name: `✨ ${rune.name}`, color: 'var(--accent)' };
   // 未知のIDでも画面遷移自体は止めない
   return { name: itemId, color: '' };
 }
@@ -43,4 +47,8 @@ export function renderResult(result) {
       itemsEl.appendChild(chip);
     }
   }
+
+  // ドロップがあった時だけ「装備を見る」導線を出す（何もない時は無意味なので隠す）
+  const equipBtn = document.getElementById('resultEquipBtn');
+  equipBtn.classList.toggle('hidden', result.items.length === 0);
 }

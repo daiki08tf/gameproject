@@ -321,6 +321,10 @@ button { font-family: inherit; }
 }
 .pick-row.equipped button { background: rgba(230,66,90,0.4); }
 .pick-row button[disabled] { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); cursor: default; }
+.compare-line { font-size: 11px; margin-top: 2px; }
+.compare-score { font-weight: bold; }
+.stat-up { color: #5fd97a; }
+.stat-down { color: #e6425a; }
 
 /* ---------------------------------------------------------
    職業

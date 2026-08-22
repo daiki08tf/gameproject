@@ -148,6 +148,11 @@ initSpellScreen();
 // ---------------------------------------------------------
 // リザルト
 document.getElementById('resultHomeBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+document.getElementById('resultEquipBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderEquipment();
+  showScreen('equipmentScreen');
+});
 document.getElementById('resultRetryBtn').addEventListener('click', () => {
   Audio_.tap();
   if (lastStageId) {
