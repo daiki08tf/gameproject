@@ -3,7 +3,9 @@ import { getItem, RARITY, WEAPON_TYPES, WEAPON_MASTERY_THRESHOLD } from '../data
 import { getRune, craftableRunes } from '../data/runes.js';
 import { jobsByTier } from '../data/jobs.js';
 import { Audio_ } from '../audio.js';
-import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER } from '../data/balance.js';
+import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER, EXTREME_AFFIX_LAYER } from '../data/balance.js';
+
+const AFFIX_STAT_LABEL = { atk: 'ATK', def: 'DEF', hp: 'HP', mag: 'MAG', spd: 'SPD', crit: 'CRIT' };
 
 let activeTab = 'enhance';
 let selectedRuneSlot = null;
@@ -78,6 +80,11 @@ function renderEnhanceTab(content) {
 
     // 強化MAX後は、覚醒ポイントで「目覚めた装備」化できる（Phase 3）
     if (maxed) content.appendChild(renderAwakenWeaponCard(id, item));
+
+    // 強化＋目覚めの両方がMAXなら、最後の仕上げとして極Affixに挑める（Phase 5）
+    if (maxed && state.weaponAwakenedRank(id) >= EXTREME_AFFIX_LAYER.REQUIRE_AWAKENED_RANK) {
+      content.appendChild(renderAffixCard(id, item));
+    }
   }
 }
 
@@ -104,6 +111,30 @@ function renderAwakenWeaponCard(id, item) {
   `;
   card.querySelector('button').addEventListener('click', () => {
     if (state.awakenWeapon(id)) { Audio_.jobMastered(); renderBlacksmith(); }
+  });
+  return card;
+}
+
+// 強化＋目覚め両方MAXの武器だけが挑める最後の仕上げ：極Affix（Phase 5）
+// ランダムに1ステータスへ追加%ボーナスを付与する。何度でも再抽選できる。
+function renderAffixCard(id, item) {
+  const affix = state.weaponAffix(id);
+  const canDo = state.canRollAffix(id);
+  const card = document.createElement('div');
+  card.className = 'forge-card';
+  card.innerHTML = `
+    <div class="forge-card-top">
+      <div class="forge-card-name">${item.name}（極Affix）</div>
+    </div>
+    <div class="forge-card-sub">${affix
+      ? `現在の付与効果：${AFFIX_STAT_LABEL[affix.stat] || affix.stat}+${Math.round(affix.pct * 1000) / 10}%（再抽選すると上書きされます）`
+      : 'まだ極Affixは付与されていません'}</div>
+    <button class="forge-card-btn" ${canDo ? '' : 'disabled'}>
+      ${affix ? '再抽選する' : '極める'}（💰${EXTREME_AFFIX_LAYER.ROLL_COST_GOLD} + 💎${EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE}）
+    </button>
+  `;
+  card.querySelector('button').addEventListener('click', () => {
+    if (state.rollAffix(id)) { Audio_.jobMastered(); renderBlacksmith(); }
   });
   return card;
 }

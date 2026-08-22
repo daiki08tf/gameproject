@@ -17,6 +17,10 @@ export const RARITY = {
   mythic:    { label: '神話',       color: '#ff6ec7', mult: EQUIPMENT_LAYER.RARITY_MULT.mythic },
 };
 
+// レアリティの序列（Loot Filterのしきい値判定などで使用）
+export const RARITY_ORDER = Object.keys(RARITY);
+export function rarityIndex(rarity) { return RARITY_ORDER.indexOf(rarity); }
+
 // 武器種：メインステータスへの配分比率。affinityStat と職業の得意武器が
 // 一致すると装備適性ボーナス(+8%)が付く
 export const WEAPON_TYPES = {

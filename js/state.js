@@ -3,11 +3,11 @@
    死亡してもリセットされない：レベル・職業・装備・所持品を保持
    ============================================================ */
 import { getJob, computeStats, isUnlocked, TIERS } from './data/jobs.js';
-import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, WEAPON_MASTERY_THRESHOLD } from './data/equipment.js';
+import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, WEAPON_MASTERY_THRESHOLD, rarityIndex, RARITY_ORDER } from './data/equipment.js';
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
 import { isAbyssUnlocked } from './data/stages.js';
-import { EQUIPMENT_LAYER, REBIRTH_LAYER, JOB_MASTER_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER } from './data/balance.js';
+import { EQUIPMENT_LAYER, REBIRTH_LAYER, JOB_MASTER_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER } from './data/balance.js';
 import { AWAKENING_NODES, awakeningNodeCost } from './data/awakening.js';
 import { getArtifact } from './data/artifacts.js';
 
@@ -34,6 +34,8 @@ function defaultSave() {
     unlockedArtifacts: [],
     equippedArtifacts: [null, null, null],
     abyssBestDepth: 0,
+    weaponAffix: {},
+    lootFilter: { minRarity: 'normal' },
   };
 }
 
@@ -141,11 +143,17 @@ class StateManager {
       if (!id) continue;
       const item = getItem(id);
       if (!item) continue;
-      const mult = slot === 'weapon'
+      const baseMult = slot === 'weapon'
         ? 1 + this.weaponEnhanceLevel(id) * EQUIPMENT_LAYER.ENHANCE_BONUS_PER_LEVEL
               + this.weaponAwakenedRank(id) * AWAKENED_EQUIP_LAYER.BONUS_PER_RANK
         : 1;
-      for (const k in item.stats) bonus[k] = (bonus[k] || 0) + item.stats[k] * mult;
+      // 極Affixは特定の1ステータスだけに追加%を乗せる（強化・目覚めと同じ
+      // 「まとめて1つの倍率にしてから掛ける」方式を、対象ステータスにだけ適用）
+      const affix = slot === 'weapon' ? this.weaponAffix(id) : null;
+      for (const k in item.stats) {
+        const mult = (affix && affix.stat === k) ? baseMult + affix.pct : baseMult;
+        bonus[k] = (bonus[k] || 0) + item.stats[k] * mult;
+      }
     }
 
     const weaponId = this.data.equipped.weapon;
@@ -478,6 +486,47 @@ class StateManager {
     this.data.awakenedWeapons[itemId] = rank + 1;
     this.save();
     return true;
+  }
+
+  // ---------- 極Affix（Phase 5：強化＋目覚めMAXの武器だけの最後の仕上げ） ----------
+  weaponAffix(itemId) { return this.data.weaponAffix[itemId] || null; }
+
+  canRollAffix(itemId) {
+    if (this.weaponEnhanceLevel(itemId) < EXTREME_AFFIX_LAYER.REQUIRE_ENHANCE_LEVEL) return false;
+    if (this.weaponAwakenedRank(itemId) < EXTREME_AFFIX_LAYER.REQUIRE_AWAKENED_RANK) return false;
+    return this.data.gold >= EXTREME_AFFIX_LAYER.ROLL_COST_GOLD && this.data.manastone >= EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE;
+  }
+
+  // 何度でも再抽選できる（都度コストを払い、既存のAffixを新しい抽選結果で上書きする）。
+  // ロール対象ステータスは、その武器が実際に持つステータスの中からのみ選ぶ
+  // （武器種によって持たないステータスがあるため、存在しないキーを選んで
+  // NaNになるのを防ぐ）。
+  rollAffix(itemId) {
+    if (!this.canRollAffix(itemId)) return false;
+    const item = getItem(itemId);
+    const pool = item ? Object.keys(item.stats) : [];
+    if (pool.length === 0) return false;
+    this.data.gold -= EXTREME_AFFIX_LAYER.ROLL_COST_GOLD;
+    this.data.manastone -= EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE;
+    const stat = pool[Math.floor(Math.random() * pool.length)];
+    const pct = EXTREME_AFFIX_LAYER.MIN_PCT + Math.random() * (EXTREME_AFFIX_LAYER.MAX_PCT - EXTREME_AFFIX_LAYER.MIN_PCT);
+    this.data.weaponAffix[itemId] = { stat, pct: Math.round(pct * 1000) / 1000 };
+    this.save();
+    return this.data.weaponAffix[itemId];
+  }
+
+  // ---------- Loot Filter（Phase 5：装備画面の所持品一覧を表示上だけ絞り込む） ----------
+  // ドロップ抽選そのものには一切影響しない、純粋な表示フィルター。
+  setLootFilterMinRarity(rarity) {
+    if (!RARITY_ORDER.includes(rarity)) return false;
+    this.data.lootFilter.minRarity = rarity;
+    this.save();
+    return true;
+  }
+
+  passesLootFilter(item) {
+    if (!item) return true;
+    return rarityIndex(item.rarity) >= rarityIndex(this.data.lootFilter.minRarity);
   }
 
   // ---------- 覚醒アーティファクト（秘宝、Phase 3） ----------

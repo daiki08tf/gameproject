@@ -178,3 +178,19 @@ export const ABYSS_LAYER = {
   BOSS_FLOOR_INTERVAL: 5,  // この階数ごとにボスフロア
   BOSS_REWARD_MULT: 2.5,   // ボスフロアの追加報酬倍率
 };
+
+// ---------------------------------------------------------
+// J. 極Affix（Phase 5）
+// 強化＋目覚めの両方をMAXにした武器だけが挑める、最後の仕上げ。
+// ランダムに1ステータスへ追加%ボーナスを付与する（コスト消費で再抽選も可）。
+// アイテムは個体ではなくitemId単位で管理している既存設計（強化・目覚めと
+// 同じ）を踏襲し、インベントリ構造そのものは変更しない。
+// ---------------------------------------------------------
+export const EXTREME_AFFIX_LAYER = {
+  REQUIRE_ENHANCE_LEVEL: 10,  // EQUIPMENT_LAYER.ENHANCE_MAX_LEVEL と同値
+  REQUIRE_AWAKENED_RANK: 3,   // AWAKENED_EQUIP_LAYER.MAX_RANK と同値
+  ROLL_COST_GOLD: 3000,
+  ROLL_COST_MANASTONE: 150,
+  MIN_PCT: 0.05,
+  MAX_PCT: 0.15,
+};

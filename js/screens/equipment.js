@@ -11,7 +11,32 @@ const SLOT_BASE_TYPE = {
   accessory1: 'accessory', accessory2: 'accessory',
 };
 
+// Loot Filter：所持品一覧の表示だけを絞り込む（ドロップ抽選には影響しない）
+const RARITY_FILTER_OPTIONS = [
+  { rarity: 'normal', label: 'すべて' },
+  { rarity: 'rare', label: 'レア以上' },
+  { rarity: 'epic', label: 'エピック以上' },
+  { rarity: 'legendary', label: 'レジェンド以上' },
+  { rarity: 'mythic', label: '神話のみ' },
+];
+
 let selectedSlot = null;
+
+function renderLootFilterRow() {
+  const row = document.getElementById('lootFilterRow');
+  row.innerHTML = '';
+  for (const opt of RARITY_FILTER_OPTIONS) {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (state.data.lootFilter.minRarity === opt.rarity ? ' active' : '');
+    btn.textContent = opt.label;
+    btn.addEventListener('click', () => {
+      Audio_.tap();
+      state.setLootFilterMinRarity(opt.rarity);
+      renderEquipment();
+    });
+    row.appendChild(btn);
+  }
+}
 
 function statLine(item) {
   const stats = Object.entries(item.stats).map(([k, v]) => `${k.toUpperCase()}+${v}`).join(' ');
@@ -52,6 +77,8 @@ export function renderEquipment() {
     doll.appendChild(div);
   }
 
+  renderLootFilterRow();
+
   const picker = document.getElementById('equipPicker');
   picker.innerHTML = '';
   if (!selectedSlot) {
@@ -69,6 +96,9 @@ export function renderEquipment() {
   }
   candidates.sort((a, b) => powerScore(getItem(b.id)) - powerScore(getItem(a.id)));
 
+  const unequippedCandidates = candidates.filter((c) => !c.equipped);
+  const visibleCandidates = unequippedCandidates.filter((c) => state.passesLootFilter(getItem(c.id)));
+
   if (currentId) {
     const row = document.createElement('div');
     row.className = 'pick-row equipped';
@@ -85,8 +115,7 @@ export function renderEquipment() {
     picker.appendChild(row);
   }
 
-  for (const c of candidates) {
-    if (c.equipped) continue;
+  for (const c of visibleCandidates) {
     const item = getItem(c.id);
     const locked = item.weaponType && !state.canUseWeaponType(item.weaponType);
     const row = document.createElement('div');
@@ -105,10 +134,15 @@ export function renderEquipment() {
     picker.appendChild(row);
   }
 
-  if (candidates.length === (currentId ? 1 : 0)) {
+  if (unequippedCandidates.length === 0) {
     const p = document.createElement('p');
     p.className = 'hint';
     p.textContent = '装備可能なアイテムを所持していません';
+    picker.appendChild(p);
+  } else if (visibleCandidates.length === 0) {
+    const p = document.createElement('p');
+    p.className = 'hint';
+    p.textContent = 'フィルター条件に一致する装備がありません（フィルターを緩めてください）';
     picker.appendChild(p);
   }
 }
