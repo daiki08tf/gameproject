@@ -10,6 +10,12 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+/* 汎用の非表示クラス。従来 .toast.hidden / .boss-bar.hidden のように要素
+   ごとに個別定義されていたが、それだと定義していない要素での
+   classList.add('hidden')（resultEquipBtn等、既存）が実際には非表示に
+   ならない抜け穴があったため、ここで汎用ルールとして補う。 */
+.hidden { display: none !important; }
+
 html, body {
   margin: 0;
   padding: 0;
@@ -325,6 +331,10 @@ button { font-family: inherit; }
 .compare-score { font-weight: bold; }
 .stat-up { color: #5fd97a; }
 .stat-down { color: #e6425a; }
+
+/* 加護（Blessing、深淵拡張）：stageConfirmScreenの3択カード */
+.blessing-row { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; text-align: left; }
+.blessing-row .pick-row.selected { border-color: var(--accent); background: rgba(242,201,76,0.12); }
 
 /* ---------------------------------------------------------
    職業

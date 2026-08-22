@@ -66,9 +66,15 @@
     <header class="subbar">
       <button class="btn-back" id="abyssBackBtn">←</button>
       <h2>深淵</h2>
+      <span id="abyssShardText" class="manastone-badge">🔹 0</span>
     </header>
-    <p class="hint" style="padding:0 16px;">全10章のボスを撃破した者だけが挑める、際限なく深くなる試練の場。踏破記録は失われません。</p>
+    <div class="tab-row">
+      <button class="tab-btn" data-atab="challenge">挑戦</button>
+      <button class="tab-btn" data-atab="tree">深淵ツリー</button>
+    </div>
+    <p class="hint" style="padding:0 16px;" id="abyssHint">全10章のボスを撃破した者だけが挑める、際限なく深くなる試練の場。踏破記録は失われません。</p>
     <div id="abyssList" class="stage-list"></div>
+    <div id="abyssTreeContent" class="blacksmith-content hidden"></div>
   </section>
 
   <!-- ============ ステージ選択 ============ -->
@@ -86,6 +92,8 @@
       <h2 id="confirmStageName">ステージ名</h2>
       <p class="sub" id="confirmStageRec">推奨Lv 1</p>
       <p id="confirmStageRewards" class="sub"></p>
+      <p id="confirmModifiers" class="sub hidden"></p>
+      <div id="confirmBlessingRow" class="blessing-row hidden"></div>
       <div class="confirm-actions">
         <button class="btn-sub" id="confirmBackBtn">戻る</button>
         <button class="btn-main" id="confirmStartBtn">出撃</button>

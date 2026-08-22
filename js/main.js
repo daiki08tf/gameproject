@@ -2,8 +2,8 @@ import { state } from './state.js';
 import { BattleScreen } from './battle.js';
 import { renderHome } from './screens/home.js';
 import { renderChapterSelect } from './screens/chapterSelect.js';
-import { renderStageSelect, renderStageConfirm } from './screens/stageSelect.js';
-import { renderAbyssList } from './screens/abyss.js';
+import { renderStageSelect, renderStageConfirm, getSelectedBlessingId } from './screens/stageSelect.js';
+import { renderAbyssList, initAbyssTabs } from './screens/abyss.js';
 import { renderEquipment, autoEquipBest } from './screens/equipment.js';
 import { renderJobs } from './screens/jobs.js';
 import { renderBlacksmith, initBlacksmithTabs } from './screens/blacksmith.js';
@@ -56,13 +56,13 @@ function goAbyssList() {
   showScreen('abyssScreen');
 }
 
-function startBattle(stage) {
+function startBattle(stage, blessingId) {
   lastStageId = stage.id;
   showScreen('battleScreen');
   battle.start(stage.id, (result) => {
     renderResult(result);
     showScreen('resultScreen');
-  });
+  }, blessingId);
 }
 
 // ---------------------------------------------------------
@@ -117,9 +117,10 @@ document.getElementById('confirmBackBtn').addEventListener('click', () => {
 });
 document.getElementById('confirmStartBtn').addEventListener('click', () => {
   Audio_.tap();
-  startBattle(pendingStage);
+  startBattle(pendingStage, getSelectedBlessingId());
 });
 document.getElementById('abyssBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+initAbyssTabs();
 
 // ---------------------------------------------------------
 // 装備
@@ -157,7 +158,7 @@ document.getElementById('resultRetryBtn').addEventListener('click', () => {
   Audio_.tap();
   if (lastStageId) {
     const found = pendingStage && pendingStage.id === lastStageId ? pendingStage : null;
-    startBattle(found || pendingStage);
+    startBattle(found || pendingStage, getSelectedBlessingId());
   }
 });
 

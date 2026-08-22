@@ -221,3 +221,31 @@ export const AWAKENED_ITEM_LAYER = {
   KILLS_TIER2: 100,         // この撃破数で固有能力（effects）が強化される
   TIER2_EFFECT_BOOST: 0.3,  // 固有能力のchance/powerに掛かる強化倍率
 };
+
+// ---------------------------------------------------------
+// L. 深淵拡張：エリート・モディファイア・深淵ツリー・加護（Blessing）
+// 深淵（Abyss）そのものをより深く遊べるようにする4つの追加要素。
+// ・エリート：深淵限定で通常敵が低確率で強化状態になる（撃破すると深淵の欠片）
+// ・モディファイア：階層ごとに決定論的に付与される「リスク＋リターン」の
+//   フロア効果（同じ階なら常に同じ組み合わせになる。一覧を開き直しても
+//   ブレない）
+// ・深淵ツリー：エリート撃破・ボスフロア踏破で得る「深淵の欠片」を使う、
+//   覚醒ツリーとは完全に別枠の永続強化（覚醒しても失われない）
+// ・加護（Blessing）：深淵に挑む直前に3択から1つ選べる、その1階限りの
+//   一時バフ（セーブされない・恒久進行とは無関係）
+// ---------------------------------------------------------
+export const ABYSS_EXPANSION_LAYER = {
+  ELITE_CHANCE_BASE: 0.08,
+  ELITE_CHANCE_MAX: 0.4,
+  ELITE_HP_MULT: 1.8,
+  ELITE_ATK_MULT: 1.3,
+  ELITE_DEF_MULT: 1.2,
+  ELITE_REWARD_MULT: 2.5,   // 経験値・ゴールド
+  ELITE_SHARD_DROP: 3,      // エリート撃破で得る深淵の欠片（深淵ツリーの獲得量倍率が乗る）
+  BOSS_SHARD_DROP: 15,      // ボスフロア踏破で得る深淵の欠片
+  TREE_NODE_COST_BASE: 2,
+  TREE_NODE_COST_PER_RANK: 2,
+  TREE_NODE_MAX_RANK: 5,
+  TREE_BIG_NODE_COST_BASE: 12,
+  TREE_BIG_NODE_COST_PER_RANK: 12,
+};

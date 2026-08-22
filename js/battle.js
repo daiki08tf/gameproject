@@ -7,7 +7,8 @@ import { findStage } from './data/stages.js';
 import { ENEMY_TYPES } from './data/enemies.js';
 import { getItem, RARITY, rarityIndex } from './data/equipment.js';
 import { getRune } from './data/runes.js';
-import { DAMAGE_BUCKET, ECONOMY } from './data/balance.js';
+import { DAMAGE_BUCKET, ECONOMY, ABYSS_EXPANSION_LAYER } from './data/balance.js';
+import { getBlessing } from './data/blessings.js';
 import { Joystick } from './joystick.js';
 import { Audio_ } from './audio.js';
 
@@ -63,12 +64,16 @@ export class BattleScreen {
     this.canvas.height = window.innerHeight;
   }
 
-  start(stageId, onEnd) {
+  start(stageId, onEnd, blessingId) {
     this._resize();
     this.onEnd = onEnd;
     const found = findStage(stageId);
     this.stage = found.stage;
     this.stageNameEl.textContent = `${this.stage.name}`;
+    // 加護（Blessing、深淵拡張）：深淵限定・その1階だけの一時バフ。
+    // セーブされず、装備やツリーとは完全に独立した使い切りの選択。
+    this.blessing = this.stage.isAbyss ? getBlessing(blessingId) : null;
+    this._abyssReviveUsed = false; // 深淵ツリー「深淵の加護」：1階につき1回だけ
 
     const stats = state.getStats();
     this.player = {
@@ -84,6 +89,18 @@ export class BattleScreen {
       buffAtkMult: 1, buffDefMult: 1, buffUntil: 0,
       ultGauge: 0,
     };
+    if (this.blessing) {
+      const b = this.blessing;
+      if (b.kind === 'atkMult') this.player.atk = Math.round(this.player.atk * (1 + b.power));
+      else if (b.kind === 'defMult') this.player.def = Math.round(this.player.def * (1 + b.power));
+      else if (b.kind === 'spdMult') this.player.spd = Math.round(this.player.spd * (1 + b.power));
+      else if (b.kind === 'critAdd') this.player.critPct += b.power;
+      else if (b.kind === 'hpMult') {
+        this.player.maxHp = Math.round(this.player.maxHp * (1 + b.power));
+        this.player.hp = this.player.maxHp;
+      }
+      // goldMult/expMult は _goldMult()/_expMult() が都度参照する（ここでは何もしない）
+    }
 
     this.job = state.currentJob;
     this.skillLabel.textContent = this.job.skill.name;
@@ -168,8 +185,17 @@ export class BattleScreen {
     this._updatePassiveEffects();
 
     if (this.player.hp <= 0) {
-      this._endRun(false, false);
-      return;
+      // 深淵ツリー「深淵の加護」：深淵限定・1階につき1回だけ致死を耐える
+      if (this.stage.isAbyss && !this._abyssReviveUsed && state.hasAbyssRevive()) {
+        this._abyssReviveUsed = true;
+        this.player.hp = Math.round(this.player.maxHp * 0.5);
+        this.player.invuln = 1.5;
+        this._toast('深淵の加護が発動！');
+        Audio_.levelUp();
+      } else {
+        this._endRun(false, false);
+        return;
+      }
     }
     if (this.defeated >= this.totalToDefeat && this.nextSpawnIdx >= this.spawnQueue.length && this.enemies.length === 0) {
       this._endRun(true, false);
@@ -280,18 +306,63 @@ export class BattleScreen {
     return Math.round(dmg);
   }
 
+  // モディファイア（ATK/DEF/SPD/接触ダメージ増加）を深淵ツリー「混沌への
+  // 耐性」で軽減した上で適用するためのブレンド関数。mult<=1（プレイヤー
+  // に有利な側）はそのまま通す＝耐性は「不利な効果の緩和」専用。
+  _riskMult(mult) {
+    if (mult <= 1 || !this.stage.isAbyss) return mult;
+    const resistPct = state.abyssModifierResistPct();
+    return 1 + (mult - 1) * (1 - resistPct);
+  }
+
+  _goldMult() {
+    let m = this.blessing && this.blessing.kind === 'goldMult' ? 1 + this.blessing.power : 1;
+    if (this.stage.isAbyss && this.stage.boss) m *= state.abyssBossFloorRewardMult();
+    return m;
+  }
+
+  _expMult() {
+    let m = this.blessing && this.blessing.kind === 'expMult' ? 1 + this.blessing.power : 1;
+    if (this.stage.isAbyss && this.stage.boss) m *= state.abyssBossFloorRewardMult();
+    return m;
+  }
+
   _spawnEnemy(type) {
     const t = ENEMY_TYPES[type];
+    let hp = t.hp, atk = t.atk, def = t.def, speed = t.speed, radius = t.radius;
+    let xp = t.xp, gold = t.gold;
+    let elite = false;
+
+    // 深淵拡張：モディファイア由来の敵強化（耐性で軽減）＋エリート化抽選。
+    // ボスには適用しない（ボスは常に単体・既存の強さのまま）。
+    if (this.stage.isAbyss && !t.boss) {
+      hp = Math.round(hp * (this.stage.enemyHpMult || 1));
+      atk = Math.round(atk * this._riskMult(this.stage.enemyAtkMult || 1));
+      def = Math.round(def * this._riskMult(this.stage.enemyDefMult || 1));
+      speed = Math.round(speed * this._riskMult(this.stage.enemySpeedMult || 1));
+
+      if (Math.random() < state.abyssEliteChance()) {
+        elite = true;
+        hp = Math.round(hp * ABYSS_EXPANSION_LAYER.ELITE_HP_MULT);
+        atk = Math.round(atk * ABYSS_EXPANSION_LAYER.ELITE_ATK_MULT);
+        def = Math.round(def * ABYSS_EXPANSION_LAYER.ELITE_DEF_MULT);
+        radius = Math.round(radius * 1.25);
+        const rewardMult = ABYSS_EXPANSION_LAYER.ELITE_REWARD_MULT * state.abyssEliteRewardMult();
+        xp = Math.round(xp * rewardMult);
+        gold = Math.round(gold * rewardMult);
+      }
+    }
+
     const angle = rand(0, Math.PI * 2);
     const spawnDist = Math.max(this.canvas.width, this.canvas.height) / 2 + 100;
     let x = this.player.x + Math.cos(angle) * spawnDist;
     let y = this.player.y + Math.sin(angle) * spawnDist;
-    x = clamp(x, t.radius, ARENA.w - t.radius);
-    y = clamp(y, t.radius, ARENA.h - t.radius);
+    x = clamp(x, radius, ARENA.w - radius);
+    y = clamp(y, radius, ARENA.h - radius);
     const enemy = {
-      type, x, y, radius: t.radius,
-      hp: t.hp, maxHp: t.hp, atk: t.atk, def: t.def, speed: t.speed,
-      color: t.color, name: t.name, xp: t.xp, gold: t.gold, boss: !!t.boss,
+      type, x, y, radius, elite,
+      hp, maxHp: hp, atk, def, speed,
+      color: t.color, name: t.name, xp, gold, boss: !!t.boss,
       hitFlash: 0, contactCooldown: 0,
     };
     this.enemies.push(enemy);
@@ -328,7 +399,9 @@ export class BattleScreen {
       }
 
       if (d < desired + 2 && e.contactCooldown <= 0 && this.player.invuln <= 0) {
-        const dmg = Math.max(1, Math.round(e.atk - this.player.def * this.player.buffDefMult * 0.5));
+        // 深淵モディファイア「瘴気だまり」：接触ダメージ増加（深淵ツリーの耐性で軽減）
+        const contactMult = this._riskMult(this.stage.contactDmgMult || 1);
+        const dmg = Math.max(1, Math.round(e.atk * contactMult - this.player.def * this.player.buffDefMult * 0.5));
         this.player.hp -= dmg;
         this.player.invuln = 0.9;
         e.contactCooldown = 0.9;
@@ -383,8 +456,8 @@ export class BattleScreen {
       this.defeated++;
       this._spawnParticles(enemy.x, enemy.y, enemy.color, 14, 200, 0.4);
       Audio_.enemyDeath();
-      const expRes = state.gainExp(enemy.xp);
-      const goldGain = state.gainGold(enemy.gold);
+      const expRes = state.gainExp(Math.round(enemy.xp * this._expMult()));
+      const goldGain = state.gainGold(Math.round(enemy.gold * this._goldMult()));
       this.runExp += expRes.gained;
       this.runGold += goldGain;
       if (expRes.leveledUp) this._toast('LEVEL UP!');
@@ -394,6 +467,8 @@ export class BattleScreen {
       // 覚醒装備（本来仕様）：固有効果を持つ装備を身につけていれば、
       // どのスロットでもキル数として加算される
       state.addItemAwakenKills();
+      // 深淵拡張：エリート撃破で深淵の欠片（深淵ツリーの獲得量倍率が乗る）
+      if (enemy.elite) state.addAbyssShards(ABYSS_EXPANSION_LAYER.ELITE_SHARD_DROP);
       if (enemy.boss) { this.boss = null; this.bossBar.classList.add('hidden'); }
     }
   }
@@ -428,7 +503,10 @@ export class BattleScreen {
   _rollDrop() {
     const table = this.stage.dropTable || [];
     if (table.length === 0) return;
-    const chance = ECONOMY.BASE_DROP_CHANCE * state.dropRateMult();
+    // 深淵拡張：モディファイア（鉄壁の守り等）のdropMult ＋ 深淵ツリー
+    // 「深淵の宝探し」による深淵限定のドロップ率上昇を乗せる
+    const abyssMult = this.stage.isAbyss ? (this.stage.dropMult || 1) * state.abyssDropRateMult() : 1;
+    const chance = ECONOMY.BASE_DROP_CHANCE * state.dropRateMult() * abyssMult;
     if (Math.random() > chance) return;
     // 覚醒ツリー「宝物庫の記憶」：一定確率で、まだ持っていない装備だけの
     // プールから優先的に選ぶ（該当がなければ通常通り全体から選ぶ）
@@ -489,7 +567,9 @@ export class BattleScreen {
       this._spawnParticles(this.player.x, this.player.y, '#8ee9ff', 16, 220, 0.35);
     } else if (skill.type === 'heal') {
       const healPowerMult = state.jobMasterHealPowerMult();
-      this.player.hp = Math.min(this.player.maxHp, this.player.hp + skill.power * healPowerMult + this.player.mag * 0.5);
+      // 深淵モディファイア「静穏の加護」：回復量アップ
+      const healMult = this.stage.healMult || 1;
+      this.player.hp = Math.min(this.player.maxHp, this.player.hp + (skill.power * healPowerMult + this.player.mag * 0.5) * healMult);
       Audio_.heal();
       this._spawnParticles(this.player.x, this.player.y, '#5cf27a', 14, 140, 0.4);
     } else if (skill.type === 'buff') {
@@ -596,8 +676,8 @@ export class BattleScreen {
     // ここで例外が出てもリザルト画面へは必ず遷移できるようにする。
     try {
       if (cleared) {
-        stageExp = this.stage.rewards.exp;
-        stageGold = this.stage.rewards.gold;
+        stageExp = Math.round(this.stage.rewards.exp * this._expMult());
+        stageGold = Math.round(this.stage.rewards.gold * this._goldMult());
         state.gainExp(stageExp);
         state.gainGold(stageGold);
         if (this.stage.isAbyss) {
@@ -722,9 +802,17 @@ export class BattleScreen {
       ctx.fillStyle = e.hitFlash > 0 ? '#ffffff' : e.color;
       ctx.arc(s.x, s.y, e.radius, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = e.boss ? '#ffd76b' : 'rgba(0,0,0,0.4)';
-      ctx.lineWidth = e.boss ? 3 : 2;
+      ctx.strokeStyle = e.elite ? '#ffe066' : (e.boss ? '#ffd76b' : 'rgba(0,0,0,0.4)');
+      ctx.lineWidth = e.elite || e.boss ? 3 : 2;
       ctx.stroke();
+      // 深淵拡張：エリート敵は外周にもう1本、薄い金の輪を描いて視認性を上げる
+      if (e.elite) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(255,224,102,0.5)';
+        ctx.lineWidth = 2;
+        ctx.arc(s.x, s.y, e.radius + 5, 0, Math.PI * 2);
+        ctx.stroke();
+      }
 
       const w = e.radius * 2;
       const pct = clamp(e.hp / e.maxHp, 0, 1);

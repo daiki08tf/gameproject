@@ -7,9 +7,11 @@ import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, 
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
 import { isAbyssUnlocked } from './data/stages.js';
-import { EQUIPMENT_LAYER, REBIRTH_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER } from './data/balance.js';
+import { EQUIPMENT_LAYER, REBIRTH_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER, ABYSS_EXPANSION_LAYER } from './data/balance.js';
 import { ALL_AWAKENING_NODES, getAwakeningNodeDef, awakeningNodeCostFor } from './data/awakening.js';
 import { getArtifact } from './data/artifacts.js';
+import { ALL_ABYSS_TREE_NODES, getAbyssTreeNodeDef, abyssTreeNodeCostFor } from './data/abyssTree.js';
+import { isAbyssBossFloor } from './data/abyss.js';
 
 const SAVE_KEY = 'bladevale_save_v1';
 
@@ -38,6 +40,8 @@ function defaultSave() {
     lootFilter: { minRarity: 'normal' },
     itemAwakenKills: {},
     weaponAffix2: {},
+    abyssShards: 0,
+    abyssTree: {},
   };
 }
 
@@ -805,7 +809,71 @@ class StateManager {
 
   recordAbyssClear(depth) {
     if (depth > this.data.abyssBestDepth) this.data.abyssBestDepth = depth;
+    // 深淵拡張：ボスフロア踏破のたびに深淵の欠片を得る（初回に限らず、
+    // 周回のたびに何度でも。深淵は元々「際限なく周回できる」設計のため）
+    if (isAbyssBossFloor(depth)) this.addAbyssShards(ABYSS_EXPANSION_LAYER.BOSS_SHARD_DROP);
     this.save();
+  }
+
+  // ---------- 深淵ツリー（深淵拡張：エリート／モディファイア耐性／深淵の欠片） ----------
+  // 覚醒ツリーとは完全に別枠の永続強化。覚醒（awaken）しても転生しても失われない。
+  abyssTreeNodeRank(id) { return this.data.abyssTree[id] || 0; }
+
+  // statごとの永続倍率（1 + Σ rank * pctPerRank）。big（ルール変更）ノードは対象外。
+  abyssTreeStatMult(stat) {
+    let mult = 1;
+    for (const node of ALL_ABYSS_TREE_NODES) {
+      if (node.stat !== stat || node.big) continue;
+      mult += this.abyssTreeNodeRank(node.id) * node.pctPerRank;
+    }
+    return mult;
+  }
+
+  abyssEliteChance() {
+    const node = getAbyssTreeNodeDef('abt_eliterate');
+    const rank = this.abyssTreeNodeRank('abt_eliterate');
+    return Math.min(ABYSS_EXPANSION_LAYER.ELITE_CHANCE_MAX, ABYSS_EXPANSION_LAYER.ELITE_CHANCE_BASE + rank * node.pctPerRank);
+  }
+
+  abyssEliteRewardMult() { return this.abyssTreeStatMult('eliteReward'); }
+  abyssShardGainMult() { return this.abyssTreeStatMult('shardGain'); }
+  abyssDropRateMult() { return this.abyssTreeStatMult('dropRate'); }
+  abyssBossFloorRewardMult() { return this.abyssTreeStatMult('bossFloorReward'); }
+
+  // モディファイアで敵が強化される側（ATK/DEF/SPD/接触ダメージ増加）を
+  // 何%軽減するか（0〜0.3）。battle.js側で「1 + (mult-1) * (1 - resistPct)」
+  // の形でブレンドして使う＝耐性が上がるほど倍率が1に近づく。
+  abyssModifierResistPct() {
+    const node = getAbyssTreeNodeDef('abt_resist');
+    const rank = this.abyssTreeNodeRank('abt_resist');
+    return rank * node.pctPerRank;
+  }
+
+  hasAbyssRevive() { return this.abyssTreeNodeRank('abt_revive') > 0; }
+
+  addAbyssShards(amount) {
+    const gained = Math.round(amount * this.abyssShardGainMult());
+    this.data.abyssShards += gained;
+    this.save();
+    return gained;
+  }
+
+  canBuyAbyssTreeNode(id) {
+    const node = getAbyssTreeNodeDef(id);
+    if (!node) return false;
+    const rank = this.abyssTreeNodeRank(id);
+    if (rank >= node.maxRank) return false;
+    return this.data.abyssShards >= abyssTreeNodeCostFor(node, rank);
+  }
+
+  buyAbyssTreeNode(id) {
+    if (!this.canBuyAbyssTreeNode(id)) return false;
+    const node = getAbyssTreeNodeDef(id);
+    const rank = this.abyssTreeNodeRank(id);
+    this.data.abyssShards -= abyssTreeNodeCostFor(node, rank);
+    this.data.abyssTree[id] = rank + 1;
+    this.save();
+    return true;
   }
 }
 
