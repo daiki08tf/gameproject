@@ -99,7 +99,7 @@ const SWORD_RAW = [
   { id: 'sword_r2', name: '氷晶の剣', type: 'sword', rarity: 'rare', req: 14, mods: { crit: 0.05 }, element: 'ice', bias: ['crit'], note: '冷気を宿す刃' },
   { id: 'sword_r3', name: '疾風の剣', type: 'sword', rarity: 'rare', req: 19, mods: { spd: 0.05 }, element: 'wind', bias: ['spd'], note: '攻撃速度+5%' },
   { id: 'sword_r4', name: '雷光の剣', type: 'sword', rarity: 'rare', req: 24, mods: { crit: 0.03 }, element: 'lightning', bias: ['crit', 'spd'], note: '会心率+3%' },
-  { id: 'sword_r5', name: '黒鉄の剣', type: 'sword', rarity: 'rare', req: 29, mods: { spd: -0.05, atk: 0.10 }, note: '攻撃速度-5%、攻撃力+10%' },
+  { id: 'sword_r5', name: '黒鉄の剣', type: 'sword', rarity: 'rare', req: 29, mods: { spd: -0.05, atk: 0.10 }, note: '攻撃速度-5%、攻撃力+10%', series: 'ancientArms' },
   { id: 'sword_r6', name: '血吸いの剣', type: 'sword', rarity: 'rare', req: 34, mods: {}, bias: ['hp', 'spd'], note: 'HP吸収+2%',
     effects: [{ name: '血吸いの一撃', desc: '与えたダメージの2%をHP回復', trigger: 'onHit', kind: 'lifesteal', chance: 1, power: 0.02 }] },
   // エピック
@@ -166,7 +166,7 @@ const AXE_RAW = [
     effects: [{ name: '獣王の一撃', desc: '命中時25%で敵の防御力を4秒間25%低下させる', trigger: 'onHit', kind: 'weaken', chance: 0.25, power: 0.25, duration: 4, stat: 'def' }] },
   { id: 'axe_mordred', name: '黒斧モルドレッド', type: 'axe', rarity: 'epic', req: 49, element: 'dark',
     effects: [{ name: '黒斧の反撃', desc: '被弾時30%でATKの55%の反撃ダメージ', trigger: 'onHurt', kind: 'counter', chance: 0.3, power: 0.55 }] },
-  { id: 'axe_gargantua', name: '巨神斧ガルガン', type: 'axe', rarity: 'legendary', req: 35, mods: { armorPen: 0.2 }, note: '防御貫通+20%',
+  { id: 'axe_gargantua', name: '巨神斧ガルガン', type: 'axe', rarity: 'legendary', req: 35, mods: { armorPen: 0.2 }, note: '防御貫通+20%', series: 'ancientArms',
     effects: [{ name: '巨神の重撃', desc: 'Bossへの与ダメージ+15%', trigger: 'passive', kind: 'bossDmg', power: 0.15 }] },
   { id: 'axe_barbaros', name: '獄王斧バルバロス', type: 'axe', rarity: 'legendary', req: 45, element: 'fire', series: 'underworld',
     effects: [{ name: '獄王の刻印', desc: '命中時45%で炎の刻印を付与（最大6重複、1秒毎にATKの18%×重複数）', trigger: 'onHit', kind: 'burnStack', chance: 0.45, power: 0.18, maxStacks: 6, tickInterval: 1, duration: 4 }] },
@@ -179,7 +179,7 @@ const AXE_RAW = [
       { name: '竜断の誓い', desc: 'Bossへの与ダメージ+20%', trigger: 'passive', kind: 'bossDmg', power: 0.2 },
       { name: '竜断の高揚', desc: 'Boss撃破時、15秒間ATK+25%', trigger: 'passive', kind: 'bossSlayerBuff', power: 0.25, duration: 15 },
     ] },
-  { id: 'axe_ragnarok', name: '終焉斧ラグナロク', type: 'axe', rarity: 'mythic', req: 65, mods: { spd: -0.15 }, note: '攻撃速度-15%の代わりに絶大な与ダメージ',
+  { id: 'axe_ragnarok', name: '終焉斧ラグナロク', type: 'axe', rarity: 'mythic', req: 65, mods: { spd: -0.15 }, note: '攻撃速度-15%の代わりに絶大な与ダメージ', series: 'ancientArms',
     effects: [
       { name: '終焉の代償', desc: '最大HP-0%の代わりに与ダメージ+35%', trigger: 'passive', kind: 'glassCannon', hpMult: 0, dmgMult: 0.35 },
       { name: '断末魔の一撃', desc: 'Boss残HPが30%以下の間、与ダメージ+50%', trigger: 'passive', kind: 'executioner', hpThreshold: 0.3, power: 0.5 },
@@ -399,7 +399,7 @@ const KNUCKLE_RAW = [
     effects: [{ name: '天帝の一撃', desc: '会心発生時28%でATKの65%の追加雷ダメージ', trigger: 'onCrit', kind: 'lightning', chance: 0.28, power: 0.65 }] },
   { id: 'knuckle_ogre', name: '魔神拳オーガ', type: 'knuckle', rarity: 'legendary', req: 55, element: 'dark',
     effects: [{ name: '魔神の断罪', desc: 'Boss残HPが30%以下の間、与ダメージ+50%', trigger: 'passive', kind: 'executioner', hpThreshold: 0.3, power: 0.5 }] },
-  { id: 'knuckle_baldr', name: '覇王拳バルドル', type: 'knuckle', rarity: 'legendary', req: 65, element: 'light',
+  { id: 'knuckle_baldr', name: '覇王拳バルドル', type: 'knuckle', rarity: 'legendary', req: 65, element: 'light', series: 'ancientArms',
     effects: [{ name: '覇王の代償', desc: '最大HP-12%の代わりに与ダメージ+18%', trigger: 'passive', kind: 'glassCannon', hpMult: -0.12, dmgMult: 0.18 }] },
   { id: 'knuckle_shivana', name: '神虎拳シヴァーナ', type: 'knuckle', rarity: 'legendary', req: 70, abyssMinDepth: WEAPON_CODEX_LAYER.ABYSS_EXCLUSIVE_LEGENDARY_DEPTH,
     effects: [
@@ -617,6 +617,7 @@ export const WEAPON_SERIES = {
   thunder:      { name: '雷神シリーズ', theme: '会心・攻撃速度・雷', synergyHint: '転生遺物「雷神の瞳」、覚醒ツリー「会心の心得」、雷属性Affixと相性が良い' },
   underworld:   { name: '冥府シリーズ', theme: '闇・DoT・敵撃破効果', synergyHint: '深淵ツリー「深淵の加護」系、闇属性Affixと相性が良い' },
   starfall:     { name: '星界シリーズ', theme: 'スキル・魔法・会心', synergyHint: '職業MASTERのスキル威力ボーナス、会心Affixと相性が良い' },
+  ancientArms:  { name: '古代兵装シリーズ', theme: '高基礎性能・クセのあるデメリット', synergyHint: '転生遺物「死王の指骨」（HP減の代償で極Affix強化）や、HP吸収・回復Affixで弱点を補うビルドと相性が良い' },
 };
 
 export function seriesMembers(seriesId) {
