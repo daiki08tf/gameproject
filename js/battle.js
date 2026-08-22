@@ -37,9 +37,20 @@ export class BattleScreen {
     this._resize = this._resize.bind(this);
     window.addEventListener('resize', this._resize);
 
-    document.getElementById('skillBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); this._useSkill(); });
-    document.getElementById('ultBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); this._useUltimate(); });
-    this.retreatBtn.addEventListener('click', () => this._endRun(false, true));
+    document.getElementById('skillBtn').addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      try { this._useSkill(); } catch (err) { console.error('useSkill error (recovered):', err); }
+    });
+    document.getElementById('ultBtn').addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      try { this._useUltimate(); } catch (err) { console.error('useUltimate error (recovered):', err); }
+    });
+    this.retreatBtn.addEventListener('click', () => {
+      try { this._endRun(false, true); } catch (err) {
+        console.error('retreat/_endRun error (recovered), forcing exit:', err);
+        this._forceExitToResult(false, true);
+      }
+    });
 
     this.running = false;
     this.onEnd = null;
@@ -123,9 +134,15 @@ export class BattleScreen {
     if (!this.running) return;
     const dt = Math.min(0.05, (now - this.lastTime) / 1000);
     this.lastTime = now;
-    this._update(dt);
-    this._render();
-    requestAnimationFrame(this._loop);
+    try {
+      this._update(dt);
+      this._render();
+    } catch (err) {
+      // 想定外の例外でループが永久停止しないようにする（フリーズ対策）。
+      // 1フレーム分の処理は失われるが、次フレームで復帰を試みる。
+      console.error('Battle loop error (recovered, continuing):', err);
+    }
+    if (this.running) requestAnimationFrame(this._loop);
   }
 
   // ---------------------------------------------------------
@@ -466,23 +483,36 @@ export class BattleScreen {
   _endRun(cleared, retreated) {
     if (!this.running) return;
     this.running = false;
-    this.bossBar.classList.add('hidden');
+    // running=false を確定させた直後に隔離しておく：以降で何が起きても
+    // ループは止まり、あとは result 画面へ渡せるかどうかだけの問題にする。
+    try { this.bossBar.classList.add('hidden'); } catch (e) { /* ignore */ }
 
     let firstClear = false;
     let bonusItem = null;
-    if (cleared) {
-      state.gainExp(this.stage.rewards.exp);
-      state.gainGold(this.stage.rewards.gold);
-      const res = state.recordStageResult(this.stage.id, true);
-      firstClear = res.wasFirstClear;
-      if (firstClear && this.stage.firstClear && this.stage.firstClear.itemId) {
-        state.addItem(this.stage.firstClear.itemId, 1);
-        bonusItem = this.stage.firstClear.itemId;
+    let stageExp = 0;
+    let stageGold = 0;
+
+    // 報酬計算・セーブ処理は失敗しうる（不正なセーブ状態など）ため、
+    // ここで例外が出てもリザルト画面へは必ず遷移できるようにする。
+    try {
+      if (cleared) {
+        stageExp = this.stage.rewards.exp;
+        stageGold = this.stage.rewards.gold;
+        state.gainExp(stageExp);
+        state.gainGold(stageGold);
+        const res = state.recordStageResult(this.stage.id, true);
+        firstClear = res.wasFirstClear;
+        if (firstClear && this.stage.firstClear && this.stage.firstClear.itemId) {
+          state.addItem(this.stage.firstClear.itemId, 1);
+          bonusItem = this.stage.firstClear.itemId;
+        }
+        Audio_.stageClear();
+      } else if (!retreated) {
+        state.recordStageResult(this.stage.id, false);
+        Audio_.stageFail();
       }
-      Audio_.stageClear();
-    } else if (!retreated) {
-      state.recordStageResult(this.stage.id, false);
-      Audio_.stageFail();
+    } catch (err) {
+      console.error('_endRun reward/save error (recovered, proceeding to result screen):', err);
     }
 
     const items = [...this.runItems];
@@ -491,10 +521,26 @@ export class BattleScreen {
     if (this.onEnd) {
       this.onEnd({
         cleared, retreated,
-        expGained: cleared ? this.runExp + this.stage.rewards.exp : this.runExp,
-        goldGained: cleared ? this.runGold + this.stage.rewards.gold : this.runGold,
+        expGained: cleared ? this.runExp + stageExp : this.runExp,
+        goldGained: cleared ? this.runGold + stageGold : this.runGold,
         items,
         firstClear,
+      });
+    }
+  }
+
+  // _endRun 自体が想定外の例外で失敗した場合の最終フォールバック。
+  // 撤退ボタン押下時にだけ使い、確実にリザルト画面へ抜けられるようにする。
+  _forceExitToResult(cleared, retreated) {
+    this.running = false;
+    try { this.bossBar.classList.add('hidden'); } catch (e) { /* ignore */ }
+    if (this.onEnd) {
+      this.onEnd({
+        cleared, retreated,
+        expGained: this.runExp || 0,
+        goldGained: this.runGold || 0,
+        items: this.runItems || [],
+        firstClear: false,
       });
     }
   }

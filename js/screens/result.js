@@ -1,4 +1,15 @@
 import { getItem, RARITY } from '../data/equipment.js';
+import { getRune } from '../data/runes.js';
+
+// ドロップは装備アイテムだけでなくルーンの場合もあるため、両方から解決する
+function resolveDrop(itemId) {
+  const item = getItem(itemId);
+  if (item) return { name: item.name, color: RARITY[item.rarity].color };
+  const rune = getRune(itemId);
+  if (rune) return { name: rune.name, color: 'var(--accent)' };
+  // 未知のIDでも画面遷移自体は止めない
+  return { name: itemId, color: '' };
+}
 
 export function renderResult(result) {
   const title = document.getElementById('resultTitle');
@@ -24,11 +35,11 @@ export function renderResult(result) {
     itemsEl.innerHTML = '<span class="hint" style="opacity:.6;font-size:12px;">ドロップなし</span>';
   } else {
     for (const itemId of result.items) {
-      const item = getItem(itemId);
+      const resolved = resolveDrop(itemId);
       const chip = document.createElement('div');
       chip.className = 'result-item-chip';
-      chip.style.color = RARITY[item.rarity].color;
-      chip.textContent = item.name;
+      chip.style.color = resolved.color;
+      chip.textContent = resolved.name;
       itemsEl.appendChild(chip);
     }
   }
