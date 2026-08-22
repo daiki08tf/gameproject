@@ -7,7 +7,7 @@ import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, 
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
 import { isAbyssUnlocked } from './data/stages.js';
-import { EQUIPMENT_LAYER, REBIRTH_LAYER, JOB_MASTER_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER } from './data/balance.js';
+import { EQUIPMENT_LAYER, REBIRTH_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER } from './data/balance.js';
 import { AWAKENING_NODES, awakeningNodeCost } from './data/awakening.js';
 import { getArtifact } from './data/artifacts.js';
 
@@ -95,7 +95,7 @@ class StateManager {
 
   gainExp(amount) {
     const passive = this.currentJob.passive;
-    const mult = (passive && passive.exp ? passive.exp : 1) * this.awakeningStatMult('exp');
+    const mult = (passive && passive.exp ? passive.exp : 1) * this.awakeningStatMult('exp') * this.jobMasterPassiveMult('exp');
     const gained = Math.round(amount * mult);
     const prog = this.data.jobs[this.currentJobId];
     prog.exp += gained;
@@ -116,7 +116,7 @@ class StateManager {
   // ---------- ゴールド・魔石 ----------
   gainGold(amount) {
     const passive = this.currentJob.passive;
-    const mult = (passive && passive.gold ? passive.gold : 1) * this.awakeningStatMult('gold');
+    const mult = (passive && passive.gold ? passive.gold : 1) * this.awakeningStatMult('gold') * this.jobMasterPassiveMult('gold');
     const gained = Math.round(amount * mult);
     this.data.gold += gained;
     this.save();
@@ -130,7 +130,7 @@ class StateManager {
 
   dropRateMult() {
     const passive = this.currentJob.passive;
-    return (passive && passive.drop ? passive.drop : 1) * this.awakeningStatMult('drop');
+    return (passive && passive.drop ? passive.drop : 1) * this.awakeningStatMult('drop') * this.jobMasterPassiveMult('drop');
   }
 
   // ---------- ステータス計算（職業ベース＋装備＋強化＋ルーン＋転生＋武器適性） ----------
@@ -166,8 +166,7 @@ class StateManager {
     }
 
     const rebirthMult = 1 + this.data.reincarnations * REBIRTH_LAYER.STAT_BONUS_PER_REBIRTH;
-    const masterMult = this.jobMasterMult();
-    const permMult = (stat) => rebirthMult * masterMult * this.awakeningStatMult(stat);
+    const permMult = (stat) => rebirthMult * this.jobMasterStatMult(stat) * this.awakeningStatMult(stat);
     const stats = {
       hp: Math.round((base.hp + bonus.hp) * permMult('hp')),
       mp: Math.round((base.mp + bonus.mp) * permMult('mp')),
@@ -175,9 +174,12 @@ class StateManager {
       def: Math.round((base.def + bonus.def) * permMult('def')),
       mag: Math.round((base.mag + bonus.mag) * permMult('mag')),
       spd: Math.round((base.spd + bonus.spd) * permMult('spd') * 10) / 10,
-      // critPctはPhase 1以前から転生・MASTERの永続倍率を掛けていない（加算のみ）ため、
-      // その挙動は変えず、覚醒ツリーのボーナスだけを新たに乗算する。
-      critPct: Math.min(75, (base.critPct + bonus.crit * 0.8) * this.awakeningStatMult('crit')),
+      // critPctはPhase 1以前から転生の永続倍率を掛けていない（加算のみ）ため、その挙動は
+      // 変えず、覚醒ツリー・職業MASTER（基本職の固定ボーナス＋上級/特級職の「得意武器
+      // 装備時+X%」条件付き能力）のボーナスだけをここに乗せる。
+      critPct: Math.min(75,
+        (base.critPct + bonus.crit * 0.8) * this.jobMasterStatMult('crit') * this.awakeningStatMult('crit')
+        + this.jobMasterWeaponMatchCritBonus() * 100),
     };
     const weaponItem = getItem(weaponId);
     const affinity = weaponAffinityBonus(weaponItem, this.currentJob.weapon);
@@ -394,16 +396,93 @@ class StateManager {
   }
 
   // ---------- 職業MASTER ----------
-  // マスター済み職業1つにつき、tierに応じた永続の全ステータス倍率を加算する。
+  // マスター済み職業は、現在職に関係なく永続ボーナスを持ち越す。
   // 覚醒でリセットされることはない（マスター済みリストは覚醒対象外）。
-  jobMasterMult() {
-    let mult = 1;
+  //   基本職：職業ごとに個性を持つ固定ボーナス（job.masterBonus）
+  //   上級・特級職：単純なステータス加算ではなく条件付き能力（job.masterAbility）
+  masteredJobs() {
+    const list = [];
     for (const jobId of this.data.mastered) {
       const job = getJob(jobId);
-      if (!job) continue;
-      mult += JOB_MASTER_LAYER.STAT_BONUS_PCT[job.tier] || 0;
+      if (job) list.push(job);
+    }
+    return list;
+  }
+
+  // 基本職MASTERの「特定ステータスへの永続加算」ボーナス（stat単位）
+  jobMasterStatMult(stat) {
+    let mult = 1;
+    for (const job of this.masteredJobs()) {
+      const b = job.masterBonus;
+      if (b && b.kind === 'stat' && b.stat === stat) mult += b.pct;
     }
     return mult;
+  }
+
+  // 基本職MASTERの「経験値/ゴールド/ドロップ率」への永続加算ボーナス
+  jobMasterPassiveMult(channel) {
+    let mult = 1;
+    for (const job of this.masteredJobs()) {
+      const b = job.masterBonus;
+      if (b && b.kind === 'passive' && b.channel === channel) mult += b.pct;
+    }
+    return mult;
+  }
+
+  jobMasterSkillPowerMult() {
+    let mult = 1;
+    for (const job of this.masteredJobs()) {
+      if (job.masterBonus && job.masterBonus.kind === 'skillPower') mult += job.masterBonus.pct;
+    }
+    return mult;
+  }
+
+  jobMasterHealPowerMult() {
+    let mult = 1;
+    for (const job of this.masteredJobs()) {
+      if (job.masterBonus && job.masterBonus.kind === 'healPower') mult += job.masterBonus.pct;
+    }
+    return mult;
+  }
+
+  // 上級・特級職MASTERの条件付き能力一覧
+  masterAbilities() {
+    return this.masteredJobs().filter((job) => job.masterAbility);
+  }
+
+  // 「得意武器装備時、会心率+X%」：現在の装備武器の武器種と、その職業自身の
+  // 得意武器種が一致していれば発動する（現在職とは無関係、常に判定される）
+  jobMasterWeaponMatchCritBonus() {
+    const weaponItem = getItem(this.data.equipped.weapon);
+    const weaponType = weaponItem ? weaponItem.weaponType : null;
+    if (!weaponType) return 0;
+    let bonus = 0;
+    for (const job of this.masterAbilities()) {
+      const a = job.masterAbility;
+      if (a.condition === 'weaponMatch' && job.weapon === weaponType && a.effect.stat === 'crit') bonus += a.effect.pct;
+    }
+    return bonus;
+  }
+
+  // 「HPが一定割合以下の間、与ダメージ+X%」：戦闘中のライブHP割合を渡して判定する
+  // （同種効果は加算せず最大値を採用＝スタックによるインフレを防ぐ）
+  jobMasterLowHpDamageBonus(hpRatio) {
+    let bonus = 0;
+    for (const job of this.masterAbilities()) {
+      const a = job.masterAbility;
+      if (a.condition === 'lowHp' && hpRatio <= a.threshold) bonus = Math.max(bonus, a.effect.pct);
+    }
+    return bonus;
+  }
+
+  // 「常時、スキルクールダウン-X%」：複数あれば加算するが下限50%を設ける
+  jobMasterCooldownMult() {
+    let mult = 1;
+    for (const job of this.masterAbilities()) {
+      const a = job.masterAbility;
+      if (a.condition === 'always' && a.effect.stat === 'cooldown') mult += a.effect.pct;
+    }
+    return Math.max(0.5, mult);
   }
 
   // ---------- 覚醒（Reincarnation 2.0：プレステージリセット） ----------

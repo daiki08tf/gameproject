@@ -30,52 +30,69 @@ function mergeProfiles(profiles) {
 // ---------------------------------------------------------
 // 基本職 15種（プロファイル・スキルは手動定義）
 // ---------------------------------------------------------
+// masterBonus：MASTERすると現在職に関係なく永続で得る小さなボーナス
+// （転生2.0で構想している「職業MASTER」の本来仕様：職業ごとに個性を持たせる）
 const BASIC_RAW = [
   { id: 'warrior', name: '戦士', desc: 'HP・防御が高い前衛。剣と盾を扱う。', weapon: 'sword',
     profile: { hp: 1.6, mp: 0.4, atk: 1.3, def: 1.6, mag: 0.3, spd: 0.8, crit: 0.8 },
-    skill: { name: '渾身の一撃', type: 'damage', power: 22, mpCost: 6, cooldown: 3.2 } },
+    skill: { name: '渾身の一撃', type: 'damage', power: 22, mpCost: 6, cooldown: 3.2 },
+    masterBonus: { kind: 'stat', stat: 'hp', pct: 0.02 } },
   { id: 'fighter', name: '武闘家', desc: '攻撃と素早さに優れる拳闘士。', weapon: 'knuckle',
     profile: { hp: 1.2, mp: 0.4, atk: 1.6, def: 0.9, mag: 0.3, spd: 1.3, crit: 1.4 },
-    skill: { name: '連撃拳', type: 'damage', power: 18, mpCost: 6, cooldown: 2.6 } },
+    skill: { name: '連撃拳', type: 'damage', power: 18, mpCost: 6, cooldown: 2.6 },
+    masterBonus: { kind: 'stat', stat: 'spd', pct: 0.02 } },
   { id: 'mage', name: '魔法使い', desc: '攻撃魔法特化。打たれ弱い。', weapon: 'staff',
     profile: { hp: 0.6, mp: 2.0, atk: 0.4, def: 0.5, mag: 2.0, spd: 0.8, crit: 0.7 },
-    skill: { name: 'ファイアボルト', type: 'damage', power: 30, mpCost: 12, cooldown: 3.6 } },
+    skill: { name: 'ファイアボルト', type: 'damage', power: 30, mpCost: 12, cooldown: 3.6 },
+    masterBonus: { kind: 'skillPower', pct: 0.02 } },
   { id: 'priest', name: '僧侶', desc: '回復・補助魔法を扱う支援職。', weapon: 'rod',
     profile: { hp: 0.9, mp: 1.8, atk: 0.5, def: 0.9, mag: 1.6, spd: 0.7, crit: 0.6 },
-    skill: { name: 'ヒール', type: 'heal', power: 34, mpCost: 10, cooldown: 4.0 } },
+    skill: { name: 'ヒール', type: 'heal', power: 34, mpCost: 10, cooldown: 4.0 },
+    masterBonus: { kind: 'healPower', pct: 0.03 } },
   { id: 'thief', name: '盗賊', desc: '素早さと回避に優れる。', passive: { drop: 1.15 }, weapon: 'dagger',
     profile: { hp: 0.8, mp: 0.6, atk: 1.1, def: 0.6, mag: 0.4, spd: 1.7, crit: 1.6 },
-    skill: { name: 'くらやみ斬り', type: 'damage', power: 20, mpCost: 7, cooldown: 2.8 } },
+    skill: { name: 'くらやみ斬り', type: 'damage', power: 20, mpCost: 7, cooldown: 2.8 },
+    masterBonus: { kind: 'passive', channel: 'drop', pct: 0.02 } },
   { id: 'merchant', name: '商人', desc: '所持金・ドロップ率にボーナス。', passive: { gold: 1.3 }, weapon: 'sword',
     profile: { hp: 0.8, mp: 0.8, atk: 0.6, def: 0.7, mag: 0.6, spd: 0.8, crit: 0.9 },
-    skill: { name: '黄金の一撃', type: 'damage', power: 16, mpCost: 5, cooldown: 2.4 } },
+    skill: { name: '黄金の一撃', type: 'damage', power: 16, mpCost: 5, cooldown: 2.4 },
+    masterBonus: { kind: 'passive', channel: 'gold', pct: 0.02 } },
   { id: 'hunter', name: '狩人', desc: '弓を使い対モンスターに強い。', weapon: 'bow',
     profile: { hp: 0.9, mp: 0.6, atk: 1.4, def: 0.7, mag: 0.5, spd: 1.3, crit: 1.3 },
-    skill: { name: '貫通の矢', type: 'damage', power: 24, mpCost: 8, cooldown: 3.0 } },
+    skill: { name: '貫通の矢', type: 'damage', power: 24, mpCost: 8, cooldown: 3.0 },
+    masterBonus: { kind: 'stat', stat: 'atk', pct: 0.02 } },
   { id: 'ninja', name: '忍者', desc: '素早く状態異常を得意とする。', weapon: 'dagger',
     profile: { hp: 0.8, mp: 0.7, atk: 1.2, def: 0.6, mag: 0.6, spd: 1.8, crit: 1.5 },
-    skill: { name: '分身斬り', type: 'damage', power: 26, mpCost: 9, cooldown: 3.0 } },
+    skill: { name: '分身斬り', type: 'damage', power: 26, mpCost: 9, cooldown: 3.0 },
+    masterBonus: { kind: 'stat', stat: 'crit', pct: 0.02 } },
   { id: 'bard', name: '吟遊詩人', desc: '鼓舞の歌で自身を強化する。', weapon: 'instrument',
     profile: { hp: 0.8, mp: 1.3, atk: 0.6, def: 0.6, mag: 1.1, spd: 1.0, crit: 0.8 },
-    skill: { name: '鼓舞の歌', type: 'buff', power: 26, mpCost: 10, cooldown: 6.0 } },
+    skill: { name: '鼓舞の歌', type: 'buff', power: 26, mpCost: 10, cooldown: 6.0 },
+    masterBonus: { kind: 'stat', stat: 'mag', pct: 0.02 } },
   { id: 'dancer', name: '踊り子', desc: '幻惑の舞で敵を翻弄する。', weapon: 'instrument',
     profile: { hp: 0.7, mp: 1.1, atk: 0.7, def: 0.5, mag: 1.0, spd: 1.4, crit: 1.2 },
-    skill: { name: '幻惑の舞', type: 'buff', power: 22, mpCost: 9, cooldown: 5.4 } },
+    skill: { name: '幻惑の舞', type: 'buff', power: 22, mpCost: 9, cooldown: 5.4 },
+    masterBonus: { kind: 'stat', stat: 'spd', pct: 0.02 } },
   { id: 'alchemist', name: '錬金術師', desc: '爆薬や状態異常攻撃を操る。', weapon: 'staff',
     profile: { hp: 0.7, mp: 1.5, atk: 0.8, def: 0.6, mag: 1.5, spd: 0.8, crit: 0.9 },
-    skill: { name: '爆裂薬', type: 'damage', power: 28, mpCost: 11, cooldown: 3.4 } },
+    skill: { name: '爆裂薬', type: 'damage', power: 28, mpCost: 11, cooldown: 3.4 },
+    masterBonus: { kind: 'skillPower', pct: 0.02 } },
   { id: 'scholar', name: '学者', desc: '弱点看破で経験値効率が良い。', passive: { exp: 1.2 }, weapon: 'staff',
     profile: { hp: 0.7, mp: 1.4, atk: 0.5, def: 0.6, mag: 1.4, spd: 0.7, crit: 0.7 },
-    skill: { name: '弱点看破', type: 'buff', power: 24, mpCost: 9, cooldown: 5.6 } },
+    skill: { name: '弱点看破', type: 'buff', power: 24, mpCost: 9, cooldown: 5.6 },
+    masterBonus: { kind: 'passive', channel: 'exp', pct: 0.02 } },
   { id: 'farmer', name: '農民', desc: '打たれ強く鎌を振り回す。', passive: { drop: 1.1 }, weapon: 'axe',
     profile: { hp: 1.7, mp: 0.4, atk: 0.9, def: 1.3, mag: 0.3, spd: 0.7, crit: 0.6 },
-    skill: { name: '鎌払い', type: 'damage', power: 20, mpCost: 6, cooldown: 2.8 } },
+    skill: { name: '鎌払い', type: 'damage', power: 20, mpCost: 6, cooldown: 2.8 },
+    masterBonus: { kind: 'stat', stat: 'def', pct: 0.02 } },
   { id: 'craftsman', name: '大工', desc: '鉄壁の構えで守りを固める。', weapon: 'axe',
     profile: { hp: 1.3, mp: 0.4, atk: 0.9, def: 1.5, mag: 0.4, spd: 0.6, crit: 0.6 },
-    skill: { name: '鉄壁の構え', type: 'buff', power: 20, mpCost: 8, cooldown: 5.2 } },
+    skill: { name: '鉄壁の構え', type: 'buff', power: 20, mpCost: 8, cooldown: 5.2 },
+    masterBonus: { kind: 'stat', stat: 'def', pct: 0.02 } },
   { id: 'fortune', name: '占い師', desc: '運を操りクリティカルを引き寄せる。', weapon: 'rod',
     profile: { hp: 0.7, mp: 1.2, atk: 0.6, def: 0.5, mag: 1.2, spd: 1.0, crit: 1.8 },
-    skill: { name: '運命の逆転', type: 'buff', power: 20, mpCost: 8, cooldown: 5.0 } },
+    skill: { name: '運命の逆転', type: 'buff', power: 20, mpCost: 8, cooldown: 5.0 },
+    masterBonus: { kind: 'stat', stat: 'crit', pct: 0.02 } },
 ];
 
 // ---------------------------------------------------------
@@ -150,6 +167,24 @@ function autoSkillFor(job) {
   return { name: `${job.name}の奥義`, type: 'damage', power: Math.round(baseline * 1.3), mpCost: Math.round(8 * (1 + tierMult * 0.15)), cooldown: 3.4 };
 }
 
+// 上級職・特級職のMASTER能力：単純なステータス加算ではなく「条件付き能力」にする
+// （元の設計指示どおり）。手動で40職分書く代わりに、mergeProfiles後のプロファイルの
+// 最も高いステータスから自動で3種類に振り分ける。
+//   atk/critが最大 → 得意武器装備時、会心率+3%（例：剣聖＝得意武器=剣の職の会心特化型）
+//   hp/defが最大   → HPが50%以下の間、与ダメージ+5%（打たれ強い職ほど発動しやすい）
+//   それ以外(mag/spd/mp) → 常時、スキルクールダウン-3%
+function autoMasterAbilityFor(job) {
+  const p = job.profile;
+  const dominant = STAT_KEYS.reduce((best, k) => (p[k] > p[best] ? k : best), STAT_KEYS[0]);
+  if (dominant === 'atk' || dominant === 'crit') {
+    return { condition: 'weaponMatch', effect: { stat: 'crit', pct: 0.03 } };
+  }
+  if (dominant === 'hp' || dominant === 'def') {
+    return { condition: 'lowHp', threshold: 0.5, effect: { stat: 'dmg', pct: 0.05 } };
+  }
+  return { condition: 'always', effect: { stat: 'cooldown', pct: -0.03 } };
+}
+
 for (const raw of BASIC_RAW) {
   JOBS.set(raw.id, { ...raw, tier: 'basic', requires: [] });
 }
@@ -158,6 +193,7 @@ for (const raw of ADVANCED_RAW) {
   const profile = mergeProfiles(reqJobs.map((j) => j.profile));
   const job = { ...raw, tier: 'advanced', profile, weapon: reqJobs[0].weapon };
   job.skill = autoSkillFor(job);
+  job.masterAbility = autoMasterAbilityFor(job);
   JOBS.set(raw.id, job);
 }
 for (const raw of SPECIAL_RAW) {
@@ -165,6 +201,7 @@ for (const raw of SPECIAL_RAW) {
   const profile = mergeProfiles(reqJobs.map((j) => j.profile));
   const job = { ...raw, tier: 'special', profile, weapon: reqJobs[0].weapon };
   job.skill = autoSkillFor(job);
+  job.masterAbility = autoMasterAbilityFor(job);
   JOBS.set(raw.id, job);
 }
 {

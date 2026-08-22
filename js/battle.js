@@ -217,10 +217,13 @@ export class BattleScreen {
   }
 
   _updatePassiveEffects() {
+    const hpRatio = this.player.maxHp > 0 ? this.player.hp / this.player.maxHp : 1;
     const awaken = this._effectsOf('passive').find((e) => e.kind === 'damageBoost');
-    if (!awaken) { this.awakenMult = 1; return; }
-    const active = this.player.hp / this.player.maxHp <= awaken.threshold;
-    this.awakenMult = active ? 1 + awaken.power : 1;
+    let mult = 1;
+    if (awaken && hpRatio <= awaken.threshold) mult += awaken.power;
+    // 上級・特級職MASTERの「HPが一定割合以下の間、与ダメージ+X%」もここに同じ枠で乗せる
+    mult += state.jobMasterLowHpDamageBonus(hpRatio);
+    this.awakenMult = mult;
   }
 
   _nearestEnemy(maxRange) {
@@ -402,18 +405,22 @@ export class BattleScreen {
     const skill = this.job.skill;
     if (this.player.mp < skill.mpCost) { this._toast('MP不足'); return; }
     this.player.mp -= skill.mpCost;
-    this.skillCd = skill.cooldown;
+    // 上級・特級職MASTERの「常時、スキルクールダウン-X%」（基本職MASTERの
+    // スキル/回復ダメージ倍率とは別枠）
+    this.skillCd = skill.cooldown * state.jobMasterCooldownMult();
     Audio_.skill();
 
     if (skill.type === 'damage') {
       const targets = this._nearbyEnemies(150, 3);
+      const skillPowerMult = state.jobMasterSkillPowerMult();
       for (const t of targets) {
-        const dmg = this._rollDamage((skill.power + this.player.atk * 0.4 + this.player.mag * 0.6) * this.awakenMult, t.def);
+        const dmg = this._rollDamage((skill.power * skillPowerMult + this.player.atk * 0.4 + this.player.mag * 0.6) * this.awakenMult, t.def);
         this._dealDamage(t, dmg);
       }
       this._spawnParticles(this.player.x, this.player.y, '#8ee9ff', 16, 220, 0.35);
     } else if (skill.type === 'heal') {
-      this.player.hp = Math.min(this.player.maxHp, this.player.hp + skill.power + this.player.mag * 0.5);
+      const healPowerMult = state.jobMasterHealPowerMult();
+      this.player.hp = Math.min(this.player.maxHp, this.player.hp + skill.power * healPowerMult + this.player.mag * 0.5);
       Audio_.heal();
       this._spawnParticles(this.player.x, this.player.y, '#5cf27a', 14, 140, 0.4);
     } else if (skill.type === 'buff') {
