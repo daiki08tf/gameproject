@@ -15,8 +15,8 @@
    依存しない純粋な計算なので、このファイルの中で確定させてしまって良い。
    ============================================================ */
 import { CHAPTER_SPECS, chapterMult } from './chapters.js';
-import { ENEMY_TYPES } from './enemies.js';
-import { ABYSS_LAYER } from './balance.js';
+import { ENEMY_TYPES, hpMult, atkMult, defMult, bossHpMult } from './enemies.js';
+import { ABYSS_LAYER, abyssBandMult } from './balance.js';
 
 const CH10 = CHAPTER_SPECS.find((c) => c.num === 10);
 
@@ -62,23 +62,37 @@ const ARCHETYPE_BASE = {
   boss:   { name: '深淵の支配者', hp: 420, atk: 16, def: 8, speed: 68, radius: 34, color: '#d048e0', xp: 120, gold: 150, boss: true },
 };
 
-// 第10章の強さ（chapterMult(10)）を起点に、深淵専用の刻み幅でさらに伸ばす
-function floorMult(step, depth) {
-  return chapterMult(10) * (1 + depth * step);
+// 報酬（gold/exp）は難易度とは独立の線形成長のまま（元指示24番の趣旨：
+// 難易度が上がるほど報酬を良くするが、これは_rollWeaponDrop等のドロップ率
+// 側で主に表現する。ここでの素の報酬カーブは緩やかな線形で十分）。
+function rewardFloorMult(depth) {
+  return chapterMult(10) * (1 + depth * ABYSS_LAYER.REWARD_STEP);
 }
 
+// 難易度リバランス：敵の強さ（hp/atk/def）は「10章ボス撃破直後」の
+// ENEMY_SCALING到達値（hpMult(10)/atkMult(10)/defMult(10)、Bossだけは
+// 専用のbossHpMult(10)）を起点に、Piecewise Scaling（元指示19番）で
+// 複利的に伸ばす。深さ帯が上がるほど成長率も上がる（balance.jsの
+// ABYSS_LAYER.BANDS参照）。
+// ※以前はここを経済倍率のchapterMult(10)（=4.15、章の報酬計算専用の
+// 別軸の小さい値）で代用していたため、深淵1階が実際の10章ボスより
+// はるかに弱いという致命的な断絶があった（Phase 6再シミュレーションで
+// 発覚し修正）。報酬（xp/gold）は難易度と独立の別軸のままrewardFloorMult
+// （chapterMult(10)ベース）を使い続ける。
 // goldMult/expMult はモディファイア由来の「報酬側」倍率（プレイヤー状態に
 // 依存しない）。敵の強さ側（hp/atk/def）はここでは一切いじらない
 // （エリート化・敵ステータス系モディファイアはbattle.js側で、深淵ツリーの
 // 耐性を反映した上で適用する）。
 function scaleArchetype(base, depth, goldMult, expMult) {
+  const isBoss = !!base.boss;
+  const hpBase = isBoss ? bossHpMult(10) : hpMult(10);
   return {
     ...base,
-    hp: Math.round(base.hp * floorMult(ABYSS_LAYER.HP_STEP, depth)),
-    atk: Math.round(base.atk * floorMult(ABYSS_LAYER.ATK_STEP, depth)),
-    def: Math.round(base.def * floorMult(ABYSS_LAYER.DEF_STEP, depth)),
-    xp: Math.round(base.xp * floorMult(ABYSS_LAYER.REWARD_STEP, depth) * expMult),
-    gold: Math.round(base.gold * floorMult(ABYSS_LAYER.REWARD_STEP, depth) * goldMult),
+    hp: Math.round(base.hp * hpBase * abyssBandMult('hpRate', depth)),
+    atk: Math.round(base.atk * atkMult(10) * abyssBandMult('atkRate', depth)),
+    def: Math.round(base.def * defMult(10) * abyssBandMult('defRate', depth)),
+    xp: Math.round(base.xp * rewardFloorMult(depth) * expMult),
+    gold: Math.round(base.gold * rewardFloorMult(depth) * goldMult),
   };
 }
 
@@ -143,7 +157,7 @@ export function buildAbyssStage(depth) {
         { type: tankId, count: Math.round((1 + Math.min(3, Math.floor(depth / 10))) * enemyCountMult), interval: 1.8 },
       ];
 
-  const rewardMult = floorMult(ABYSS_LAYER.REWARD_STEP, depth) * (bossFloor ? ABYSS_LAYER.BOSS_REWARD_MULT : 1);
+  const rewardMult = rewardFloorMult(depth) * (bossFloor ? ABYSS_LAYER.BOSS_REWARD_MULT : 1);
   const baseReward = { gold: 200, exp: 150 };
 
   return {

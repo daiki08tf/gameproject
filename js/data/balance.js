@@ -60,29 +60,123 @@ export const REBIRTH_LAYER = {
 };
 
 // ---------------------------------------------------------
-// 敵スケーリング（章が1つ進むごとの倍率の伸び幅）
-// HP/ATK/DEFを別々の定数にしてあるのは、将来の深淵実装で
-// 「HPは緩やかに・ATKの危険度は着実に」のように分岐させるため。
-// Phase 1時点ではすべて0.35で統一し、現行バランスを完全維持する。
+// 敵スケーリング（難易度リバランス：章立て指数スケーリング）
+// ------------------------------------------------------------
+// 【リバランス前の問題点】旧設計は「章が1つ進むごとに+35%（線形加算）」
+// だった。一方プレイヤー側の実効火力は、レアリティ倍率(×5.4)・レベル
+// 倍率・強化(+50%)・目覚め(+24%)・極Affix2本(+15%×2)・会心率(〜75%)・
+// 攻撃速度(下限0.35秒)・転生/職業MASTER/覚醒ツリーの永続倍率など、8系統
+// 以上が乗算で積み重なる（詳細はDamage Bucketの節を参照）。実測シミュレー
+// ションでは、標準プレイヤーの通常攻撃DPSが1章→10章で約32倍に伸びる一方、
+// 敵HPは線形+35%/章では章10時点でも4.15倍にしかならず、通常敵の体感
+// TTKは全チェックポイントで0.02〜0.6秒（目標1〜5秒）という「一撃で消える」
+// 状態になっていた。
+//
+// 【新設計】章立てを「1〜5章（序盤〜中盤：急勾配）」と「6〜10章
+// （中盤〜終盤：緩勾配）」の2区間指数スケーリングに変更した（元指示19番の
+// Piecewise Scalingの考え方を深淵だけでなく本編にも適用）。序盤の急勾配は
+// 「会心率・攻撃速度が上限に向かって急激に伸びる」プレイヤー側の実測DPS
+// 成長カーブに追随するため。終盤の緩勾配は、上限到達後はビルド・Affix・
+// 職業シナジーで殴り合う設計（元指示9番の「7〜8章：ビルドを意識」）に
+// 合わせたもの。BASE_MULTは章1時点で必要な底上げ分（敵の攻撃力が
+// 「1ダメージ床効かない」ほど低すぎた問題の是正）。
+// 数値は /tmp/balance_sim.mjs によるシミュレーションで
+// 標準プレイヤー(B)の通常敵TTKが章1〜10で概ね2〜4.5秒に収まるよう較正した。
 // ---------------------------------------------------------
 export const ENEMY_SCALING = {
-  CHAPTER_HP_MULT_STEP: 0.35,
-  CHAPTER_ATK_MULT_STEP: 0.35,
-  CHAPTER_DEF_MULT_STEP: 0.35,
+  PIVOT_CHAPTER: 5,
+  // BASE_MULTはn=1（第1章）の値。5.5/3.6/2.2→4.0/2.9/1.8→2.0/1.45/0.9と
+  // 段階的に下げてきたが、最終的にPlaywrightでの実プレイテストで判明したのは
+  // 「1体との1対1」では勝てても、1-1の本当のwave（グラント5体、1.4秒間隔で
+  // 湧く）を待ち構えて実際に全滅させるまでの合計戦闘時間で見ると、接触
+  // ダメージによる生存時間（無敵時間0.9秒ごとに1発を受けると仮定した
+  // ワーストケース）を上回ってしまい、キャラを一切動かさなくても勝てる
+  // 想定で計算し直す必要があった、という点。5体合計のHPを倒し切るのに
+  // かかる時間 < 無限に棒立ちしても死なない生存時間、を満たすまで章1到達値を
+  // さらに引き下げた。章5・10の到達値（シミュレーションで目標TTK帯に収まる
+  // ことを確認済み）は変えず、EARLY_RATEを引き上げて章5時点の到達値が
+  // 変わらないよう再フィットしている。
+  HP_BASE_MULT: 1.0,    HP_EARLY_RATE: 2.97, HP_LATE_RATE: 1.28,
+  ATK_BASE_MULT: 0.75,  ATK_EARLY_RATE: 2.17, ATK_LATE_RATE: 1.16,
+  DEF_BASE_MULT: 0.45,  DEF_EARLY_RATE: 2.05, DEF_LATE_RATE: 1.22,
+
+  // Boss専用のHPカーブ（Phase 6再シミュレーションで発覚した問題への対処）。
+  // Boss素体（BOSS_BASE.hp=420）は元々、通常敵素体（NORMAL_BASE.hp=26）の
+  // 約16倍というテーブル固定比率を持つ。上のHP_*カーブをBossにもそのまま
+  // 使うと、章が進んでHP_*の倍率が伸びるほどこの16倍比率がそのまま保存
+  // されてしまい、章10でBossのHPだけが通常敵の16倍＝TTKが約300秒（目標の
+  // 20〜45秒を大幅に超過）という壊れた結果になった。BossのDEFは通常敵と
+  // 同じ成長率のままにして「防御の高さ」でBossの硬さを表現しつつ、HPの
+  // 伸び自体はこの専用カーブでゆるめ、章10でBoss実HPが通常敵実HPの
+  // 約2.2倍（序盤は約3.5倍）に収まるよう較正した。Bossを「壁」にする役割は
+  // HPの絶対量ではなく、DEF＋新設のBoss AI（フェーズ2・予兆付き範囲攻撃／
+  // 突進／遠距離攻撃／雑魚召喚）が担う設計（元指示10・11番）。
+  BOSS_HP_BASE_MULT: 1.19, BOSS_HP_EARLY_RATE: 1.99, BOSS_HP_LATE_RATE: 1.22,
 };
 
+// 章立てスケーリングの共通計算（1〜PIVOTは指数EARLY_RATE、PIVOT以降は
+// EARLY_RATEで到達した値を起点にLATE_RATEでさらに伸ばす、2区間の
+// 複合指数関数）。n=1のとき必ずBASE_MULTを返す。
+export function chapterScaleMult(baseMult, earlyRate, lateRate, pivot, n) {
+  if (n <= pivot) return baseMult * Math.pow(earlyRate, n - 1);
+  return baseMult * Math.pow(earlyRate, pivot - 1) * Math.pow(lateRate, n - pivot);
+}
+
 // ---------------------------------------------------------
-// Damage Bucket
-// finalDamage = baseATK（職業+装備+強化+ルーン+適性反映後の最終ATK）
-//             × (1 + Σ%ダメージ増加)   ← Phase2以降のMASTER/転生遺物等はここに加算予定
-//             × critMultiplier（会心成立時のみ）
-//             × (1 - enemyMitigation)  ← 現行は単純減算式。Phase4以降で拡張
-//             × specialEffectMultiplier（燃焼/覚醒など、既存の乗算枠）
-// カテゴリー内は加算、カテゴリー間だけ乗算する方針。
+// Damage Bucket（難易度リバランス：ダメージ計算式の再設計）
+// ------------------------------------------------------------
+// 【旧式の問題点】(a) 防御力が「atk - def*0.5」という単純減算だったため、
+// プレイヤーATKが数百〜数千に達すると敵DEFの影響が実質ゼロになり、防御力
+// という数値そのものが終盤ほど無意味化していた（元指示3・13番）。
+// (b) プレイヤー側の「与ダメージ+%」系ボーナス（覚醒ツリー・職業MASTER・
+// 転生遺物・スキルバフ・玉砕型武器・討伐後バフ等）が、それぞれ独立した
+// 乗算チェーン（buffAtkMult × awakenMult × bloodChaliceMult × ...）に
+// なっており、同じ「与ダメージ増加」というカテゴリーなのに掛け算で
+// 複利的に積み上がっていた（元指示12番で明確に禁止されているパターン）。
+//
+// 【新式】
+//   1. mainMult：上記(b)の全ての「与ダメージ+%」を1つの加算バケットへ
+//      統合（battle.jsの_mainDmgMult()）。カテゴリー内加算。
+//   2. mitigation：defを使った比率ベースの軽減式へ変更。
+//        effectiveDef = def * (1 - armorPen)
+//        mitigation   = effectiveDef / (effectiveDef + MITIGATION_K)
+//      defがMITIGATION_Kに等しいとき50%軽減、défが増えるほど軽減率は
+//      逓減しながら上昇する（完全無敵を防ぎつつ、高DEFが終盤でも意味を
+//      持ち続ける）。
+//   3. critMult：会心成立時のみ乗算（critDamageBoost込み）。
+//   4. bossMult：Boss相手にのみ乗算（覚醒ツリー「覇者の一撃」＋
+//      レジェンド/神話武器のbossDmg/executionerを加算合成）。
+//   5. specialEffectダメージ（burnStack/deathNova等）は「別の攻撃」として
+//      このBucketの外側で独立処理（既存設計を踏襲、変更なし）。
+// finalDamage = atk × mainMult × (1-mitigation) × critMult(会心時) × bossMult(Boss時)
+// カテゴリー内加算・カテゴリー間乗算、の方針に合わせて再整理した。
 // ---------------------------------------------------------
 export const DAMAGE_BUCKET = {
   CRIT_MULTIPLIER: 1.8,
-  DEF_MITIGATION_COEFF: 0.5, // 現行の "atk - def * 0.5" 式の係数
+  MITIGATION_K: 60, // defがこの値に等しいと50%軽減。ENEMY_SCALINGのDEF成長と合わせて較正。
+};
+
+// ---------------------------------------------------------
+// 各種ステータス上限（難易度リバランス：元指示14番「隠し上限は禁止」）
+// UI（装備画面等）から確認できる値のみを使用し、コード中に散在させない。
+// ---------------------------------------------------------
+export const CAPS_LAYER = {
+  CRIT_PCT_MAX: 75,             // 会心率（jobs.js computeStats／state.js getStatsの両方で適用、既存踏襲）
+  EVASION_MAX: 0.5,             // 回避率（Blade Vale 2.1で0.4だったが、防御ビルドが報われるよう0.5へ）
+  ARMOR_PEN_MAX: 0.6,           // 防御貫通率（既存踏襲）
+  CDR_MULT_MIN: 0.5,            // スキルクールダウン倍率の下限（=最大50%短縮、既存踏襲）
+  ATTACK_INTERVAL_MIN: 0.35,    // 通常攻撃の間隔下限＝秒（既存踏襲、実質の攻撃速度上限）
+  LIFESTEAL_PCT_MAX: 0.5,       // HP吸収（既存は上限なし。合計で被ダメの50%までに制限）
+  REGEN_PCT_PER_SEC_MAX: 0.05,  // HP自動回復（毎秒最大HPの5%まで）
+  // mitigation = effectiveDef/(effectiveDef+MITIGATION_K) は比率式のため、
+  // 上限を設けないとdefが青天井に伸びる深淵深部で軽減率が99%超に張り付き、
+  // 被ダメ側の実質DPSがほぼゼロになって「ダメージがまったく通らない」
+  // 壊れた状態になる（Phase 6再シミュレーションで深淵200階のTTKが数千秒に
+  // 達して発覚）。元指示14番「防御側の指標にも上限や逓減を設ける。完全
+  // 無敵化を防ぐ」に従い、プレイヤー→敵・敵→プレイヤーの両方向の
+  // mitigationに共通の上限を設ける（DEFへの投資は依然として終盤・深淵まで
+  // 意味を持つが、85%を超えて軽減されることはない）。
+  DEF_MITIGATION_MAX: 0.85,
 };
 
 // ---------------------------------------------------------
@@ -183,14 +277,66 @@ export const ARTIFACT_LAYER = {
 // 分岐させる」ためにあえて分離しておいた設計をここで実際に使うため。
 // 踏破記録（最高到達階）は永続保存・非破壊（下がることはない）。
 // ---------------------------------------------------------
+// ------------------------------------------------------------
+// 難易度リバランス：深淵はプレイヤーインフレの受け皿（元指示17番）のため、
+// 無限スケーリングかつPiecewise Scaling（元指示19番）にする。深さ帯ごとに
+// 成長率を上げていく（1〜50は緩やか、200+はより急）。深淵1階は「10章
+// ボス撃破直後」のENEMY_SCALING到達値をそのまま起点にする。
+// ------------------------------------------------------------
+// 難易度リバランス Phase 6 再較正：BANDSの各レート値は、当初「深淵の起点＝
+// 旧chapterMult(10)=4.15（章の経済倍率、Boss実強度とは無関係な小さい値）」
+// という誤った土台の上で決めていたため、深淵1階を実際のENEMY_SCALING章10
+// 到達値（正しい起点）につなぎ直した後に検証したところ、深さ200到達時点で
+// 約10,600倍という桁違いの複利になり、標準ビルドは元より上級ビルドでも
+// TTKが数十万秒に達する（事実上クリア不能）という結果になった。土台を
+// 正しくした上で、深さ200までの累積倍率が約24倍（緩やか1〜50→中程度
+// 51〜100→やや急101〜200、元指示19番のPiecewise Scaling）に収まるよう
+// 全帯のレートを引き下げて再較正した。200階より先（Infinity帯）は
+// 「理論上無限・自己ベスト更新ゾーン」（元指示20番）として、あえて元の
+// 急なレートを残し、そこから先で本当に際限なく伸びていく設計にしている。
 export const ABYSS_LAYER = {
-  HP_STEP: 0.05,
-  ATK_STEP: 0.06,
-  DEF_STEP: 0.045,
-  REWARD_STEP: 0.05,       // gold/exp/xpの深淵内での伸び幅（章10到達値を基準に）
+  REWARD_STEP: 0.05,       // gold/exp/xpの深淵内での伸び幅（章10到達値を基準に、難易度とは独立）
   BOSS_FLOOR_INTERVAL: 5,  // この階数ごとにボスフロア
   BOSS_REWARD_MULT: 2.5,   // ボスフロアの追加報酬倍率
+  // 追記（同じPhase 6の中でのさらなる較正）：DEF側はCAPS_LAYER.DEF_MITIGATION_MAX
+  // （85%軽減）を新設したことで、enemyDefがMITIGATION_Kを大きく超えた時点で
+  // 軽減率は頭打ちになり、それ以上defRateを上げても実効ダメージには効かなく
+  // なった（＝深部のdefRateは主に「どの深さで頭打ちに達するか」を左右する
+  // だけの見た目上の数値）。一方hpRateは頭打ちがないため、101〜200階の帯
+  // （旧1.020）をそのまま複利適用すると章10からの起点HPと組み合わさって
+  // depth200のBoss TTKが数百秒に達してしまった。101〜200階のhpRateを
+  // 大きく引き下げ、depth200時点のTTKが目標帯（30〜90秒台）に収まるよう
+  // 再較正した。201階以降（Infinity帯）はここより高いレートに戻し、
+  // 「200+は理論上無限」（元指示20番）の通り、そこから先で改めて
+  // 伸びていく設計にしている。
+  BANDS: [
+    { maxDepth: 50,       hpRate: 1.010,  atkRate: 1.008,  defRate: 1.007 },
+    { maxDepth: 100,      hpRate: 1.014,  atkRate: 1.011,  defRate: 1.010 },
+    { maxDepth: 200,      hpRate: 1.0045, atkRate: 1.0036, defRate: 1.0032 },
+    { maxDepth: Infinity, hpRate: 1.012,  atkRate: 1.010,  defRate: 1.009 },
+  ],
 };
+
+// depthが属する帯のbonus値を返す（エリート出現率の深さ加算に使用）
+export function bandLookup(bands, depth) {
+  for (const band of bands) if (depth <= band.maxDepth) return band.bonus;
+  return bands[bands.length - 1].bonus;
+}
+
+// 深さdepthまでの累積倍率をBANDSに沿って複利計算する（帯の境界で連続）。
+// rateKeyは'hpRate'|'atkRate'|'defRate'。
+export function abyssBandMult(rateKey, depth) {
+  let mult = 1;
+  let prevMax = 0;
+  for (const band of ABYSS_LAYER.BANDS) {
+    if (depth <= prevMax) break;
+    const stepsInBand = Math.min(depth, band.maxDepth) - prevMax;
+    mult *= Math.pow(band[rateKey], stepsInBand);
+    prevMax = band.maxDepth;
+    if (depth <= band.maxDepth) break;
+  }
+  return mult;
+}
 
 // ---------------------------------------------------------
 // J. 極Affix（Phase 5）
@@ -237,6 +383,14 @@ export const AWAKENED_ITEM_LAYER = {
 export const ABYSS_EXPANSION_LAYER = {
   ELITE_CHANCE_BASE: 0.08,
   ELITE_CHANCE_MAX: 0.4,
+  // 難易度リバランス（元指示20番）：深いほどエリート出現率自体も上げる
+  // （敵HPだけで難易度を作らないため）。深淵ツリーの投資分はこの上に加算される。
+  ELITE_CHANCE_DEPTH_BANDS: [
+    { maxDepth: 50, bonus: 0 },
+    { maxDepth: 100, bonus: 0.05 },
+    { maxDepth: 200, bonus: 0.10 },
+    { maxDepth: Infinity, bonus: 0.15 },
+  ],
   ELITE_HP_MULT: 1.8,
   ELITE_ATK_MULT: 1.3,
   ELITE_DEF_MULT: 1.2,
@@ -282,4 +436,41 @@ export const WEAPON_CODEX_LAYER = {
   SELL_GOLD: { normal: 10, rare: 30, epic: 80, legendary: 200, mythic: 500 },
   DISMANTLE_ESSENCE: { normal: 1, rare: 2, epic: 4, legendary: 8, mythic: 16 },
   ESSENCE_PER_MATERIAL: 3, // 強化素材化した「武器の欠片」で、通常の同名武器1個分の代わりに必要な数
+};
+
+// ---------------------------------------------------------
+// N. Boss AI（難易度リバランス：元指示10・11番「Bossを壁にする」）
+// 単純なHP増加ではなく、予兆付きの特殊攻撃・HP割合によるフェーズ移行で
+// 各章Bossを「その章で学んだシステムを試す壁」にする。全Bossに共通の
+// 汎用フレームワークとして実装し（battle.jsの_updateBossAI）、5・8・10章
+// Bossだけ intensity を上げて明確な難易度の節目にする（元指示10番）。
+// スマホ操作を前提に、予兆時間は最低でも0.8秒以上を必ず確保する
+// （元指示11・33番：回避不能な即死攻撃・精密回避の要求を禁止）。
+// ---------------------------------------------------------
+export const BOSS_AI_LAYER = {
+  PHASE2_HP_RATIO: 0.5,       // このHP割合を下回るとフェーズ2（強化状態）に入る
+  PHASE2_ATK_MULT: 1.25,      // フェーズ2の攻撃力倍率
+  PHASE2_SPEED_MULT: 1.15,    // フェーズ2の移動速度倍率
+  PHASE2_ATTACK_INTERVAL_MULT: 0.75, // フェーズ2の特殊攻撃間隔倍率（短縮）
+
+  TELEGRAPH_SEC: 0.9,         // 予兆表示時間（最低保証、元指示11・33番）
+  SLAM_INTERVAL_SEC: 5.5,     // 範囲攻撃（地面スラム）の間隔
+  SLAM_RADIUS: 130,
+  SLAM_DAMAGE_MULT: 0.22,     // Boss ATKに対する割合ダメージ
+
+  CHARGE_INTERVAL_SEC: 7.5,   // 突進攻撃の間隔
+  CHARGE_SPEED_MULT: 3.2,
+  CHARGE_DAMAGE_MULT: 0.30,
+
+  PROJECTILE_INTERVAL_SEC: 4.5, // 遠距離攻撃の間隔（intensity=highのBossのみ）
+  PROJECTILE_SPEED: 260,
+  PROJECTILE_DAMAGE_MULT: 0.18,
+
+  SUMMON_INTERVAL_SEC: 10,    // 雑魚召喚の間隔（intensity=highのBossのみ）
+  SUMMON_COUNT: 2,
+
+  // 章5・8・10のBossは「明確な難易度の節目」（元指示10番）にするため、
+  // 通常Boss（intensity='normal'）より多くの攻撃パターンを使う
+  // （intensity='high'：スラム＋突進＋遠距離＋召喚のフル構成）。
+  HIGH_INTENSITY_CHAPTERS: [5, 8, 10],
 };

@@ -7,7 +7,7 @@
      自動平均して算出する（手動で全部書かない）
    ============================================================ */
 
-import { CHARACTER_LAYER, JOB_TIER } from './balance.js';
+import { CHARACTER_LAYER, JOB_TIER, CAPS_LAYER } from './balance.js';
 
 export const STAT_KEYS = ['hp', 'mp', 'atk', 'def', 'mag', 'spd', 'crit'];
 
@@ -236,7 +236,7 @@ export function computeStats(jobId, level) {
   stats.def = Math.round(stats.def);
   stats.mag = Math.round(stats.mag);
   stats.spd = Math.round(stats.spd * 10) / 10;
-  stats.critPct = Math.min(75, Math.round((5 + stats.crit * 0.8) * 10) / 10);
+  stats.critPct = Math.min(CAPS_LAYER.CRIT_PCT_MAX, Math.round((5 + stats.crit * 0.8) * 10) / 10);
   return stats;
 }
 

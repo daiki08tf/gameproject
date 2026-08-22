@@ -7,7 +7,7 @@ import { findStage } from './data/stages.js';
 import { ENEMY_TYPES } from './data/enemies.js';
 import { getItem, RARITY, rarityIndex } from './data/equipment.js';
 import { getRune } from './data/runes.js';
-import { DAMAGE_BUCKET, ECONOMY, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER } from './data/balance.js';
+import { DAMAGE_BUCKET, ECONOMY, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER, CAPS_LAYER, BOSS_AI_LAYER } from './data/balance.js';
 import { getBlessing } from './data/blessings.js';
 import { weaponDropPoolForStage, bossWeaponForChapter } from './data/weapons.js';
 import { Joystick } from './joystick.js';
@@ -87,7 +87,7 @@ export class BattleScreen {
       armorPen: stats.armorPen || 0, evasion: stats.evasion || 0,
       facing: 0,
       attackRange: 68,
-      attackCooldown: clamp(1.0 - stats.spd * 0.012, 0.35, 1.1),
+      attackCooldown: clamp(1.0 - stats.spd * 0.012, CAPS_LAYER.ATTACK_INTERVAL_MIN, 1.1),
       attackTimer: 0,
       invuln: 0,
       buffAtkMult: 1, buffDefMult: 1, buffUntil: 0,
@@ -133,6 +133,7 @@ export class BattleScreen {
 
     this.enemies = [];
     this.particles = [];
+    this.projectiles = []; // Boss AI「遠距離攻撃」の弾体（元指示9・10番）
     this.camera = { x: this.player.x, y: this.player.y };
     this.shake = 0;
 
@@ -192,6 +193,8 @@ export class BattleScreen {
 
     this._updatePlayer(dt);
     this._updateEnemies(dt);
+    this._updateBossAI(dt);
+    this._updateProjectiles(dt);
     this._updateDots();
     this._updateParticles(dt);
 
@@ -251,7 +254,7 @@ export class BattleScreen {
         // 転生遺物「狂戦士の心臓」：HPが低いほど攻撃間隔が縮む
         this.player.attackTimer = this.player.attackCooldown * this._berserkerCooldownMult();
         this.player.facing = Math.atan2(target.y - this.player.y, target.x - this.player.x);
-        const atkValue = this.player.atk * this.player.buffAtkMult * this.awakenMult * this._bloodChaliceMult() * this._tempAtkBuffMult();
+        const atkValue = this.player.atk * this._mainDmgMult();
         const dmg = this._rollDamage(atkValue, target);
         this._dealDamage(target, dmg);
         this._spawnParticles(target.x, target.y, '#ffffff', 5, 120, 0.2);
@@ -288,7 +291,9 @@ export class BattleScreen {
       if (eff.kind === 'regen') regenPower += eff.power;
     }
     this.awakenMult = mult;
-    this._regenPower = regenPower;
+    // 難易度リバランス（元指示16番）：秒間回復率（最大HPに対する割合）にも
+    // 上限を設け、regen系固有効果の重複で実質無敵化しないようにする
+    this._regenPower = Math.min(CAPS_LAYER.REGEN_PCT_PER_SEC_MAX, regenPower);
   }
 
   // 転生遺物「血神の杯」：通常攻撃・スキル命中時に一時的なATKバフが乗る
@@ -299,6 +304,19 @@ export class BattleScreen {
   // レジェンド武器「竜殺剣バルムンク」等（bossSlayerBuff）：Boss撃破後の一時ATKバフ
   _tempAtkBuffMult() {
     return this._tempAtkUntil && performance.now() < this._tempAtkUntil ? 1 + this._tempAtkBonus : 1;
+  }
+
+  // 難易度リバランス（元指示12番）：与ダメージ+%系のバフ・ボーナスは、
+  // 出処が違っても全て「同じカテゴリー」として1つの加算バケットへまとめる
+  // （awakenMult＝覚醒/職業MASTER/玉砕型武器、スキルバフ、血神の杯、
+  // 討伐後バフを、以前は個別に掛け算していたため複利的に増幅していた）。
+  // カテゴリー内加算・カテゴリー間乗算の方針をここで実際に適用する。
+  _mainDmgMult() {
+    return 1
+      + (this.awakenMult - 1)
+      + (this.player.buffAtkMult - 1)
+      + (this._bloodChaliceMult() - 1)
+      + (this._tempAtkBuffMult() - 1);
   }
 
   // レジェンド武器「星断剣アステリオン」等（critDamageBoost）：会心ダメージ倍率の底上げ
@@ -384,12 +402,21 @@ export class BattleScreen {
   // target は敵オブジェクトそのもの（旧: def数値とisBossフラグを別々に受け
   // 取っていたが、weaken弱体化の反映とexecutioner判定に敵の生データが必要な
   // ため、Blade Vale 2.1でtargetそのものを渡す形に変更した）。
+  // 難易度リバランス（元指示3・12・13番）：Damage Bucketの再設計。
+  //   dmg = atk × mainMult(呼び出し元で乗算済み) × (1-mitigation) × critMult(会心時) × bossMult(Boss時)
+  // 「atk - def*係数」という単純減算式は、プレイヤーATKが数百〜数千に
+  // 達すると敵DEFの影響が実質ゼロになり終盤ほど防御力が無意味化する欠陥が
+  // あった。defが大きいほど軽減率が逓減しながら上昇する比率ベースの式へ
+  // 変更し、高DEFの敵が終盤・深淵でも意味を持ち続けるようにした
+  // （mitigation = effectiveDef / (effectiveDef + MITIGATION_K)。
+  // defがMITIGATION_Kに等しいと50%軽減）。
   _rollDamage(atk, target) {
-    const def = target ? this._effectiveEnemyStat(target, 'def') : 0;
+    const rawDef = target ? this._effectiveEnemyStat(target, 'def') : 0;
     // 斧系武器の「防御貫通」：プレイヤー自身の防御貫通率ぶん、相手の防御力の
     // 有効性を下げる（0.2なら敵の防御力を20%無視する）
-    const armorPenMult = 1 - (this.player.armorPen || 0);
-    let dmg = Math.max(1, atk - def * DAMAGE_BUCKET.DEF_MITIGATION_COEFF * armorPenMult);
+    const effectiveDef = rawDef * (1 - (this.player.armorPen || 0));
+    const mitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectiveDef / (effectiveDef + DAMAGE_BUCKET.MITIGATION_K));
+    let dmg = Math.max(1, atk * (1 - mitigation));
     // 会心判定はlastHitCritとして保持し、直後の_dealDamage()がonCrit系の
     // 転生遺物（雷神の瞳など）を発動するかどうかの判定に使う
     this.lastHitCrit = Math.random() * 100 < this.player.critPct;
@@ -434,7 +461,7 @@ export class BattleScreen {
       def = Math.round(def * this._riskMult(this.stage.enemyDefMult || 1));
       speed = Math.round(speed * this._riskMult(this.stage.enemySpeedMult || 1));
 
-      if (Math.random() < state.abyssEliteChance()) {
+      if (Math.random() < state.abyssEliteChance(this.stage.abyssDepth)) {
         elite = true;
         hp = Math.round(hp * ABYSS_EXPANSION_LAYER.ELITE_HP_MULT);
         atk = Math.round(atk * ABYSS_EXPANSION_LAYER.ELITE_ATK_MULT);
@@ -458,6 +485,24 @@ export class BattleScreen {
       color: t.color, name: t.name, xp, gold, boss: !!t.boss,
       hitFlash: 0, contactCooldown: 0,
     };
+    if (enemy.boss) {
+      // Boss AI（元指示9〜11番）：全BossにHP50%閾値のフェーズ2・予兆付き範囲
+      // 攻撃／突進を標準装備させ、「壁」として機能させる。章5・8・10
+      // （HIGH_INTENSITY_CHAPTERS）と深淵ボスは、力のインフレの受け皿である
+      // 深淵の趣旨（元指示21番）に合わせ、遠距離攻撃・雑魚召喚も使う
+      // フル構成にする。すべて必ずTELEGRAPH_SEC秒の予兆を経てから発動する
+      // ため、モバイルのタッチ操作でも見てから避けられる（元指示11・33番）。
+      const highIntensity = (this.chapter && BOSS_AI_LAYER.HIGH_INTENSITY_CHAPTERS.includes(this.chapter.num)) || !!this.stage.isAbyss;
+      enemy.aiPhase = 1;
+      enemy.aiIntensity = highIntensity ? 'high' : 'normal';
+      // 初動が完全な棒立ちにならないよう開始タイマーを少しずらす
+      enemy.slamTimer = BOSS_AI_LAYER.SLAM_INTERVAL_SEC * 0.55;
+      enemy.chargeTimer = BOSS_AI_LAYER.CHARGE_INTERVAL_SEC * 0.85;
+      if (highIntensity) {
+        enemy.projectileTimer = BOSS_AI_LAYER.PROJECTILE_INTERVAL_SEC * 0.4;
+        enemy.summonTimer = BOSS_AI_LAYER.SUMMON_INTERVAL_SEC;
+      }
+    }
     this.enemies.push(enemy);
     if (enemy.boss) {
       this.boss = enemy;
@@ -472,6 +517,36 @@ export class BattleScreen {
       if (e.dead) continue;
       // 神話武器「時空剣クロノス」等（timeStop）：凍結中は移動も攻撃もしない
       const frozen = e.frozenUntil && now < e.frozenUntil;
+
+      // Boss AI「突進」：予兆後の直線ダッシュ中は通常の追尾・接触ダメージを
+      // 止め、記録しておいた方向へ一定時間だけ高速直進する（元指示9・10番）
+      if (e.chargeDash && !frozen) {
+        const cd = e.chargeDash;
+        e.x = clamp(e.x + cd.dx * e.speed * BOSS_AI_LAYER.CHARGE_SPEED_MULT * dt, e.radius, ARENA.w - e.radius);
+        e.y = clamp(e.y + cd.dy * e.speed * BOSS_AI_LAYER.CHARGE_SPEED_MULT * dt, e.radius, ARENA.h - e.radius);
+        cd.timeLeft -= dt;
+        if (!cd.hit && this.player.invuln <= 0) {
+          const dd = Math.hypot(this.player.x - e.x, this.player.y - e.y);
+          if (dd < e.radius + this.player.radius + 4) {
+            cd.hit = true;
+            const enemyAtk = this._effectiveEnemyStat(e, 'atk');
+            const effectivePDef = (this.player.def || 0) * (this.player.buffDefMult || 1);
+            const pMitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectivePDef / (effectivePDef + DAMAGE_BUCKET.MITIGATION_K));
+            const dmg = Math.max(1, Math.round(enemyAtk * BOSS_AI_LAYER.CHARGE_DAMAGE_MULT * (1 - pMitigation)));
+            this.player.hp -= dmg;
+            this.player.invuln = 0.9;
+            this.shake = 0.4;
+            this.player.ultGauge = Math.min(100, this.player.ultGauge + dmg * 0.8);
+            Audio_.playerHurt();
+            this._spawnParticles(this.player.x, this.player.y, '#ff8a3c', 9, 160, 0.3);
+          }
+        }
+        if (cd.timeLeft <= 0) e.chargeDash = null;
+        if (e.hitFlash > 0) e.hitFlash -= dt;
+        if (e.contactCooldown > 0) e.contactCooldown -= dt;
+        continue;
+      }
+
       const dx = this.player.x - e.x, dy = this.player.y - e.y;
       const d = Math.hypot(dx, dy) || 1;
       const desired = e.radius + this.player.radius + 4;
@@ -503,9 +578,17 @@ export class BattleScreen {
           continue;
         }
         // 深淵モディファイア「瘴気だまり」＋短剣系weaken debuff：接触ダメージ増加
+        // 難易度リバランス（元指示13番「防御側も整理」）：プレイヤーDEFも
+        // _rollDamage()と同じ比率ベースの軽減式で処理する。旧式（固定値半減
+        // 減算）は終盤ATKインフレに対してDEFが無意味化する一方、序盤は
+        // 最低保証ダメージ1で頭打ちになり「敵の攻撃が無視できる」原因にも
+        // なっていた。同じmitigation = def/(def+MITIGATION_K)を適用することで、
+        // 防御力への投資が終盤・深淵まで一貫して意味を持つようにする。
         const contactMult = this._riskMult(this.stage.contactDmgMult || 1);
         const enemyAtk = this._effectiveEnemyStat(e, 'atk');
-        const dmg = Math.max(1, Math.round(enemyAtk * contactMult - this.player.def * this.player.buffDefMult * 0.5));
+        const effectivePDef = (this.player.def || 0) * (this.player.buffDefMult || 1);
+        const pMitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectivePDef / (effectivePDef + DAMAGE_BUCKET.MITIGATION_K));
+        const dmg = Math.max(1, Math.round(enemyAtk * contactMult * (1 - pMitigation)));
         this.player.hp -= dmg;
         this.player.invuln = 0.9;
         this.shake = 0.3;
@@ -518,6 +601,146 @@ export class BattleScreen {
     this.enemies = this.enemies.filter((e) => !e.dead);
     this._updateHud();
     this._updateRemain();
+  }
+
+  // Boss AI（元指示9・10・11番）：全Bossに汎用的な多段階・予兆型攻撃パターンを
+  // 適用する。HP50%以下でフェーズ2（強化状態）へ移行し、攻撃力・移動速度が
+  // 上がり特殊攻撃の間隔も縮む。intensity='high'（章5・8・10、深淵ボス）は
+  // 遠距離攻撃・雑魚召喚も使うフル構成にし、明確な難易度の節目にする。
+  // 危険な攻撃は必ずTELEGRAPH_SEC秒の予兆（警告円・警告ライン）を経てから
+  // 発動するため、モバイルのタッチ操作でも「見てから避けられる」（元指示33番：
+  // 回避不能な即死攻撃・精密な回避を要求する設計は禁止）。
+  _updateBossAI(dt) {
+    const now = performance.now();
+    for (const e of this.enemies) {
+      if (e.dead || !e.boss || e.aiPhase == null) continue;
+      if (e.frozenUntil && now < e.frozenUntil) continue;
+
+      if (e.aiPhase === 1 && e.hp / e.maxHp <= BOSS_AI_LAYER.PHASE2_HP_RATIO) {
+        e.aiPhase = 2;
+        e.atk = Math.round(e.atk * BOSS_AI_LAYER.PHASE2_ATK_MULT);
+        e.speed = Math.round(e.speed * BOSS_AI_LAYER.PHASE2_SPEED_MULT);
+        e.slamTimer = Math.min(e.slamTimer, BOSS_AI_LAYER.SLAM_INTERVAL_SEC) * BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT;
+        e.chargeTimer = Math.min(e.chargeTimer, BOSS_AI_LAYER.CHARGE_INTERVAL_SEC) * BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT;
+        if (e.projectileTimer != null) e.projectileTimer *= BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT;
+        if (e.summonTimer != null) e.summonTimer *= BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT;
+        this._toast(`${e.name}が態勢を変えた！`, '#ff8a3c');
+      }
+
+      // 予兆中・突進中は新規攻撃を開始しない（複数攻撃の同時発生を避け、
+      // モバイル画面でも見切れるようにするため）
+      if (e.telegraph) {
+        if (now >= e.telegraph.readyAt) this._resolveBossTelegraph(e);
+        continue;
+      }
+      if (e.chargeDash) continue;
+
+      e.slamTimer -= dt;
+      e.chargeTimer -= dt;
+      if (e.projectileTimer != null) e.projectileTimer -= dt;
+      if (e.summonTimer != null) e.summonTimer -= dt;
+
+      if (e.slamTimer <= 0) { this._startBossTelegraph(e, 'slam'); continue; }
+      if (e.chargeTimer <= 0) { this._startBossTelegraph(e, 'charge'); continue; }
+      if (e.projectileTimer != null && e.projectileTimer <= 0) { this._startBossTelegraph(e, 'projectile'); continue; }
+      if (e.summonTimer != null && e.summonTimer <= 0) {
+        e.summonTimer = BOSS_AI_LAYER.SUMMON_INTERVAL_SEC * (e.aiPhase === 2 ? BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT : 1);
+        this._bossSummon(e);
+      }
+    }
+  }
+
+  _startBossTelegraph(e, kind) {
+    const now = performance.now();
+    e.telegraph = {
+      kind,
+      readyAt: now + BOSS_AI_LAYER.TELEGRAPH_SEC * 1000,
+      // 発動位置は予兆開始時点のプレイヤー座標に固定する。発動直前まで追尾
+      // すると反射神経勝負になり、モバイルのタッチ操作では避けにくくなる
+      x: this.player.x, y: this.player.y,
+    };
+  }
+
+  _resolveBossTelegraph(e) {
+    const t = e.telegraph;
+    e.telegraph = null;
+    const phaseMult = e.aiPhase === 2 ? BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT : 1;
+    if (t.kind === 'slam') {
+      e.slamTimer = BOSS_AI_LAYER.SLAM_INTERVAL_SEC * phaseMult;
+      const dd = Math.hypot(this.player.x - t.x, this.player.y - t.y);
+      this._spawnParticles(t.x, t.y, '#ffb347', 18, 220, 0.4);
+      if (dd < BOSS_AI_LAYER.SLAM_RADIUS && this.player.invuln <= 0) {
+        const enemyAtk = this._effectiveEnemyStat(e, 'atk');
+        const effectivePDef = (this.player.def || 0) * (this.player.buffDefMult || 1);
+        const pMitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectivePDef / (effectivePDef + DAMAGE_BUCKET.MITIGATION_K));
+        const dmg = Math.max(1, Math.round(enemyAtk * BOSS_AI_LAYER.SLAM_DAMAGE_MULT * (1 - pMitigation)));
+        this.player.hp -= dmg;
+        this.player.invuln = 0.9;
+        this.shake = 0.5;
+        this.player.ultGauge = Math.min(100, this.player.ultGauge + dmg * 0.8);
+        Audio_.playerHurt();
+        this._spawnParticles(this.player.x, this.player.y, '#ff5566', 12, 180, 0.35);
+      }
+    } else if (t.kind === 'charge') {
+      e.chargeTimer = BOSS_AI_LAYER.CHARGE_INTERVAL_SEC * phaseMult;
+      const dx = t.x - e.x, dy = t.y - e.y;
+      const d = Math.hypot(dx, dy) || 1;
+      e.chargeDash = { dx: dx / d, dy: dy / d, timeLeft: 0.45, hit: false };
+    } else if (t.kind === 'projectile') {
+      e.projectileTimer = BOSS_AI_LAYER.PROJECTILE_INTERVAL_SEC * phaseMult;
+      const dx = t.x - e.x, dy = t.y - e.y;
+      const d = Math.hypot(dx, dy) || 1;
+      this.projectiles.push({
+        x: e.x, y: e.y,
+        vx: (dx / d) * BOSS_AI_LAYER.PROJECTILE_SPEED, vy: (dy / d) * BOSS_AI_LAYER.PROJECTILE_SPEED,
+        radius: 13, atk: this._effectiveEnemyStat(e, 'atk'), life: 3,
+      });
+    }
+  }
+
+  // Boss AI「雑魚召喚」：報酬インフレを避けるため、召喚した手下はxp/goldを
+  // 与えない（難易度は上がるが、章の報酬バランスはドロップテーブル側で
+  // 担保する方針のため。元指示24番の趣旨）
+  _bossSummon(e) {
+    for (let i = 0; i < BOSS_AI_LAYER.SUMMON_COUNT; i++) {
+      const angle = rand(0, Math.PI * 2);
+      const dist = e.radius + 70;
+      const hp = Math.max(1, Math.round(e.maxHp * 0.05));
+      this.enemies.push({
+        type: '__boss_summon__', boss: false, elite: false,
+        x: clamp(e.x + Math.cos(angle) * dist, 20, ARENA.w - 20),
+        y: clamp(e.y + Math.sin(angle) * dist, 20, ARENA.h - 20),
+        radius: 13, hp, maxHp: hp,
+        atk: Math.max(1, Math.round(e.atk * 0.3)), def: Math.round(e.def * 0.4), speed: 150,
+        color: '#ff9f6b', name: `${e.name}の手下`, xp: 0, gold: 0,
+        hitFlash: 0, contactCooldown: 0,
+      });
+    }
+    this._toast(`${e.name}が手下を呼び出した！`, '#ffb347');
+  }
+
+  // Boss AI「遠距離攻撃」の弾体：直進し、着弾または画面外/寿命切れで消える
+  _updateProjectiles(dt) {
+    for (const p of this.projectiles) {
+      if (p.dead) continue;
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      p.life -= dt;
+      if (p.life <= 0 || p.x < -50 || p.x > ARENA.w + 50 || p.y < -50 || p.y > ARENA.h + 50) { p.dead = true; continue; }
+      const dd = Math.hypot(this.player.x - p.x, this.player.y - p.y);
+      if (dd < p.radius + this.player.radius && this.player.invuln <= 0) {
+        p.dead = true;
+        const effectivePDef = (this.player.def || 0) * (this.player.buffDefMult || 1);
+        const pMitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectivePDef / (effectivePDef + DAMAGE_BUCKET.MITIGATION_K));
+        const dmg = Math.max(1, Math.round(p.atk * BOSS_AI_LAYER.PROJECTILE_DAMAGE_MULT * (1 - pMitigation)));
+        this.player.hp -= dmg;
+        this.player.invuln = 0.7;
+        this.shake = 0.3;
+        this.player.ultGauge = Math.min(100, this.player.ultGauge + dmg * 0.8);
+        Audio_.playerHurt();
+        this._spawnParticles(this.player.x, this.player.y, '#c77dff', 8, 150, 0.3);
+      }
+    }
+    this.projectiles = this.projectiles.filter((p) => !p.dead);
   }
 
   // 炎/毒/闇系武器の「burnStack」固有効果：重複可能なDoT（継続ダメージ）。
@@ -540,12 +763,20 @@ export class BattleScreen {
   _dealDamage(enemy, dmg) {
     this._applyRawDamage(enemy, dmg);
 
+    // 難易度リバランス（元指示16番）：吸血系固有効果は複数装備分の重複が
+    // 起こり得るため、1回の命中あたりの合計吸収率をCAPS_LAYER.LIFESTEAL_PCT_MAX
+    // で頭打ちにする（「隠し上限は禁止」の方針に沿い、UI側の説明文でも
+    // この上限を明示する）。
+    let lifestealRatioUsed = 0;
     for (const eff of this._effectsOf('onHit')) {
       // everyNHits系はchanceを持たない（命中のたびに必ずカウンターが進む）ため、
       // chanceが未指定のeffectは常に通す。
       if (eff.chance != null && Math.random() > eff.chance) continue;
       if (eff.kind === 'lifesteal') {
-        this.player.hp = Math.min(this.player.maxHp, this.player.hp + dmg * eff.power);
+        const allowed = Math.max(0, CAPS_LAYER.LIFESTEAL_PCT_MAX - lifestealRatioUsed);
+        const applied = Math.min(eff.power, allowed);
+        lifestealRatioUsed += applied;
+        this.player.hp = Math.min(this.player.maxHp, this.player.hp + dmg * applied);
       } else if (eff.kind === 'burnDamage' && !enemy.dead) {
         const burn = Math.round(this.player.atk * eff.power);
         this._applyRawDamage(enemy, burn);
@@ -774,10 +1005,8 @@ export class BattleScreen {
     if (skill.type === 'damage') {
       const targets = this._nearbyEnemies(150, 3);
       const skillPowerMult = state.jobMasterSkillPowerMult();
-      const bloodMult = this._bloodChaliceMult();
-      const tempAtkMult = this._tempAtkBuffMult();
       for (const t of targets) {
-        const dmg = this._rollDamage((skill.power * skillPowerMult + this.player.atk * 0.4 + this.player.mag * 0.6) * this.awakenMult * bloodMult * tempAtkMult, t);
+        const dmg = this._rollDamage((skill.power * skillPowerMult + this.player.atk * 0.4 + this.player.mag * 0.6) * this._mainDmgMult(), t);
         this._dealDamage(t, dmg);
       }
       this._spawnParticles(this.player.x, this.player.y, '#8ee9ff', 16, 220, 0.35);
@@ -807,7 +1036,7 @@ export class BattleScreen {
     // 会心フラグが残っていて雷神の瞳が誤発動しないよう明示的にリセットする
     this.lastHitCrit = false;
     const targets = this._nearbyEnemies(240, 99);
-    const base = Math.round(((this.player.atk + this.player.mag) * 2.2 + 40) * this.awakenMult * this._bloodChaliceMult() * this._tempAtkBuffMult());
+    const base = Math.round(((this.player.atk + this.player.mag) * 2.2 + 40) * this._mainDmgMult());
     for (const t of targets) {
       const dmg = t.boss ? Math.round(base * this._bossDmgMult(t)) : base;
       this._dealDamage(t, dmg);
@@ -958,7 +1187,9 @@ export class BattleScreen {
     if (this.shake > 0) ctx.translate(rand(-this.shake, this.shake) * 8, rand(-this.shake, this.shake) * 8);
 
     this._drawBackground();
+    this._drawBossTelegraphs();
     this._drawEnemies();
+    this._drawProjectiles();
     this._drawPlayer();
     this._drawParticles();
 
@@ -1040,6 +1271,58 @@ export class BattleScreen {
       ctx.fillRect(s.x - w / 2, s.y - e.radius - 10, w, 4);
       ctx.fillStyle = pct > 0.4 ? '#7be07b' : '#e05555';
       ctx.fillRect(s.x - w / 2, s.y - e.radius - 10, w * pct, 4);
+    }
+  }
+
+  // Boss AI予兆の可視化（元指示11・33番：回避不能な即死攻撃・精密な回避を
+  // 要求する設計は禁止）。範囲攻撃は着弾円、突進／遠距離攻撃は狙い筋を
+  // 破線で表示し、残り時間が短くなるほど点滅を速めて危険を強調する。
+  _drawBossTelegraphs() {
+    const ctx = this.ctx;
+    const now = performance.now();
+    for (const e of this.enemies) {
+      if (e.dead || !e.telegraph) continue;
+      const t = e.telegraph;
+      const remain = Math.max(0, t.readyAt - now) / (BOSS_AI_LAYER.TELEGRAPH_SEC * 1000);
+      const pulse = 0.35 + 0.35 * Math.abs(Math.sin(now / (60 + remain * 140)));
+      if (t.kind === 'slam') {
+        const s = this._toScreen(t.x, t.y);
+        ctx.save();
+        ctx.strokeStyle = `rgba(255,90,90,${pulse})`;
+        ctx.fillStyle = `rgba(255,90,90,${pulse * 0.18})`;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, BOSS_AI_LAYER.SLAM_RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      } else if (t.kind === 'charge' || t.kind === 'projectile') {
+        const s0 = this._toScreen(e.x, e.y);
+        const s1 = this._toScreen(t.x, t.y);
+        ctx.save();
+        ctx.strokeStyle = `rgba(255,190,80,${pulse})`;
+        ctx.lineWidth = t.kind === 'charge' ? 10 : 4;
+        ctx.setLineDash([14, 10]);
+        ctx.beginPath();
+        ctx.moveTo(s0.x, s0.y);
+        ctx.lineTo(s1.x, s1.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+
+  _drawProjectiles() {
+    const ctx = this.ctx;
+    for (const p of this.projectiles) {
+      const s = this._toScreen(p.x, p.y);
+      ctx.beginPath();
+      ctx.fillStyle = '#c77dff';
+      ctx.arc(s.x, s.y, p.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
     }
   }
 
