@@ -43,6 +43,9 @@
       <button id="goRebirthBtn" class="menu-card">
         <span class="menu-icon">✨</span><span>転生の祭壇</span>
       </button>
+      <button id="goSpellBtn" class="menu-card">
+        <span class="menu-icon">📖</span><span>ふっかつのじゅもん</span>
+      </button>
     </nav>
   </section>
 
@@ -170,6 +173,30 @@
       <h2>転生の祭壇</h2>
     </header>
     <div id="rebirthContent" class="blacksmith-content"></div>
+  </section>
+
+  <!-- ============ ふっかつのじゅもん ============ -->
+  <section id="spellScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="spellBackBtn">←</button>
+      <h2>ふっかつのじゅもん</h2>
+    </header>
+    <div class="blacksmith-content">
+      <div class="forge-card">
+        <div class="forge-card-name">じゅもんを表示する</div>
+        <div class="forge-card-sub">今のセーブ内容を「じゅもん」に変換します。コピーして大切に保管してください。</div>
+        <button class="forge-card-btn" id="genSpellBtn">じゅもんを見る</button>
+        <textarea id="spellOutput" class="spell-box" readonly rows="6" placeholder="ここにじゅもんが表示されます"></textarea>
+        <button class="btn-sub" id="copySpellBtn" style="width:100%;margin-top:8px;">コピーする</button>
+      </div>
+      <div class="forge-card">
+        <div class="forge-card-name">じゅもんを入力する</div>
+        <div class="forge-card-sub">じゅもんを入力すると、今のセーブに上書きして復活します。</div>
+        <textarea id="spellInput" class="spell-box" rows="6" placeholder="ここにじゅもんを貼り付け"></textarea>
+        <button class="forge-card-btn" id="applySpellBtn" style="margin-top:8px;">このじゅもんで復活する</button>
+        <p id="spellMessage" class="forge-card-sub"></p>
+      </div>
+    </div>
   </section>
 
   <!-- Toast -->

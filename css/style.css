@@ -414,3 +414,22 @@ button { font-family: inherit; }
 .rebirth-panel { text-align: center; padding: 24px 12px; }
 .rebirth-count { font-size: 40px; font-weight: bold; color: var(--accent); }
 .rebirth-bonus { opacity: 0.85; margin-bottom: 18px; }
+
+/* ---------------------------------------------------------
+   ふっかつのじゅもん
+--------------------------------------------------------- */
+.spell-box {
+  width: 100%;
+  margin-top: 10px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.7;
+  letter-spacing: 1px;
+  padding: 10px;
+  resize: vertical;
+}
+.spell-box::placeholder { color: rgba(255,255,255,0.35); font-family: inherit; }
