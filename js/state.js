@@ -251,10 +251,13 @@ class StateManager {
 
   enhanceCost(level) { return 30 + level * 40; }
 
+  // +が上がるほど必要な同じ武器の個数も増える（Lv0→1は1個、Lv1→2は2個…）
+  enhanceMaterialCount(level) { return level + 1; }
+
   canEnhanceWeapon(itemId) {
     const level = this.weaponEnhanceLevel(itemId);
     if (level >= 10) return false;
-    if ((this.data.inventory[itemId] || 0) < 1) return false;
+    if ((this.data.inventory[itemId] || 0) < this.enhanceMaterialCount(level)) return false;
     return this.data.gold >= this.enhanceCost(level);
   }
 
@@ -262,7 +265,7 @@ class StateManager {
     if (!this.canEnhanceWeapon(itemId)) return false;
     const level = this.weaponEnhanceLevel(itemId);
     this.data.gold -= this.enhanceCost(level);
-    this.data.inventory[itemId] -= 1;
+    this.data.inventory[itemId] -= this.enhanceMaterialCount(level);
     if (this.data.inventory[itemId] <= 0) delete this.data.inventory[itemId];
     this.data.weaponEnhance[itemId] = level + 1;
     this.save();
@@ -313,8 +316,9 @@ class StateManager {
   }
 
   // ---------- 鍛冶屋：転生 ----------
+  // 勇者解放などの前提条件は設けず、コストさえ払えればいつでも転生可能
   canReincarnate() {
-    return isUnlocked('hero', this.masteredSet());
+    return true;
   }
 
   reincarnationCost() {

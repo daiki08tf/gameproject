@@ -52,6 +52,7 @@ function renderEnhanceTab(content) {
     const level = state.weaponEnhanceLevel(id);
     const spare = state.data.inventory[id] || 0;
     const cost = state.enhanceCost(level);
+    const need = state.enhanceMaterialCount(level);
     const maxed = level >= 10;
     const canDo = state.canEnhanceWeapon(id);
 
@@ -62,9 +63,9 @@ function renderEnhanceTab(content) {
         <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name}</div>
         <div>Lv.${level}/10</div>
       </div>
-      <div class="forge-card-sub">強化ボーナス +${level * 5}%　／　素材(同じ武器)所持: ${spare}個</div>
+      <div class="forge-card-sub">強化ボーナス +${level * 5}%　／　素材(同じ武器)所持: ${spare}個 ／ 次の強化に必要: ${maxed ? '-' : `${need}個`}</div>
       <button class="forge-card-btn" ${maxed || !canDo ? 'disabled' : ''}>
-        ${maxed ? 'MAX' : `合成強化する（素材×1 + 💰${cost}）`}
+        ${maxed ? 'MAX' : `合成強化する（素材×${need} + 💰${cost}）`}
       </button>
     `;
     card.querySelector('button').addEventListener('click', () => {
@@ -180,20 +181,17 @@ function renderCraftSection(content) {
 // 転生タブ
 // ---------------------------------------------------------
 function renderRebirthTab(content) {
-  const unlocked = state.canReincarnate();
   const n = state.data.reincarnations;
   const cost = state.reincarnationCost();
-  const canDo = unlocked && state.data.gold >= cost.gold && state.data.manastone >= cost.manastone;
+  const canDo = state.data.gold >= cost.gold && state.data.manastone >= cost.manastone;
 
   const panel = document.createElement('div');
   panel.className = 'rebirth-panel';
   panel.innerHTML = `
     <div class="rebirth-count">${n}</div>
     <div class="rebirth-bonus">転生回数：全ステータス +${n * 3}%（永続）</div>
-    ${unlocked
-      ? `<p class="sub">次の転生コスト：💰${cost.gold} ／ 💎${cost.manastone}</p>
-         <button class="btn-main" id="doReincarnateBtn" ${canDo ? '' : 'disabled'}>転生する</button>`
-      : `<p class="sub">特級職を3つ以上マスターし「勇者」を解放すると転生できるようになります。</p>`}
+    <p class="sub">次の転生コスト：💰${cost.gold} ／ 💎${cost.manastone}</p>
+    <button class="btn-main" id="doReincarnateBtn" ${canDo ? '' : 'disabled'}>転生する</button>
   `;
   content.appendChild(panel);
   const btn = panel.querySelector('#doReincarnateBtn');
