@@ -305,14 +305,27 @@ export const ABYSS_LAYER = {
   // だけの見た目上の数値）。一方hpRateは頭打ちがないため、101〜200階の帯
   // （旧1.020）をそのまま複利適用すると章10からの起点HPと組み合わさって
   // depth200のBoss TTKが数百秒に達してしまった。101〜200階のhpRateを
-  // 大きく引き下げ、depth200時点のTTKが目標帯（30〜90秒台）に収まるよう
-  // 再較正した。201階以降（Infinity帯）はここより高いレートに戻し、
-  // 「200+は理論上無限」（元指示20番）の通り、そこから先で改めて
-  // 伸びていく設計にしている。
+  // 大きく引き下げて対処したが、その値（1.0045）は51〜100階の帯（1.014）
+  // からの下げ幅が大きすぎ、「101階を境に敵の成長が急に鈍る」という
+  // 別の違和感を生んでいた（PR#2レビュー第2点）。
+  //
+  // 再々較正：101〜200階のhpRateを1.006へ引き上げ、51〜100階との段差を
+  // 緩和した（depth200到達時点の複利倍率は約5.2倍→約6.0倍に、Boss TTKで
+  // 言うと標準ビルドで約90秒→約105秒に増加。「深くなるほど明確に難しく
+  // なる」方向の変化であり、目標帯からの逸脱は軽微）。HPの伸びを頭打ち
+  // ぎみに抑える一方、101階以降の体感難易度はHP以外の軸で補う方針へ転換：
+  //   ・雑魚waveの出現数上限をdepth30前後→depth65〜75前後まで伸ばし、
+  //     101〜200階でも出現数自体が増え続けるようにした（abyss.js参照）
+  //   ・エリート出現率の深さ帯を4段階→5段階に増やし、101〜150／151〜200を
+  //     分けてなだらかに上げた（ABYSS_EXPANSION_LAYER.ELITE_CHANCE_DEPTH_BANDS）
+  // これにより「HPだけで難易度を作らない」（元指示・最重要原則）を101階
+  // 以降でも維持しつつ、101階の段差そのものも緩和した。201階以降
+  // （Infinity帯）はここよりやや高いレートのまま、「200+は理論上無限」
+  // （元指示20番）の通り、そこから先で改めて伸びていく設計を維持する。
   BANDS: [
     { maxDepth: 50,       hpRate: 1.010,  atkRate: 1.008,  defRate: 1.007 },
     { maxDepth: 100,      hpRate: 1.014,  atkRate: 1.011,  defRate: 1.010 },
-    { maxDepth: 200,      hpRate: 1.0045, atkRate: 1.0036, defRate: 1.0032 },
+    { maxDepth: 200,      hpRate: 1.006,  atkRate: 1.0048, defRate: 1.0043 },
     { maxDepth: Infinity, hpRate: 1.012,  atkRate: 1.010,  defRate: 1.009 },
   ],
 };
@@ -325,15 +338,24 @@ export function bandLookup(bands, depth) {
 
 // 深さdepthまでの累積倍率をBANDSに沿って複利計算する（帯の境界で連続）。
 // rateKeyは'hpRate'|'atkRate'|'defRate'。
+//
+// PR#2レビュー第4点：「深淵1階＝10章ボス撃破直後の到達値そのもの」
+// （仕様A、abyss.jsのscaleArchetype()コメント参照）を明文化する。以前は
+// depthをそのまま複利適用していたため、depth=1の時点で既に1回分の
+// bandRate（例：hpRateなら約1.01倍）が乗ってしまい、「深淵1階は10章
+// ボスよりわずかに強い」という仕様Bの状態になっていた（コメントと実装が
+// 食い違っていた）。1階を起点（乗数1.0）とし、2階以降の「経過階数」
+// （=depth-1）ぶんだけ複利をかけるよう修正した。
 export function abyssBandMult(rateKey, depth) {
+  const steps = Math.max(0, depth - 1);
   let mult = 1;
   let prevMax = 0;
   for (const band of ABYSS_LAYER.BANDS) {
-    if (depth <= prevMax) break;
-    const stepsInBand = Math.min(depth, band.maxDepth) - prevMax;
+    if (steps <= prevMax) break;
+    const stepsInBand = Math.min(steps, band.maxDepth) - prevMax;
     mult *= Math.pow(band[rateKey], stepsInBand);
     prevMax = band.maxDepth;
-    if (depth <= band.maxDepth) break;
+    if (steps <= band.maxDepth) break;
   }
   return mult;
 }
@@ -385,11 +407,16 @@ export const ABYSS_EXPANSION_LAYER = {
   ELITE_CHANCE_MAX: 0.4,
   // 難易度リバランス（元指示20番）：深いほどエリート出現率自体も上げる
   // （敵HPだけで難易度を作らないため）。深淵ツリーの投資分はこの上に加算される。
+  // PR#2レビュー第2点：101〜200階のHP成長を頭打ちぎみに抑えた分、この
+  // 深さ帯の体感難易度をエリート出現率側で補うため、101〜150／151〜200を
+  // 分割し（旧は101〜200をひとまとめに+0.10で扱っていた）、201階以降も
+  // 含めて全体をなだらかに底上げした。
   ELITE_CHANCE_DEPTH_BANDS: [
     { maxDepth: 50, bonus: 0 },
     { maxDepth: 100, bonus: 0.05 },
-    { maxDepth: 200, bonus: 0.10 },
-    { maxDepth: Infinity, bonus: 0.15 },
+    { maxDepth: 150, bonus: 0.09 },
+    { maxDepth: 200, bonus: 0.13 },
+    { maxDepth: Infinity, bonus: 0.17 },
   ],
   ELITE_HP_MULT: 1.8,
   ELITE_ATK_MULT: 1.3,
@@ -442,11 +469,44 @@ export const WEAPON_CODEX_LAYER = {
 // N. Boss AI（難易度リバランス：元指示10・11番「Bossを壁にする」）
 // 単純なHP増加ではなく、予兆付きの特殊攻撃・HP割合によるフェーズ移行で
 // 各章Bossを「その章で学んだシステムを試す壁」にする。全Bossに共通の
-// 汎用フレームワークとして実装し（battle.jsの_updateBossAI）、5・8・10章
-// Bossだけ intensity を上げて明確な難易度の節目にする（元指示10番）。
+// 汎用フレームワークとして実装する（battle.jsの_updateBossAI）。
 // スマホ操作を前提に、予兆時間は最低でも0.8秒以上を必ず確保する
 // （元指示11・33番：回避不能な即死攻撃・精密回避の要求を禁止）。
+//
+// PR#2レビュー第3点：以前はHIGH_INTENSITY_CHAPTERS（章番号の配列）に
+// 含まれるかどうかだけで「フル構成か否か」の2択しかなく、Bossごとに
+// 行動を個別に差別化できなかった（「どのBossも同じ攻略になる」問題）。
+// BOSS_AI_PROFILESへ移行し、章単位の設定に加えてBoss個体（type文字列。
+// 例：'ch5_boss'）単位での上書きも自然に追加できるようにした
+// （resolveBossAIProfile()の優先順位：Boss個体 > 章単位 > 深淵共通 >
+// default）。現時点では中身は全Bossに同じフル構成を割り当てているだけ
+// だが（個別の作り込みは今後の課題）、土台としてこの形にしておく。
 // ---------------------------------------------------------
+export const BOSS_AI_PROFILES = {
+  // 未指定のBossは全てこれ（スラム＋突進のみ、旧intensity='normal'相当）
+  default: { slam: true, charge: true, projectile: false, summon: false },
+  // 章5・8・10のBossは「明確な難易度の節目」（元指示10番）として、
+  // 遠距離攻撃・雑魚召喚も使うフル構成にする（旧intensity='high'相当）。
+  // 深淵はプレイヤーインフレの受け皿（元指示21番）のため同様にフル構成。
+  chapter5: { slam: true, charge: true, projectile: true, summon: true },
+  chapter8: { slam: true, charge: true, projectile: true, summon: true },
+  chapter10: { slam: true, charge: true, projectile: true, summon: true },
+  abyss: { slam: true, charge: true, projectile: true, summon: true },
+};
+
+// Boss1体の情報からAI Profileを解決する。優先順位：
+// 1. Boss個体（type文字列、例:'ch5_boss'）に直接エントリがあればそれ
+// 2. 深淵のBossなら'abyss'
+// 3. 章番号から'chapter<N>'
+// 4. どれも無ければ'default'
+export function resolveBossAIProfile(bossType, chapterNum, isAbyss) {
+  if (bossType && BOSS_AI_PROFILES[bossType]) return BOSS_AI_PROFILES[bossType];
+  if (isAbyss && BOSS_AI_PROFILES.abyss) return BOSS_AI_PROFILES.abyss;
+  const chKey = chapterNum != null ? `chapter${chapterNum}` : null;
+  if (chKey && BOSS_AI_PROFILES[chKey]) return BOSS_AI_PROFILES[chKey];
+  return BOSS_AI_PROFILES.default;
+}
+
 export const BOSS_AI_LAYER = {
   PHASE2_HP_RATIO: 0.5,       // このHP割合を下回るとフェーズ2（強化状態）に入る
   PHASE2_ATK_MULT: 1.25,      // フェーズ2の攻撃力倍率
@@ -462,15 +522,10 @@ export const BOSS_AI_LAYER = {
   CHARGE_SPEED_MULT: 3.2,
   CHARGE_DAMAGE_MULT: 0.30,
 
-  PROJECTILE_INTERVAL_SEC: 4.5, // 遠距離攻撃の間隔（intensity=highのBossのみ）
+  PROJECTILE_INTERVAL_SEC: 4.5, // 遠距離攻撃の間隔（プロファイルでprojectile:trueのBossのみ）
   PROJECTILE_SPEED: 260,
   PROJECTILE_DAMAGE_MULT: 0.18,
 
-  SUMMON_INTERVAL_SEC: 10,    // 雑魚召喚の間隔（intensity=highのBossのみ）
+  SUMMON_INTERVAL_SEC: 10,    // 雑魚召喚の間隔（プロファイルでsummon:trueのBossのみ）
   SUMMON_COUNT: 2,
-
-  // 章5・8・10のBossは「明確な難易度の節目」（元指示10番）にするため、
-  // 通常Boss（intensity='normal'）より多くの攻撃パターンを使う
-  // （intensity='high'：スラム＋突進＋遠距離＋召喚のフル構成）。
-  HIGH_INTENSITY_CHAPTERS: [5, 8, 10],
 };

@@ -7,7 +7,7 @@ import { findStage } from './data/stages.js';
 import { ENEMY_TYPES } from './data/enemies.js';
 import { getItem, RARITY, rarityIndex } from './data/equipment.js';
 import { getRune } from './data/runes.js';
-import { DAMAGE_BUCKET, ECONOMY, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER, CAPS_LAYER, BOSS_AI_LAYER } from './data/balance.js';
+import { DAMAGE_BUCKET, ECONOMY, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER, CAPS_LAYER, BOSS_AI_LAYER, resolveBossAIProfile } from './data/balance.js';
 import { getBlessing } from './data/blessings.js';
 import { weaponDropPoolForStage, bossWeaponForChapter } from './data/weapons.js';
 import { Joystick } from './joystick.js';
@@ -486,22 +486,22 @@ export class BattleScreen {
       hitFlash: 0, contactCooldown: 0,
     };
     if (enemy.boss) {
-      // Boss AI（元指示9〜11番）：全BossにHP50%閾値のフェーズ2・予兆付き範囲
-      // 攻撃／突進を標準装備させ、「壁」として機能させる。章5・8・10
-      // （HIGH_INTENSITY_CHAPTERS）と深淵ボスは、力のインフレの受け皿である
-      // 深淵の趣旨（元指示21番）に合わせ、遠距離攻撃・雑魚召喚も使う
-      // フル構成にする。すべて必ずTELEGRAPH_SEC秒の予兆を経てから発動する
-      // ため、モバイルのタッチ操作でも見てから避けられる（元指示11・33番）。
-      const highIntensity = (this.chapter && BOSS_AI_LAYER.HIGH_INTENSITY_CHAPTERS.includes(this.chapter.num)) || !!this.stage.isAbyss;
+      // Boss AI（元指示9〜11番）：全BossにHP50%閾値のフェーズ2・予兆付き
+      // 特殊攻撃を標準装備させ、「壁」として機能させる。どの攻撃パターンを
+      // 使うかはBOSS_AI_PROFILES（Boss個体のtype文字列 > 章単位 > 深淵共通 >
+      // default、balance.jsのresolveBossAIProfile参照）で決まる。章5・8・10と
+      // 深淵Bossは、力のインフレの受け皿である深淵の趣旨（元指示21番）に
+      // 合わせ、遠距離攻撃・雑魚召喚も使うフル構成にする。すべて必ず
+      // TELEGRAPH_SEC秒の予兆を経てから発動するため、モバイルのタッチ操作
+      // でも見てから避けられる（元指示11・33番）。
+      const profile = resolveBossAIProfile(type, this.chapter ? this.chapter.num : null, !!this.stage.isAbyss);
       enemy.aiPhase = 1;
-      enemy.aiIntensity = highIntensity ? 'high' : 'normal';
+      enemy.aiProfile = profile;
       // 初動が完全な棒立ちにならないよう開始タイマーを少しずらす
-      enemy.slamTimer = BOSS_AI_LAYER.SLAM_INTERVAL_SEC * 0.55;
-      enemy.chargeTimer = BOSS_AI_LAYER.CHARGE_INTERVAL_SEC * 0.85;
-      if (highIntensity) {
-        enemy.projectileTimer = BOSS_AI_LAYER.PROJECTILE_INTERVAL_SEC * 0.4;
-        enemy.summonTimer = BOSS_AI_LAYER.SUMMON_INTERVAL_SEC;
-      }
+      if (profile.slam) enemy.slamTimer = BOSS_AI_LAYER.SLAM_INTERVAL_SEC * 0.55;
+      if (profile.charge) enemy.chargeTimer = BOSS_AI_LAYER.CHARGE_INTERVAL_SEC * 0.85;
+      if (profile.projectile) enemy.projectileTimer = BOSS_AI_LAYER.PROJECTILE_INTERVAL_SEC * 0.4;
+      if (profile.summon) enemy.summonTimer = BOSS_AI_LAYER.SUMMON_INTERVAL_SEC;
     }
     this.enemies.push(enemy);
     if (enemy.boss) {
@@ -620,8 +620,8 @@ export class BattleScreen {
         e.aiPhase = 2;
         e.atk = Math.round(e.atk * BOSS_AI_LAYER.PHASE2_ATK_MULT);
         e.speed = Math.round(e.speed * BOSS_AI_LAYER.PHASE2_SPEED_MULT);
-        e.slamTimer = Math.min(e.slamTimer, BOSS_AI_LAYER.SLAM_INTERVAL_SEC) * BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT;
-        e.chargeTimer = Math.min(e.chargeTimer, BOSS_AI_LAYER.CHARGE_INTERVAL_SEC) * BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT;
+        if (e.slamTimer != null) e.slamTimer = Math.min(e.slamTimer, BOSS_AI_LAYER.SLAM_INTERVAL_SEC) * BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT;
+        if (e.chargeTimer != null) e.chargeTimer = Math.min(e.chargeTimer, BOSS_AI_LAYER.CHARGE_INTERVAL_SEC) * BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT;
         if (e.projectileTimer != null) e.projectileTimer *= BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT;
         if (e.summonTimer != null) e.summonTimer *= BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT;
         this._toast(`${e.name}が態勢を変えた！`, '#ff8a3c');
@@ -635,13 +635,16 @@ export class BattleScreen {
       }
       if (e.chargeDash) continue;
 
-      e.slamTimer -= dt;
-      e.chargeTimer -= dt;
+      // 各攻撃パターンはBOSS_AI_PROFILESで無効化されている場合タイマー
+      // 自体がnullのまま（_spawnEnemyで初期化されない）なので、projectile/
+      // summonと同じくnullガードで統一する（PR#2レビュー第3点）。
+      if (e.slamTimer != null) e.slamTimer -= dt;
+      if (e.chargeTimer != null) e.chargeTimer -= dt;
       if (e.projectileTimer != null) e.projectileTimer -= dt;
       if (e.summonTimer != null) e.summonTimer -= dt;
 
-      if (e.slamTimer <= 0) { this._startBossTelegraph(e, 'slam'); continue; }
-      if (e.chargeTimer <= 0) { this._startBossTelegraph(e, 'charge'); continue; }
+      if (e.slamTimer != null && e.slamTimer <= 0) { this._startBossTelegraph(e, 'slam'); continue; }
+      if (e.chargeTimer != null && e.chargeTimer <= 0) { this._startBossTelegraph(e, 'charge'); continue; }
       if (e.projectileTimer != null && e.projectileTimer <= 0) { this._startBossTelegraph(e, 'projectile'); continue; }
       if (e.summonTimer != null && e.summonTimer <= 0) {
         e.summonTimer = BOSS_AI_LAYER.SUMMON_INTERVAL_SEC * (e.aiPhase === 2 ? BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT : 1);

@@ -83,6 +83,12 @@ function rewardFloorMult(depth) {
 // 依存しない）。敵の強さ側（hp/atk/def）はここでは一切いじらない
 // （エリート化・敵ステータス系モディファイアはbattle.js側で、深淵ツリーの
 // 耐性を反映した上で適用する）。
+//
+// 仕様の明確化（PR#2レビュー第4点）：「深淵1階＝10章ボス撃破直後の到達値
+// そのもの」（仕様A）を採用する。深淵1階はまだ何の深淵専用強化も乗って
+// いない状態で、2階以降からabyssBandMult()の複利成長が始まる（同関数の
+// コメント参照）。「深淵1階は10章より少し強い最初のエンドコンテンツ階層」
+// （仕様B）ではない。
 function scaleArchetype(base, depth, goldMult, expMult) {
   const isBoss = !!base.boss;
   const hpBase = isBoss ? bossHpMult(10) : hpMult(10);
@@ -152,9 +158,16 @@ export function buildAbyssStage(depth) {
         { type: bossId, count: 1, interval: 0 },
       ]
     : [
-        { type: normalId, count: Math.round((3 + Math.min(4, Math.floor(depth / 5))) * enemyCountMult), interval: 1.1 },
-        { type: fastId, count: Math.round((2 + Math.min(3, Math.floor(depth / 8))) * enemyCountMult), interval: 0.9 },
-        { type: tankId, count: Math.round((1 + Math.min(3, Math.floor(depth / 10))) * enemyCountMult), interval: 1.8 },
+        // PR#2レビュー第2点：以前は出現数の上限にdepth20〜30程度で到達して
+        // しまい、それ以降（特に101〜200階）は敵の強さ（HP/ATK/DEF）だけで
+        // しか難易度が伸びない構造になっていた（「HPだけで難易度を作らない」
+        // 元指示に反する）。上限到達depthを200付近まで押し上げ、101〜200階
+        // でも出現数自体が伸び続けるようにした。200階より先は上限で頭打ち
+        // にし（フレームレート対策）、その先の難易度は主にHP/ATK/エリート
+        // 出現率（ABYSS_LAYER.BANDS・ELITE_CHANCE_DEPTH_BANDS）側で伸ばす。
+        { type: normalId, count: Math.round((3 + Math.min(10, Math.floor(depth / 20))) * enemyCountMult), interval: 1.1 },
+        { type: fastId, count: Math.round((2 + Math.min(7, Math.floor(depth / 28))) * enemyCountMult), interval: 0.9 },
+        { type: tankId, count: Math.round((1 + Math.min(6, Math.floor(depth / 35))) * enemyCountMult), interval: 1.8 },
       ];
 
   const rewardMult = rewardFloorMult(depth) * (bossFloor ? ABYSS_LAYER.BOSS_REWARD_MULT : 1);
