@@ -6,4 +6,7 @@ export function renderHome() {
   document.getElementById('homeGoldText').textContent = `💰 ${state.data.gold}　💎 ${state.data.manastone}`;
   const pct = Math.min(100, (state.currentExp / state.expToNext(state.currentLevel)) * 100);
   document.getElementById('homeXpFill').style.width = `${pct}%`;
+
+  const abyssBtn = document.getElementById('goAbyssBtn');
+  abyssBtn.classList.toggle('locked', !state.isAbyssUnlocked());
 }

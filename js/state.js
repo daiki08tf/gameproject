@@ -6,6 +6,7 @@ import { getJob, computeStats, isUnlocked, TIERS } from './data/jobs.js';
 import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, WEAPON_MASTERY_THRESHOLD } from './data/equipment.js';
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
+import { isAbyssUnlocked } from './data/stages.js';
 import { EQUIPMENT_LAYER, REBIRTH_LAYER, JOB_MASTER_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER } from './data/balance.js';
 import { AWAKENING_NODES, awakeningNodeCost } from './data/awakening.js';
 import { getArtifact } from './data/artifacts.js';
@@ -32,6 +33,7 @@ function defaultSave() {
     awakenedWeapons: {},
     unlockedArtifacts: [],
     equippedArtifacts: [null, null, null],
+    abyssBestDepth: 0,
   };
 }
 
@@ -527,6 +529,17 @@ class StateManager {
     this.data.stageProgress[stageId] = { cleared: this.isStageCleared(stageId) || cleared };
     this.save();
     return { wasFirstClear };
+  }
+
+  // ---------- 深淵（Abyss、Phase 4） ----------
+  // 深淵は無限に深くなるため、章のように stageProgress へ1階ごと記録すると
+  // セーブが際限なく肥大化する。代わりに「最高到達階」だけを永続保持する
+  // （下がることはない＝非破壊）。
+  isAbyssUnlocked() { return isAbyssUnlocked((id) => this.isStageCleared(id)); }
+
+  recordAbyssClear(depth) {
+    if (depth > this.data.abyssBestDepth) this.data.abyssBestDepth = depth;
+    this.save();
   }
 }
 

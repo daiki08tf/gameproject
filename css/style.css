@@ -177,6 +177,7 @@ button { font-family: inherit; }
   cursor: pointer;
 }
 .menu-card:active { background: rgba(255,255,255,0.12); }
+.menu-card.locked { opacity: 0.4; cursor: default; }
 .menu-icon { font-size: 22px; }
 
 /* ---------------------------------------------------------

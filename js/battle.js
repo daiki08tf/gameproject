@@ -501,15 +501,21 @@ export class BattleScreen {
         stageGold = this.stage.rewards.gold;
         state.gainExp(stageExp);
         state.gainGold(stageGold);
-        const res = state.recordStageResult(this.stage.id, true);
-        firstClear = res.wasFirstClear;
-        if (firstClear && this.stage.firstClear && this.stage.firstClear.itemId) {
-          state.addItem(this.stage.firstClear.itemId, 1);
-          bonusItem = this.stage.firstClear.itemId;
+        if (this.stage.isAbyss) {
+          // 深淵は無限に深くなるため、章のように毎階stageProgressへ記録せず
+          // 「最高到達階」だけを更新する（下がらない・永続）
+          state.recordAbyssClear(this.stage.abyssDepth);
+        } else {
+          const res = state.recordStageResult(this.stage.id, true);
+          firstClear = res.wasFirstClear;
+          if (firstClear && this.stage.firstClear && this.stage.firstClear.itemId) {
+            state.addItem(this.stage.firstClear.itemId, 1);
+            bonusItem = this.stage.firstClear.itemId;
+          }
         }
         Audio_.stageClear();
       } else if (!retreated) {
-        state.recordStageResult(this.stage.id, false);
+        if (!this.stage.isAbyss) state.recordStageResult(this.stage.id, false);
         Audio_.stageFail();
       }
     } catch (err) {

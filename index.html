@@ -46,6 +46,9 @@
       <button id="goSpellBtn" class="menu-card">
         <span class="menu-icon">📖</span><span>ふっかつのじゅもん</span>
       </button>
+      <button id="goAbyssBtn" class="menu-card">
+        <span class="menu-icon">🌀</span><span>深淵</span>
+      </button>
     </nav>
   </section>
 
@@ -56,6 +59,16 @@
       <h2>冒険へ出る</h2>
     </header>
     <div id="chapterList" class="stage-list"></div>
+  </section>
+
+  <!-- ============ 深淵 ============ -->
+  <section id="abyssScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="abyssBackBtn">←</button>
+      <h2>深淵</h2>
+    </header>
+    <p class="hint" style="padding:0 16px;">全10章のボスを撃破した者だけが挑める、際限なく深くなる試練の場。踏破記録は失われません。</p>
+    <div id="abyssList" class="stage-list"></div>
   </section>
 
   <!-- ============ ステージ選択 ============ -->

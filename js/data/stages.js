@@ -4,6 +4,7 @@
    標準5ステージ構成（雑魚4＋ボス1）を自動生成する。
    ============================================================ */
 import { CHAPTER_SPECS, chapterMult } from './chapters.js';
+import { buildAbyssStage } from './abyss.js';
 
 const CHAPTER_1 = {
   id: 'ch1',
@@ -157,7 +158,21 @@ function scaleReward(base, mult) {
 
 export const CHAPTERS = [CHAPTER_1, ...CHAPTER_SPECS.map(buildChapter)];
 
+// 各章の「本当のボスステージ」を取得する。
+// 分岐（隠し道）ステージは常にboss後ろへpushされて配列の末尾に来るため、
+// 単純に stages[stages.length - 1] を使うとボスではなく分岐ステージを
+// 拾ってしまう（章の解放条件・推奨Lv表示の両方でバグの元になっていた）。
+// boss:true フラグで明示的に探すことで、分岐の有無に関係なく正しく取れる。
+export function finalStageOf(chapter) {
+  return chapter.stages.find((s) => s.boss) || chapter.stages[chapter.stages.length - 1];
+}
+
 export function findStage(stageId) {
+  if (stageId.startsWith('abyss-')) {
+    const depth = parseInt(stageId.slice('abyss-'.length), 10);
+    if (Number.isFinite(depth) && depth >= 1) return { chapter: null, stage: buildAbyssStage(depth) };
+    return null;
+  }
   for (const ch of CHAPTERS) {
     const st = ch.stages.find((s) => s.id === stageId);
     if (st) return { chapter: ch, stage: st };
@@ -165,10 +180,14 @@ export function findStage(stageId) {
   return null;
 }
 
-// 章が解放されているか（前章のボスステージをクリア済みか）
+// 章が解放されているか（前章の"ボス"ステージをクリア済みか。分岐ステージは対象外）
 export function isChapterUnlocked(chapterIndex, isStageCleared) {
   if (chapterIndex === 0) return true;
   const prevChapter = CHAPTERS[chapterIndex - 1];
-  const bossStage = prevChapter.stages[prevChapter.stages.length - 1];
-  return isStageCleared(bossStage.id);
+  return isStageCleared(finalStageOf(prevChapter).id);
+}
+
+// 深淵（Abyss）が解放されているか：全章のボスを撃破済みか
+export function isAbyssUnlocked(isStageCleared) {
+  return CHAPTERS.every((ch) => isStageCleared(finalStageOf(ch).id));
 }

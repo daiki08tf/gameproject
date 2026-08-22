@@ -1,4 +1,4 @@
-import { CHAPTERS, isChapterUnlocked } from '../data/stages.js';
+import { CHAPTERS, isChapterUnlocked, finalStageOf } from '../data/stages.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 
@@ -7,7 +7,7 @@ export function renderChapterSelect(onPick) {
   list.innerHTML = '';
   CHAPTERS.forEach((ch, idx) => {
     const unlocked = isChapterUnlocked(idx, (id) => state.isStageCleared(id));
-    const bossStage = ch.stages[ch.stages.length - 1];
+    const bossStage = finalStageOf(ch);
     const allCleared = ch.stages.every((s) => state.isStageCleared(s.id));
     const card = document.createElement('div');
     card.className = 'stage-card' + (!unlocked ? ' locked' : '') + (allCleared ? ' boss' : '');

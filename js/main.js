@@ -3,6 +3,7 @@ import { BattleScreen } from './battle.js';
 import { renderHome } from './screens/home.js';
 import { renderChapterSelect } from './screens/chapterSelect.js';
 import { renderStageSelect, renderStageConfirm } from './screens/stageSelect.js';
+import { renderAbyssList } from './screens/abyss.js';
 import { renderEquipment, autoEquipBest } from './screens/equipment.js';
 import { renderJobs } from './screens/jobs.js';
 import { renderBlacksmith, initBlacksmithTabs } from './screens/blacksmith.js';
@@ -15,6 +16,7 @@ const battle = new BattleScreen();
 let pendingStage = null;
 let lastStageId = null;
 let currentChapterIndex = 0;
+let cameFromAbyss = false; // stageConfirmScreenの「戻る」を章一覧/深淵一覧のどちらへ返すか
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
@@ -36,11 +38,22 @@ function goChapterSelect() {
 function goStageSelect(chapterIndex) {
   currentChapterIndex = chapterIndex;
   renderStageSelect(chapterIndex, (stage) => {
+    cameFromAbyss = false;
     pendingStage = stage;
     renderStageConfirm(stage);
     showScreen('stageConfirmScreen');
   });
   showScreen('stageSelectScreen');
+}
+
+function goAbyssList() {
+  renderAbyssList((stage) => {
+    cameFromAbyss = true;
+    pendingStage = stage;
+    renderStageConfirm(stage);
+    showScreen('stageConfirmScreen');
+  });
+  showScreen('abyssScreen');
 }
 
 function startBattle(stage) {
@@ -87,16 +100,26 @@ document.getElementById('goSpellBtn').addEventListener('click', () => {
   renderSpellScreen();
   showScreen('spellScreen');
 });
+document.getElementById('goAbyssBtn').addEventListener('click', () => {
+  if (!state.isAbyssUnlocked()) return; // .lockedはCSSのみで実際のクリックは阻止していないため二重にガードする
+  Audio_.tap();
+  goAbyssList();
+});
 
 // ---------------------------------------------------------
 // 章選択／ステージ選択／確認
 document.getElementById('chapterBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 document.getElementById('stageBackBtn').addEventListener('click', () => { Audio_.tap(); goChapterSelect(); });
-document.getElementById('confirmBackBtn').addEventListener('click', () => { Audio_.tap(); goStageSelect(currentChapterIndex); });
+document.getElementById('confirmBackBtn').addEventListener('click', () => {
+  Audio_.tap();
+  if (cameFromAbyss) goAbyssList();
+  else goStageSelect(currentChapterIndex);
+});
 document.getElementById('confirmStartBtn').addEventListener('click', () => {
   Audio_.tap();
   startBattle(pendingStage);
 });
+document.getElementById('abyssBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 
 // ---------------------------------------------------------
 // 装備
