@@ -460,3 +460,80 @@ button { font-family: inherit; }
   resize: vertical;
 }
 .spell-box::placeholder { color: rgba(255,255,255,0.35); font-family: inherit; }
+
+/* ---------------------------------------------------------
+   テキスト戦闘（TextBattleScreen）
+   既存のリアルタイムCanvas戦闘（#battleScreen）はそのまま残し、
+   こちらは独立した新しい画面として追加する（元指示19番）。
+   モバイル縦持ち・大きめタップ領域・読みやすいログを優先する
+   （元指示20・21番）。
+--------------------------------------------------------- */
+#textBattleScreen { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+
+.tb-hud { flex-shrink: 0; }
+.tb-topline { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 6px; }
+.tb-topline .name { font-weight: bold; font-size: 15px; }
+.tb-mp-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.tb-mp-row .bar { flex: 1; }
+.tb-mp-label { font-size: 11px; opacity: 0.75; width: 28px; }
+
+.tb-enemy-list {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+.tb-enemy-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: var(--card-bg);
+  cursor: pointer;
+}
+.tb-enemy-card.selected { border-color: var(--accent); background: rgba(242,201,76,0.12); }
+.tb-enemy-card.dead { opacity: 0.35; text-decoration: line-through; cursor: default; }
+.tb-enemy-card.boss { border-color: rgba(230,66,90,0.6); background: rgba(230,66,90,0.1); }
+.tb-enemy-card.telegraph { border-color: #ff9a4d; box-shadow: 0 0 10px rgba(255,154,77,0.5); }
+.tb-enemy-name-row { display: flex; justify-content: space-between; font-size: 13px; }
+.tb-enemy-name-row .tag { font-size: 11px; opacity: 0.8; }
+
+.tb-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.tb-log p { margin: 0 0 4px; }
+.tb-log p.tb-log-highlight { color: var(--accent); font-weight: bold; }
+.tb-log p.tb-log-danger { color: #ff8a94; }
+
+.tb-command-grid {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.tb-cmd-btn {
+  padding: 16px 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: #f0f0f5;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.tb-cmd-btn:active { transform: scale(0.96); }
+.tb-cmd-btn[disabled] { opacity: 0.35; cursor: default; }
+.tb-cmd-btn.tb-cmd-guard { background: rgba(74,194,232,0.15); }
+.tb-cmd-btn.tb-cmd-flee { background: rgba(255,255,255,0.05); }

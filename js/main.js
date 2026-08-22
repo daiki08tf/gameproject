@@ -1,5 +1,7 @@
 import { state } from './state.js';
-import { BattleScreen } from './battle.js';
+// 旧リアルタイムCanvas戦闘（js/battle.js）はそのまま未使用で残し、こちらの
+// テキスト戦闘（TextBattleScreen）へ切り替える（元指示19番）
+import { TextBattleScreen } from './screens/textBattle.js';
 import { renderHome } from './screens/home.js';
 import { renderChapterSelect } from './screens/chapterSelect.js';
 import { renderStageSelect, renderStageConfirm, getSelectedBlessingId } from './screens/stageSelect.js';
@@ -13,7 +15,7 @@ import { renderSpellScreen, initSpellScreen } from './screens/spellScreen.js';
 import { renderResult } from './screens/result.js';
 import { Audio_ } from './audio.js';
 
-const battle = new BattleScreen();
+const battle = new TextBattleScreen();
 let pendingStage = null;
 let lastStageId = null;
 let currentChapterIndex = 0;
@@ -59,7 +61,7 @@ function goAbyssList() {
 
 function startBattle(stage, blessingId) {
   lastStageId = stage.id;
-  showScreen('battleScreen');
+  showScreen('textBattleScreen');
   battle.start(stage.id, (result) => {
     renderResult(result);
     showScreen('resultScreen');
