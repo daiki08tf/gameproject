@@ -8,7 +8,7 @@ let activeTab = 'enhance';
 let selectedRuneSlot = null;
 
 export function initBlacksmithTabs() {
-  document.querySelectorAll('.tab-btn').forEach((btn) => {
+  document.querySelectorAll('#blacksmithScreen .tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       Audio_.tap();
       activeTab = btn.dataset.tab;
@@ -20,7 +20,7 @@ export function initBlacksmithTabs() {
 
 export function renderBlacksmith() {
   document.getElementById('manastoneText').textContent = `💎 ${state.data.manastone}`;
-  document.querySelectorAll('.tab-btn').forEach((btn) => {
+  document.querySelectorAll('#blacksmithScreen .tab-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.tab === activeTab);
   });
   const content = document.getElementById('blacksmithContent');

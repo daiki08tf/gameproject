@@ -6,7 +6,7 @@ import { renderStageSelect, renderStageConfirm } from './screens/stageSelect.js'
 import { renderEquipment, autoEquipBest } from './screens/equipment.js';
 import { renderJobs } from './screens/jobs.js';
 import { renderBlacksmith, initBlacksmithTabs } from './screens/blacksmith.js';
-import { renderRebirth } from './screens/rebirth.js';
+import { renderRebirth, initRebirthTabs } from './screens/rebirth.js';
 import { renderSpellScreen, initSpellScreen } from './screens/spellScreen.js';
 import { renderResult } from './screens/result.js';
 import { Audio_ } from './audio.js';
@@ -115,6 +115,7 @@ initBlacksmithTabs();
 // ---------------------------------------------------------
 // 転生の祭壇
 document.getElementById('rebirthBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+initRebirthTabs();
 
 // ---------------------------------------------------------
 // ふっかつのじゅもん

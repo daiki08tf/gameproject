@@ -6,7 +6,8 @@ import { getJob, computeStats, isUnlocked, TIERS } from './data/jobs.js';
 import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, WEAPON_MASTERY_THRESHOLD } from './data/equipment.js';
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
-import { EQUIPMENT_LAYER, REBIRTH_LAYER } from './data/balance.js';
+import { EQUIPMENT_LAYER, REBIRTH_LAYER, JOB_MASTER_LAYER, AWAKENING_LAYER } from './data/balance.js';
+import { AWAKENING_NODES, awakeningNodeCost } from './data/awakening.js';
 
 const SAVE_KEY = 'bladevale_save_v1';
 
@@ -24,6 +25,9 @@ function defaultSave() {
     weaponMastery: {},
     reincarnations: 0,
     stageProgress: {},
+    awakeningPoints: 0,
+    awakeningTree: {},
+    awakenings: 0,
   };
 }
 
@@ -83,7 +87,7 @@ class StateManager {
 
   gainExp(amount) {
     const passive = this.currentJob.passive;
-    const mult = passive && passive.exp ? passive.exp : 1;
+    const mult = (passive && passive.exp ? passive.exp : 1) * this.awakeningStatMult('exp');
     const gained = Math.round(amount * mult);
     const prog = this.data.jobs[this.currentJobId];
     prog.exp += gained;
@@ -104,7 +108,7 @@ class StateManager {
   // ---------- ゴールド・魔石 ----------
   gainGold(amount) {
     const passive = this.currentJob.passive;
-    const mult = passive && passive.gold ? passive.gold : 1;
+    const mult = (passive && passive.gold ? passive.gold : 1) * this.awakeningStatMult('gold');
     const gained = Math.round(amount * mult);
     this.data.gold += gained;
     this.save();
@@ -118,7 +122,7 @@ class StateManager {
 
   dropRateMult() {
     const passive = this.currentJob.passive;
-    return passive && passive.drop ? passive.drop : 1;
+    return (passive && passive.drop ? passive.drop : 1) * this.awakeningStatMult('drop');
   }
 
   // ---------- ステータス計算（職業ベース＋装備＋強化＋ルーン＋転生＋武器適性） ----------
@@ -145,14 +149,18 @@ class StateManager {
     }
 
     const rebirthMult = 1 + this.data.reincarnations * REBIRTH_LAYER.STAT_BONUS_PER_REBIRTH;
+    const masterMult = this.jobMasterMult();
+    const permMult = (stat) => rebirthMult * masterMult * this.awakeningStatMult(stat);
     const stats = {
-      hp: Math.round((base.hp + bonus.hp) * rebirthMult),
-      mp: Math.round((base.mp + bonus.mp) * rebirthMult),
-      atk: Math.round((base.atk + bonus.atk) * rebirthMult),
-      def: Math.round((base.def + bonus.def) * rebirthMult),
-      mag: Math.round((base.mag + bonus.mag) * rebirthMult),
-      spd: Math.round((base.spd + bonus.spd) * rebirthMult * 10) / 10,
-      critPct: Math.min(75, base.critPct + bonus.crit * 0.8),
+      hp: Math.round((base.hp + bonus.hp) * permMult('hp')),
+      mp: Math.round((base.mp + bonus.mp) * permMult('mp')),
+      atk: Math.round((base.atk + bonus.atk) * permMult('atk')),
+      def: Math.round((base.def + bonus.def) * permMult('def')),
+      mag: Math.round((base.mag + bonus.mag) * permMult('mag')),
+      spd: Math.round((base.spd + bonus.spd) * permMult('spd') * 10) / 10,
+      // critPctはPhase 1以前から転生・MASTERの永続倍率を掛けていない（加算のみ）ため、
+      // その挙動は変えず、覚醒ツリーのボーナスだけを新たに乗算する。
+      critPct: Math.min(75, (base.critPct + bonus.crit * 0.8) * this.awakeningStatMult('crit')),
     };
     const weaponItem = getItem(weaponId);
     const affinity = weaponAffinityBonus(weaponItem, this.currentJob.weapon);
@@ -359,6 +367,79 @@ class StateManager {
     this.data.gold -= cost.gold;
     this.data.manastone -= cost.manastone;
     this.data.reincarnations += 1;
+    this.save();
+    return true;
+  }
+
+  // ---------- 職業MASTER ----------
+  // マスター済み職業1つにつき、tierに応じた永続の全ステータス倍率を加算する。
+  // 覚醒でリセットされることはない（マスター済みリストは覚醒対象外）。
+  jobMasterMult() {
+    let mult = 1;
+    for (const jobId of this.data.mastered) {
+      const job = getJob(jobId);
+      if (!job) continue;
+      mult += JOB_MASTER_LAYER.STAT_BONUS_PCT[job.tier] || 0;
+    }
+    return mult;
+  }
+
+  // ---------- 覚醒（Reincarnation 2.0：プレステージリセット） ----------
+  // 保持している全職業の中で最も高いレベル。覚醒の可否・獲得ポイントの基準にする。
+  highestJobLevel() {
+    let max = 1;
+    for (const jobId in this.data.jobs) {
+      const lv = this.data.jobs[jobId].level || 1;
+      if (lv > max) max = lv;
+    }
+    return max;
+  }
+
+  canAwaken() {
+    return this.highestJobLevel() >= AWAKENING_LAYER.MIN_LEVEL_TO_AWAKEN;
+  }
+
+  awakenPreviewPoints() {
+    return Math.floor(this.highestJobLevel() / AWAKENING_LAYER.POINTS_PER_LEVEL_DIVISOR);
+  }
+
+  // 全職業のレベル・経験値だけをリセットする。装備・所持品・ゴールド・魔石・
+  // マスター済み職業・武器熟練度・転生回数・ステージ進行は一切失わない。
+  awaken() {
+    if (!this.canAwaken()) return false;
+    const gained = this.awakenPreviewPoints();
+    for (const jobId in this.data.jobs) {
+      this.data.jobs[jobId] = { level: 1, exp: 0 };
+    }
+    this.data.awakeningPoints += gained;
+    this.data.awakenings += 1;
+    this.save();
+    return gained;
+  }
+
+  // 覚醒ツリー：statごとの永続倍率（1 + Σ rank * pctPerRank）
+  awakeningStatMult(stat) {
+    let mult = 1;
+    for (const node of AWAKENING_NODES) {
+      if (node.stat !== stat) continue;
+      mult += this.awakeningNodeRank(node.id) * node.pctPerRank;
+    }
+    return mult;
+  }
+
+  awakeningNodeRank(id) { return this.data.awakeningTree[id] || 0; }
+
+  canBuyAwakeningNode(id) {
+    const rank = this.awakeningNodeRank(id);
+    if (rank >= AWAKENING_LAYER.NODE_MAX_RANK) return false;
+    return this.data.awakeningPoints >= awakeningNodeCost(rank);
+  }
+
+  buyAwakeningNode(id) {
+    if (!this.canBuyAwakeningNode(id)) return false;
+    const rank = this.awakeningNodeRank(id);
+    this.data.awakeningPoints -= awakeningNodeCost(rank);
+    this.data.awakeningTree[id] = rank + 1;
     this.save();
     return true;
   }
