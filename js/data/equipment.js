@@ -138,7 +138,9 @@ for (const ch of CHAPTER_SPECS) {
     stats: makeWeaponStats(ch.weaponType, 'epic', ch.num),
   });
 
-  const buildNamed = (spec) => {
+  // idはMapに格納するキーと必ず一致させる（自己申告のidとキーがズレると、
+  // item.idを起点に再検索するコード＝getItem(item.id)が必ず失敗する）
+  const buildNamed = (spec, id) => {
     const slot = spec.slot;
     const baseStats = slot === 'weapon'
       ? makeWeaponStats(ch.weaponType, namedRarity, ch.num)
@@ -146,13 +148,13 @@ for (const ch of CHAPTER_SPECS) {
         ? makeAccessoryStats(it.accessoryArchetype, namedRarity, ch.num)
         : makeSlotStats(slot, namedRarity, ch.num);
     return {
-      id: `${ch.id}_named_${slot}`, name: spec.name, slot,
+      id, name: spec.name, slot,
       weaponType: slot === 'weapon' ? ch.weaponType : undefined,
       rarity: namedRarity, stats: baseStats, effects: [EFFECTS[spec.effect]],
     };
   };
-  ITEMS.set(`${ch.id}_named_${it.named.slot}`, buildNamed(it.named));
-  if (it.named2) ITEMS.set(`${ch.id}_named2_${it.named2.slot}`, buildNamed(it.named2));
+  ITEMS.set(`${ch.id}_named_${it.named.slot}`, buildNamed(it.named, `${ch.id}_named_${it.named.slot}`));
+  if (it.named2) ITEMS.set(`${ch.id}_named2_${it.named2.slot}`, buildNamed(it.named2, `${ch.id}_named2_${it.named2.slot}`));
 
   if (ch.branch) {
     const branchRarity = ch.final ? 'legendary' : 'epic';

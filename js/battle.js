@@ -391,6 +391,9 @@ export class BattleScreen {
       this._rollDrop();
       this._rollManastone(enemy);
       if (this.weaponType) state.addWeaponKill(this.weaponType);
+      // 覚醒装備（本来仕様）：固有効果を持つ装備を身につけていれば、
+      // どのスロットでもキル数として加算される
+      state.addItemAwakenKills();
       if (enemy.boss) { this.boss = null; this.bossBar.classList.add('hidden'); }
     }
   }

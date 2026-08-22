@@ -7,7 +7,7 @@ import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, 
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
 import { isAbyssUnlocked } from './data/stages.js';
-import { EQUIPMENT_LAYER, REBIRTH_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER } from './data/balance.js';
+import { EQUIPMENT_LAYER, REBIRTH_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER } from './data/balance.js';
 import { ALL_AWAKENING_NODES, getAwakeningNodeDef, awakeningNodeCostFor } from './data/awakening.js';
 import { getArtifact } from './data/artifacts.js';
 
@@ -36,6 +36,8 @@ function defaultSave() {
     abyssBestDepth: 0,
     weaponAffix: {},
     lootFilter: { minRarity: 'normal' },
+    itemAwakenKills: {},
+    weaponAffix2: {},
   };
 }
 
@@ -149,9 +151,15 @@ class StateManager {
         : 1;
       // 極Affixは特定の1ステータスだけに追加%を乗せる（強化・目覚めと同じ
       // 「まとめて1つの倍率にしてから掛ける」方式を、対象ステータスにだけ適用）
+      // 1本目（weaponAffix）は武器限定だが、覚醒装備（キル数）で解放される
+      // 2本目（weaponAffix2）は対象装備が武器以外（アクセ・胴）の場合もあるため
+      // スロットを問わず適用する。
       const affix = slot === 'weapon' ? this.weaponAffix(id) : null;
+      const affix2 = this.weaponAffix2(id);
       for (const k in item.stats) {
-        const mult = (affix && affix.stat === k) ? baseMult + affix.pct : baseMult;
+        let mult = baseMult;
+        if (affix && affix.stat === k) mult += affix.pct;
+        if (affix2 && affix2.stat === k) mult += affix2.pct;
         bonus[k] = (bonus[k] || 0) + item.stats[k] * mult;
       }
     }
@@ -193,7 +201,11 @@ class StateManager {
     const effects = [];
     for (const slot of SLOTS) {
       const item = getItem(this.data.equipped[slot]);
-      if (item && item.effects) effects.push(...item.effects);
+      if (!item || !item.effects) continue;
+      // 覚醒装備（キル数）がtier2（100キル）に達した固有装備は、
+      // 固有能力そのもの（chance/power）が強化された状態で発動する
+      const boosted = this.itemAwakenTier(item.id) >= 2;
+      for (const eff of item.effects) effects.push(boosted ? this._boostedItemEffect(eff) : eff);
     }
     const weaponId = this.data.equipped.weapon;
     if (weaponId) {
@@ -213,6 +225,70 @@ class StateManager {
       else effects.push(artifact);
     }
     return effects;
+  }
+
+  // 覚醒装備tier2（100キル）による固有能力の強化：chance/powerを底上げした
+  // 複製を返す（元のEFFECTS/item.effects定義そのものは書き換えない）
+  _boostedItemEffect(eff) {
+    const boosted = { ...eff };
+    const mult = 1 + AWAKENED_ITEM_LAYER.TIER2_EFFECT_BOOST;
+    if (boosted.chance != null) boosted.chance = Math.min(1, boosted.chance * mult);
+    if (boosted.power != null) boosted.power = boosted.power * mult;
+    return boosted;
+  }
+
+  // ---------- 覚醒装備（本来仕様：固有効果を持つ特殊装備限定、キル数で成長） ----------
+  // 対象は固有効果(effects)を持つ装備のみ。通常装備は覚醒装備の対象外
+  // （「覚醒でどんな装備でも最強になる設計は禁止」という元指示のとおり）。
+  isAwakenedItemEligible(itemId) {
+    const item = getItem(itemId);
+    return !!(item && item.effects && item.effects.length > 0);
+  }
+
+  itemAwakenKillCount(itemId) { return this.data.itemAwakenKills[itemId] || 0; }
+
+  itemAwakenTier(itemId) {
+    const kills = this.itemAwakenKillCount(itemId);
+    if (kills >= AWAKENED_ITEM_LAYER.KILLS_TIER2) return 2;
+    if (kills >= AWAKENED_ITEM_LAYER.KILLS_TIER1) return 1;
+    return 0;
+  }
+
+  // 現在装備中の対象装備すべてに1キル分加算する（対象外の装備は無視）
+  addItemAwakenKills() {
+    let changed = false;
+    for (const slot of SLOTS) {
+      const itemId = this.data.equipped[slot];
+      if (!itemId || !this.isAwakenedItemEligible(itemId)) continue;
+      this.data.itemAwakenKills[itemId] = (this.data.itemAwakenKills[itemId] || 0) + 1;
+      changed = true;
+    }
+    if (changed) this.save();
+  }
+
+  weaponAffix2(itemId) { return this.data.weaponAffix2[itemId] || null; }
+
+  // tier1（50キル）到達で解放される第2の極Affixスロット。武器の強化/目覚め
+  // MAXという既存の極Affixのゲートとは無関係に、キル数だけで解放される
+  // （アクセサリ・胴装備の覚醒装備にも同じ仕組みを使うため）。
+  canRollAffix2(itemId) {
+    if (this.itemAwakenTier(itemId) < 1) return false;
+    return this.data.gold >= EXTREME_AFFIX_LAYER.ROLL_COST_GOLD && this.data.manastone >= EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE;
+  }
+
+  rollAffix2(itemId) {
+    if (!this.canRollAffix2(itemId)) return false;
+    const item = getItem(itemId);
+    const pool = item ? Object.keys(item.stats) : [];
+    if (pool.length === 0) return false;
+    this.data.gold -= EXTREME_AFFIX_LAYER.ROLL_COST_GOLD;
+    this.data.manastone -= EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE;
+    const stat = pool[Math.floor(Math.random() * pool.length)];
+    const deathKingBonus = this.hasEquippedArtifactKind('deathking') ? getArtifact('relic_deathking').affixBonus : 0;
+    const pct = EXTREME_AFFIX_LAYER.MIN_PCT + deathKingBonus + Math.random() * (EXTREME_AFFIX_LAYER.MAX_PCT - EXTREME_AFFIX_LAYER.MIN_PCT);
+    this.data.weaponAffix2[itemId] = { stat, pct: Math.round(pct * 1000) / 1000 };
+    this.save();
+    return this.data.weaponAffix2[itemId];
   }
 
   // 装備中または所持中（強化素材・未使用ストックとして）かどうか。

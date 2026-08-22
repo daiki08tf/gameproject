@@ -3,7 +3,7 @@ import { getItem, RARITY, WEAPON_TYPES, WEAPON_MASTERY_THRESHOLD } from '../data
 import { getRune, craftableRunes } from '../data/runes.js';
 import { jobsByTier } from '../data/jobs.js';
 import { Audio_ } from '../audio.js';
-import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER, EXTREME_AFFIX_LAYER } from '../data/balance.js';
+import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER } from '../data/balance.js';
 
 const AFFIX_STAT_LABEL = { atk: 'ATK', def: 'DEF', hp: 'HP', mag: 'MAG', spd: 'SPD', crit: 'CRIT' };
 
@@ -30,6 +30,7 @@ export function renderBlacksmith() {
   content.innerHTML = '';
   if (activeTab === 'enhance') renderEnhanceTab(content);
   else if (activeTab === 'rune') renderRuneTab(content);
+  else if (activeTab === 'awakenitem') renderAwakenedItemTab(content);
   else renderMasteryTab(content);
 }
 
@@ -272,4 +273,87 @@ function renderMasteryTab(content) {
     `;
     content.appendChild(card);
   }
+}
+
+// ---------------------------------------------------------
+// 覚醒装備タブ（本来仕様：固有効果を持つ特殊装備限定、キル数で成長）
+// ---------------------------------------------------------
+function renderAwakenedItemTab(content) {
+  const hint = document.createElement('p');
+  hint.className = 'hint';
+  hint.textContent = `固有能力を持つ特殊な装備だけが対象。装備して敵を倒すと育つ（キル数 ${AWAKENED_ITEM_LAYER.KILLS_TIER1}で極Affix枠+1、${AWAKENED_ITEM_LAYER.KILLS_TIER2}で固有能力が強化される）。`;
+  content.appendChild(hint);
+
+  const candidates = new Set();
+  for (const slot in state.data.equipped) {
+    const id = state.data.equipped[slot];
+    if (id && state.isAwakenedItemEligible(id)) candidates.add(id);
+  }
+  for (const id in state.data.inventory) {
+    if (state.isAwakenedItemEligible(id)) candidates.add(id);
+  }
+  for (const id in state.data.itemAwakenKills) {
+    if (state.isAwakenedItemEligible(id)) candidates.add(id);
+  }
+
+  if (candidates.size === 0) {
+    const p = document.createElement('p');
+    p.className = 'hint';
+    p.textContent = '対象となる固有装備をまだ所持していません';
+    content.appendChild(p);
+    return;
+  }
+
+  for (const id of candidates) {
+    content.appendChild(renderAwakenedItemCard(id));
+  }
+}
+
+function renderAwakenedItemCard(id) {
+  const item = getItem(id);
+  const kills = state.itemAwakenKillCount(id);
+  const tier = state.itemAwakenTier(id);
+  const pct = Math.min(100, (kills / AWAKENED_ITEM_LAYER.KILLS_TIER2) * 100);
+  const equipped = Object.values(state.data.equipped).includes(id);
+
+  const card = document.createElement('div');
+  card.className = 'forge-card';
+  card.innerHTML = `
+    <div class="forge-card-top">
+      <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name}${tier >= 2 ? '<span class="mastered-badge">★固有能力強化済み</span>' : ''}</div>
+      <div>${kills}/${AWAKENED_ITEM_LAYER.KILLS_TIER2}</div>
+    </div>
+    <div class="forge-card-sub">
+      ${(item.effects || []).map((e) => `✨${e.name}: ${e.desc}`).join('<br>')}
+      ${!equipped ? '<br>※装備していないと覚醒キルは増えません' : ''}
+    </div>
+    <div class="bar xp-bar small"><div class="fill" style="width:${pct}%"></div></div>
+  `;
+  appendAffix2Section(card, id, tier);
+  return card;
+}
+
+// 第2の極Affix枠（tier1到達で解放）の抽選UI
+function appendAffix2Section(card, id, tier) {
+  const wrap = document.createElement('div');
+  wrap.style.marginTop = '8px';
+  if (tier < 1) {
+    wrap.innerHTML = `<div class="forge-card-sub">あと${Math.max(0, AWAKENED_ITEM_LAYER.KILLS_TIER1 - state.itemAwakenKillCount(id))}キルで第2の極Affix枠が解放されます</div>`;
+    card.appendChild(wrap);
+    return;
+  }
+  const affix2 = state.weaponAffix2(id);
+  const canDo = state.canRollAffix2(id);
+  wrap.innerHTML = `
+    <div class="forge-card-sub">${affix2
+      ? `第2Affix：${AFFIX_STAT_LABEL[affix2.stat] || affix2.stat}+${Math.round(affix2.pct * 1000) / 10}%（再抽選すると上書きされます）`
+      : '第2の極Affix枠が解放されています（まだ付与されていません）'}</div>
+    <button class="forge-card-btn" ${canDo ? '' : 'disabled'}>
+      ${affix2 ? '再抽選する' : '極める'}（💰${EXTREME_AFFIX_LAYER.ROLL_COST_GOLD} + 💎${EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE}）
+    </button>
+  `;
+  wrap.querySelector('button').addEventListener('click', () => {
+    if (state.rollAffix2(id)) { Audio_.jobMastered(); renderBlacksmith(); }
+  });
+  card.appendChild(wrap);
 }
