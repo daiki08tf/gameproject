@@ -7,20 +7,16 @@
      自動平均して算出する（手動で全部書かない）
    ============================================================ */
 
+import { CHARACTER_LAYER, JOB_TIER } from './balance.js';
+
 export const STAT_KEYS = ['hp', 'mp', 'atk', 'def', 'mag', 'spd', 'crit'];
 
-// tier ごとの基準値
-export const TIER_INFO = {
-  basic:    { order: 0, changeableLv: 10, masteryLv: 15,  baseMult: 1.0, growthMult: 1.0 },
-  advanced: { order: 1, changeableLv: 20, masteryLv: 30,  baseMult: 1.5, growthMult: 2.0 },
-  special:  { order: 2, changeableLv: 30, masteryLv: 50,  baseMult: 2.1, growthMult: 3.3 },
-  hero:     { order: 3, changeableLv: null, masteryLv: null, baseMult: 3.0, growthMult: 5.3 },
-};
+// tier ごとの基準値（js/data/balance.js に集約。数値調整はそちらで行う）
+export const TIER_INFO = JOB_TIER;
 
-// レベル1時点の素の基礎値（tier補正前）
-const STAT_BASE = { hp: 44, mp: 8, atk: 6, def: 5, mag: 5, spd: 5, crit: 3 };
-// 1レベルあたりの素の伸び（tier補正前・profile補正前）
-const STAT_GROWTH = { hp: 4.5, mp: 1.2, atk: 1, def: 1, mag: 1, spd: 0.4, crit: 0.15 };
+// レベル1時点の素の基礎値／1レベルあたりの素の伸び（tier補正前）
+const STAT_BASE = CHARACTER_LAYER.STAT_BASE;
+const STAT_GROWTH = CHARACTER_LAYER.STAT_GROWTH;
 
 function profileOf(k, v) { return { hp: 1, mp: 1, atk: 1, def: 1, mag: 1, spd: 1, crit: 1, [k]: v }; }
 function mergeProfiles(profiles) {
@@ -226,4 +222,8 @@ export function unlockRequirementText(jobId) {
   return job.requires.map((id) => JOBS.get(id).name).join('＋') + ' を両方マスター';
 }
 
-export { TIER_INFO as TIERS };
+// TIER_INFOの別名（state.js/screens側の既存コードとの互換用）。
+// `export { X as Y }` はY自体のローカル束縛を作らないため、単一スクリプトへ
+// バンドルするとY参照がReferenceErrorになる（実際にPhase 1のリグレッション
+// テストで発覚）。実体のconstとして再エクスポートすることで両方の文脈で動く。
+export const TIERS = TIER_INFO;

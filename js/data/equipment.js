@@ -7,13 +7,14 @@
    データから自動生成する。
    ============================================================ */
 import { CHAPTER_SPECS, ACCESSORY_ARCHETYPES, EFFECTS, chapterMult } from './chapters.js';
+import { EQUIPMENT_LAYER } from './balance.js';
 
 export const RARITY = {
-  normal:    { label: 'ノーマル',   color: '#b9c0cc', mult: 1.0 },
-  rare:      { label: 'レア',       color: '#4ac2e8', mult: 1.6 },
-  epic:      { label: 'エピック',   color: '#b06ef2', mult: 2.4 },
-  legendary: { label: 'レジェンド', color: '#f2c94c', mult: 3.6 },
-  mythic:    { label: '神話',       color: '#ff6ec7', mult: 5.4 },
+  normal:    { label: 'ノーマル',   color: '#b9c0cc', mult: EQUIPMENT_LAYER.RARITY_MULT.normal },
+  rare:      { label: 'レア',       color: '#4ac2e8', mult: EQUIPMENT_LAYER.RARITY_MULT.rare },
+  epic:      { label: 'エピック',   color: '#b06ef2', mult: EQUIPMENT_LAYER.RARITY_MULT.epic },
+  legendary: { label: 'レジェンド', color: '#f2c94c', mult: EQUIPMENT_LAYER.RARITY_MULT.legendary },
+  mythic:    { label: '神話',       color: '#ff6ec7', mult: EQUIPMENT_LAYER.RARITY_MULT.mythic },
 };
 
 // 武器種：メインステータスへの配分比率。affinityStat と職業の得意武器が
@@ -28,11 +29,11 @@ export const WEAPON_TYPES = {
   instrument: { name: '楽器', atk: 0.3, mag: 1.3, spd: 0.8, crit: 0.6, affinityStat: 'mag' },
   rod:        { name: '錫杖', atk: 0.3, mag: 1.4, spd: 0.4, crit: 0.5, affinityStat: 'mag' },
 };
-const AFFINITY_BONUS = 0.08;
+const AFFINITY_BONUS = EQUIPMENT_LAYER.WEAPON_AFFINITY_BONUS;
 // この体数を装備して倒すと、その武器種は全職業で使えるようになる
-export const WEAPON_MASTERY_THRESHOLD = 300;
+export const WEAPON_MASTERY_THRESHOLD = EQUIPMENT_LAYER.WEAPON_MASTERY_KILLS_REQUIRED;
 
-const BASE_POWER = { weapon: 4, shield: 4, head: 3, body: 4, accessory: 3 };
+const BASE_POWER = EQUIPMENT_LAYER.BASE_POWER;
 const SLOT_TEMPLATE = {
   shield: { def: 1.0, hp: 1.5 },
   head: { def: 0.6, mag: 0.5, mp: 1.0 },
@@ -184,8 +185,9 @@ export const SLOTS = ['weapon', 'shield', 'head', 'body', 'accessory1', 'accesso
 
 // 武器強化レベルに応じたルーンスロット数
 export function slotsForEnhanceLevel(level) {
-  if (level >= 9) return 4;
-  if (level >= 6) return 3;
-  if (level >= 3) return 2;
+  const [t1, t2, t3] = EQUIPMENT_LAYER.RUNE_SLOT_LEVEL_THRESHOLDS;
+  if (level >= t3) return 4;
+  if (level >= t2) return 3;
+  if (level >= t1) return 2;
   return 1;
 }

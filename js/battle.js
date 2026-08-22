@@ -6,6 +6,7 @@ import { state } from './state.js';
 import { findStage } from './data/stages.js';
 import { ENEMY_TYPES } from './data/enemies.js';
 import { getItem } from './data/equipment.js';
+import { DAMAGE_BUCKET, ECONOMY } from './data/balance.js';
 import { Joystick } from './joystick.js';
 import { Audio_ } from './audio.js';
 
@@ -232,8 +233,8 @@ export class BattleScreen {
   }
 
   _rollDamage(atk, def) {
-    let dmg = Math.max(1, atk - def * 0.5);
-    if (Math.random() * 100 < this.player.critPct) dmg *= 1.8;
+    let dmg = Math.max(1, atk - def * DAMAGE_BUCKET.DEF_MITIGATION_COEFF);
+    if (Math.random() * 100 < this.player.critPct) dmg *= DAMAGE_BUCKET.CRIT_MULTIPLIER;
     return Math.round(dmg);
   }
 
@@ -352,13 +353,13 @@ export class BattleScreen {
 
   _rollManastone(enemy) {
     if (enemy.boss) {
-      const amount = Math.round(rand(15, 25));
+      const amount = Math.round(rand(ECONOMY.MANASTONE_BOSS_MIN, ECONOMY.MANASTONE_BOSS_MAX));
       state.addManastone(amount);
       this.runManastone = (this.runManastone || 0) + amount;
       return;
     }
-    if (Math.random() > 0.2) return;
-    const amount = Math.round(rand(1, 3));
+    if (Math.random() > ECONOMY.MANASTONE_NORMAL_CHANCE) return;
+    const amount = Math.round(rand(ECONOMY.MANASTONE_NORMAL_MIN, ECONOMY.MANASTONE_NORMAL_MAX));
     state.addManastone(amount);
     this.runManastone = (this.runManastone || 0) + amount;
   }
@@ -366,7 +367,7 @@ export class BattleScreen {
   _rollDrop() {
     const table = this.stage.dropTable || [];
     if (table.length === 0) return;
-    const chance = 0.28 * state.dropRateMult();
+    const chance = ECONOMY.BASE_DROP_CHANCE * state.dropRateMult();
     if (Math.random() > chance) return;
     const totalW = table.reduce((s, d) => s + d.weight, 0);
     let r = Math.random() * totalW;

@@ -4,12 +4,20 @@
    ・効果ルーン：各章のボスステージ限定ドロップ（固有装備と同じ効果を再利用）
    ============================================================ */
 import { EFFECTS } from './chapters.js';
+import { RUNE_TIER_MULT, RUNE_CRAFT_COST } from './balance.js';
 
-export const STAT_RUNE_TIERS = {
-  small:  { label: '小', mult: 1, manastone: 10, gold: 50 },
-  medium: { label: '中', mult: 2, manastone: 25, gold: 150 },
-  large:  { label: '大', mult: 3, manastone: 60, gold: 400 },
-};
+const TIER_LABEL = { small: '小', medium: '中', large: '大' };
+
+// 倍率・クラフトコストは js/data/balance.js に集約。ここでは表示ラベルと結合するだけ
+export const STAT_RUNE_TIERS = {};
+for (const tierId in RUNE_TIER_MULT) {
+  STAT_RUNE_TIERS[tierId] = {
+    label: TIER_LABEL[tierId],
+    mult: RUNE_TIER_MULT[tierId],
+    manastone: RUNE_CRAFT_COST[tierId].manastone,
+    gold: RUNE_CRAFT_COST[tierId].gold,
+  };
+}
 
 // 各ステータスの「小」1個あたりの基準値（中=×2、大=×3）
 const STAT_RUNE_BASE = { atk: 3, def: 3, hp: 8, mag: 3, spd: 2, crit: 2 };

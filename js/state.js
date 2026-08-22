@@ -6,6 +6,7 @@ import { getJob, computeStats, isUnlocked, TIERS } from './data/jobs.js';
 import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, WEAPON_MASTERY_THRESHOLD } from './data/equipment.js';
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
+import { EQUIPMENT_LAYER, REBIRTH_LAYER } from './data/balance.js';
 
 const SAVE_KEY = 'bladevale_save_v1';
 
@@ -130,7 +131,7 @@ class StateManager {
       if (!id) continue;
       const item = getItem(id);
       if (!item) continue;
-      const mult = slot === 'weapon' ? 1 + this.weaponEnhanceLevel(id) * 0.05 : 1;
+      const mult = slot === 'weapon' ? 1 + this.weaponEnhanceLevel(id) * EQUIPMENT_LAYER.ENHANCE_BONUS_PER_LEVEL : 1;
       for (const k in item.stats) bonus[k] = (bonus[k] || 0) + item.stats[k] * mult;
     }
 
@@ -143,7 +144,7 @@ class StateManager {
       }
     }
 
-    const rebirthMult = 1 + this.data.reincarnations * 0.03;
+    const rebirthMult = 1 + this.data.reincarnations * REBIRTH_LAYER.STAT_BONUS_PER_REBIRTH;
     const stats = {
       hp: Math.round((base.hp + bonus.hp) * rebirthMult),
       mp: Math.round((base.mp + bonus.mp) * rebirthMult),
@@ -271,14 +272,14 @@ class StateManager {
   // ---------- 鍛冶屋：武器強化（同じ武器の合成） ----------
   weaponEnhanceLevel(itemId) { return this.data.weaponEnhance[itemId] || 0; }
 
-  enhanceCost(level) { return 30 + level * 40; }
+  enhanceCost(level) { return EQUIPMENT_LAYER.ENHANCE_GOLD_BASE + level * EQUIPMENT_LAYER.ENHANCE_GOLD_PER_LEVEL; }
 
   // +が上がるほど必要な同じ武器の個数も増える（Lv0→1は1個、Lv1→2は2個…）
   enhanceMaterialCount(level) { return level + 1; }
 
   canEnhanceWeapon(itemId) {
     const level = this.weaponEnhanceLevel(itemId);
-    if (level >= 10) return false;
+    if (level >= EQUIPMENT_LAYER.ENHANCE_MAX_LEVEL) return false;
     if ((this.data.inventory[itemId] || 0) < this.enhanceMaterialCount(level)) return false;
     return this.data.gold >= this.enhanceCost(level);
   }
@@ -345,7 +346,10 @@ class StateManager {
 
   reincarnationCost() {
     const n = this.data.reincarnations;
-    return { gold: 500 + n * 800, manastone: 30 + n * 40 };
+    return {
+      gold: REBIRTH_LAYER.GOLD_COST_BASE + n * REBIRTH_LAYER.GOLD_COST_PER_REBIRTH,
+      manastone: REBIRTH_LAYER.MANASTONE_COST_BASE + n * REBIRTH_LAYER.MANASTONE_COST_PER_REBIRTH,
+    };
   }
 
   reincarnate() {
