@@ -1,10 +1,12 @@
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 import { AWAKENING_NODES, awakeningNodeCost } from '../data/awakening.js';
-import { AWAKENING_LAYER } from '../data/balance.js';
+import { AWAKENING_LAYER, ARTIFACT_LAYER } from '../data/balance.js';
+import { ARTIFACTS, getArtifact } from '../data/artifacts.js';
 
 let rebirthActiveTab = 'reincarnate';
 let awakenArmed = false; // 覚醒は取り返しがつくとはいえレベルが1に戻るため、2段階確認にする
+let selectedArtifactSlot = null;
 
 export function initRebirthTabs() {
   document.querySelectorAll('#rebirthScreen .tab-btn').forEach((btn) => {
@@ -12,6 +14,7 @@ export function initRebirthTabs() {
       Audio_.tap();
       rebirthActiveTab = btn.dataset.rtab;
       awakenArmed = false;
+      selectedArtifactSlot = null;
       renderRebirth();
     });
   });
@@ -24,6 +27,7 @@ export function renderRebirth() {
   const content = document.getElementById('rebirthContent');
   content.innerHTML = '';
   if (rebirthActiveTab === 'awaken') renderAwakenTab(content);
+  else if (rebirthActiveTab === 'artifact') renderArtifactTab(content);
   else renderReincarnateTab(content);
 }
 
@@ -108,6 +112,100 @@ function renderAwakenTab(content) {
     `;
     card.querySelector('button').addEventListener('click', () => {
       if (state.buyAwakeningNode(node.id)) { Audio_.pickup(); renderRebirth(); }
+    });
+    content.appendChild(card);
+  }
+}
+
+// ---------------------------------------------------------
+// 秘宝タブ（Phase 3：覚醒アーティファクト）
+// ---------------------------------------------------------
+function renderArtifactTab(content) {
+  const slotCount = state.artifactSlotCount();
+
+  const hint = document.createElement('p');
+  hint.className = 'hint';
+  hint.textContent = `覚醒回数が${ARTIFACT_LAYER.SLOT_UNLOCK_AWAKENINGS.join('・')}回に達するごとにスロットが増える（最大${ARTIFACT_LAYER.SLOT_UNLOCK_AWAKENINGS.length}個）。解放した秘宝は消費されず、スロットへ自由に付け替えられる。`;
+  content.appendChild(hint);
+
+  const slotsHead = document.createElement('div');
+  slotsHead.className = 'forge-card';
+  slotsHead.innerHTML = `<div class="forge-card-sub">アーティファクトスロット（${slotCount}/${ARTIFACT_LAYER.SLOT_UNLOCK_AWAKENINGS.length}）</div><div class="rune-slots" id="artifactSlotsRow"></div>`;
+  content.appendChild(slotsHead);
+
+  const row = slotsHead.querySelector('#artifactSlotsRow');
+  for (let i = 0; i < ARTIFACT_LAYER.SLOT_UNLOCK_AWAKENINGS.length; i++) {
+    const unlocked = i < slotCount;
+    const artifactId = state.data.equippedArtifacts[i];
+    const artifact = artifactId ? getArtifact(artifactId) : null;
+    const slot = document.createElement('div');
+    slot.className = 'rune-slot' + (artifact ? ' filled' : '') + (!unlocked ? ' locked' : '');
+    slot.textContent = !unlocked ? '🔒' : (artifact ? '✨' : '+');
+    slot.title = !unlocked ? '未解放スロット' : (artifact ? artifact.name : '空きスロット');
+    if (unlocked) {
+      slot.addEventListener('click', () => {
+        Audio_.tap();
+        selectedArtifactSlot = selectedArtifactSlot === i ? null : i;
+        renderRebirth();
+      });
+    }
+    row.appendChild(slot);
+  }
+
+  if (selectedArtifactSlot !== null && selectedArtifactSlot < slotCount) {
+    const picker = document.createElement('div');
+    picker.className = 'forge-card';
+    const currentId = state.data.equippedArtifacts[selectedArtifactSlot];
+    let rows = '';
+    if (currentId) {
+      const a = getArtifact(currentId);
+      rows += `<div class="pick-row equipped"><div><div class="item-name">${a.name}</div><div class="item-stats">${a.desc}</div></div><button data-act="unset">外す</button></div>`;
+    }
+    const owned = state.data.unlockedArtifacts.filter((id) => id !== currentId);
+    if (owned.length === 0 && !currentId) rows += '<p class="hint">解放済みの秘宝がありません</p>';
+    for (const id of owned) {
+      const a = getArtifact(id);
+      rows += `<div class="pick-row" data-set="${id}"><div><div class="item-name">${a.name}</div><div class="item-stats">${a.desc}</div></div><button>セット</button></div>`;
+    }
+    picker.innerHTML = `<div class="forge-card-sub">スロット${selectedArtifactSlot + 1}にセットする秘宝を選択</div>${rows}`;
+    const unsetBtn = picker.querySelector('[data-act="unset"]');
+    if (unsetBtn) unsetBtn.addEventListener('click', () => {
+      state.equipArtifact(selectedArtifactSlot, null);
+      Audio_.tap();
+      renderRebirth();
+    });
+    picker.querySelectorAll('[data-set]').forEach((rowEl) => {
+      rowEl.querySelector('button').addEventListener('click', () => {
+        state.equipArtifact(selectedArtifactSlot, rowEl.dataset.set);
+        Audio_.pickup();
+        selectedArtifactSlot = null;
+        renderRebirth();
+      });
+    });
+    content.appendChild(picker);
+  }
+
+  const heading = document.createElement('div');
+  heading.className = 'section-heading';
+  heading.textContent = '秘宝の解放（覚醒ポイントを消費、永続）';
+  content.appendChild(heading);
+
+  for (const artifact of ARTIFACTS) {
+    const unlocked = state.isArtifactUnlocked(artifact.id);
+    const cost = state.artifactUnlockCost();
+    const canUnlock = state.canUnlockArtifact(artifact.id);
+    const card = document.createElement('div');
+    card.className = 'forge-card';
+    card.innerHTML = `
+      <div class="forge-card-top">
+        <div class="forge-card-name">${artifact.name}${unlocked ? '<span class="mastered-badge">★解放済み</span>' : ''}</div>
+      </div>
+      <div class="forge-card-sub">${artifact.desc}</div>
+      ${unlocked ? '' : `<button class="forge-card-btn" ${canUnlock ? '' : 'disabled'}>解放する（💠${cost}）</button>`}
+    `;
+    const btn = card.querySelector('button');
+    if (btn) btn.addEventListener('click', () => {
+      if (state.unlockArtifact(artifact.id)) { Audio_.jobMastered(); renderRebirth(); }
     });
     content.appendChild(card);
   }

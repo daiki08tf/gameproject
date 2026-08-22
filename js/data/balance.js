@@ -135,3 +135,28 @@ export const AWAKENING_LAYER = {
   NODE_COST_PER_RANK: 2,        // ノードのコスト(rank) = BASE + rank * PER_RANK
   NODE_MAX_RANK: 5,
 };
+
+// ---------------------------------------------------------
+// G. 目覚めた装備（Phase 3）
+// 武器強化がMAXに達し、かつ1回以上覚醒した後にのみ、覚醒ポイントを
+// 使って武器をさらに強化できる（強化+10とは別枠の追加ボーナス）。
+// ---------------------------------------------------------
+export const AWAKENED_EQUIP_LAYER = {
+  REQUIRE_ENHANCE_LEVEL: 10,   // この強化レベルに達していないと目覚めさせられない
+  REQUIRE_AWAKENINGS: 1,       // プレイヤー自身が最低1回は覚醒している必要がある
+  MAX_RANK: 3,
+  COST_BASE: 8,
+  COST_PER_RANK: 6,            // コスト(rank) = BASE + rank * PER_RANK
+  BONUS_PER_RANK: 0.08,        // 武器の付与ステータスに対して、強化ボーナスとは別に+8%/rank
+};
+
+// ---------------------------------------------------------
+// H. 覚醒アーティファクト（秘宝、Phase 3）
+// 既存の特殊効果（EFFECTS）を、ボスドロップのルーンとは別ルートで
+// 恒久解放できる仕組み。解放は永続で、スロットに自由に付け替えられる。
+// ---------------------------------------------------------
+export const ARTIFACT_LAYER = {
+  SLOT_UNLOCK_AWAKENINGS: [1, 3, 6], // 覚醒回数がこの値に達するごとにスロット+1（最大3）
+  UNLOCK_COST_BASE: 10,
+  UNLOCK_COST_PER_ARTIFACT: 8,  // N個目（0始まり）の解放コスト = BASE + N * PER_ARTIFACT
+};

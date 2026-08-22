@@ -6,8 +6,9 @@ import { getJob, computeStats, isUnlocked, TIERS } from './data/jobs.js';
 import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, WEAPON_MASTERY_THRESHOLD } from './data/equipment.js';
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
-import { EQUIPMENT_LAYER, REBIRTH_LAYER, JOB_MASTER_LAYER, AWAKENING_LAYER } from './data/balance.js';
+import { EQUIPMENT_LAYER, REBIRTH_LAYER, JOB_MASTER_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER } from './data/balance.js';
 import { AWAKENING_NODES, awakeningNodeCost } from './data/awakening.js';
+import { getArtifact } from './data/artifacts.js';
 
 const SAVE_KEY = 'bladevale_save_v1';
 
@@ -28,6 +29,9 @@ function defaultSave() {
     awakeningPoints: 0,
     awakeningTree: {},
     awakenings: 0,
+    awakenedWeapons: {},
+    unlockedArtifacts: [],
+    equippedArtifacts: [null, null, null],
   };
 }
 
@@ -135,7 +139,10 @@ class StateManager {
       if (!id) continue;
       const item = getItem(id);
       if (!item) continue;
-      const mult = slot === 'weapon' ? 1 + this.weaponEnhanceLevel(id) * EQUIPMENT_LAYER.ENHANCE_BONUS_PER_LEVEL : 1;
+      const mult = slot === 'weapon'
+        ? 1 + this.weaponEnhanceLevel(id) * EQUIPMENT_LAYER.ENHANCE_BONUS_PER_LEVEL
+              + this.weaponAwakenedRank(id) * AWAKENED_EQUIP_LAYER.BONUS_PER_RANK
+        : 1;
       for (const k in item.stats) bonus[k] = (bonus[k] || 0) + item.stats[k] * mult;
     }
 
@@ -168,7 +175,7 @@ class StateManager {
     return stats;
   }
 
-  // 装備中の固有装備＋ルーンが持つ特殊効果を全て集める（戦闘エンジンから参照）
+  // 装備中の固有装備＋ルーン＋セット中の秘宝が持つ特殊効果を全て集める（戦闘エンジンから参照）
   getEquippedEffects() {
     const effects = [];
     for (const slot of SLOTS) {
@@ -182,6 +189,11 @@ class StateManager {
         const rune = getRune(runeId);
         if (rune && rune.kind === 'effect') effects.push(EFFECTS[rune.effectId]);
       }
+    }
+    for (const artifactId of this.data.equippedArtifacts.slice(0, this.artifactSlotCount())) {
+      if (!artifactId) continue;
+      const artifact = getArtifact(artifactId);
+      if (artifact) effects.push(EFFECTS[artifact.effectId]);
     }
     return effects;
   }
@@ -440,6 +452,69 @@ class StateManager {
     const rank = this.awakeningNodeRank(id);
     this.data.awakeningPoints -= awakeningNodeCost(rank);
     this.data.awakeningTree[id] = rank + 1;
+    this.save();
+    return true;
+  }
+
+  // ---------- 目覚めた装備（Phase 3：武器強化MAX後、覚醒ポイントでさらに強化） ----------
+  weaponAwakenedRank(itemId) { return this.data.awakenedWeapons[itemId] || 0; }
+
+  awakenWeaponCost(rank) { return AWAKENED_EQUIP_LAYER.COST_BASE + rank * AWAKENED_EQUIP_LAYER.COST_PER_RANK; }
+
+  canAwakenWeapon(itemId) {
+    if (this.data.awakenings < AWAKENED_EQUIP_LAYER.REQUIRE_AWAKENINGS) return false;
+    if (this.weaponEnhanceLevel(itemId) < AWAKENED_EQUIP_LAYER.REQUIRE_ENHANCE_LEVEL) return false;
+    const rank = this.weaponAwakenedRank(itemId);
+    if (rank >= AWAKENED_EQUIP_LAYER.MAX_RANK) return false;
+    return this.data.awakeningPoints >= this.awakenWeaponCost(rank);
+  }
+
+  awakenWeapon(itemId) {
+    if (!this.canAwakenWeapon(itemId)) return false;
+    const rank = this.weaponAwakenedRank(itemId);
+    this.data.awakeningPoints -= this.awakenWeaponCost(rank);
+    this.data.awakenedWeapons[itemId] = rank + 1;
+    this.save();
+    return true;
+  }
+
+  // ---------- 覚醒アーティファクト（秘宝、Phase 3） ----------
+  // 覚醒回数に応じて解放されるスロット数（最大3）
+  artifactSlotCount() {
+    return ARTIFACT_LAYER.SLOT_UNLOCK_AWAKENINGS.filter((t) => this.data.awakenings >= t).length;
+  }
+
+  artifactUnlockCost() {
+    return ARTIFACT_LAYER.UNLOCK_COST_BASE + this.data.unlockedArtifacts.length * ARTIFACT_LAYER.UNLOCK_COST_PER_ARTIFACT;
+  }
+
+  isArtifactUnlocked(id) { return this.data.unlockedArtifacts.includes(id); }
+
+  canUnlockArtifact(id) {
+    if (this.isArtifactUnlocked(id)) return false;
+    return this.data.awakeningPoints >= this.artifactUnlockCost();
+  }
+
+  unlockArtifact(id) {
+    if (!this.canUnlockArtifact(id)) return false;
+    this.data.awakeningPoints -= this.artifactUnlockCost();
+    this.data.unlockedArtifacts.push(id);
+    this.save();
+    return true;
+  }
+
+  // slotIndex に artifactId をセットする（nullで解除）。既に別スロットに
+  // セット済みの秘宝を選んだ場合は、そちらのスロットから外して付け替える。
+  equipArtifact(slotIndex, artifactId) {
+    if (slotIndex < 0 || slotIndex >= this.artifactSlotCount()) return false;
+    if (artifactId && !this.isArtifactUnlocked(artifactId)) return false;
+    const slots = this.data.equippedArtifacts.slice();
+    if (artifactId) {
+      const dupIdx = slots.indexOf(artifactId);
+      if (dupIdx !== -1) slots[dupIdx] = null;
+    }
+    slots[slotIndex] = artifactId || null;
+    this.data.equippedArtifacts = slots;
     this.save();
     return true;
   }

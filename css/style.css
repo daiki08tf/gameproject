@@ -408,6 +408,7 @@ button { font-family: inherit; }
   text-align: center;
 }
 .rune-slot.filled { border-style: solid; border-color: var(--accent); background: rgba(242,201,76,0.12); }
+.rune-slot.locked { opacity: 0.4; cursor: default; }
 
 .section-heading { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; margin: 16px 0 8px; }
 

@@ -3,6 +3,7 @@ import { getItem, RARITY, WEAPON_TYPES, WEAPON_MASTERY_THRESHOLD } from '../data
 import { getRune, craftableRunes } from '../data/runes.js';
 import { jobsByTier } from '../data/jobs.js';
 import { Audio_ } from '../audio.js';
+import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER } from '../data/balance.js';
 
 let activeTab = 'enhance';
 let selectedRuneSlot = null;
@@ -54,7 +55,8 @@ function renderEnhanceTab(content) {
     const spare = state.data.inventory[id] || 0;
     const cost = state.enhanceCost(level);
     const need = state.enhanceMaterialCount(level);
-    const maxed = level >= 10;
+    const maxLevel = EQUIPMENT_LAYER.ENHANCE_MAX_LEVEL;
+    const maxed = level >= maxLevel;
     const canDo = state.canEnhanceWeapon(id);
 
     const card = document.createElement('div');
@@ -62,7 +64,7 @@ function renderEnhanceTab(content) {
     card.innerHTML = `
       <div class="forge-card-top">
         <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name}</div>
-        <div>Lv.${level}/10</div>
+        <div>Lv.${level}/${maxLevel}</div>
       </div>
       <div class="forge-card-sub">強化ボーナス +${level * 5}%　／　素材(同じ武器)所持: ${spare}個 ／ 次の強化に必要: ${maxed ? '-' : `${need}個`}</div>
       <button class="forge-card-btn" ${maxed || !canDo ? 'disabled' : ''}>
@@ -73,7 +75,37 @@ function renderEnhanceTab(content) {
       if (state.enhanceWeapon(id)) { Audio_.pickup(); renderBlacksmith(); }
     });
     content.appendChild(card);
+
+    // 強化MAX後は、覚醒ポイントで「目覚めた装備」化できる（Phase 3）
+    if (maxed) content.appendChild(renderAwakenWeaponCard(id, item));
   }
+}
+
+// 強化MAXの武器を「目覚めた装備」化するカード（Phase 3、覚醒ポイント消費）
+function renderAwakenWeaponCard(id, item) {
+  const rank = state.weaponAwakenedRank(id);
+  const maxed = rank >= AWAKENED_EQUIP_LAYER.MAX_RANK;
+  const cost = state.awakenWeaponCost(rank);
+  const canDo = state.canAwakenWeapon(id);
+  const needAwakening = state.data.awakenings < AWAKENED_EQUIP_LAYER.REQUIRE_AWAKENINGS;
+
+  const card = document.createElement('div');
+  card.className = 'forge-card';
+  card.innerHTML = `
+    <div class="forge-card-top">
+      <div class="forge-card-name">${item.name}（目覚め）</div>
+      <div>Lv.${rank}/${AWAKENED_EQUIP_LAYER.MAX_RANK}</div>
+    </div>
+    <div class="forge-card-sub">目覚めボーナス +${Math.round(rank * AWAKENED_EQUIP_LAYER.BONUS_PER_RANK * 100)}%（強化ボーナスとは別枠で加算）
+      ${needAwakening ? '<br>※覚醒の祭壇で1回以上「覚醒」すると目覚めさせられるようになります' : ''}</div>
+    <button class="forge-card-btn" ${maxed || !canDo ? 'disabled' : ''}>
+      ${maxed ? 'MAX' : `目覚めさせる（💠${cost}）`}
+    </button>
+  `;
+  card.querySelector('button').addEventListener('click', () => {
+    if (state.awakenWeapon(id)) { Audio_.jobMastered(); renderBlacksmith(); }
+  });
+  return card;
 }
 
 // ---------------------------------------------------------
