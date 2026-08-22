@@ -7,7 +7,7 @@ import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, 
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
 import { isAbyssUnlocked } from './data/stages.js';
-import { EQUIPMENT_LAYER, REBIRTH_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER } from './data/balance.js';
+import { EQUIPMENT_LAYER, REBIRTH_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER, CAPS_LAYER, bandLookup } from './data/balance.js';
 import { ALL_AWAKENING_NODES, getAwakeningNodeDef, awakeningNodeCostFor } from './data/awakening.js';
 import { getArtifact } from './data/artifacts.js';
 import { ALL_ABYSS_TREE_NODES, getAbyssTreeNodeDef, abyssTreeNodeCostFor } from './data/abyssTree.js';
@@ -199,13 +199,14 @@ class StateManager {
       // critPctはPhase 1以前から転生の永続倍率を掛けていない（加算のみ）ため、その挙動は
       // 変えず、覚醒ツリー・職業MASTER（基本職の固定ボーナス＋上級/特級職の「得意武器
       // 装備時+X%」条件付き能力）のボーナスだけをここに乗せる。
-      critPct: Math.min(75,
+      critPct: Math.min(CAPS_LAYER.CRIT_PCT_MAX,
         (base.critPct + bonus.crit * 0.8) * this.jobMasterStatMult('crit') * this.awakeningStatMult('crit')
         + this.jobMasterWeaponMatchCritBonus() * 100),
       // 武器図鑑武器（主に斧＝防御貫通、短剣＝回避）の新規ステータス。
-      // 転生・職業MASTER等の永続倍率は掛けず、単純加算のみ（暴走防止の上限あり）
-      armorPen: Math.min(0.6, bonus.armorPen),
-      evasion: Math.min(0.4, bonus.evasion),
+      // 転生・職業MASTER等の永続倍率は掛けず、単純加算のみ（隠し上限は禁止。
+      // 上限値はbalance.jsのCAPS_LAYERに集約し、装備画面から確認できる）
+      armorPen: Math.min(CAPS_LAYER.ARMOR_PEN_MAX, bonus.armorPen),
+      evasion: Math.min(CAPS_LAYER.EVASION_MAX, bonus.evasion),
     };
     const weaponItem = getItem(weaponId);
     const affinity = weaponAffinityBonus(weaponItem, this.currentJob.weapon);
@@ -680,14 +681,14 @@ class StateManager {
     return bonus;
   }
 
-  // 「常時、スキルクールダウン-X%」：複数あれば加算するが下限50%を設ける
+  // 「常時、スキルクールダウン-X%」：複数あれば加算するが下限を設ける（隠し上限は禁止、CAPS_LAYERに集約）
   jobMasterCooldownMult() {
     let mult = 1;
     for (const job of this.masterAbilities()) {
       const a = job.masterAbility;
       if (a.condition === 'always' && a.effect.stat === 'cooldown') mult += a.effect.pct;
     }
-    return Math.max(0.5, mult);
+    return Math.max(CAPS_LAYER.CDR_MULT_MIN, mult);
   }
 
   // ---------- 覚醒（Reincarnation 2.0：プレステージリセット） ----------
@@ -939,10 +940,13 @@ class StateManager {
     return mult;
   }
 
-  abyssEliteChance() {
+  // 難易度リバランス（元指示20番）：深いほどエリート出現率自体も上げる
+  // （敵HPだけで難易度を作らないため）。depth省略時は深さ加算なし（既存呼び出し互換）。
+  abyssEliteChance(depth = 0) {
     const node = getAbyssTreeNodeDef('abt_eliterate');
     const rank = this.abyssTreeNodeRank('abt_eliterate');
-    return Math.min(ABYSS_EXPANSION_LAYER.ELITE_CHANCE_MAX, ABYSS_EXPANSION_LAYER.ELITE_CHANCE_BASE + rank * node.pctPerRank);
+    const depthBonus = bandLookup(ABYSS_EXPANSION_LAYER.ELITE_CHANCE_DEPTH_BANDS, depth);
+    return Math.min(ABYSS_EXPANSION_LAYER.ELITE_CHANCE_MAX, ABYSS_EXPANSION_LAYER.ELITE_CHANCE_BASE + depthBonus + rank * node.pctPerRank);
   }
 
   abyssEliteRewardMult() { return this.abyssTreeStatMult('eliteReward'); }
