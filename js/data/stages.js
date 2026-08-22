@@ -3,7 +3,7 @@
    第1章は既存のまま。第2章以降は chapters.js のメタデータから
    標準5ステージ構成（雑魚4＋ボス1）を自動生成する。
    ============================================================ */
-import { CHAPTER_SPECS, chapterMult } from './chapters.js';
+import { CHAPTER_SPECS, chapterMult, CHAPTER_REGION_TAGS } from './chapters.js';
 import { buildAbyssStage } from './abyss.js';
 
 const CHAPTER_1 = {
@@ -157,6 +157,14 @@ function scaleReward(base, mult) {
 }
 
 export const CHAPTERS = [CHAPTER_1, ...CHAPTER_SPECS.map(buildChapter)];
+
+// 地域別ドロップ傾向（Blade Vale 2.1）：各章の全ステージへ、章のテーマに
+// 合う属性タグを後付けで刻む（既存のdropTable自体には一切触れない。
+// weapons.jsの武器図鑑ドロップは_rollDrop()とは完全に独立した別枠のため）。
+for (const ch of CHAPTERS) {
+  const tags = CHAPTER_REGION_TAGS[ch.id] || [];
+  for (const st of ch.stages) st.dropRegionTags = tags;
+}
 
 // 各章の「本当のボスステージ」を取得する。
 // 分岐（隠し道）ステージは常にboss後ろへpushされて配列の末尾に来るため、

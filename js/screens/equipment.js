@@ -1,6 +1,13 @@
 import { state } from '../state.js';
 import { getItem, RARITY, powerScore, WEAPON_TYPES, WEAPON_MASTERY_THRESHOLD } from '../data/equipment.js';
+import { WEAPON_SERIES } from '../data/weapons.js';
 import { Audio_ } from '../audio.js';
+
+const ELEMENT_LABEL = {
+  fire: '🔥炎', ice: '❄️氷', lightning: '⚡雷', wind: '🌪️風',
+  light: '✨光', dark: '🌑闇', poison: '☠️毒',
+};
+const STAT_LABEL_JA = { atk: 'ATK', def: 'DEF', hp: 'HP', mag: 'MAG', spd: 'SPD', crit: 'CRIT', mp: 'MP', armorPen: '防御貫通', evasion: '回避' };
 
 const SLOT_LABELS = {
   weapon: '武器', shield: '盾', head: '頭', body: '胴',
@@ -38,27 +45,36 @@ function renderLootFilterRow() {
   }
 }
 
-// 装備比較UI（Phase 6）：候補装備を現在装備と比べたステータス差分・総合戦力差分を表示する
+// 装備比較UI（Phase 6→Blade Vale 2.1で拡張）：候補装備を現在装備と比べた
+// ステータス差分・総合戦力差分を表示する。総合戦力はあくまで「参考値」
+// （元指示29番）：ビルドシナジー・セット効果・固有能力の強さまでは
+// 反映できないため、スコアだけで強さを断定しないよう明記する。
 function compareLine(candidate, current) {
   if (!current) return ''; // 何も装備していなければ比較対象がない
   const keys = new Set([...Object.keys(candidate.stats), ...Object.keys(current.stats)]);
   const parts = [];
   for (const k of keys) {
-    const diff = Math.round(((candidate.stats[k] || 0) - (current.stats[k] || 0)) * 10) / 10;
+    const diff = Math.round(((candidate.stats[k] || 0) - (current.stats[k] || 0)) * 100) / 100;
     if (diff === 0) continue;
     const cls = diff > 0 ? 'stat-up' : 'stat-down';
-    parts.push(`<span class="${cls}">${k.toUpperCase()}${diff > 0 ? '↑' : '↓'}${Math.abs(diff)}</span>`);
+    parts.push(`<span class="${cls}">${STAT_LABEL_JA[k] || k.toUpperCase()}${diff > 0 ? '↑' : '↓'}${Math.abs(diff)}</span>`);
   }
+  const candidateEffects = (candidate.effects || []).map((e) => e.name);
+  const currentEffects = (current.effects || []).map((e) => e.name);
+  const effectDiff = [];
+  for (const n of candidateEffects) if (!currentEffects.includes(n)) effectDiff.push(`<span class="stat-up">+固有:${n}</span>`);
+  for (const n of currentEffects) if (!candidateEffects.includes(n)) effectDiff.push(`<span class="stat-down">-固有:${n}</span>`);
   const scoreDiff = Math.round(powerScore(candidate) - powerScore(current));
   const statsPart = parts.length ? `<div class="compare-line">${parts.join(' ')}</div>` : '';
+  const effectPart = effectDiff.length ? `<div class="compare-line">${effectDiff.join(' ')}</div>` : '';
   const scorePart = scoreDiff !== 0
-    ? `<div class="compare-line compare-score ${scoreDiff > 0 ? 'stat-up' : 'stat-down'}">総合戦力 ${scoreDiff > 0 ? '↑' : '↓'}${Math.abs(scoreDiff)}</div>`
+    ? `<div class="compare-line compare-score ${scoreDiff > 0 ? 'stat-up' : 'stat-down'}">総合戦力(参考値) ${scoreDiff > 0 ? '↑' : '↓'}${Math.abs(scoreDiff)}</div>`
     : '';
-  return statsPart + scorePart;
+  return statsPart + effectPart + scorePart;
 }
 
 function statLine(item) {
-  const stats = Object.entries(item.stats).map(([k, v]) => `${k.toUpperCase()}+${v}`).join(' ');
+  const stats = Object.entries(item.stats).map(([k, v]) => `${STAT_LABEL_JA[k] || k.toUpperCase()}+${v}`).join(' ');
   const parts = [stats];
   if (item.weaponType) {
     const wt = WEAPON_TYPES[item.weaponType];
@@ -67,10 +83,42 @@ function statLine(item) {
     const enhLv = state.weaponEnhanceLevel(item.id);
     if (enhLv > 0) parts.push(`強化Lv.${enhLv}（+${enhLv * 5}%）`);
   }
+  // Blade Vale 2.1：武器図鑑武器の追加情報（必要Lv・属性・ベース特性・シリーズ）
+  if (item.requiredLevel) parts.push(`必要Lv.${item.requiredLevel}`);
+  if (item.element && ELEMENT_LABEL[item.element]) parts.push(ELEMENT_LABEL[item.element]);
+  if (item.implicit && item.implicit.desc) parts.push(`【特性】${item.implicit.desc}`);
+  if (item.series && WEAPON_SERIES[item.series]) parts.push(`《${WEAPON_SERIES[item.series].name}》`);
   if (item.effects) {
     for (const eff of item.effects) parts.push(`✨${eff.name}: ${eff.desc}`);
   }
   return parts.join(' / ');
+}
+
+// お気に入り・ロック（元指示27番）：一覧上の名前の右にバッジとして表示し、
+// カード内にトグルボタンを追加する。ロック中は鍛冶屋の売却・分解対象から外れる。
+function favoriteLockBadges(itemId) {
+  let s = '';
+  if (state.isItemFavorite(itemId)) s += ' ★';
+  if (state.isItemLocked(itemId)) s += ' 🔒';
+  return s;
+}
+
+function appendFavLockButtons(row, itemId) {
+  const wrap = document.createElement('div');
+  wrap.style.display = 'flex';
+  wrap.style.gap = '6px';
+  wrap.style.marginTop = '4px';
+  const favBtn = document.createElement('button');
+  favBtn.className = 'inline-btn';
+  favBtn.textContent = state.isItemFavorite(itemId) ? '★お気に入り解除' : '☆お気に入り登録';
+  favBtn.addEventListener('click', () => { state.toggleItemFavorite(itemId); Audio_.tap(); renderEquipment(); });
+  const lockBtn = document.createElement('button');
+  lockBtn.className = 'inline-btn';
+  lockBtn.textContent = state.isItemLocked(itemId) ? '🔓ロック解除' : '🔒ロックする';
+  lockBtn.addEventListener('click', () => { state.toggleItemLocked(itemId); Audio_.tap(); renderEquipment(); });
+  wrap.appendChild(favBtn);
+  wrap.appendChild(lockBtn);
+  row.appendChild(wrap);
 }
 
 export function renderEquipment() {
@@ -123,7 +171,7 @@ export function renderEquipment() {
     row.className = 'pick-row equipped';
     const item = getItem(currentId);
     row.innerHTML = `
-      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name}</div><div class="item-stats">${statLine(item)}</div></div>
+      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name}${favoriteLockBadges(currentId)}</div><div class="item-stats">${statLine(item)}</div></div>
       <button data-action="unequip">外す</button>
     `;
     row.querySelector('button').addEventListener('click', () => {
@@ -131,17 +179,23 @@ export function renderEquipment() {
       Audio_.tap();
       renderEquipment();
     });
+    appendFavLockButtons(row, currentId);
     picker.appendChild(row);
   }
 
   const currentItemForCompare = currentId ? getItem(currentId) : null;
   for (const c of visibleCandidates) {
     const item = getItem(c.id);
-    const locked = item.weaponType && !state.canUseWeaponType(item.weaponType);
+    const weaponTypeLocked = item.weaponType && !state.canUseWeaponType(item.weaponType);
+    const levelLocked = item.requiredLevel && state.currentLevel < item.requiredLevel;
+    const locked = weaponTypeLocked || levelLocked;
+    let lockReason = '';
+    if (weaponTypeLocked) lockReason = `🔒 職業「${state.currentJob.name}」では装備不可（あと${WEAPON_MASTERY_THRESHOLD - state.weaponKillCount(item.weaponType)}体撃破でマスター）`;
+    else if (levelLocked) lockReason = `🔒 必要Lv.${item.requiredLevel}（現在Lv.${state.currentLevel}）`;
     const row = document.createElement('div');
     row.className = 'pick-row';
     row.innerHTML = `
-      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${state.data.inventory[c.id]}</div><div class="item-stats">${statLine(item)}${locked ? `<br>🔒 職業「${state.currentJob.name}」では装備不可（あと${WEAPON_MASTERY_THRESHOLD - state.weaponKillCount(item.weaponType)}体撃破でマスター）` : ''}</div>${compareLine(item, currentItemForCompare)}</div>
+      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${state.data.inventory[c.id]}${favoriteLockBadges(c.id)}</div><div class="item-stats">${statLine(item)}${lockReason ? `<br>${lockReason}` : ''}</div>${compareLine(item, currentItemForCompare)}</div>
       <button data-action="equip" ${locked ? 'disabled' : ''}>装備</button>
     `;
     if (!locked) {
@@ -151,6 +205,7 @@ export function renderEquipment() {
         renderEquipment();
       });
     }
+    appendFavLockButtons(row, c.id);
     picker.appendChild(row);
   }
 

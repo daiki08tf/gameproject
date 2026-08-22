@@ -8,6 +8,8 @@
    ============================================================ */
 import { CHAPTER_SPECS, ACCESSORY_ARCHETYPES, EFFECTS, chapterMult } from './chapters.js';
 import { EQUIPMENT_LAYER } from './balance.js';
+import { WEAPON_TYPES } from './weaponTypes.js';
+import { WEAPON_CODEX_ITEMS, BOSS_WEAPON_ITEMS } from './weapons.js';
 
 export const RARITY = {
   normal:    { label: 'ノーマル',   color: '#b9c0cc', mult: EQUIPMENT_LAYER.RARITY_MULT.normal },
@@ -21,18 +23,10 @@ export const RARITY = {
 export const RARITY_ORDER = Object.keys(RARITY);
 export function rarityIndex(rarity) { return RARITY_ORDER.indexOf(rarity); }
 
-// 武器種：メインステータスへの配分比率。affinityStat と職業の得意武器が
-// 一致すると装備適性ボーナス(+8%)が付く
-export const WEAPON_TYPES = {
-  sword:      { name: '剣',   atk: 1.4, mag: 0.2, spd: 0.6, crit: 1.0, affinityStat: 'atk' },
-  axe:        { name: '斧',   atk: 1.8, mag: 0.1, spd: 0.3, crit: 0.6, affinityStat: 'atk' },
-  staff:      { name: '杖',   atk: 0.2, mag: 1.8, spd: 0.4, crit: 0.6, affinityStat: 'mag' },
-  bow:        { name: '弓',   atk: 1.2, mag: 0.2, spd: 1.0, crit: 1.2, affinityStat: 'atk' },
-  dagger:     { name: '短剣', atk: 0.9, mag: 0.2, spd: 1.3, crit: 1.6, affinityStat: 'atk' },
-  knuckle:    { name: '拳具', atk: 1.3, mag: 0.2, spd: 1.2, crit: 1.1, affinityStat: 'atk' },
-  instrument: { name: '楽器', atk: 0.3, mag: 1.3, spd: 0.8, crit: 0.6, affinityStat: 'mag' },
-  rod:        { name: '錫杖', atk: 0.3, mag: 1.4, spd: 0.4, crit: 0.5, affinityStat: 'mag' },
-};
+// 武器種のプロファイルは weaponTypes.js へ分離済み（Blade Vale 2.1で
+// weapons.js との循環importを避けるため）。既存コードはこれまで通り
+// ここからimportできるよう re-export する。
+export { WEAPON_TYPES };
 const AFFINITY_BONUS = EQUIPMENT_LAYER.WEAPON_AFFINITY_BONUS;
 // この体数を装備して倒すと、その武器種は全職業で使えるようになる
 export const WEAPON_MASTERY_THRESHOLD = EQUIPMENT_LAYER.WEAPON_MASTERY_KILLS_REQUIRED;
@@ -164,6 +158,14 @@ for (const ch of CHAPTER_SPECS) {
     });
   }
 }
+
+// ---------------------------------------------------------
+// Blade Vale 2.1：武器総数拡張（weapons.jsの約200本＋Boss固有武器）を
+// 完全に加算で統合する。既存のRAW_ITEMS・chapters.js由来の武器は
+// 一切変更しない（元指示34番：既存武器の削除禁止）。
+// ---------------------------------------------------------
+for (const w of WEAPON_CODEX_ITEMS) ITEMS.set(w.id, w);
+for (const w of BOSS_WEAPON_ITEMS) ITEMS.set(w.id, w);
 
 export function getItem(id) { return ITEMS.get(id); }
 export function allItems() { return Array.from(ITEMS.values()); }

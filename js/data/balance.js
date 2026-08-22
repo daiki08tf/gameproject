@@ -249,3 +249,37 @@ export const ABYSS_EXPANSION_LAYER = {
   TREE_BIG_NODE_COST_BASE: 12,
   TREE_BIG_NODE_COST_PER_RANK: 12,
 };
+
+// ---------------------------------------------------------
+// M. 武器総数拡張・装備掘り強化（Blade Vale 2.1）
+// 8武器種 × 約25本（計約200本）の「武器ベース」データ層。既存の章ドロップ
+// 装備（wp_sword_n・chN_weapon等）はそのまま残し、このレイヤーは完全に
+// 加算で追加する（既存武器は一切変更・削除しない）。
+// 武器の最終ステータス = WEAPON_TYPES比率 × RARITY_MULT × レベル倍率
+//   （章倍率(chapterMult)の代わりに、武器自身のrequiredLevelを軸にした
+//     levelMultを使う。特定の章に紐付かない「どこでも拾いうる」武器の
+//     ため、章番号ではなくレベルでスケーリングするほうが自然）
+// ---------------------------------------------------------
+export const WEAPON_CODEX_LAYER = {
+  LEVEL_POWER_BASE: 1.0,
+  LEVEL_POWER_PER_LEVEL: 0.045, // chapterMult(1章あたり+35%≒9レベル相当)とおおむね揃う値
+  // 通常のdropTable抽選（ECONOMY.BASE_DROP_CHANCE）とは完全に独立した、
+  // 武器図鑑武器専用の追加ドロップ抽選（既存の防具・固有装備のドロップ率は
+  // 一切変えない＝既存の希少性を薄めない）
+  DROP_CHANCE: 0.05,
+  BOSS_WEAPON_DROP_CHANCE: 0.02,
+  REGION_WEIGHT_BONUS: 2,        // 地域タグ一致時、重みが (1 + これ) 倍になる
+  RARITY_DROP_WEIGHT: { normal: 10, rare: 6, epic: 3, legendary: 1, mythic: 0.3 },
+  LEVEL_SLACK: 15,                // ステージ推奨Lv + この値までの武器がそのステージで出現しうる（下限は制限しない＝低レア武器は素材用途があるため終盤でも出続けて良い）
+  AFFIX_BIAS_WEIGHT: 3,           // affixBiasに含まれるステータスは、通常ステータスの何倍選ばれやすいか（極Affixのロール時）
+  // 深淵限定武器（元指示22番）：レジェンドの一部は深淵50階以降、神話は
+  // 100階以降・200階以降でそれぞれ解放される（常にこれが最強にならないよう、
+  // 通常入手できるレジェンド/神話ともバランスを取る＝固有能力中心の設計にする）
+  ABYSS_EXCLUSIVE_LEGENDARY_DEPTH: 50,
+  ABYSS_EXCLUSIVE_MYTHIC_LOW_DEPTH: 100,
+  ABYSS_EXCLUSIVE_MYTHIC_HIGH_DEPTH: 200,
+  // 売却／分解（元指示26・27番）：大量に拾う武器を捌くための鍛冶屋機能
+  SELL_GOLD: { normal: 10, rare: 30, epic: 80, legendary: 200, mythic: 500 },
+  DISMANTLE_ESSENCE: { normal: 1, rare: 2, epic: 4, legendary: 8, mythic: 16 },
+  ESSENCE_PER_MATERIAL: 3, // 強化素材化した「武器の欠片」で、通常の同名武器1個分の代わりに必要な数
+};

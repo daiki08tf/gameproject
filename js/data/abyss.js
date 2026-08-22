@@ -159,5 +159,9 @@ export function buildAbyssStage(depth) {
     modifiers: modifiers.map((m) => ({ id: m.id, name: m.name, desc: m.desc })),
     dropMult, healMult, contactDmgMult,
     enemyAtkMult, enemyDefMult, enemySpeedMult, enemyHpMult,
+    // 地域別ドロップ傾向（Blade Vale 2.1）：深淵は特定属性に偏らせず、
+    // 全属性の武器図鑑武器を等しく対象にする（無限に周回できる終盤の
+    // 「何でも掘れる」場として機能させるため）
+    dropRegionTags: ['fire', 'ice', 'lightning', 'wind', 'light', 'dark', 'poison'],
   };
 }

@@ -336,6 +336,17 @@ button { font-family: inherit; }
 .blessing-row { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; text-align: left; }
 .blessing-row .pick-row.selected { border-color: var(--accent); background: rgba(242,201,76,0.12); }
 
+/* お気に入り・ロック（Blade Vale 2.1）：装備一覧カード内の小さなトグルボタン */
+.inline-btn {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
 /* ---------------------------------------------------------
    職業
 --------------------------------------------------------- */

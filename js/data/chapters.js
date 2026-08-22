@@ -123,6 +123,22 @@ export const CHAPTER_SPECS = [
   },
 ];
 
+// 地域別ドロップ傾向（Blade Vale 2.1・元指示20番）：章のテーマに合う属性の
+// 武器図鑑武器（js/data/weapons.js）が、その章のステージで少し出やすくなる
+// （地域限定ではなく「傾向」。他の属性の武器も普通にドロップする）。
+export const CHAPTER_REGION_TAGS = {
+  ch1: [],
+  ch2: ['wind', 'poison'],
+  ch3: ['dark', 'light'],
+  ch4: ['ice'],
+  ch5: ['fire'],
+  ch6: ['poison', 'dark'],
+  ch7: ['wind', 'light'],
+  ch8: ['dark'],
+  ch9: ['dark', 'light'],
+  ch10: ['light', 'dark'],
+};
+
 // アクセサリー特化タイプ（属性ごとのステータス配分）
 export const ACCESSORY_ARCHETYPES = {
   atk: { atk: 1.0, crit: 0.5 },

@@ -5,6 +5,7 @@ import { renderChapterSelect } from './screens/chapterSelect.js';
 import { renderStageSelect, renderStageConfirm, getSelectedBlessingId } from './screens/stageSelect.js';
 import { renderAbyssList, initAbyssTabs } from './screens/abyss.js';
 import { renderEquipment, autoEquipBest } from './screens/equipment.js';
+import { renderWeaponCodex, initWeaponCodexTabs } from './screens/weaponCodex.js';
 import { renderJobs } from './screens/jobs.js';
 import { renderBlacksmith, initBlacksmithTabs } from './screens/blacksmith.js';
 import { renderRebirth, initRebirthTabs } from './screens/rebirth.js';
@@ -126,6 +127,17 @@ initAbyssTabs();
 // 装備
 document.getElementById('equipBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 document.getElementById('autoEquipBtn').addEventListener('click', () => autoEquipBest());
+document.getElementById('weaponCodexBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderWeaponCodex();
+  showScreen('weaponCodexScreen');
+});
+document.getElementById('weaponCodexBackBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderEquipment();
+  showScreen('equipmentScreen');
+});
+initWeaponCodexTabs();
 
 // ---------------------------------------------------------
 // 職業

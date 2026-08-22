@@ -7,7 +7,7 @@ import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, 
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
 import { isAbyssUnlocked } from './data/stages.js';
-import { EQUIPMENT_LAYER, REBIRTH_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER, ABYSS_EXPANSION_LAYER } from './data/balance.js';
+import { EQUIPMENT_LAYER, REBIRTH_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER } from './data/balance.js';
 import { ALL_AWAKENING_NODES, getAwakeningNodeDef, awakeningNodeCostFor } from './data/awakening.js';
 import { getArtifact } from './data/artifacts.js';
 import { ALL_ABYSS_TREE_NODES, getAbyssTreeNodeDef, abyssTreeNodeCostFor } from './data/abyssTree.js';
@@ -42,6 +42,11 @@ function defaultSave() {
     weaponAffix2: {},
     abyssShards: 0,
     abyssTree: {},
+    // ---- Blade Vale 2.1：武器総数拡張 ----
+    weaponCodexSeen: {},  // itemId -> true。武器図鑑武器（+Boss固有武器）を一度でも入手したことがあるか
+    itemLocked: {},       // itemId -> true。ロック中は売却・分解・強化素材化の対象から除外
+    itemFavorite: {},     // itemId -> true。お気に入り（表示上の目印のみ、機能的な制約はない）
+    weaponEssence: 0,     // 分解で得られる汎用強化素材（同名武器の複数所持の代わりに使える）
   };
 }
 
@@ -142,7 +147,11 @@ class StateManager {
   // ---------- ステータス計算（職業ベース＋装備＋強化＋ルーン＋転生＋武器適性） ----------
   getStats() {
     const base = computeStats(this.currentJobId, this.currentLevel);
-    const bonus = { hp: 0, mp: 0, atk: 0, def: 0, mag: 0, spd: 0, crit: 0 };
+    // armorPen（防御貫通）・evasion（回避）はBlade Vale 2.1の武器図鑑武器
+    // （主に斧・短剣）だけが持つ新規のitem.statsキー。職業側のcomputeStats()
+    // はこれらを一切生成しないため、below の bonus ループが自然に集計する
+    // だけで良い（他の武器種の武器はこのキー自体を持たないため無関係）。
+    const bonus = { hp: 0, mp: 0, atk: 0, def: 0, mag: 0, spd: 0, crit: 0, armorPen: 0, evasion: 0 };
 
     for (const slot of SLOTS) {
       const id = this.data.equipped[slot];
@@ -193,6 +202,10 @@ class StateManager {
       critPct: Math.min(75,
         (base.critPct + bonus.crit * 0.8) * this.jobMasterStatMult('crit') * this.awakeningStatMult('crit')
         + this.jobMasterWeaponMatchCritBonus() * 100),
+      // 武器図鑑武器（主に斧＝防御貫通、短剣＝回避）の新規ステータス。
+      // 転生・職業MASTER等の永続倍率は掛けず、単純加算のみ（暴走防止の上限あり）
+      armorPen: Math.min(0.6, bonus.armorPen),
+      evasion: Math.min(0.4, bonus.evasion),
     };
     const weaponItem = getItem(weaponId);
     const affinity = weaponAffinityBonus(weaponItem, this.currentJob.weapon);
@@ -283,7 +296,7 @@ class StateManager {
   rollAffix2(itemId) {
     if (!this.canRollAffix2(itemId)) return false;
     const item = getItem(itemId);
-    const pool = item ? Object.keys(item.stats) : [];
+    const pool = item ? this._affixStatPool(item) : [];
     if (pool.length === 0) return false;
     this.data.gold -= EXTREME_AFFIX_LAYER.ROLL_COST_GOLD;
     this.data.manastone -= EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE;
@@ -320,19 +333,39 @@ class StateManager {
   }
 
   // ---------- 装備・インベントリ ----------
+  // 新規入手時にNEW!演出を出すため（元指示24番）、武器図鑑武器（+Boss固有
+  // 武器）を初めて入手した瞬間だけtrueを返す。武器図鑑登録自体は「一度でも
+  // 拾ったか」だけを記録し、個体のAffix等とは無関係（元指示23番）。
   addItem(itemId, qty = 1) {
     this.data.inventory[itemId] = (this.data.inventory[itemId] || 0) + qty;
+    let isNew = false;
+    const item = getItem(itemId);
+    if (item && item.isCodexWeapon && !this.data.weaponCodexSeen[itemId]) {
+      this.data.weaponCodexSeen[itemId] = true;
+      isNew = true;
+    }
     this.save();
+    return isNew;
+  }
+
+  isWeaponCodexSeen(itemId) { return !!this.data.weaponCodexSeen[itemId]; }
+
+  // requiredLevel（Blade Vale 2.1）：転生（覚醒）で職業Lvがリセットされる
+  // ため、現在の職業レベルでゲートする（元指示19番：転生直後に高性能装備で
+  // 序盤を完全破壊しないため）。既存装備はrequiredLevelを持たないため無関係。
+  canEquipItem(item) {
+    if (!item) return false;
+    if (item.requiredLevel && this.currentLevel < item.requiredLevel) return false;
+    if (item.slot === 'weapon' && item.weaponType && !this.canUseWeaponType(item.weaponType)) return false;
+    return true;
   }
 
   equipItem(slot, itemId) {
     const prev = this.data.equipped[slot];
     if (itemId) {
       if ((this.data.inventory[itemId] || 0) <= 0) return false;
-      if (slot === 'weapon') {
-        const item = getItem(itemId);
-        if (item && item.weaponType && !this.canUseWeaponType(item.weaponType)) return false;
-      }
+      const item = getItem(itemId);
+      if (!this.canEquipItem(item)) return false;
       this.data.inventory[itemId] -= 1;
       if (this.data.inventory[itemId] <= 0) delete this.data.inventory[itemId];
     }
@@ -358,7 +391,7 @@ class StateManager {
         if (remaining <= 0) continue;
         const item = getItem(id);
         if (!item || item.slot !== slotType) continue;
-        if (slotType === 'weapon' && item.weaponType && !this.canUseWeaponType(item.weaponType)) continue;
+        if (!this.canEquipItem(item)) continue;
         const score = powerScore(item);
         if (score > bestScore) { bestScore = score; best = id; }
       }
@@ -418,22 +451,85 @@ class StateManager {
   // +が上がるほど必要な同じ武器の個数も増える（Lv0→1は1個、Lv1→2は2個…）
   enhanceMaterialCount(level) { return level + 1; }
 
-  canEnhanceWeapon(itemId) {
+  // Blade Vale 2.1：分解で得られる汎用強化素材「武器の欠片」(weaponEssence)を
+  // 使って、同名武器を複数持っていなくても強化できる代替手段。
+  // useEssence=falseなら既存通り「同じ武器を(level+1)個消費」、trueなら
+  // 「武器の欠片を(level+1)×ESSENCE_PER_MATERIAL個消費」のどちらか選べる。
+  essenceCostForEnhance(level) { return this.enhanceMaterialCount(level) * WEAPON_CODEX_LAYER.ESSENCE_PER_MATERIAL; }
+
+  canEnhanceWeapon(itemId, useEssence = false) {
     const level = this.weaponEnhanceLevel(itemId);
     if (level >= EQUIPMENT_LAYER.ENHANCE_MAX_LEVEL) return false;
-    if ((this.data.inventory[itemId] || 0) < this.enhanceMaterialCount(level)) return false;
+    const hasMaterial = useEssence
+      ? this.data.weaponEssence >= this.essenceCostForEnhance(level)
+      : (this.data.inventory[itemId] || 0) >= this.enhanceMaterialCount(level);
+    if (!hasMaterial) return false;
     return this.data.gold >= this.enhanceCost(level);
   }
 
-  enhanceWeapon(itemId) {
-    if (!this.canEnhanceWeapon(itemId)) return false;
+  enhanceWeapon(itemId, useEssence = false) {
+    if (!this.canEnhanceWeapon(itemId, useEssence)) return false;
     const level = this.weaponEnhanceLevel(itemId);
     this.data.gold -= this.enhanceCost(level);
-    this.data.inventory[itemId] -= this.enhanceMaterialCount(level);
-    if (this.data.inventory[itemId] <= 0) delete this.data.inventory[itemId];
+    if (useEssence) {
+      this.data.weaponEssence -= this.essenceCostForEnhance(level);
+    } else {
+      this.data.inventory[itemId] -= this.enhanceMaterialCount(level);
+      if (this.data.inventory[itemId] <= 0) delete this.data.inventory[itemId];
+    }
     this.data.weaponEnhance[itemId] = level + 1;
     this.save();
     return true;
+  }
+
+  // ---------- お気に入り・ロック（元指示27番） ----------
+  // ロック中は売却・分解の対象から外れる（自動売却の仕組みは無いため、
+  // 現状は手動の売却・分解ボタンからの誤操作を防ぐガードとして機能する）。
+  isItemLocked(itemId) { return !!this.data.itemLocked[itemId]; }
+  toggleItemLocked(itemId) {
+    this.data.itemLocked[itemId] = !this.data.itemLocked[itemId];
+    if (!this.data.itemLocked[itemId]) delete this.data.itemLocked[itemId];
+    this.save();
+    return this.isItemLocked(itemId);
+  }
+  isItemFavorite(itemId) { return !!this.data.itemFavorite[itemId]; }
+  toggleItemFavorite(itemId) {
+    this.data.itemFavorite[itemId] = !this.data.itemFavorite[itemId];
+    if (!this.data.itemFavorite[itemId]) delete this.data.itemFavorite[itemId];
+    this.save();
+    return this.isItemFavorite(itemId);
+  }
+
+  // ---------- 売却・分解（元指示26番：大量に拾う武器を捌く導線） ----------
+  // 装備中のアイテムとロック中のアイテムは対象外（誤操作防止）。
+  canSellOrDismantle(itemId, qty = 1) {
+    if (this.isItemLocked(itemId)) return false;
+    if (Object.values(this.data.equipped).includes(itemId)) return false;
+    return (this.data.inventory[itemId] || 0) >= qty;
+  }
+
+  sellItem(itemId, qty = 1) {
+    if (!this.canSellOrDismantle(itemId, qty)) return false;
+    const item = getItem(itemId);
+    if (!item) return false;
+    const gold = (WEAPON_CODEX_LAYER.SELL_GOLD[item.rarity] || 0) * qty;
+    this.data.inventory[itemId] -= qty;
+    if (this.data.inventory[itemId] <= 0) delete this.data.inventory[itemId];
+    this.data.gold += gold;
+    this.save();
+    return gold;
+  }
+
+  dismantleItem(itemId, qty = 1) {
+    if (!this.canSellOrDismantle(itemId, qty)) return false;
+    const item = getItem(itemId);
+    if (!item) return false;
+    const essence = (WEAPON_CODEX_LAYER.DISMANTLE_ESSENCE[item.rarity] || 0) * qty;
+    this.data.inventory[itemId] -= qty;
+    if (this.data.inventory[itemId] <= 0) delete this.data.inventory[itemId];
+    this.data.weaponEssence += essence;
+    this.save();
+    return essence;
   }
 
   // ---------- 鍛冶屋：ルーン ----------
@@ -707,6 +803,20 @@ class StateManager {
     return true;
   }
 
+  // Blade Vale 2.1「Affix傾向」：武器のaffixBiasに含まれるステータスが
+  // 極Affixのロールで選ばれやすくなる（重み付け抽選。完全固定はしない＝
+  // affixBiasが無い/対象外のステータスも1/AFFIX_BIAS_WEIGHTの確率で普通に出る）
+  _affixStatPool(item) {
+    const keys = Object.keys(item.stats);
+    if (!item.affixBias || item.affixBias.length === 0) return keys;
+    const weighted = [];
+    for (const k of keys) {
+      const extra = item.affixBias.includes(k) ? WEAPON_CODEX_LAYER.AFFIX_BIAS_WEIGHT : 1;
+      for (let i = 0; i < extra; i++) weighted.push(k);
+    }
+    return weighted;
+  }
+
   // ---------- 極Affix（Phase 5：強化＋目覚めMAXの武器だけの最後の仕上げ） ----------
   weaponAffix(itemId) { return this.data.weaponAffix[itemId] || null; }
 
@@ -723,7 +833,7 @@ class StateManager {
   rollAffix(itemId) {
     if (!this.canRollAffix(itemId)) return false;
     const item = getItem(itemId);
-    const pool = item ? Object.keys(item.stats) : [];
+    const pool = item ? this._affixStatPool(item) : [];
     if (pool.length === 0) return false;
     this.data.gold -= EXTREME_AFFIX_LAYER.ROLL_COST_GOLD;
     this.data.manastone -= EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE;

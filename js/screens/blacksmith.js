@@ -3,7 +3,7 @@ import { getItem, RARITY, WEAPON_TYPES, WEAPON_MASTERY_THRESHOLD } from '../data
 import { getRune, craftableRunes } from '../data/runes.js';
 import { jobsByTier } from '../data/jobs.js';
 import { Audio_ } from '../audio.js';
-import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER } from '../data/balance.js';
+import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER, WEAPON_CODEX_LAYER } from '../data/balance.js';
 
 const AFFIX_STAT_LABEL = { atk: 'ATK', def: 'DEF', hp: 'HP', mag: 'MAG', spd: 'SPD', crit: 'CRIT' };
 
@@ -31,6 +31,7 @@ export function renderBlacksmith() {
   if (activeTab === 'enhance') renderEnhanceTab(content);
   else if (activeTab === 'rune') renderRuneTab(content);
   else if (activeTab === 'awakenitem') renderAwakenedItemTab(content);
+  else if (activeTab === 'dispose') renderDisposeTab(content);
   else renderMasteryTab(content);
 }
 
@@ -61,6 +62,9 @@ function renderEnhanceTab(content) {
     const maxLevel = EQUIPMENT_LAYER.ENHANCE_MAX_LEVEL;
     const maxed = level >= maxLevel;
     const canDo = state.canEnhanceWeapon(id);
+    // Blade Vale 2.1：同じ武器の複数所持の代わりに「武器の欠片」（分解で得る汎用素材）でも強化できる
+    const essenceNeed = state.essenceCostForEnhance(level);
+    const canDoEssence = state.canEnhanceWeapon(id, true);
 
     const card = document.createElement('div');
     card.className = 'forge-card';
@@ -69,13 +73,19 @@ function renderEnhanceTab(content) {
         <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name}</div>
         <div>Lv.${level}/${maxLevel}</div>
       </div>
-      <div class="forge-card-sub">強化ボーナス +${level * 5}%　／　素材(同じ武器)所持: ${spare}個 ／ 次の強化に必要: ${maxed ? '-' : `${need}個`}</div>
-      <button class="forge-card-btn" ${maxed || !canDo ? 'disabled' : ''}>
+      <div class="forge-card-sub">強化ボーナス +${level * 5}%　／　素材(同じ武器)所持: ${spare}個 ／ 次の強化に必要: ${maxed ? '-' : `${need}個`}
+        ／ 武器の欠片所持: ${state.data.weaponEssence}個 ／ 欠片で必要: ${maxed ? '-' : `${essenceNeed}個`}</div>
+      <button class="forge-card-btn" data-mode="copy" ${maxed || !canDo ? 'disabled' : ''}>
         ${maxed ? 'MAX' : `合成強化する（素材×${need} + 💰${cost}）`}
       </button>
+      ${maxed ? '' : `<button class="forge-card-btn" data-mode="essence" ${canDoEssence ? '' : 'disabled'} style="margin-top:6px;">武器の欠片で強化する（欠片×${essenceNeed} + 💰${cost}）</button>`}
     `;
-    card.querySelector('button').addEventListener('click', () => {
+    card.querySelector('[data-mode="copy"]').addEventListener('click', () => {
       if (state.enhanceWeapon(id)) { Audio_.pickup(); renderBlacksmith(); }
+    });
+    const essenceBtn = card.querySelector('[data-mode="essence"]');
+    if (essenceBtn) essenceBtn.addEventListener('click', () => {
+      if (state.enhanceWeapon(id, true)) { Audio_.pickup(); renderBlacksmith(); }
     });
     content.appendChild(card);
 
@@ -356,4 +366,67 @@ function appendAffix2Section(card, id, tier) {
     if (state.rollAffix2(id)) { Audio_.jobMastered(); renderBlacksmith(); }
   });
   card.appendChild(wrap);
+}
+
+// ---------------------------------------------------------
+// 整理タブ（Blade Vale 2.1：大量に拾う武器の売却・分解、元指示26・27番）
+// ロック中の装備は対象外（誤操作防止）。分解すると「武器の欠片」（強化タブ
+// で同名武器の代わりに使える汎用素材）が手に入る。
+// ---------------------------------------------------------
+function renderDisposeTab(content) {
+  const hint = document.createElement('p');
+  hint.className = 'hint';
+  hint.textContent = `売却でゴールド、分解で「武器の欠片」（強化タブで同じ武器の代わりに使える汎用素材、所持: ${state.data.weaponEssence}個）を得る。ロック中の装備は対象外。`;
+  content.appendChild(hint);
+
+  const ids = Object.keys(state.data.inventory).filter((id) => (state.data.inventory[id] || 0) > 0);
+  if (ids.length === 0) {
+    const p = document.createElement('p');
+    p.className = 'hint';
+    p.textContent = '所持品がありません';
+    content.appendChild(p);
+    return;
+  }
+
+  ids.sort((a, b) => (getItem(b) ? getItem(b).rarity : '').localeCompare(getItem(a) ? getItem(a).rarity : ''));
+  for (const id of ids) {
+    const item = getItem(id);
+    if (!item) continue;
+    const qty = state.data.inventory[id];
+    const locked = state.isItemLocked(id);
+    const sellGold = WEAPON_CODEX_LAYER.SELL_GOLD[item.rarity] || 0;
+    const dismantleEssence = WEAPON_CODEX_LAYER.DISMANTLE_ESSENCE[item.rarity] || 0;
+    const card = document.createElement('div');
+    card.className = 'forge-card';
+    card.innerHTML = `
+      <div class="forge-card-top">
+        <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${qty}${state.isItemFavorite(id) ? ' ★' : ''}${locked ? ' 🔒' : ''}</div>
+        <div>${RARITY[item.rarity].label}</div>
+      </div>
+      <div class="forge-card-sub">売却: 💰${sellGold}/個　／　分解: 🔹${dismantleEssence}欠片/個${locked ? '<br>※ロック中は売却・分解できません' : ''}</div>
+    `;
+    const btnRow = document.createElement('div');
+    btnRow.style.display = 'flex';
+    btnRow.style.gap = '6px';
+    btnRow.style.marginTop = '6px';
+    const sellBtn = document.createElement('button');
+    sellBtn.className = 'forge-card-btn';
+    sellBtn.textContent = '売却(1個)';
+    sellBtn.disabled = locked;
+    sellBtn.addEventListener('click', () => { if (state.sellItem(id, 1)) { Audio_.pickup(); renderBlacksmith(); } });
+    const dismantleBtn = document.createElement('button');
+    dismantleBtn.className = 'forge-card-btn';
+    dismantleBtn.textContent = '分解(1個)';
+    dismantleBtn.disabled = locked;
+    dismantleBtn.addEventListener('click', () => { if (state.dismantleItem(id, 1)) { Audio_.pickup(); renderBlacksmith(); } });
+    const lockBtn = document.createElement('button');
+    lockBtn.className = 'inline-btn';
+    lockBtn.textContent = locked ? '🔓ロック解除' : '🔒ロックする';
+    lockBtn.addEventListener('click', () => { state.toggleItemLocked(id); Audio_.tap(); renderBlacksmith(); });
+    btnRow.appendChild(sellBtn);
+    btnRow.appendChild(dismantleBtn);
+    btnRow.appendChild(lockBtn);
+    card.appendChild(btnRow);
+    content.appendChild(card);
+  }
 }

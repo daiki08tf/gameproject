@@ -154,6 +154,7 @@
     <header class="subbar">
       <button class="btn-back" id="equipBackBtn">←</button>
       <h2>装備</h2>
+      <button class="btn-sub" id="weaponCodexBtn">📖図鑑</button>
       <button class="btn-highlight" id="autoEquipBtn">⚡最強装備</button>
     </header>
     <div class="equip-layout">
@@ -163,6 +164,16 @@
         <p class="hint">スロットをタップして装備を選択</p>
       </div>
     </div>
+  </section>
+
+  <!-- ============ 武器図鑑（Blade Vale 2.1） ============ -->
+  <section id="weaponCodexScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="weaponCodexBackBtn">←</button>
+      <h2>武器図鑑</h2>
+    </header>
+    <div class="tab-row" id="weaponCodexTabRow"></div>
+    <div id="weaponCodexContent" class="blacksmith-content"></div>
   </section>
 
   <!-- ============ 職業 ============ -->
@@ -186,6 +197,7 @@
       <button class="tab-btn" data-tab="rune">ルーン</button>
       <button class="tab-btn" data-tab="mastery">武器熟練</button>
       <button class="tab-btn" data-tab="awakenitem">覚醒装備</button>
+      <button class="tab-btn" data-tab="dispose">整理</button>
     </div>
     <div id="blacksmithContent" class="blacksmith-content"></div>
   </section>
