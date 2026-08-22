@@ -1,6 +1,6 @@
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
-import { AWAKENING_NODES, awakeningNodeCost } from '../data/awakening.js';
+import { AWAKENING_BRANCHES, nodesInBranch, awakeningNodeCostFor } from '../data/awakening.js';
 import { AWAKENING_LAYER, ARTIFACT_LAYER } from '../data/balance.js';
 import { ARTIFACTS, getArtifact } from '../data/artifacts.js';
 
@@ -61,16 +61,17 @@ function renderAwakenTab(content) {
   const highest = state.highestJobLevel();
   const canDo = state.canAwaken();
   const preview = state.awakenPreviewPoints();
+  const startLv = state.awakeningStartLevel();
 
   const panel = document.createElement('div');
   panel.className = 'rebirth-panel';
   panel.innerHTML = `
     <div class="rebirth-count">${state.data.awakeningPoints}💠</div>
     <div class="rebirth-bonus">覚醒ポイント（覚醒回数：${state.data.awakenings}）</div>
-    <p class="sub">覚醒すると全職業のレベル・経験値が1に戻り、覚醒ポイントを獲得します。</p>
+    <p class="sub">覚醒すると全職業のレベル・経験値がLv.${startLv}に戻り、覚醒ポイントを獲得します（獲得量は最高到達レベル・深淵到達階・職業MASTER数で決まります）。</p>
     <p class="sub">装備・所持品・ゴールド・魔石・マスター済み職業・武器熟練度・転生・ステージ進行は一切失いません。</p>
     <p class="sub">現在の最高職業レベル：${highest}　${canDo ? `（覚醒で ${preview}💠 獲得）` : `（Lv.${AWAKENING_LAYER.MIN_LEVEL_TO_AWAKEN} 以上で覚醒可能）`}</p>
-    <button class="btn-main" id="doAwakenBtn" ${canDo ? '' : 'disabled'}>${awakenArmed ? '本当に覚醒する（レベルが1に戻ります）' : '覚醒する'}</button>
+    <button class="btn-main" id="doAwakenBtn" ${canDo ? '' : 'disabled'}>${awakenArmed ? `本当に覚醒する（レベルがLv.${startLv}に戻ります）` : '覚醒する'}</button>
     ${awakenArmed ? '<button class="btn-sub" id="cancelAwakenBtn" style="width:100%;margin-top:8px;">やめる</button>' : ''}
   `;
   content.appendChild(panel);
@@ -88,33 +89,45 @@ function renderAwakenTab(content) {
   const cancelBtn = panel.querySelector('#cancelAwakenBtn');
   if (cancelBtn) cancelBtn.addEventListener('click', () => { awakenArmed = false; renderRebirth(); });
 
-  const heading = document.createElement('div');
-  heading.className = 'section-heading';
-  heading.textContent = '覚醒ツリー（永続・覚醒してもリセットされません）';
-  content.appendChild(heading);
+  // 覚醒ツリーは3系統（征服・探求・輪廻）。各系統の見出しの下に、通常ノード＋
+  // 系統ごとに1つだけの大型ノード（数値ではなくルールを変える効果）を並べる。
+  for (const branchId in AWAKENING_BRANCHES) {
+    const branch = AWAKENING_BRANCHES[branchId];
+    const heading = document.createElement('div');
+    heading.className = 'section-heading';
+    heading.textContent = `${branch.name}（${branch.desc}）`;
+    content.appendChild(heading);
 
-  for (const node of AWAKENING_NODES) {
-    const rank = state.awakeningNodeRank(node.id);
-    const maxed = rank >= AWAKENING_LAYER.NODE_MAX_RANK;
-    const cost = awakeningNodeCost(rank);
-    const canBuy = state.canBuyAwakeningNode(node.id);
-    const card = document.createElement('div');
-    card.className = 'forge-card';
-    card.innerHTML = `
-      <div class="forge-card-top">
-        <div class="forge-card-name">${node.name}</div>
-        <div>Lv.${rank}/${AWAKENING_LAYER.NODE_MAX_RANK}</div>
-      </div>
-      <div class="forge-card-sub">${node.desc}（現在 +${Math.round(rank * node.pctPerRank * 1000) / 10}%）</div>
-      <button class="forge-card-btn" ${maxed || !canBuy ? 'disabled' : ''}>
-        ${maxed ? 'MAX' : `強化する（💠${cost}）`}
-      </button>
-    `;
-    card.querySelector('button').addEventListener('click', () => {
-      if (state.buyAwakeningNode(node.id)) { Audio_.pickup(); renderRebirth(); }
-    });
-    content.appendChild(card);
+    for (const node of nodesInBranch(branchId)) {
+      content.appendChild(renderAwakeningNodeCard(node));
+    }
   }
+}
+
+function renderAwakeningNodeCard(node) {
+  const rank = state.awakeningNodeRank(node.id);
+  const maxed = rank >= node.maxRank;
+  const cost = awakeningNodeCostFor(node, rank);
+  const canBuy = state.canBuyAwakeningNode(node.id);
+  const currentText = node.levels
+    ? `現在 Lv.${rank > 0 ? node.levels[rank - 1] : 1}`
+    : `現在 +${Math.round(rank * node.pctPerRank * 1000) / 10}%`;
+  const card = document.createElement('div');
+  card.className = 'forge-card';
+  card.innerHTML = `
+    <div class="forge-card-top">
+      <div class="forge-card-name">${node.name}${node.big ? '<span class="mastered-badge">★大型</span>' : ''}</div>
+      <div>Lv.${rank}/${node.maxRank}</div>
+    </div>
+    <div class="forge-card-sub">${node.desc}（${currentText}）</div>
+    <button class="forge-card-btn" ${maxed || !canBuy ? 'disabled' : ''}>
+      ${maxed ? 'MAX' : `強化する（💠${cost}）`}
+    </button>
+  `;
+  card.querySelector('button').addEventListener('click', () => {
+    if (state.buyAwakeningNode(node.id)) { Audio_.pickup(); renderRebirth(); }
+  });
+  return card;
 }
 
 // ---------------------------------------------------------

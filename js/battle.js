@@ -201,13 +201,21 @@ export class BattleScreen {
     if (this.player.attackTimer <= 0) {
       const target = this._nearestEnemy(this.player.attackRange);
       if (target) {
-        this.player.attackTimer = this.player.attackCooldown;
+        // 転生遺物「狂戦士の心臓」：HPが低いほど攻撃間隔が縮む
+        this.player.attackTimer = this.player.attackCooldown * this._berserkerCooldownMult();
         this.player.facing = Math.atan2(target.y - this.player.y, target.x - this.player.x);
-        const dmg = this._rollDamage(this.player.atk * this.player.buffAtkMult * this.awakenMult, target.def);
+        const atkValue = this.player.atk * this.player.buffAtkMult * this.awakenMult * this._bloodChaliceMult();
+        const dmg = this._rollDamage(atkValue, target.def, target.boss);
         this._dealDamage(target, dmg);
         this._spawnParticles(target.x, target.y, '#ffffff', 5, 120, 0.2);
         Audio_.swing();
         this.player.ultGauge = Math.min(100, this.player.ultGauge + dmg * 0.4);
+        // 転生遺物「狂戦士の心臓」：HP25%以下では通常攻撃が2回攻撃になる
+        if (this._berserkerDoubleAttackActive() && !target.dead) {
+          const dmg2 = this._rollDamage(atkValue, target.def, target.boss);
+          this._dealDamage(target, dmg2);
+          this.player.ultGauge = Math.min(100, this.player.ultGauge + dmg2 * 0.4);
+        }
       }
     }
   }
@@ -226,6 +234,31 @@ export class BattleScreen {
     this.awakenMult = mult;
   }
 
+  // 転生遺物「血神の杯」：通常攻撃・スキル命中時に一時的なATKバフが乗る
+  _bloodChaliceMult() {
+    return this.bloodChaliceUntil && performance.now() < this.bloodChaliceUntil ? 1 + this.bloodChaliceBonus : 1;
+  }
+
+  // 転生遺物「狂戦士の心臓」：HPが低いほど攻撃間隔が縮み、HP25%以下で2回攻撃になる
+  _berserkerRelic() {
+    return this._effectsOf('passive').find((e) => e.kind === 'berserker');
+  }
+
+  _berserkerCooldownMult() {
+    const rel = this._berserkerRelic();
+    if (!rel) return 1;
+    const hpRatio = this.player.maxHp > 0 ? this.player.hp / this.player.maxHp : 1;
+    const missing = 1 - hpRatio;
+    return Math.max(0.4, 1 - missing * rel.power); // 攻撃間隔の下限は元の40%（連射しすぎ防止）
+  }
+
+  _berserkerDoubleAttackActive() {
+    const rel = this._berserkerRelic();
+    if (!rel) return false;
+    const hpRatio = this.player.maxHp > 0 ? this.player.hp / this.player.maxHp : 1;
+    return hpRatio <= rel.threshold;
+  }
+
   _nearestEnemy(maxRange) {
     let best = null, bestD = Infinity;
     for (const e of this.enemies) {
@@ -236,9 +269,14 @@ export class BattleScreen {
     return best;
   }
 
-  _rollDamage(atk, def) {
+  _rollDamage(atk, def, isBoss) {
     let dmg = Math.max(1, atk - def * DAMAGE_BUCKET.DEF_MITIGATION_COEFF);
-    if (Math.random() * 100 < this.player.critPct) dmg *= DAMAGE_BUCKET.CRIT_MULTIPLIER;
+    // 会心判定はlastHitCritとして保持し、直後の_dealDamage()がonCrit系の
+    // 転生遺物（雷神の瞳など）を発動するかどうかの判定に使う
+    this.lastHitCrit = Math.random() * 100 < this.player.critPct;
+    if (this.lastHitCrit) dmg *= DAMAGE_BUCKET.CRIT_MULTIPLIER;
+    // 覚醒ツリー「覇者の一撃」：ボス相手にのみ乗る追加倍率
+    if (isBoss) dmg *= state.awakeningBossDmgMult();
     return Math.round(dmg);
   }
 
@@ -317,6 +355,22 @@ export class BattleScreen {
         const burn = Math.round(this.player.atk * eff.power);
         this._applyRawDamage(enemy, burn);
         this._spawnParticles(enemy.x, enemy.y, '#ff7a3c', 6, 140, 0.25);
+      } else if (eff.kind === 'bloodChalice') {
+        // 転生遺物「血神の杯」：命中の度に一時ATKバフを更新（重複せず上書き）
+        this.bloodChaliceBonus = eff.power;
+        this.bloodChaliceUntil = performance.now() + eff.duration * 1000;
+      }
+    }
+
+    // 転生遺物「雷神の瞳」：直前のヒットが会心だった場合のみ判定する
+    if (this.lastHitCrit) {
+      for (const eff of this._effectsOf('onCrit')) {
+        if (Math.random() > eff.chance) continue;
+        if (eff.kind === 'lightning' && !enemy.dead) {
+          const bolt = Math.round(this.player.atk * eff.power);
+          this._applyRawDamage(enemy, bolt);
+          this._spawnParticles(enemy.x, enemy.y, '#8ecbff', 10, 200, 0.3);
+        }
       }
     }
   }
@@ -373,9 +427,16 @@ export class BattleScreen {
     if (table.length === 0) return;
     const chance = ECONOMY.BASE_DROP_CHANCE * state.dropRateMult();
     if (Math.random() > chance) return;
-    const totalW = table.reduce((s, d) => s + d.weight, 0);
+    // 覚醒ツリー「宝物庫の記憶」：一定確率で、まだ持っていない装備だけの
+    // プールから優先的に選ぶ（該当がなければ通常通り全体から選ぶ）
+    let pool = table;
+    if (Math.random() < state.awakeningUnownedBiasChance()) {
+      const unowned = table.filter((d) => !state.ownsItem(d.itemId));
+      if (unowned.length > 0) pool = unowned;
+    }
+    const totalW = pool.reduce((s, d) => s + d.weight, 0);
     let r = Math.random() * totalW;
-    for (const d of table) {
+    for (const d of pool) {
       r -= d.weight;
       if (r <= 0) {
         state.addItem(d.itemId, 1);
@@ -408,13 +469,18 @@ export class BattleScreen {
     // 上級・特級職MASTERの「常時、スキルクールダウン-X%」（基本職MASTERの
     // スキル/回復ダメージ倍率とは別枠）
     this.skillCd = skill.cooldown * state.jobMasterCooldownMult();
+    // 転生遺物「時喰らいの砂時計」：一定確率でスキルのクールダウンが発生しない
+    for (const eff of this._effectsOf('onSkill')) {
+      if (eff.kind === 'cdRefund' && Math.random() < eff.chance) { this.skillCd = 0; this._toast('時が止まった！'); }
+    }
     Audio_.skill();
 
     if (skill.type === 'damage') {
       const targets = this._nearbyEnemies(150, 3);
       const skillPowerMult = state.jobMasterSkillPowerMult();
+      const bloodMult = this._bloodChaliceMult();
       for (const t of targets) {
-        const dmg = this._rollDamage((skill.power * skillPowerMult + this.player.atk * 0.4 + this.player.mag * 0.6) * this.awakenMult, t.def);
+        const dmg = this._rollDamage((skill.power * skillPowerMult + this.player.atk * 0.4 + this.player.mag * 0.6) * this.awakenMult * bloodMult, t.def, t.boss);
         this._dealDamage(t, dmg);
       }
       this._spawnParticles(this.player.x, this.player.y, '#8ee9ff', 16, 220, 0.35);
@@ -436,9 +502,15 @@ export class BattleScreen {
     if (!this.running || this.player.ultGauge < 100) return;
     this.player.ultGauge = 0;
     Audio_.ultimate();
+    // 必殺技は_rollDamageを経由しない（会心判定なし）ため、直前の通常攻撃/スキルの
+    // 会心フラグが残っていて雷神の瞳が誤発動しないよう明示的にリセットする
+    this.lastHitCrit = false;
     const targets = this._nearbyEnemies(240, 99);
-    const dmg = Math.round(((this.player.atk + this.player.mag) * 2.2 + 40) * this.awakenMult);
-    for (const t of targets) this._dealDamage(t, dmg);
+    const base = Math.round(((this.player.atk + this.player.mag) * 2.2 + 40) * this.awakenMult * this._bloodChaliceMult());
+    for (const t of targets) {
+      const dmg = t.boss ? Math.round(base * state.awakeningBossDmgMult()) : base;
+      this._dealDamage(t, dmg);
+    }
     this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.maxHp * 0.12);
     this.shake = 0.6;
     this._spawnParticles(this.player.x, this.player.y, '#ffffff', 30, 300, 0.6);

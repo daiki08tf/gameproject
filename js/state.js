@@ -8,7 +8,7 @@ import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
 import { isAbyssUnlocked } from './data/stages.js';
 import { EQUIPMENT_LAYER, REBIRTH_LAYER, AWAKENING_LAYER, AWAKENED_EQUIP_LAYER, ARTIFACT_LAYER, EXTREME_AFFIX_LAYER } from './data/balance.js';
-import { AWAKENING_NODES, awakeningNodeCost } from './data/awakening.js';
+import { ALL_AWAKENING_NODES, getAwakeningNodeDef, awakeningNodeCostFor } from './data/awakening.js';
 import { getArtifact } from './data/artifacts.js';
 
 const SAVE_KEY = 'bladevale_save_v1';
@@ -168,7 +168,8 @@ class StateManager {
     const rebirthMult = 1 + this.data.reincarnations * REBIRTH_LAYER.STAT_BONUS_PER_REBIRTH;
     const permMult = (stat) => rebirthMult * this.jobMasterStatMult(stat) * this.awakeningStatMult(stat);
     const stats = {
-      hp: Math.round((base.hp + bonus.hp) * permMult('hp')),
+      // 転生遺物「死王の指骨」：最大HP-30%（deathKingHpMult）の代わりに極Affix強化
+      hp: Math.round((base.hp + bonus.hp) * permMult('hp') * this.deathKingHpMult()),
       mp: Math.round((base.mp + bonus.mp) * permMult('mp')),
       atk: Math.round((base.atk + bonus.atk) * permMult('atk')),
       def: Math.round((base.def + bonus.def) * permMult('def')),
@@ -205,9 +206,37 @@ class StateManager {
     for (const artifactId of this.data.equippedArtifacts.slice(0, this.artifactSlotCount())) {
       if (!artifactId) continue;
       const artifact = getArtifact(artifactId);
-      if (artifact) effects.push(EFFECTS[artifact.effectId]);
+      if (!artifact) continue;
+      // 秘宝（EFFECT_ARTIFACTS）はchapters.jsのEFFECTSを参照するだけ、
+      // 転生遺物（RELICS）は自身がそのままtrigger/kind等を持つ効果オブジェクト
+      if (artifact.effectId) effects.push(EFFECTS[artifact.effectId]);
+      else effects.push(artifact);
     }
     return effects;
+  }
+
+  // 装備中または所持中（強化素材・未使用ストックとして）かどうか。
+  // 覚醒ツリー「宝物庫の記憶」の判定に使う。
+  ownsItem(itemId) {
+    if ((this.data.inventory[itemId] || 0) > 0) return true;
+    return SLOTS.some((slot) => this.data.equipped[slot] === itemId);
+  }
+
+  // 現在スロットにセットされている秘宝/転生遺物の中に、指定kindのものがあるか
+  hasEquippedArtifactKind(kind) {
+    for (const artifactId of this.data.equippedArtifacts.slice(0, this.artifactSlotCount())) {
+      if (!artifactId) continue;
+      const artifact = getArtifact(artifactId);
+      if (artifact && artifact.kind === kind) return true;
+    }
+    return false;
+  }
+
+  // 転生遺物「死王の指骨」：最大HP-30%の代わりを担う倍率
+  deathKingHpMult() {
+    if (!this.hasEquippedArtifactKind('deathking')) return 1;
+    const artifact = getArtifact('relic_deathking');
+    return 1 + artifact.power;
   }
 
   // ---------- 装備・インベントリ ----------
@@ -500,17 +529,34 @@ class StateManager {
     return this.highestJobLevel() >= AWAKENING_LAYER.MIN_LEVEL_TO_AWAKEN;
   }
 
+  // 元指示の「転生ポイント」仕様：最高到達レベルだけでなく、深淵到達階・
+  // 職業MASTER数からも加算される（「最短周回だけが正解」にならないよう、
+  // レベル上げ一辺倒ではない複数の稼ぎ方を用意する）。
   awakenPreviewPoints() {
-    return Math.floor(this.highestJobLevel() / AWAKENING_LAYER.POINTS_PER_LEVEL_DIVISOR);
+    const levelPart = Math.floor(this.highestJobLevel() / AWAKENING_LAYER.POINTS_PER_LEVEL_DIVISOR);
+    const abyssPart = Math.floor(this.data.abyssBestDepth * AWAKENING_LAYER.POINTS_PER_ABYSS_DEPTH);
+    const masterPart = this.data.mastered.length * AWAKENING_LAYER.POINTS_PER_MASTERED_JOB;
+    return levelPart + abyssPart + masterPart;
   }
 
-  // 全職業のレベル・経験値だけをリセットする。装備・所持品・ゴールド・魔石・
-  // マスター済み職業・武器熟練度・転生回数・ステージ進行は一切失わない。
+  // 覚醒ツリー「不滅の魂」（輪廻系統の大型ノード）：覚醒後の初期レベル。
+  // 未取得なら1（元指示の「転生後初期Lv」に対応する大型ノード）。
+  awakeningStartLevel() {
+    const rank = this.awakeningNodeRank('awk_startlevel');
+    if (rank <= 0) return 1;
+    const node = getAwakeningNodeDef('awk_startlevel');
+    return node.levels[rank - 1];
+  }
+
+  // 全職業のレベル・経験値だけをリセットする（初期値は上記の「不滅の魂」で
+  // 底上げ可能）。装備・所持品・ゴールド・魔石・マスター済み職業・武器熟練度・
+  // 転生回数・ステージ進行（章の解放状況含む）は一切失わない。
   awaken() {
     if (!this.canAwaken()) return false;
     const gained = this.awakenPreviewPoints();
+    const startLevel = this.awakeningStartLevel();
     for (const jobId in this.data.jobs) {
-      this.data.jobs[jobId] = { level: 1, exp: 0 };
+      this.data.jobs[jobId] = { level: startLevel, exp: 0 };
     }
     this.data.awakeningPoints += gained;
     this.data.awakenings += 1;
@@ -521,25 +567,39 @@ class StateManager {
   // 覚醒ツリー：statごとの永続倍率（1 + Σ rank * pctPerRank）
   awakeningStatMult(stat) {
     let mult = 1;
-    for (const node of AWAKENING_NODES) {
-      if (node.stat !== stat) continue;
+    for (const node of ALL_AWAKENING_NODES) {
+      if (node.stat !== stat || node.levels) continue; // levelsを持つノード(不滅の魂)は別枠
       mult += this.awakeningNodeRank(node.id) * node.pctPerRank;
     }
     return mult;
   }
 
+  // 覚醒ツリー「覇者の一撃」（征服系統の大型ノード）：ボスへの与ダメージ倍率
+  awakeningBossDmgMult() { return this.awakeningStatMult('bossDmg'); }
+
+  // 覚醒ツリー「宝物庫の記憶」（探求系統の大型ノード）：ドロップ時に未所持
+  // アイテムを優先する確率（0〜1）
+  awakeningUnownedBiasChance() {
+    const rank = this.awakeningNodeRank('awk_unowned');
+    const node = getAwakeningNodeDef('awk_unowned');
+    return Math.min(1, rank * node.pctPerRank);
+  }
+
   awakeningNodeRank(id) { return this.data.awakeningTree[id] || 0; }
 
   canBuyAwakeningNode(id) {
+    const node = getAwakeningNodeDef(id);
+    if (!node) return false;
     const rank = this.awakeningNodeRank(id);
-    if (rank >= AWAKENING_LAYER.NODE_MAX_RANK) return false;
-    return this.data.awakeningPoints >= awakeningNodeCost(rank);
+    if (rank >= node.maxRank) return false;
+    return this.data.awakeningPoints >= awakeningNodeCostFor(node, rank);
   }
 
   buyAwakeningNode(id) {
     if (!this.canBuyAwakeningNode(id)) return false;
+    const node = getAwakeningNodeDef(id);
     const rank = this.awakeningNodeRank(id);
-    this.data.awakeningPoints -= awakeningNodeCost(rank);
+    this.data.awakeningPoints -= awakeningNodeCostFor(node, rank);
     this.data.awakeningTree[id] = rank + 1;
     this.save();
     return true;
@@ -588,7 +648,9 @@ class StateManager {
     this.data.gold -= EXTREME_AFFIX_LAYER.ROLL_COST_GOLD;
     this.data.manastone -= EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE;
     const stat = pool[Math.floor(Math.random() * pool.length)];
-    const pct = EXTREME_AFFIX_LAYER.MIN_PCT + Math.random() * (EXTREME_AFFIX_LAYER.MAX_PCT - EXTREME_AFFIX_LAYER.MIN_PCT);
+    // 転生遺物「死王の指骨」：極Affixの効果量そのものを底上げする
+    const deathKingBonus = this.hasEquippedArtifactKind('deathking') ? getArtifact('relic_deathking').affixBonus : 0;
+    const pct = EXTREME_AFFIX_LAYER.MIN_PCT + deathKingBonus + Math.random() * (EXTREME_AFFIX_LAYER.MAX_PCT - EXTREME_AFFIX_LAYER.MIN_PCT);
     this.data.weaponAffix[itemId] = { stat, pct: Math.round(pct * 1000) / 1000 };
     this.save();
     return this.data.weaponAffix[itemId];
