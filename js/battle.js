@@ -311,6 +311,7 @@ export class BattleScreen {
       this.runGold += goldGain;
       if (expRes.leveledUp) this._toast('LEVEL UP!');
       this._rollDrop();
+      this._rollManastone(enemy);
       if (enemy.boss) { this.boss = null; this.bossBar.classList.add('hidden'); }
     }
   }
@@ -327,6 +328,19 @@ export class BattleScreen {
         this.hasteUntil = performance.now() + eff.duration * 1000;
       }
     }
+  }
+
+  _rollManastone(enemy) {
+    if (enemy.boss) {
+      const amount = Math.round(rand(15, 25));
+      state.addManastone(amount);
+      this.runManastone = (this.runManastone || 0) + amount;
+      return;
+    }
+    if (Math.random() > 0.2) return;
+    const amount = Math.round(rand(1, 3));
+    state.addManastone(amount);
+    this.runManastone = (this.runManastone || 0) + amount;
   }
 
   _rollDrop() {

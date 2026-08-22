@@ -55,7 +55,10 @@ const CHAPTER_1 = {
       ],
       rewards: { gold: 200, exp: 150 },
       firstClear: { itemId: 'wp_sword_e' },
-      dropTable: [{ itemId: 'ac_charm_e', weight: 1 }, { itemId: 'bd_plate_e', weight: 1 }],
+      dropTable: [
+        { itemId: 'ac_charm_e', weight: 1 }, { itemId: 'bd_plate_e', weight: 1 },
+        { itemId: 'rune_effect_counter', weight: 1 },
+      ],
     },
   ],
 };
@@ -111,8 +114,14 @@ function buildChapter(ch) {
       ],
       rewards: scaleReward({ gold: 200, exp: 150 }, mult),
       firstClear: { itemId: `${ch.id}_weapon_epic` },
-      dropTable: [{ itemId: `${ch.id}_named_${ch.items.named.slot}`, weight: 1 }]
-        .concat(ch.items.named2 ? [{ itemId: `${ch.id}_named2_${ch.items.named2.slot}`, weight: 1 }] : []),
+      dropTable: [
+        { itemId: `${ch.id}_named_${ch.items.named.slot}`, weight: 1 },
+        { itemId: `rune_effect_${ch.items.named.effect}`, weight: 1 },
+      ]
+        .concat(ch.items.named2 ? [
+          { itemId: `${ch.id}_named2_${ch.items.named2.slot}`, weight: 1 },
+          { itemId: `rune_effect_${ch.items.named2.effect}`, weight: 1 },
+        ] : []),
     },
   ];
   return { id: ch.id, name: `第${ch.num}章 ${ch.name}`, stages };

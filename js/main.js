@@ -5,6 +5,7 @@ import { renderChapterSelect } from './screens/chapterSelect.js';
 import { renderStageSelect, renderStageConfirm } from './screens/stageSelect.js';
 import { renderEquipment, autoEquipBest } from './screens/equipment.js';
 import { renderJobs } from './screens/jobs.js';
+import { renderBlacksmith, initBlacksmithTabs } from './screens/blacksmith.js';
 import { renderResult } from './screens/result.js';
 import { Audio_ } from './audio.js';
 
@@ -69,6 +70,11 @@ document.getElementById('goJobBtn').addEventListener('click', () => {
   renderJobs();
   showScreen('jobsScreen');
 });
+document.getElementById('goBlacksmithBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderBlacksmith();
+  showScreen('blacksmithScreen');
+});
 
 // ---------------------------------------------------------
 // 章選択／ステージ選択／確認
@@ -88,6 +94,11 @@ document.getElementById('autoEquipBtn').addEventListener('click', () => autoEqui
 // ---------------------------------------------------------
 // 職業
 document.getElementById('jobsBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+
+// ---------------------------------------------------------
+// 鍛冶屋
+document.getElementById('blacksmithBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+initBlacksmithTabs();
 
 // ---------------------------------------------------------
 // リザルト

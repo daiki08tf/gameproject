@@ -20,6 +20,8 @@ function statLine(item) {
     const wt = WEAPON_TYPES[item.weaponType];
     const match = state.currentJob.weapon === item.weaponType;
     parts.push(`${wt.name}${match ? '（適性◎+8%）' : ''}`);
+    const enhLv = state.weaponEnhanceLevel(item.id);
+    if (enhLv > 0) parts.push(`強化Lv.${enhLv}（+${enhLv * 5}%）`);
   }
   if (item.effects) {
     for (const eff of item.effects) parts.push(`✨${eff.name}: ${eff.desc}`);

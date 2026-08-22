@@ -37,6 +37,9 @@
       <button id="goJobBtn" class="menu-card">
         <span class="menu-icon">📜</span><span>職業・転職</span>
       </button>
+      <button id="goBlacksmithBtn" class="menu-card">
+        <span class="menu-icon">🔨</span><span>鍛冶屋</span>
+      </button>
     </nav>
   </section>
 
@@ -140,6 +143,21 @@
       <h2>職業</h2>
     </header>
     <div class="job-tiers" id="jobTiers"></div>
+  </section>
+
+  <!-- ============ 鍛冶屋 ============ -->
+  <section id="blacksmithScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="blacksmithBackBtn">←</button>
+      <h2>鍛冶屋</h2>
+      <span id="manastoneText" class="manastone-badge">💎 0</span>
+    </header>
+    <div class="tab-row">
+      <button class="tab-btn" data-tab="enhance">強化</button>
+      <button class="tab-btn" data-tab="rune">ルーン</button>
+      <button class="tab-btn" data-tab="rebirth">転生</button>
+    </div>
+    <div id="blacksmithContent" class="blacksmith-content"></div>
   </section>
 
   <!-- Toast -->

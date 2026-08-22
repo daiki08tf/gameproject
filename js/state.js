@@ -3,18 +3,24 @@
    死亡してもリセットされない：レベル・職業・装備・所持品を保持
    ============================================================ */
 import { getJob, computeStats, isUnlocked, TIERS } from './data/jobs.js';
-import { getItem, powerScore, SLOTS, weaponAffinityBonus } from './data/equipment.js';
+import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel } from './data/equipment.js';
+import { getRune } from './data/runes.js';
+import { EFFECTS } from './data/chapters.js';
 
 const SAVE_KEY = 'bladevale_save_v1';
 
 function defaultSave() {
   return {
     gold: 50,
+    manastone: 0,
     currentJobId: 'warrior',
     jobs: { warrior: { level: 1, exp: 0 } },
     mastered: [],
     inventory: {},
     equipped: { weapon: 'wp_sword_n', shield: null, head: null, body: null, accessory1: null, accessory2: null },
+    weaponEnhance: {},
+    runeSockets: {},
+    reincarnations: 0,
     stageProgress: {},
   };
 }
@@ -93,7 +99,7 @@ class StateManager {
     return { gained, leveledUp };
   }
 
-  // ---------- ゴールド ----------
+  // ---------- ゴールド・魔石 ----------
   gainGold(amount) {
     const passive = this.currentJob.passive;
     const mult = passive && passive.gold ? passive.gold : 1;
@@ -103,43 +109,69 @@ class StateManager {
     return gained;
   }
 
+  addManastone(amount) {
+    this.data.manastone += amount;
+    this.save();
+  }
+
   dropRateMult() {
     const passive = this.currentJob.passive;
     return passive && passive.drop ? passive.drop : 1;
   }
 
-  // ---------- ステータス計算（職業ベース＋装備ボーナス＋武器適性） ----------
+  // ---------- ステータス計算（職業ベース＋装備＋強化＋ルーン＋転生＋武器適性） ----------
   getStats() {
     const base = computeStats(this.currentJobId, this.currentLevel);
     const bonus = { hp: 0, mp: 0, atk: 0, def: 0, mag: 0, spd: 0, crit: 0 };
+
     for (const slot of SLOTS) {
       const id = this.data.equipped[slot];
       if (!id) continue;
       const item = getItem(id);
       if (!item) continue;
-      for (const k in item.stats) bonus[k] = (bonus[k] || 0) + item.stats[k];
+      const mult = slot === 'weapon' ? 1 + this.weaponEnhanceLevel(id) * 0.05 : 1;
+      for (const k in item.stats) bonus[k] = (bonus[k] || 0) + item.stats[k] * mult;
     }
+
+    const weaponId = this.data.equipped.weapon;
+    if (weaponId) {
+      for (const runeId of this.getRuneSockets(weaponId)) {
+        if (!runeId) continue;
+        const rune = getRune(runeId);
+        if (rune && rune.kind === 'stat') bonus[rune.stat] = (bonus[rune.stat] || 0) + rune.value;
+      }
+    }
+
+    const rebirthMult = 1 + this.data.reincarnations * 0.03;
     const stats = {
-      hp: Math.round(base.hp + bonus.hp),
-      mp: Math.round(base.mp + bonus.mp),
-      atk: Math.round(base.atk + bonus.atk),
-      def: Math.round(base.def + bonus.def),
-      mag: Math.round(base.mag + bonus.mag),
-      spd: Math.round((base.spd + bonus.spd) * 10) / 10,
+      hp: Math.round((base.hp + bonus.hp) * rebirthMult),
+      mp: Math.round((base.mp + bonus.mp) * rebirthMult),
+      atk: Math.round((base.atk + bonus.atk) * rebirthMult),
+      def: Math.round((base.def + bonus.def) * rebirthMult),
+      mag: Math.round((base.mag + bonus.mag) * rebirthMult),
+      spd: Math.round((base.spd + bonus.spd) * rebirthMult * 10) / 10,
       critPct: Math.min(75, base.critPct + bonus.crit * 0.8),
     };
-    const weaponItem = getItem(this.data.equipped.weapon);
+    const weaponItem = getItem(weaponId);
     const affinity = weaponAffinityBonus(weaponItem, this.currentJob.weapon);
     if (affinity) stats[affinity.stat] = Math.round(stats[affinity.stat] * affinity.mult);
     return stats;
   }
 
-  // 装備中の固有アイテムが持つ特殊効果を全て集める（戦闘エンジンから参照）
+  // 装備中の固有装備＋ルーンが持つ特殊効果を全て集める（戦闘エンジンから参照）
   getEquippedEffects() {
     const effects = [];
     for (const slot of SLOTS) {
       const item = getItem(this.data.equipped[slot]);
       if (item && item.effects) effects.push(...item.effects);
+    }
+    const weaponId = this.data.equipped.weapon;
+    if (weaponId) {
+      for (const runeId of this.getRuneSockets(weaponId)) {
+        if (!runeId) continue;
+        const rune = getRune(runeId);
+        if (rune && rune.kind === 'effect') effects.push(EFFECTS[rune.effectId]);
+      }
     }
     return effects;
   }
@@ -212,6 +244,93 @@ class StateManager {
     this.data.inventory = newBag;
     this.data.equipped = newEquipped;
     this.save();
+  }
+
+  // ---------- 鍛冶屋：武器強化（同じ武器の合成） ----------
+  weaponEnhanceLevel(itemId) { return this.data.weaponEnhance[itemId] || 0; }
+
+  enhanceCost(level) { return 30 + level * 40; }
+
+  canEnhanceWeapon(itemId) {
+    const level = this.weaponEnhanceLevel(itemId);
+    if (level >= 10) return false;
+    if ((this.data.inventory[itemId] || 0) < 1) return false;
+    return this.data.gold >= this.enhanceCost(level);
+  }
+
+  enhanceWeapon(itemId) {
+    if (!this.canEnhanceWeapon(itemId)) return false;
+    const level = this.weaponEnhanceLevel(itemId);
+    this.data.gold -= this.enhanceCost(level);
+    this.data.inventory[itemId] -= 1;
+    if (this.data.inventory[itemId] <= 0) delete this.data.inventory[itemId];
+    this.data.weaponEnhance[itemId] = level + 1;
+    this.save();
+    return true;
+  }
+
+  // ---------- 鍛冶屋：ルーン ----------
+  getRuneSockets(itemId) {
+    const count = slotsForEnhanceLevel(this.weaponEnhanceLevel(itemId));
+    const arr = this.data.runeSockets[itemId] || [];
+    const out = [];
+    for (let i = 0; i < count; i++) out.push(arr[i] || null);
+    return out;
+  }
+
+  craftRune(runeId) {
+    const rune = getRune(runeId);
+    if (!rune || !rune.craftable) return false;
+    if (this.data.manastone < rune.craftCost.manastone || this.data.gold < rune.craftCost.gold) return false;
+    this.data.manastone -= rune.craftCost.manastone;
+    this.data.gold -= rune.craftCost.gold;
+    this.addItem(runeId, 1);
+    return true;
+  }
+
+  socketRune(itemId, slotIndex, runeId) {
+    const sockets = this.getRuneSockets(itemId).slice();
+    if (slotIndex < 0 || slotIndex >= sockets.length) return false;
+    if ((this.data.inventory[runeId] || 0) < 1) return false;
+    const prev = sockets[slotIndex];
+    this.data.inventory[runeId] -= 1;
+    if (this.data.inventory[runeId] <= 0) delete this.data.inventory[runeId];
+    if (prev) this.addItem(prev, 1);
+    sockets[slotIndex] = runeId;
+    this.data.runeSockets[itemId] = sockets;
+    this.save();
+    return true;
+  }
+
+  unsocketRune(itemId, slotIndex) {
+    const sockets = this.getRuneSockets(itemId).slice();
+    if (!sockets[slotIndex]) return false;
+    this.addItem(sockets[slotIndex], 1);
+    sockets[slotIndex] = null;
+    this.data.runeSockets[itemId] = sockets;
+    this.save();
+    return true;
+  }
+
+  // ---------- 鍛冶屋：転生 ----------
+  canReincarnate() {
+    return isUnlocked('hero', this.masteredSet());
+  }
+
+  reincarnationCost() {
+    const n = this.data.reincarnations;
+    return { gold: 500 + n * 800, manastone: 30 + n * 40 };
+  }
+
+  reincarnate() {
+    if (!this.canReincarnate()) return false;
+    const cost = this.reincarnationCost();
+    if (this.data.gold < cost.gold || this.data.manastone < cost.manastone) return false;
+    this.data.gold -= cost.gold;
+    this.data.manastone -= cost.manastone;
+    this.data.reincarnations += 1;
+    this.save();
+    return true;
   }
 
   // ---------- ステージ進行 ----------

@@ -170,3 +170,11 @@ export function weaponAffinityBonus(weaponItem, jobWeaponType) {
 }
 
 export const SLOTS = ['weapon', 'shield', 'head', 'body', 'accessory1', 'accessory2'];
+
+// 武器強化レベルに応じたルーンスロット数
+export function slotsForEnhanceLevel(level) {
+  if (level >= 9) return 4;
+  if (level >= 6) return 3;
+  if (level >= 3) return 2;
+  return 1;
+}
