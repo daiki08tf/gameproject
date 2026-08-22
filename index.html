@@ -135,6 +135,38 @@
     </div>
   </section>
 
+  <!-- ============ テキスト戦闘（ターン制、既存のリアルタイムCanvas戦闘
+       #battleScreen とは独立した新しい画面。元指示19番により旧battle.jsは
+       未使用のまま残す） ============ -->
+  <section id="textBattleScreen" class="screen">
+    <div class="tb-hud">
+      <div class="tb-topline">
+        <button id="tbRetreatBtn" class="btn-icon">✕</button>
+        <span id="tbStageName" class="name">1-1</span>
+        <span id="tbEnemyRemainText">残り 5</span>
+      </div>
+      <div class="bar hp-bar"><div id="tbHpFill" class="fill"></div><span id="tbHpText" class="bar-text"></span></div>
+      <div class="tb-mp-row">
+        <span class="tb-mp-label">MP</span>
+        <div class="bar mp-bar small"><div id="tbMpFill" class="fill"></div></div>
+        <span id="tbMpText" class="bar-text" style="position:static;font-size:11px;"></span>
+      </div>
+    </div>
+
+    <div id="tbEnemyList" class="tb-enemy-list"></div>
+
+    <div id="tbLog" class="tb-log"></div>
+
+    <div id="tbCommandGrid" class="tb-command-grid">
+      <button id="tbAttackBtn" class="tb-cmd-btn">こうげき</button>
+      <button id="tbSpellBtn" class="tb-cmd-btn" disabled>じゅもん</button>
+      <button id="tbSkillBtn" class="tb-cmd-btn">とくぎ</button>
+      <button id="tbGuardBtn" class="tb-cmd-btn tb-cmd-guard">ぼうぎょ</button>
+      <button id="tbItemBtn" class="tb-cmd-btn" disabled>どうぐ</button>
+      <button id="tbFleeBtn" class="tb-cmd-btn tb-cmd-flee">にげる</button>
+    </div>
+  </section>
+
   <!-- ============ リザルト ============ -->
   <section id="resultScreen" class="screen">
     <div class="panel">
