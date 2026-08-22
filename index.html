@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Blade Vale - ハクスラRPG</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ============ タイトル ============ -->
+  <section id="titleScreen" class="screen active">
+    <div class="panel">
+      <h1>BLADE VALE</h1>
+      <p class="sub">ステージを踏破し、職業を極めて勇者を目指せ</p>
+      <button id="titleStartBtn" class="btn-main">はじめる</button>
+    </div>
+  </section>
+
+  <!-- ============ 拠点(ホーム) ============ -->
+  <section id="homeScreen" class="screen">
+    <header class="topbar">
+      <div class="player-summary">
+        <div class="job-badge" id="homeJobName">戦士</div>
+        <div class="lv-line"><span id="homeLevelText">Lv.1</span><span id="homeGoldText">💰 50</span></div>
+        <div class="bar xp-bar small"><div id="homeXpFill" class="fill"></div></div>
+      </div>
+    </header>
+    <div class="home-hero">⚔️</div>
+    <nav class="home-menu">
+      <button id="goStageBtn" class="menu-card">
+        <span class="menu-icon">🗺️</span><span>冒険へ出る</span>
+      </button>
+      <button id="goEquipBtn" class="menu-card">
+        <span class="menu-icon">🛡️</span><span>装備</span>
+      </button>
+      <button id="goJobBtn" class="menu-card">
+        <span class="menu-icon">📜</span><span>職業・転職</span>
+      </button>
+      <button id="goBlacksmithBtn" class="menu-card">
+        <span class="menu-icon">🔨</span><span>鍛冶屋</span>
+      </button>
+      <button id="goRebirthBtn" class="menu-card">
+        <span class="menu-icon">✨</span><span>転生の祭壇</span>
+      </button>
+      <button id="goSpellBtn" class="menu-card">
+        <span class="menu-icon">📖</span><span>ふっかつのじゅもん</span>
+      </button>
+      <button id="goAbyssBtn" class="menu-card">
+        <span class="menu-icon">🌀</span><span>深淵</span>
+      </button>
+    </nav>
+  </section>
+
+  <!-- ============ 章選択 ============ -->
+  <section id="chapterSelectScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="chapterBackBtn">←</button>
+      <h2>冒険へ出る</h2>
+    </header>
+    <div id="chapterList" class="stage-list"></div>
+  </section>
+
+  <!-- ============ 深淵 ============ -->
+  <section id="abyssScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="abyssBackBtn">←</button>
+      <h2>深淵</h2>
+      <span id="abyssShardText" class="manastone-badge">🔹 0</span>
+    </header>
+    <div class="tab-row">
+      <button class="tab-btn" data-atab="challenge">挑戦</button>
+      <button class="tab-btn" data-atab="tree">深淵ツリー</button>
+    </div>
+    <p class="hint" style="padding:0 16px;" id="abyssHint">全10章のボスを撃破した者だけが挑める、際限なく深くなる試練の場。踏破記録は失われません。</p>
+    <div id="abyssList" class="stage-list"></div>
+    <div id="abyssTreeContent" class="blacksmith-content hidden"></div>
+  </section>
+
+  <!-- ============ ステージ選択 ============ -->
+  <section id="stageSelectScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="stageBackBtn">←</button>
+      <h2 id="chapterTitle">第1章</h2>
+    </header>
+    <div id="stageList" class="stage-list"></div>
+  </section>
+
+  <!-- ============ ステージ詳細/挑戦確認 ============ -->
+  <section id="stageConfirmScreen" class="screen">
+    <div class="panel">
+      <h2 id="confirmStageName">ステージ名</h2>
+      <p class="sub" id="confirmStageRec">推奨Lv 1</p>
+      <p id="confirmStageRewards" class="sub"></p>
+      <p id="confirmModifiers" class="sub hidden"></p>
+      <div id="confirmBlessingRow" class="blessing-row hidden"></div>
+      <div class="confirm-actions">
+        <button class="btn-sub" id="confirmBackBtn">戻る</button>
+        <button class="btn-main" id="confirmStartBtn">出撃</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 戦闘 ============ -->
+  <section id="battleScreen" class="screen">
+    <canvas id="battleCanvas"></canvas>
+
+    <div class="battle-hud">
+      <div class="battle-topline">
+        <button id="retreatBtn" class="btn-icon">✕</button>
+        <span id="battleStageName">1-1</span>
+        <span id="enemyRemainText">残り 5</span>
+      </div>
+      <div class="bar hp-bar"><div id="battleHpFill" class="fill"></div><span id="battleHpText" class="bar-text"></span></div>
+      <div class="bar mp-bar"><div id="battleMpFill" class="fill"></div></div>
+      <div id="bossBar" class="boss-bar hidden">
+        <span id="bossNameText">ボス</span>
+        <div class="bar boss-hp-bar"><div id="bossHpFill" class="fill"></div></div>
+      </div>
+    </div>
+
+    <div id="joystickBase" class="joystick-base">
+      <div id="joystickKnob" class="joystick-knob"></div>
+    </div>
+
+    <div class="action-buttons">
+      <button id="skillBtn" class="action-btn skill-btn">
+        <span class="action-label" id="skillLabel">スキル</span>
+        <div class="cooldown-veil" id="skillCooldownVeil"></div>
+      </button>
+      <button id="ultBtn" class="action-btn ult-btn">
+        <span class="action-label">必殺</span>
+        <div class="cooldown-veil" id="ultCooldownVeil"></div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ リザルト ============ -->
+  <section id="resultScreen" class="screen">
+    <div class="panel">
+      <h1 id="resultTitle" class="over">STAGE CLEAR</h1>
+      <p id="resultStats" class="sub"></p>
+      <div id="resultItems" class="result-items"></div>
+      <div class="confirm-actions">
+        <button class="btn-sub hidden" id="resultEquipBtn">装備を見る</button>
+        <button class="btn-sub" id="resultHomeBtn">拠点へ</button>
+        <button class="btn-main" id="resultRetryBtn">もう一度</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 装備 ============ -->
+  <section id="equipmentScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="equipBackBtn">←</button>
+      <h2>装備</h2>
+      <button class="btn-sub" id="weaponCodexBtn">📖図鑑</button>
+      <button class="btn-highlight" id="autoEquipBtn">⚡最強装備</button>
+    </header>
+    <div class="equip-layout">
+      <div class="paperdoll" id="paperdoll"></div>
+      <div class="tab-row" id="lootFilterRow"></div>
+      <div class="equip-picker" id="equipPicker">
+        <p class="hint">スロットをタップして装備を選択</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 武器図鑑（Blade Vale 2.1） ============ -->
+  <section id="weaponCodexScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="weaponCodexBackBtn">←</button>
+      <h2>武器図鑑</h2>
+    </header>
+    <div class="tab-row" id="weaponCodexTabRow"></div>
+    <div id="weaponCodexContent" class="blacksmith-content"></div>
+  </section>
+
+  <!-- ============ 職業 ============ -->
+  <section id="jobsScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="jobsBackBtn">←</button>
+      <h2>職業</h2>
+    </header>
+    <div class="job-tiers" id="jobTiers"></div>
+  </section>
+
+  <!-- ============ 鍛冶屋 ============ -->
+  <section id="blacksmithScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="blacksmithBackBtn">←</button>
+      <h2>鍛冶屋</h2>
+      <span id="manastoneText" class="manastone-badge">💎 0</span>
+    </header>
+    <div class="tab-row">
+      <button class="tab-btn" data-tab="enhance">強化</button>
+      <button class="tab-btn" data-tab="rune">ルーン</button>
+      <button class="tab-btn" data-tab="mastery">武器熟練</button>
+      <button class="tab-btn" data-tab="awakenitem">覚醒装備</button>
+      <button class="tab-btn" data-tab="dispose">整理</button>
+    </div>
+    <div id="blacksmithContent" class="blacksmith-content"></div>
+  </section>
+
+  <!-- ============ 転生の祭壇 ============ -->
+  <section id="rebirthScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="rebirthBackBtn">←</button>
+      <h2>転生の祭壇</h2>
+    </header>
+    <div class="tab-row">
+      <button class="tab-btn" data-rtab="reincarnate">転生</button>
+      <button class="tab-btn" data-rtab="awaken">覚醒</button>
+      <button class="tab-btn" data-rtab="artifact">秘宝</button>
+    </div>
+    <div id="rebirthContent" class="blacksmith-content"></div>
+  </section>
+
+  <!-- ============ ふっかつのじゅもん ============ -->
+  <section id="spellScreen" class="screen">
+    <header class="subbar">
+      <button class="btn-back" id="spellBackBtn">←</button>
+      <h2>ふっかつのじゅもん</h2>
+    </header>
+    <div class="blacksmith-content">
+      <div class="forge-card">
+        <div class="forge-card-name">じゅもんを表示する</div>
+        <div class="forge-card-sub">今のセーブ内容を「じゅもん」に変換します。コピーして大切に保管してください。</div>
+        <button class="forge-card-btn" id="genSpellBtn">じゅもんを見る</button>
+        <textarea id="spellOutput" class="spell-box" readonly rows="6" placeholder="ここにじゅもんが表示されます"></textarea>
+        <button class="btn-sub" id="copySpellBtn" style="width:100%;margin-top:8px;">コピーする</button>
+      </div>
+      <div class="forge-card">
+        <div class="forge-card-name">じゅもんを入力する</div>
+        <div class="forge-card-sub">じゅもんを入力すると、今のセーブに上書きして復活します。</div>
+        <textarea id="spellInput" class="spell-box" rows="6" placeholder="ここにじゅもんを貼り付け"></textarea>
+        <button class="forge-card-btn" id="applySpellBtn" style="margin-top:8px;">このじゅもんで復活する</button>
+        <p id="spellMessage" class="forge-card-sub"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

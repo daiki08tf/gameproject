@@ -1,0 +1,53 @@
+/* ============================================================
+   敵データ定義
+   第1章は既存のまま。第2章以降は chapters.js のメタデータから
+   normal/fast/tank/boss の4アーキタイプを章倍率でスケールして生成する。
+   ============================================================ */
+import { CHAPTER_SPECS, chapterMult } from './chapters.js';
+import { ENEMY_SCALING } from './balance.js';
+
+// 敵の強さ（HP/ATK/DEF）は経済報酬（xp/gold、chapters.jsのchapterMult）とは
+// 別軸の倍率で管理する。将来の深淵実装でHPとATKの伸び方を分岐させられるように、
+// Phase 1時点ではすべて同じ0.35刻みにして現行バランスを完全維持する。
+function hpMult(num) { return 1 + (num - 1) * ENEMY_SCALING.CHAPTER_HP_MULT_STEP; }
+function atkMult(num) { return 1 + (num - 1) * ENEMY_SCALING.CHAPTER_ATK_MULT_STEP; }
+function defMult(num) { return 1 + (num - 1) * ENEMY_SCALING.CHAPTER_DEF_MULT_STEP; }
+
+export const ENEMY_TYPES = {
+  grunt: { name: 'ゴブリン', hp: 26, atk: 6, def: 2, speed: 95, radius: 15, color: '#c9505f', xp: 6, gold: 4 },
+  fast:  { name: 'コウモリ', hp: 14, atk: 4, def: 0, speed: 180, radius: 11, color: '#e0c94a', xp: 5, gold: 3 },
+  tank:  { name: 'オーガ',   hp: 70, atk: 11, def: 5, speed: 62,  radius: 22, color: '#8a5cd6', xp: 14, gold: 8 },
+  boss_orcking: {
+    name: 'オークキング', hp: 420, atk: 16, def: 8, speed: 68, radius: 34, color: '#e0553a',
+    xp: 120, gold: 150, boss: true,
+  },
+  branch_goblin_chief: {
+    name: 'ゴブリンの頭目', hp: 150, atk: 20, def: 9, speed: 70, radius: 26, color: '#d68b3a',
+    xp: 40, gold: 25, boss: true,
+  },
+};
+
+const NORMAL_BASE = { hp: 26, atk: 6, def: 2, speed: 95, radius: 15, color: '#c9505f', xp: 6, gold: 4 };
+const FAST_BASE = { hp: 14, atk: 4, def: 0, speed: 180, radius: 11, color: '#e0c94a', xp: 5, gold: 3 };
+const TANK_BASE = { hp: 70, atk: 11, def: 5, speed: 62, radius: 22, color: '#8a5cd6', xp: 14, gold: 8 };
+const BOSS_BASE = { hp: 420, atk: 16, def: 8, speed: 68, radius: 34, color: '#e0553a', xp: 120, gold: 150, boss: true };
+const BRANCH_BASE = { hp: 150, atk: 20, def: 9, speed: 70, radius: 26, color: '#d68b3a', xp: 40, gold: 25, boss: true };
+
+function scale(base, name, num) {
+  return {
+    ...base, name,
+    hp: Math.round(base.hp * hpMult(num)),
+    atk: Math.round(base.atk * atkMult(num)),
+    def: Math.round(base.def * defMult(num)),
+    xp: Math.round(base.xp * chapterMult(num)),
+    gold: Math.round(base.gold * chapterMult(num)),
+  };
+}
+
+for (const ch of CHAPTER_SPECS) {
+  ENEMY_TYPES[`${ch.id}_normal`] = scale(NORMAL_BASE, ch.enemies.normal, ch.num);
+  ENEMY_TYPES[`${ch.id}_fast`] = scale(FAST_BASE, ch.enemies.fast, ch.num);
+  ENEMY_TYPES[`${ch.id}_tank`] = scale(TANK_BASE, ch.enemies.tank, ch.num);
+  ENEMY_TYPES[`${ch.id}_boss`] = scale(BOSS_BASE, ch.enemies.boss, ch.num);
+  if (ch.branch) ENEMY_TYPES[`${ch.id}_branchboss`] = scale(BRANCH_BASE, ch.branch.enemyName, ch.num);
+}

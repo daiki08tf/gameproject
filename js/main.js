@@ -1,0 +1,178 @@
+import { state } from './state.js';
+import { BattleScreen } from './battle.js';
+import { renderHome } from './screens/home.js';
+import { renderChapterSelect } from './screens/chapterSelect.js';
+import { renderStageSelect, renderStageConfirm, getSelectedBlessingId } from './screens/stageSelect.js';
+import { renderAbyssList, initAbyssTabs } from './screens/abyss.js';
+import { renderEquipment, autoEquipBest } from './screens/equipment.js';
+import { renderWeaponCodex, initWeaponCodexTabs } from './screens/weaponCodex.js';
+import { renderJobs } from './screens/jobs.js';
+import { renderBlacksmith, initBlacksmithTabs } from './screens/blacksmith.js';
+import { renderRebirth, initRebirthTabs } from './screens/rebirth.js';
+import { renderSpellScreen, initSpellScreen } from './screens/spellScreen.js';
+import { renderResult } from './screens/result.js';
+import { Audio_ } from './audio.js';
+
+const battle = new BattleScreen();
+let pendingStage = null;
+let lastStageId = null;
+let currentChapterIndex = 0;
+let cameFromAbyss = false; // stageConfirmScreenの「戻る」を章一覧/深淵一覧のどちらへ返すか
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  renderHome();
+  showScreen('homeScreen');
+}
+
+function goChapterSelect() {
+  renderChapterSelect((chapterIndex) => {
+    goStageSelect(chapterIndex);
+  });
+  showScreen('chapterSelectScreen');
+}
+
+function goStageSelect(chapterIndex) {
+  currentChapterIndex = chapterIndex;
+  renderStageSelect(chapterIndex, (stage) => {
+    cameFromAbyss = false;
+    pendingStage = stage;
+    renderStageConfirm(stage);
+    showScreen('stageConfirmScreen');
+  });
+  showScreen('stageSelectScreen');
+}
+
+function goAbyssList() {
+  renderAbyssList((stage) => {
+    cameFromAbyss = true;
+    pendingStage = stage;
+    renderStageConfirm(stage);
+    showScreen('stageConfirmScreen');
+  });
+  showScreen('abyssScreen');
+}
+
+function startBattle(stage, blessingId) {
+  lastStageId = stage.id;
+  showScreen('battleScreen');
+  battle.start(stage.id, (result) => {
+    renderResult(result);
+    showScreen('resultScreen');
+  }, blessingId);
+}
+
+// ---------------------------------------------------------
+// タイトル
+document.getElementById('titleStartBtn').addEventListener('click', () => {
+  Audio_.tap();
+  goHome();
+});
+
+// ---------------------------------------------------------
+// ホーム
+document.getElementById('goStageBtn').addEventListener('click', () => { Audio_.tap(); goChapterSelect(); });
+document.getElementById('goEquipBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderEquipment();
+  showScreen('equipmentScreen');
+});
+document.getElementById('goJobBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderJobs();
+  showScreen('jobsScreen');
+});
+document.getElementById('goBlacksmithBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderBlacksmith();
+  showScreen('blacksmithScreen');
+});
+document.getElementById('goRebirthBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderRebirth();
+  showScreen('rebirthScreen');
+});
+document.getElementById('goSpellBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderSpellScreen();
+  showScreen('spellScreen');
+});
+document.getElementById('goAbyssBtn').addEventListener('click', () => {
+  if (!state.isAbyssUnlocked()) return; // .lockedはCSSのみで実際のクリックは阻止していないため二重にガードする
+  Audio_.tap();
+  goAbyssList();
+});
+
+// ---------------------------------------------------------
+// 章選択／ステージ選択／確認
+document.getElementById('chapterBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+document.getElementById('stageBackBtn').addEventListener('click', () => { Audio_.tap(); goChapterSelect(); });
+document.getElementById('confirmBackBtn').addEventListener('click', () => {
+  Audio_.tap();
+  if (cameFromAbyss) goAbyssList();
+  else goStageSelect(currentChapterIndex);
+});
+document.getElementById('confirmStartBtn').addEventListener('click', () => {
+  Audio_.tap();
+  startBattle(pendingStage, getSelectedBlessingId());
+});
+document.getElementById('abyssBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+initAbyssTabs();
+
+// ---------------------------------------------------------
+// 装備
+document.getElementById('equipBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+document.getElementById('autoEquipBtn').addEventListener('click', () => autoEquipBest());
+document.getElementById('weaponCodexBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderWeaponCodex();
+  showScreen('weaponCodexScreen');
+});
+document.getElementById('weaponCodexBackBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderEquipment();
+  showScreen('equipmentScreen');
+});
+initWeaponCodexTabs();
+
+// ---------------------------------------------------------
+// 職業
+document.getElementById('jobsBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+
+// ---------------------------------------------------------
+// 鍛冶屋
+document.getElementById('blacksmithBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+initBlacksmithTabs();
+
+// ---------------------------------------------------------
+// 転生の祭壇
+document.getElementById('rebirthBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+initRebirthTabs();
+
+// ---------------------------------------------------------
+// ふっかつのじゅもん
+document.getElementById('spellBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+initSpellScreen();
+
+// ---------------------------------------------------------
+// リザルト
+document.getElementById('resultHomeBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+document.getElementById('resultEquipBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderEquipment();
+  showScreen('equipmentScreen');
+});
+document.getElementById('resultRetryBtn').addEventListener('click', () => {
+  Audio_.tap();
+  if (lastStageId) {
+    const found = pendingStage && pendingStage.id === lastStageId ? pendingStage : null;
+    startBattle(found || pendingStage, getSelectedBlessingId());
+  }
+});
+
+// 初期表示
+showScreen('titleScreen');
