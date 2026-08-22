@@ -275,12 +275,22 @@ export class BattleEngine {
   _enemyAttackDamage(atk, opts = {}) {
     const effectiveDef = (this.player.def || 0) * (this.player.buffTurns > 0 ? this.player.buffDefMult : 1);
     const mitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectiveDef / (effectiveDef + DAMAGE_BUCKET.MITIGATION_K));
-    let dmg = Math.max(1, atk * (opts.mult || 1) * (1 - mitigation));
-    // opts.multが指定されない＝予兆を経ない「通常攻撃」（Bossの通常攻撃含む）。
-    // 実時間の「移動による回避」ぶんを補正するNORMAL_ATTACK_DAMAGE_MULTは
-    // ここにのみ掛ける。予兆つきのBoss特殊攻撃（opts.multあり）は対象外
-    // （telegraph読み＋ぼうぎょで軽減する、という別の意味づけを持つため）。
-    if (opts.mult == null) dmg *= TEXT_BATTLE_LAYER.NORMAL_ATTACK_DAMAGE_MULT;
+    let dmg = Math.max(1, atk * (1 - mitigation));
+    if (opts.mult == null) {
+      // opts.multが指定されない＝予兆を経ない「通常攻撃」（Bossの通常攻撃含む）。
+      // 実時間の「移動による回避」ぶんを補正するNORMAL_ATTACK_DAMAGE_MULTは
+      // ここにのみ掛ける。
+      dmg *= TEXT_BATTLE_LAYER.NORMAL_ATTACK_DAMAGE_MULT;
+    } else {
+      // ChatGPTレビュー指摘3番：予兆つきのBoss特殊攻撃。BOSS_AI_LAYERの
+      // SLAM/CHARGE/PROJECTILE_DAMAGE_MULT（opts.mult）は実時間のAoE当たり
+      // 判定基準の値なので、そのまま素のatkに掛けるだけでは「通常攻撃1回
+      // ぶん」の基準（NORMAL_ATTACK_DAMAGE_MULT適用後）より軽くなってしまい、
+      // 予兆の意味が薄れる。通常攻撃と同じ基準に載せ替えたうえで、
+      // TELEGRAPH_MULT_SCALEで狙った強弱（slam/charge/projectileの相対比は
+      // BOSS_AI_LAYER側の値をそのまま活かす）に引き上げる。
+      dmg *= TEXT_BATTLE_LAYER.NORMAL_ATTACK_DAMAGE_MULT * opts.mult * TEXT_BATTLE_LAYER.TELEGRAPH_MULT_SCALE;
+    }
     if (this.player.guarding) dmg *= TEXT_BATTLE_LAYER.GUARD_DAMAGE_MULT;
     return Math.max(1, Math.round(dmg));
   }
@@ -330,24 +340,35 @@ export class BattleEngine {
     const berserkerDoubled = !!this._berserkerDoubleAttack;
     if (berserkerDoubled) hitCount *= 2;
     const atkValue = this.player.atk * this._mainDmgMult();
-    // hitCount回ぶんを1回のcalculateDamageの結果にまとめて掛け合わせるのでは
-    // なく、実時間版と同じく1発ごとに独立して会心判定・ダメージ乱数を振って
-    // 合算する（1回だけ判定してhitCount倍すると、本来3発中1発だけ会心のはずが
-    // 「3発とも会心」「3発とも非会心」の二択になり分散が過大になって、
-    // 期待値は変わらないのに毎回の結果が安定しない＝手番ごとの決着のブレが
-    // 大きくなりすぎる問題があった）
-    let damage = 0;
-    let critical = false;
+    // ChatGPTレビュー指摘1番：multi-hitは1発ごとに独立して会心判定・
+    // ダメージ乱数を振り（分散を実時間相当に保つ）、かつ1発ごとに
+    // _applyDamageToEnemy()を呼んでonHit/onCritをその場で発火させる
+    // （以前は全hit分を合算した1つのdmgでまとめて1回だけ適用しており、
+    // 「1hitごとに発動すべきonHit/onCrit」が正しく発火しない・lifesteal等
+    // の1命中単位の上限も全hit分をまとめて食い潰す不具合があった）。
+    // 敵が途中のhitで死亡したら、以降のhitは行わずそこで打ち切る。
+    let totalDamage = 0;
+    let criticalCount = 0;
+    let hitsLanded = 0;
+    const effects = [];
+    let kill = null;
     for (let i = 0; i < hitCount; i++) {
-      const hit = this.calculateDamage(atkValue, target);
-      damage += hit.damage;
-      if (hit.critical) critical = true;
+      if (target.dead) break;
+      const { damage, critical } = this.calculateDamage(atkValue, target);
+      if (critical) criticalCount++;
+      hitsLanded++;
+      totalDamage += damage;
+      const hit = this._applyDamageToEnemy(target, damage, critical);
+      effects.push(...hit.effects);
+      if (hit.kill) kill = hit.kill; // 同一targetなので、直前の（＝唯一の）撃破結果が最終結果
     }
-    const result = this._applyDamageToEnemy(target, damage);
-    result.action = 'attack';
-    result.critical = critical;
-    result.hitCount = hitCount;
-    result.berserkerDoubled = berserkerDoubled;
+    const result = {
+      action: 'attack', targetId: target.id, targetName: target.name,
+      damage: totalDamage, defeated: target.dead, effects, kill,
+      // 表示用にまとめた集計値（ChatGPTレビュー指摘1番）：内部処理は1hit単位、
+      // UI表示はhitCount/criticalCount/totalDamageとしてまとめてよい
+      critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, berserkerDoubled,
+    };
     this._actionTypesUsed.add('attack');
     this._checkActionDiversityBurst(result);
     return result;
@@ -372,7 +393,7 @@ export class BattleEngine {
       for (const t of targets) {
         const atkValue = (skill.power * skillPowerMult + this.player.atk * 0.4 + this.player.mag * 0.6) * this._mainDmgMult();
         const { damage, critical } = this.calculateDamage(atkValue, t);
-        const hit = this._applyDamageToEnemy(t, damage);
+        const hit = this._applyDamageToEnemy(t, damage, critical);
         hit.critical = critical;
         result.targets.push(hit);
       }
@@ -440,8 +461,8 @@ export class BattleEngine {
       }
       if (eff.kind === 'burnDamage' && !target.dead) {
         const burn = Math.round(this.player.atk * eff.power);
-        this._applyRawDamage(target, burn);
-        return { kind: 'burnDamage', amount: burn, targetDead: target.dead };
+        const kill = this._applyRawDamageAndReward(target, burn);
+        return { kind: 'burnDamage', amount: burn, targetName: target.name, targetDead: target.dead, kill };
       }
       if (eff.kind === 'bloodChalice') {
         this._bloodChaliceBonus = eff.power;
@@ -455,7 +476,16 @@ export class BattleEngine {
       }
       if (eff.kind === 'burnStack' && !target.dead) {
         target.dotStacks = Math.min(eff.maxStacks, (target.dotStacks || 0) + 1);
-        target.dotTurnsLeft = roundsFromSeconds(eff.duration);
+        // ChatGPTレビュー指摘4番：durationをそのままroundsFromSeconds()に
+        // 通すと「何ラウンド居座るか」であって「何回tickするか」ではなく
+        // なってしまう（実時間ではtickInterval=1秒毎、duration=3〜4秒＝
+        // 3〜4回tickしていたのに、roundsFromSeconds(3〜4)は1ラウンドにしか
+        // ならず、1ラウンド1tickの本実装では合計tick数が実時間の1/3〜1/4に
+        // 減ってしまっていた）。「1ラウンドにつき1tick」という分かりやすい
+        // ターン制の運用は保ったまま、tick回数（=dotTurnsLeft）自体を
+        // duration/tickIntervalの実時間tick総数で決めることで、1tickあたりの
+        // 威力（dotPower）は変えずに合計期待ダメージを実時間相当に保つ。
+        target.dotTurnsLeft = Math.max(1, Math.round(eff.duration / (eff.tickInterval || TEXT_BATTLE_LAYER.SECONDS_PER_ROUND)));
         target.dotPower = eff.power;
         return { kind: 'burnStack', stacks: target.dotStacks };
       }
@@ -465,11 +495,16 @@ export class BattleEngine {
           const burst = Math.round(this.player.atk * eff.power);
           if (eff.aoe) {
             const hits = [];
-            for (const e of this.aliveEnemies) { this._applyRawDamage(e, burst); hits.push(e.name); }
-            return { kind: 'everyNHits', amount: burst, aoe: true, hits };
+            const kills = [];
+            for (const e of this.aliveEnemies) {
+              const kill = this._applyRawDamageAndReward(e, burst);
+              hits.push(e.name);
+              if (kill) kills.push({ name: e.name, kill });
+            }
+            return { kind: 'everyNHits', amount: burst, aoe: true, hits, kills };
           }
-          this._applyRawDamage(target, burst);
-          return { kind: 'everyNHits', amount: burst, aoe: false, targetDead: target.dead };
+          const kill = this._applyRawDamageAndReward(target, burst);
+          return { kind: 'everyNHits', amount: burst, aoe: false, targetName: target.name, targetDead: target.dead, kill };
         }
         return null;
       }
@@ -477,8 +512,8 @@ export class BattleEngine {
       const { target } = ctx;
       if (eff.kind === 'lightning' && !target.dead) {
         const bolt = Math.round(this.player.atk * eff.power);
-        this._applyRawDamage(target, bolt);
-        return { kind: 'lightning', amount: bolt, targetDead: target.dead };
+        const kill = this._applyRawDamageAndReward(target, bolt);
+        return { kind: 'lightning', amount: bolt, targetName: target.name, targetDead: target.dead, kill };
       }
       if (eff.kind === 'timeStop' && !target.dead) {
         target.frozenTurns = Math.max(target.frozenTurns, roundsFromSeconds(eff.duration));
@@ -488,8 +523,8 @@ export class BattleEngine {
       const { attacker } = ctx;
       if (eff.kind === 'counter' && attacker && !attacker.dead) {
         const counterDmg = Math.round(this.player.atk * eff.power);
-        this._applyRawDamage(attacker, counterDmg);
-        return { kind: 'counter', amount: counterDmg, targetDead: attacker.dead };
+        const kill = this._applyRawDamageAndReward(attacker, counterDmg);
+        return { kind: 'counter', amount: counterDmg, targetName: attacker.name, targetDead: attacker.dead, kill };
       }
       if (eff.kind === 'haste') {
         // 実時間移動速度バフ→テキスト戦闘ではSPD/先攻ボーナスへ転用（元指示5番）
@@ -507,8 +542,14 @@ export class BattleEngine {
       if (eff.kind === 'deathNova') {
         const nova = Math.round(this.player.atk * eff.power);
         const hits = [];
-        for (const e of this.aliveEnemies) { if (e === enemy) continue; this._applyRawDamage(e, nova); hits.push(e.name); }
-        return { kind: 'deathNova', amount: nova, hits };
+        const kills = [];
+        for (const e of this.aliveEnemies) {
+          if (e === enemy) continue;
+          const kill = this._applyRawDamageAndReward(e, nova);
+          hits.push(e.name);
+          if (kill) kills.push({ name: e.name, kill });
+        }
+        return { kind: 'deathNova', amount: nova, hits, kills };
       }
     }
     return null;
@@ -519,24 +560,40 @@ export class BattleEngine {
     if (!eff || this._actionTypesUsed.size < 2) return; // ターン制では通常攻撃/とくぎの2種のみ運用
     const dmg = Math.round(this.player.atk * eff.power);
     const hits = [];
-    for (const e of this.aliveEnemies) { this._applyRawDamage(e, dmg); hits.push(e.name); }
-    result.actionDiversityBurst = { amount: dmg, hits };
+    const kills = [];
+    for (const e of this.aliveEnemies) {
+      const kill = this._applyRawDamageAndReward(e, dmg);
+      hits.push(e.name);
+      if (kill) kills.push({ name: e.name, kill });
+    }
+    result.actionDiversityBurst = { amount: dmg, hits, kills };
     this._actionTypesUsed.clear();
   }
 
-  // dmgを与え、生きていればonHit系固有効果を適用する。1回の攻撃行動（通常攻撃/
-  // スキル1ヒット）ぶんの結果をまとめて返す。
-  _applyDamageToEnemy(target, dmg) {
-    this._applyRawDamage(target, dmg);
-    const wasAlive = !target.dead;
-    const hitEvents = wasAlive || target.hp + dmg > 0 ? this.applyEffect('onHit', { target, dmg, lifestealUsed: 0 }) : [];
-    let critEvents = [];
-    if (this.lastHitCrit) critEvents = this.applyEffect('onCrit', { target });
-    const killResult = target.dead && !target._rewardsGranted ? this._grantKillRewards(target) : null;
+  // dmgを与え、生きていればonHit/（criticalなら）onCrit系固有効果を適用する。
+  // 1hitぶんの結果をまとめて返す（ChatGPTレビュー指摘1番：multi-hitは
+  // このメソッドを1hitごとに呼び出すことで、1hit単位のonHit/onCrit発火・
+  // lifesteal上限を成立させる。criticalは呼び出し側がそのhitの会心判定
+  // 結果を明示的に渡す＝以前参照していた未初期化のthis.lastHitCritは廃止）。
+  _applyDamageToEnemy(target, dmg, critical = false) {
+    const killResult = this._applyRawDamageAndReward(target, dmg);
+    const hitEvents = this.applyEffect('onHit', { target, dmg, lifestealUsed: 0 });
+    const critEvents = critical ? this.applyEffect('onCrit', { target }) : [];
     return {
       damage: dmg, targetId: target.id, targetName: target.name, defeated: target.dead,
       effects: [...hitEvents, ...critEvents], kill: killResult,
     };
+  }
+
+  // 通常攻撃・スキル以外の経路（DoT/AoE/追撃/deathNova等）で敵を倒しても、
+  // 必ず一度だけ撃破処理（EXP/Gold/Drop/onKill）に到達させるための共通処理
+  // （ChatGPTレビュー指摘2番）。enemy._rewardsGranted（_grantKillRewards内で
+  // 立てる）により、同じ敵への複数の経路からの呼び出しでも報酬の二重取得は
+  // 発生しない。
+  _applyRawDamageAndReward(enemy, dmg) {
+    this._applyRawDamage(enemy, dmg);
+    if (enemy.dead && !enemy._rewardsGranted) return this._grantKillRewards(enemy);
+    return null;
   }
 
   _applyRawDamage(enemy, dmg) {
@@ -903,9 +960,9 @@ export class BattleEngine {
       }
       if (enemy.dotStacks > 0 && enemy.dotTurnsLeft > 0) {
         const dmg = Math.max(1, Math.round(this.player.atk * enemy.dotPower * enemy.dotStacks));
-        this._applyRawDamage(enemy, dmg);
-        events.push({ type: 'dotTick', enemyId: enemy.id, name: enemy.name, amount: dmg, targetDead: enemy.dead });
-        if (enemy.dead && !enemy._rewardsGranted) events[events.length - 1].kill = this._grantKillRewards(enemy);
+        // ChatGPTレビュー指摘2番：DoT撃破も他の経路と同じ共通処理へ統一する
+        const kill = this._applyRawDamageAndReward(enemy, dmg);
+        events.push({ type: 'dotTick', enemyId: enemy.id, name: enemy.name, amount: dmg, targetDead: enemy.dead, kill });
         enemy.dotTurnsLeft--;
         if (enemy.dotTurnsLeft <= 0) enemy.dotStacks = 0;
       }
@@ -916,7 +973,16 @@ export class BattleEngine {
     if (this._hasteInitiativeTurns > 0) { this._hasteInitiativeTurns--; if (this._hasteInitiativeTurns <= 0) this._hasteInitiativeBonus = 0; }
     if (this._skillCdTurns > 0) this._skillCdTurns--;
     this._updatePassiveEffects();
-    if (this._regenPower > 0) this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.maxHp * this._regenPower);
+    // ChatGPTレビュー指摘4番：_regenPowerは（CAPS_LAYER.REGEN_PCT_PER_SEC_MAXも
+    // 含めて）「1秒あたり」の割合のまま保持している。1ラウンド
+    // ＝TEXT_BATTLE_LAYER.SECONDS_PER_ROUND秒相当なので、1ラウンドに1回しか
+    // 適用しないここでは秒あたりの値をそのまま使うと弱体化する（例：
+    // 1%/秒のはずが1%/ラウンドになってしまい、本来の1/SECONDS_PER_ROUNDに
+    // 減ってしまう）。SECONDS_PER_ROUNDを掛けて「1ラウンドあたり」の割合に
+    // 換算してから適用する。
+    if (this._regenPower > 0) {
+      this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.maxHp * this._regenPower * TEXT_BATTLE_LAYER.SECONDS_PER_ROUND);
+    }
     this.player.guarding = false; // ガードは「次の自分のターンまで」＝この時点でリセット
 
     const end = this.checkBattleEnd();

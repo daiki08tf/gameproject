@@ -574,4 +574,19 @@ export const TEXT_BATTLE_LAYER = {
   // 3章・5章のwaveを実際にプレイアウトさせ、標準装備キャラが無理なく
   // クリアできる水準まで実測で追い込んだ値。
   NORMAL_ATTACK_DAMAGE_MULT: 0.55,
+  // ChatGPTレビュー指摘3番：Boss予兆攻撃（slam/charge/projectile）の威力補正。
+  // BOSS_AI_LAYERのSLAM/CHARGE/PROJECTILE_DAMAGE_MULT（0.22/0.30/0.18）は、
+  // 実時間版でAoE当たり判定に何度も触れ続けられる／継続的に居座れる前提の
+  // 「範囲攻撃1回あたりの割合」であり、ターン制でこの手番の攻撃全部として
+  // そのまま使うと、通常攻撃（NORMAL_ATTACK_DAMAGE_MULT=0.55適用後）より
+  // むしろ弱くなってしまい、「予兆を読んで身構える」意味が薄れる。
+  // 3種の相対比（charge>slam>projectile）はboss設計側の意図としてそのまま
+  // 活かしたいため、新しい数値をkindごとに作らず、この1個の係数だけを
+  // 掛けて「通常攻撃1回ぶん」の基準に載せ替える。SLAM/CHARGE/PROJECTILE_
+  // DAMAGE_MULTに掛けた結果が目安値（slam約0.9倍・charge約1.1倍・
+  // projectile約0.75倍、対・通常攻撃比）に収まるよう逆算した値。
+  //   slam:       0.22 × 4 = 0.88（目安0.9）
+  //   charge:     0.30 × 4 = 1.20（目安1.1）
+  //   projectile: 0.18 × 4 = 0.72（目安0.75）
+  TELEGRAPH_MULT_SCALE: 4,
 };

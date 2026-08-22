@@ -61,11 +61,23 @@ function describeKill(kill, targetName) {
   return lines;
 }
 
+function describeActionDiversityBurst(burst) {
+  if (!burst) return [];
+  const lines = [`色々な行動を織り交ぜた勢いで追撃！ ${burst.hits.join('、')}に${burst.amount}ずつダメージ！`];
+  for (const k of burst.kills || []) lines.push(...describeKill(k.kill, k.name));
+  return lines;
+}
+
 function describeHitEffects(effects) {
   const lines = [];
   for (const ev of effects || []) {
     const d = describeEffectEvent(ev);
     if (d) lines.push(d);
+    // ChatGPTレビュー指摘2番：burnDamage/lightning/counter等の追加ダメージや
+    // everyNHits/deathNova/actionDiversityBurstのAoEが撃破に至った場合も、
+    // 通常攻撃と同じ撃破ログ（EXP/Gold/Drop等）を出す
+    if (ev.kill) lines.push(...describeKill(ev.kill, ev.targetName || ''));
+    if (ev.kills) for (const k of ev.kills) lines.push(...describeKill(k.kill, k.name));
   }
   return lines;
 }
@@ -79,6 +91,7 @@ function describePlayerAction(result) {
     lines.push(`あなたの攻撃！ ${critTag}${result.targetName}に${result.damage}のダメージ！${result.berserkerDoubled ? '（狂戦士の心臓が唸る！2連撃！）' : ''}`);
     lines.push(...describeHitEffects(result.effects));
     if (result.defeated) lines.push(...describeKill(result.kill, result.targetName));
+    lines.push(...describeActionDiversityBurst(result.actionDiversityBurst));
     return lines;
   }
   if (result.action === 'guard') {
@@ -107,6 +120,7 @@ function describePlayerAction(result) {
     } else if (result.skillType === 'buff') {
       lines.push('身体能力が上がった！');
     }
+    lines.push(...describeActionDiversityBurst(result.actionDiversityBurst));
     return lines;
   }
   return lines;
