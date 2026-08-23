@@ -11,6 +11,7 @@ import './patches/rune2Core.js';
 import './patches/rune2Special.js';
 import './patches/weaponInstanceFoundation.js';
 import './patches/equipment3Foundation.js';
+import './patches/equipment3Greater.js';
 import './patches/weaponAffixResultVisibility.js';
 import './patches/companionFoundation.js';
 import './patches/companionResetSafety.js';
