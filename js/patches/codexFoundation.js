@@ -61,9 +61,18 @@ if (state.createCompanion) {
   };
 }
 
+// 「遭遇」と「撃破」を別の達成項目として成立させるため、遭遇グループが
+// 生成された時点でseenを記録する。撤退しても遭遇記録は残る。
+const originalBeginNextEncounter = BattleEngine.prototype.beginNextEncounter;
+BattleEngine.prototype.beginNextEncounter = function codexBeginNextEncounter(...args) {
+  const event = originalBeginNextEncounter.apply(this, args);
+  for (const enemy of (this.enemies || [])) state.markCodexSeen(enemy);
+  return event;
+};
+
 const originalGrantKillRewards = BattleEngine.prototype._grantKillRewards;
 BattleEngine.prototype._grantKillRewards = function codexGrantKillRewards(enemy) {
-  state.markCodexSeen(enemy); state.markCodexKill(enemy);
+  state.markCodexKill(enemy);
   return originalGrantKillRewards.call(this, enemy);
 };
 
