@@ -3,12 +3,14 @@ import './patches/progressionCore.js';
 import './patches/statusCalculationCore.js';
 import './patches/inheritanceCore.js';
 import './patches/rune2Core.js';
+import './patches/rune2Special.js';
 import './patches/weaponInstanceFoundation.js';
 import './patches/companionFoundation.js';
 import './patches/companionBattle.js';
 import './patches/companionRecruitment.js';
 import './patches/homeNavigation.js';
 import './patches/rune2Ui.js';
+import './patches/rune2ObserveUi.js';
 // 旧リアルタイムCanvas戦闘（js/battle.js）はそのまま未使用で残し、こちらの
 // テキスト戦闘（TextBattleScreen）へ切り替える（元指示19番）
 import { TextBattleScreen } from './screens/textBattle.js';
