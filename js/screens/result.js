@@ -9,7 +9,6 @@ function resolveDrop(itemId) {
   if (item) {
     const stars = '★'.repeat(rarityIndex(item.rarity));
     let name = `${item.unique ? '◆ UNIQUE ' : ''}${stars ? stars + ' ' : ''}${item.name}`;
-    // ユニーク武器は固定性能。通常の武器個体Affix表示は行わない。
     if (!item.unique && state.isWeaponInstance(itemId)) {
       const affixes = state.weaponInstanceAffixes(itemId);
       if (affixes.length) {
@@ -41,6 +40,9 @@ export function renderResult(result) {
   } else if (result.bountyUnique) {
     title.textContent = 'BOUNTY CLEARED — UNIQUE FOUND';
     title.style.color = '#f2c94c';
+  } else if (result.bountyNemesis?.grew) {
+    title.textContent = `DEFEATED — ${result.bountyNemesis.title || 'NEMESIS'}`; 
+    title.style.color = '#e6425a';
   } else if (result.cleared) {
     title.textContent = 'STAGE CLEAR';
     title.style.color = '';
@@ -50,6 +52,9 @@ export function renderResult(result) {
   }
 
   stats.textContent = `獲得経験値: ${result.expGained} / 獲得ゴールド: ${result.goldGained}`
+    + (result.bounty2 ? ` / 賞金首の証 +${result.bounty2.marks}（所持 ${result.bounty2.totalMarks}）` : '')
+    + (result.bounty2?.nemesisDefeated ? ' / 宿敵討伐ボーナス！' : '')
+    + (result.bountyNemesis?.grew ? ` / 宿敵Lv.${result.bountyNemesis.level}へ成長` : '')
     + (result.cleared ? '' : '（撃破分のみ・レベルや装備は失われません）');
 
   itemsEl.innerHTML = '';
