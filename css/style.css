@@ -537,3 +537,37 @@ button { font-family: inherit; }
 .tb-cmd-btn[disabled] { opacity: 0.35; cursor: default; }
 .tb-cmd-btn.tb-cmd-guard { background: rgba(74,194,232,0.15); }
 .tb-cmd-btn.tb-cmd-flee { background: rgba(255,255,255,0.05); }
+
+/* とくぎ・じゅもんの技一覧サブメニュー */
+.tb-tech-menu {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  max-height: 260px;
+}
+.tb-tech-menu-header { display: flex; align-items: center; gap: 10px; }
+.tb-tech-menu-header span { font-weight: bold; font-size: 15px; }
+.tb-tech-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+.tb-tech-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: #f0f0f5;
+  font-size: 14px;
+  cursor: pointer;
+}
+.tb-tech-item:active { transform: scale(0.98); }
+.tb-tech-item[disabled] { opacity: 0.4; cursor: default; }
+.tb-tech-item .tb-tech-cost { font-size: 12px; opacity: 0.8; }
+.tb-tech-empty { padding: 14px; text-align: center; opacity: 0.6; font-size: 13px; }

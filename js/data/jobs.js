@@ -8,6 +8,8 @@
    ============================================================ */
 
 import { CHARACTER_LAYER, JOB_TIER, CAPS_LAYER } from './balance.js';
+import { getSkill } from './skills.js';
+import { getSpell } from './spells.js';
 
 export const STAT_KEYS = ['hp', 'mp', 'atk', 'def', 'mag', 'spd', 'crit'];
 
@@ -32,68 +34,174 @@ function mergeProfiles(profiles) {
 // ---------------------------------------------------------
 // masterBonus：MASTERすると現在職に関係なく永続で得る小さなボーナス
 // （転生2.0で構想している「職業MASTER」の本来仕様：職業ごとに個性を持たせる）
+// skills/spellsは { id: 技ID（js/data/skills.js・spells.jsを参照）, learnLevel }
+// の配列で持つ（元指示：職業IDと技IDは分離する）。learnLevel: 'master' は
+// その職業をMASTER（TIER_INFO.basic.masteryLv=15）した場合のみ習得済み扱いに
+// なる特別な値。実際の技オブジェクトへの解決はレジストリ構築時に行う
+// （resolveJobSkills/resolveJobSpells、下記）。
 const BASIC_RAW = [
   { id: 'warrior', name: '戦士', desc: 'HP・防御が高い前衛。剣と盾を扱う。', weapon: 'sword',
     profile: { hp: 1.6, mp: 0.4, atk: 1.3, def: 1.6, mag: 0.3, spd: 0.8, crit: 0.8 },
-    skill: { name: '渾身の一撃', type: 'damage', power: 22, mpCost: 6, cooldown: 3.2 },
+    skills: [
+      { id: 'warrior_power_strike', learnLevel: 1 },
+      { id: 'warrior_armor_break', learnLevel: 5 },
+      { id: 'warrior_provoke', learnLevel: 10 },
+      { id: 'warrior_unbreakable_stance', learnLevel: 'master' },
+    ],
+    spells: [],
     masterBonus: { kind: 'stat', stat: 'hp', pct: 0.02 } },
   { id: 'fighter', name: '武闘家', desc: '攻撃と素早さに優れる拳闘士。', weapon: 'knuckle',
     profile: { hp: 1.2, mp: 0.4, atk: 1.6, def: 0.9, mag: 0.3, spd: 1.3, crit: 1.4 },
-    skill: { name: '連撃拳', type: 'damage', power: 18, mpCost: 6, cooldown: 2.6 },
+    skills: [
+      { id: 'fighter_flurry', learnLevel: 1 },
+      { id: 'fighter_focus', learnLevel: 5 },
+      { id: 'fighter_straight_punch', learnLevel: 10 },
+      { id: 'fighter_tiger_flurry', learnLevel: 'master' },
+    ],
+    spells: [],
     masterBonus: { kind: 'stat', stat: 'spd', pct: 0.02 } },
   { id: 'mage', name: '魔法使い', desc: '攻撃魔法特化。打たれ弱い。', weapon: 'staff',
     profile: { hp: 0.6, mp: 2.0, atk: 0.4, def: 0.5, mag: 2.0, spd: 0.8, crit: 0.7 },
-    skill: { name: 'ファイアボルト', type: 'damage', power: 30, mpCost: 12, cooldown: 3.6 },
+    // 特技1（魔力集中）／呪文3（火球・氷槍・雷撃）＋MASTER呪文（爆炎）
+    skills: [{ id: 'mage_focus', learnLevel: 1 }],
+    spells: [
+      { id: 'mage_fireball', learnLevel: 1 },
+      { id: 'mage_ice_lance', learnLevel: 5 },
+      { id: 'mage_thunder', learnLevel: 10 },
+      { id: 'mage_inferno', learnLevel: 'master' },
+    ],
     masterBonus: { kind: 'skillPower', pct: 0.02 } },
   { id: 'priest', name: '僧侶', desc: '回復・補助魔法を扱う支援職。', weapon: 'rod',
     profile: { hp: 0.9, mp: 1.8, atk: 0.5, def: 0.9, mag: 1.6, spd: 0.7, crit: 0.6 },
-    skill: { name: 'ヒール', type: 'heal', power: 34, mpCost: 10, cooldown: 4.0 },
+    // 特技1（祈り）／呪文3（ヒール・守護・浄化）＋MASTER呪文（大回復）
+    skills: [{ id: 'priest_prayer', learnLevel: 1 }],
+    spells: [
+      { id: 'priest_heal', learnLevel: 1 },
+      { id: 'priest_guard_blessing', learnLevel: 5 },
+      { id: 'priest_purify', learnLevel: 10 },
+      { id: 'priest_full_heal', learnLevel: 'master' },
+    ],
     masterBonus: { kind: 'healPower', pct: 0.03 } },
   { id: 'thief', name: '盗賊', desc: '素早さと回避に優れる。', passive: { drop: 1.15 }, weapon: 'dagger',
     profile: { hp: 0.8, mp: 0.6, atk: 1.1, def: 0.6, mag: 0.4, spd: 1.7, crit: 1.6 },
-    skill: { name: 'くらやみ斬り', type: 'damage', power: 20, mpCost: 7, cooldown: 2.8 },
+    skills: [
+      { id: 'thief_dark_slash', learnLevel: 1 },
+      { id: 'thief_poison_blade', learnLevel: 5 },
+      { id: 'thief_steal', learnLevel: 10 },
+      { id: 'thief_shadow_step', learnLevel: 'master' },
+    ],
+    spells: [],
     masterBonus: { kind: 'passive', channel: 'drop', pct: 0.02 } },
   { id: 'merchant', name: '商人', desc: '所持金・ドロップ率にボーナス。', passive: { gold: 1.3 }, weapon: 'sword',
     profile: { hp: 0.8, mp: 0.8, atk: 0.6, def: 0.7, mag: 0.6, spd: 0.8, crit: 0.9 },
-    skill: { name: '黄金の一撃', type: 'damage', power: 16, mpCost: 5, cooldown: 2.4 },
+    skills: [
+      { id: 'merchant_golden_strike', learnLevel: 1 },
+      { id: 'merchant_coin_toss', learnLevel: 5 },
+      { id: 'merchant_business_sense', learnLevel: 10 },
+      { id: 'merchant_grand_giveaway', learnLevel: 'master' },
+    ],
+    spells: [],
     masterBonus: { kind: 'passive', channel: 'gold', pct: 0.02 } },
   { id: 'hunter', name: '狩人', desc: '弓を使い対モンスターに強い。', weapon: 'bow',
     profile: { hp: 0.9, mp: 0.6, atk: 1.4, def: 0.7, mag: 0.5, spd: 1.3, crit: 1.3 },
-    skill: { name: '貫通の矢', type: 'damage', power: 24, mpCost: 8, cooldown: 3.0 },
+    skills: [
+      { id: 'hunter_piercing_arrow', learnLevel: 1 },
+      { id: 'hunter_aim', learnLevel: 5 },
+      { id: 'hunter_pin_down', learnLevel: 10 },
+      { id: 'hunter_beast_slayer', learnLevel: 'master' },
+    ],
+    spells: [],
     masterBonus: { kind: 'stat', stat: 'atk', pct: 0.02 } },
   { id: 'ninja', name: '忍者', desc: '素早く状態異常を得意とする。', weapon: 'dagger',
     profile: { hp: 0.8, mp: 0.7, atk: 1.2, def: 0.6, mag: 0.6, spd: 1.8, crit: 1.5 },
-    skill: { name: '分身斬り', type: 'damage', power: 26, mpCost: 9, cooldown: 3.0 },
+    skills: [
+      { id: 'ninja_shadow_slash', learnLevel: 1 },
+      { id: 'ninja_poison_star', learnLevel: 5 },
+      { id: 'ninja_pin', learnLevel: 10 },
+      { id: 'ninja_katon', learnLevel: 'master' },
+    ],
+    spells: [],
     masterBonus: { kind: 'stat', stat: 'crit', pct: 0.02 } },
   { id: 'bard', name: '吟遊詩人', desc: '鼓舞の歌で自身を強化する。', weapon: 'instrument',
     profile: { hp: 0.8, mp: 1.3, atk: 0.6, def: 0.6, mag: 1.1, spd: 1.0, crit: 0.8 },
-    skill: { name: '鼓舞の歌', type: 'buff', power: 26, mpCost: 10, cooldown: 6.0 },
+    skills: [
+      { id: 'bard_encourage', learnLevel: 1 },
+      { id: 'bard_protect_song', learnLevel: 5 },
+      { id: 'bard_healing_melody', learnLevel: 10 },
+      { id: 'bard_hero_song', learnLevel: 'master' },
+    ],
+    spells: [],
     masterBonus: { kind: 'stat', stat: 'mag', pct: 0.02 } },
   { id: 'dancer', name: '踊り子', desc: '幻惑の舞で敵を翻弄する。', weapon: 'instrument',
     profile: { hp: 0.7, mp: 1.1, atk: 0.7, def: 0.5, mag: 1.0, spd: 1.4, crit: 1.2 },
-    skill: { name: '幻惑の舞', type: 'buff', power: 22, mpCost: 9, cooldown: 5.4 },
+    skills: [
+      { id: 'dancer_illusion_dance', learnLevel: 1 },
+      { id: 'dancer_blade_dance', learnLevel: 5 },
+      { id: 'dancer_haste_dance', learnLevel: 10 },
+      { id: 'dancer_dream_dance', learnLevel: 'master' },
+    ],
+    spells: [],
     masterBonus: { kind: 'stat', stat: 'spd', pct: 0.02 } },
   { id: 'alchemist', name: '錬金術師', desc: '爆薬や状態異常攻撃を操る。', weapon: 'staff',
     profile: { hp: 0.7, mp: 1.5, atk: 0.8, def: 0.6, mag: 1.5, spd: 0.8, crit: 0.9 },
-    skill: { name: '爆裂薬', type: 'damage', power: 28, mpCost: 11, cooldown: 3.4 },
+    skills: [
+      { id: 'alchemist_explosive_potion', learnLevel: 1 },
+      { id: 'alchemist_poison_potion', learnLevel: 5 },
+      { id: 'alchemist_boost_potion', learnLevel: 10 },
+      { id: 'alchemist_detonate', learnLevel: 'master' },
+    ],
+    spells: [],
     masterBonus: { kind: 'skillPower', pct: 0.02 } },
   { id: 'scholar', name: '学者', desc: '弱点看破で経験値効率が良い。', passive: { exp: 1.2 }, weapon: 'staff',
     profile: { hp: 0.7, mp: 1.4, atk: 0.5, def: 0.6, mag: 1.4, spd: 0.7, crit: 0.7 },
-    skill: { name: '弱点看破', type: 'buff', power: 24, mpCost: 9, cooldown: 5.6 },
+    // 特技3（弱点看破・解析・完全解析）／呪文1（元素術）
+    skills: [
+      { id: 'scholar_weakpoint', learnLevel: 1 },
+      { id: 'scholar_analyze', learnLevel: 5 },
+      { id: 'scholar_full_analysis', learnLevel: 'master' },
+    ],
+    spells: [{ id: 'scholar_elemental', learnLevel: 10 }],
     masterBonus: { kind: 'passive', channel: 'exp', pct: 0.02 } },
   { id: 'farmer', name: '農民', desc: '打たれ強く鎌を振り回す。', passive: { drop: 1.1 }, weapon: 'axe',
     profile: { hp: 1.7, mp: 0.4, atk: 0.9, def: 1.3, mag: 0.3, spd: 0.7, crit: 0.6 },
-    skill: { name: '鎌払い', type: 'damage', power: 20, mpCost: 6, cooldown: 2.8 },
+    skills: [
+      { id: 'farmer_scythe_sweep', learnLevel: 1 },
+      { id: 'farmer_grit', learnLevel: 5 },
+      { id: 'farmer_harvest', learnLevel: 10 },
+      { id: 'farmer_peasant_soul', learnLevel: 'master' },
+    ],
+    spells: [],
     masterBonus: { kind: 'stat', stat: 'def', pct: 0.02 } },
   { id: 'craftsman', name: '大工', desc: '鉄壁の構えで守りを固める。', weapon: 'axe',
     profile: { hp: 1.3, mp: 0.4, atk: 0.9, def: 1.5, mag: 0.4, spd: 0.6, crit: 0.6 },
-    skill: { name: '鉄壁の構え', type: 'buff', power: 20, mpCost: 8, cooldown: 5.2 },
+    skills: [
+      { id: 'craftsman_iron_stance', learnLevel: 1 },
+      { id: 'craftsman_parry', learnLevel: 5 },
+      { id: 'craftsman_counter', learnLevel: 10 },
+      { id: 'craftsman_fortify', learnLevel: 'master' },
+    ],
+    spells: [],
     masterBonus: { kind: 'stat', stat: 'def', pct: 0.02 } },
   { id: 'fortune', name: '占い師', desc: '運を操りクリティカルを引き寄せる。', weapon: 'rod',
     profile: { hp: 0.7, mp: 1.2, atk: 0.6, def: 0.5, mag: 1.2, spd: 1.0, crit: 1.8 },
-    skill: { name: '運命の逆転', type: 'buff', power: 20, mpCost: 8, cooldown: 5.0 },
+    // 特技3（運命の逆転・吉兆・凶兆）／呪文1（星の導き、MASTER）
+    skills: [
+      { id: 'fortune_fate_reversal', learnLevel: 1 },
+      { id: 'fortune_good_omen', learnLevel: 5 },
+      { id: 'fortune_bad_omen', learnLevel: 10 },
+    ],
+    spells: [{ id: 'fortune_star_guidance', learnLevel: 'master' }],
     masterBonus: { kind: 'stat', stat: 'crit', pct: 0.02 } },
 ];
+
+// { id, learnLevel }の参照配列を、実際の技オブジェクト（+learnLevel）へ解決する
+function resolveTechRefs(refs, lookup, kind) {
+  return (refs || []).map((ref) => {
+    const def = lookup(ref.id);
+    if (!def) throw new Error(`unknown ${kind} id in jobs.js: ${ref.id}`);
+    return { ...def, learnLevel: ref.learnLevel };
+  });
+}
 
 // ---------------------------------------------------------
 // 上級職 30種（必要基本職2つ。プロファイル/スキルは自動生成）
@@ -185,8 +293,30 @@ function autoMasterAbilityFor(job) {
   return { condition: 'always', effect: { stat: 'cooldown', pct: -0.03 } };
 }
 
+// autoSkillFor()が返す単一skill（旧shape：cooldownは秒、target/idを持たない）を、
+// BattleEngine側が一律で読むjob.skills[]／job.spells[]の形へ包む。
+// 上級職(30)・特級職(10)・勇者は今回スコープ外のため、autoSkillFor()自体は
+// 削除・変更せず、その出力をこの薄いラッパーだけで包む（元指示：将来
+// 手動でskills/spells配列を書き足す際、このラッパーを実データ配列に
+// 差し替えるだけで済むようにしておく）。
+function wrapAutoSkillAsTechniques(job) {
+  const s = job.skill;
+  const target = s.type === 'heal' || s.type === 'buff' ? 'self' : 'enemy';
+  job.skills = [{
+    id: `auto_${job.id}`, name: s.name, type: s.type, target,
+    power: s.power ? s.power / 14 : undefined, // 旧shapeのpowerは絶対値。既存の技倍率スケールに合わせて概算換算する
+    healPct: s.type === 'heal' ? 0.25 : undefined,
+    buff: s.type === 'buff' ? { atkPct: 0.25, defPct: 0.25, turns: 2 } : undefined,
+    mpCost: s.mpCost, cooldownTurns: Math.max(1, Math.round(s.cooldown / 3)), learnLevel: 1,
+  }];
+  job.spells = [];
+}
+
 for (const raw of BASIC_RAW) {
-  JOBS.set(raw.id, { ...raw, tier: 'basic', requires: [] });
+  const job = { ...raw, tier: 'basic', requires: [] };
+  job.skills = resolveTechRefs(raw.skills, getSkill, 'skill');
+  job.spells = resolveTechRefs(raw.spells, getSpell, 'spell');
+  JOBS.set(raw.id, job);
 }
 for (const raw of ADVANCED_RAW) {
   const reqJobs = raw.requires.map((id) => JOBS.get(id));
@@ -194,6 +324,7 @@ for (const raw of ADVANCED_RAW) {
   const job = { ...raw, tier: 'advanced', profile, weapon: reqJobs[0].weapon };
   job.skill = autoSkillFor(job);
   job.masterAbility = autoMasterAbilityFor(job);
+  wrapAutoSkillAsTechniques(job);
   JOBS.set(raw.id, job);
 }
 for (const raw of SPECIAL_RAW) {
@@ -202,6 +333,7 @@ for (const raw of SPECIAL_RAW) {
   const job = { ...raw, tier: 'special', profile, weapon: reqJobs[0].weapon };
   job.skill = autoSkillFor(job);
   job.masterAbility = autoMasterAbilityFor(job);
+  wrapAutoSkillAsTechniques(job);
   JOBS.set(raw.id, job);
 }
 {
@@ -210,6 +342,7 @@ for (const raw of SPECIAL_RAW) {
   const job = { ...HERO_RAW, tier: 'hero', requires: [], profile, weapon: 'sword' };
   job.skill = autoSkillFor(job);
   job.skill.name = '勇者の光';
+  wrapAutoSkillAsTechniques(job);
   JOBS.set(HERO_RAW.id, job);
 }
 

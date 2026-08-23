@@ -52,6 +52,10 @@ function roundsFromSeconds(sec) {
 // 自体は変えない。
 const ENCOUNTER_GROUP_SIZE = TEXT_BATTLE_LAYER.ENCOUNTER_GROUP_SIZE;
 
+// 農民MASTER「百姓魂」：1戦1回だけ、致死ダメージを低確率で耐える（HP1で生存）。
+// 確定回避や無限復活にはしない（元指示：壊れた技を避ける）。
+const FARMER_SURVIVE_CHANCE = 0.3;
+
 export class BattleEngine {
   constructor(stageId, blessingId) {
     const found = findStage(stageId);
@@ -67,8 +71,26 @@ export class BattleEngine {
       mp: stats.mp, maxMp: stats.mp,
       atk: stats.atk, def: stats.def, mag: stats.mag, spd: stats.spd, critPct: stats.critPct,
       armorPen: stats.armorPen || 0, evasion: stats.evasion || 0,
-      buffAtkMult: 1, buffDefMult: 1, buffTurns: 0,
       guarding: false,
+      // 職業とくぎ・じゅもん実装：汎用バフ構造（元指示「どうしても必要な
+      // ものだけBattleEngine側に汎用status構造を追加」）。旧buffAtkMult/
+      // buffDefMult/buffTurns（ATK・DEFが常に同じ1本のタイマーで連動する
+      // 設計）を、ステータスごとに独立したターン付きバフへ一般化した。
+      // atk/def/spd/magはmult（1.0基準の倍率）、critAdd/evasionAdd/regenAddは
+      // 加算値（CAPS_LAYER側の上限は適用側の_effectiveXxx()で必ず頭打ちする）。
+      buffs: {
+        atk: { mult: 1, turnsLeft: 0 }, def: { mult: 1, turnsLeft: 0 },
+        spd: { mult: 1, turnsLeft: 0 }, mag: { mult: 1, turnsLeft: 0 },
+        critAdd: { value: 0, turnsLeft: 0 }, evasionAdd: { value: 0, turnsLeft: 0 },
+        regenAdd: { value: 0, turnsLeft: 0 },
+      },
+      // ガード軽減率の一時的な上書き（大工「受け流し」「要塞化」用）。
+      // null＝通常のTEXT_BATTLE_LAYER.GUARD_DAMAGE_MULTを使う。
+      guardOverrideMult: null, guardOverrideTurns: 0,
+      // 現状プレイヤーへweaken/DoT相当を与える敵側の手段は存在しないため、
+      // 僧侶「浄化」用の空のスキャフォールドとしてのみ保持する（将来Boss等が
+      // プレイヤーを弱体化させる手段を持った際にここへ書き込む想定）。
+      negativeStatus: { weaken: {}, dotStacks: 0, dotTurnsLeft: 0 },
     };
     if (this.blessing) {
       const b = this.blessing;
@@ -102,10 +124,23 @@ export class BattleEngine {
     this._bloodChaliceTurns = 0;
     this._hasteInitiativeBonus = 0; // 元「haste」（onHurt）：SPD/先攻ボーナスへ転用（元指示5番）
     this._hasteInitiativeTurns = 0;
-    this._actionTypesUsed = new Set(); // actionDiversityBurst用（通常/とくぎ）
+    this._actionTypesUsed = new Set(); // actionDiversityBurst用（通常/とくぎ/じゅもん）
     this._bossWeaponDropped = false;
-    // とくぎ（既存の職業スキル）のクールダウン。元は秒数だったのでターン換算する。
-    this._skillCdTurns = 0;
+    // とくぎ・じゅもんのクールダウン。1技=1スロット前提だった旧_skillCdTurns
+    // （単一の数値）から、技IDごとに個別クールダウンを持てるMapへ変更した
+    // （元指示：Map/objectへの変更）。
+    this.skillCooldowns = {};
+    this._skillCooldownsSetThisRound = new Set();
+    // 商人・農民の一時的なGold獲得ボーナス（商魂／大収穫）
+    this._tempGoldBonus = 0; this._tempGoldBonusTurns = 0;
+    // 狩人「獣狩り」：Boss/Elite限定の一時的な与ダメージ加算
+    this._tempBossDmgBonus = 0; this._tempBossDmgTurns = 0;
+    // 学者MASTER「完全解析」：与ダメージ全般への一時加算
+    this._tempDmgBonus = 0; this._tempDmgBonusTurns = 0;
+    // 農民MASTER「百姓魂」：1戦1回、低確率で致死ダメージを耐える
+    this._farmerSurviveUsed = false;
+    // 盗賊「盗む」：対象ごとに1戦1回だけ成立させるため、盗んだ敵のidを記録する
+    this._stolenEnemyIds = new Set();
 
     this.runExp = 0;
     this.runGold = 0;
@@ -216,6 +251,24 @@ export class BattleEngine {
   get aliveEnemies() { return this.enemies.filter((e) => !e.dead); }
 
   // ---------------------------------------------------------
+  // 有効ステータス（player.buffsの一時バフを反映した値）。通常攻撃・とくぎ・
+  // じゅもん・initiative判定・回避判定など、プレイヤーのステータスを読む
+  // 箇所は全てここを経由する（元指示：CAPS_LAYERの上限を必ず厳守する）。
+  // ---------------------------------------------------------
+  _effectiveAtk() { const b = this.player.buffs.atk; return this.player.atk * (b.turnsLeft > 0 ? b.mult : 1); }
+  _effectiveMag() { const b = this.player.buffs.mag; return this.player.mag * (b.turnsLeft > 0 ? b.mult : 1); }
+  _effectiveDef() { const b = this.player.buffs.def; return this.player.def * (b.turnsLeft > 0 ? b.mult : 1); }
+  _effectiveSpd() { const b = this.player.buffs.spd; return this.player.spd * (b.turnsLeft > 0 ? b.mult : 1); }
+  _effectiveCritPct() {
+    const b = this.player.buffs.critAdd;
+    return Math.min(CAPS_LAYER.CRIT_PCT_MAX, this.player.critPct + (b.turnsLeft > 0 ? b.value : 0));
+  }
+  _effectiveEvasion() {
+    const b = this.player.buffs.evasionAdd;
+    return Math.min(CAPS_LAYER.EVASION_MAX, (this.player.evasion || 0) + (b.turnsLeft > 0 ? b.value : 0));
+  }
+
+  // ---------------------------------------------------------
   // ダメージ計算（PR#2のDamage Bucketをそのまま流用。新式は作らない）
   // ---------------------------------------------------------
   _effectsOf(trigger) { return this.effects.filter((e) => e.trigger === trigger); }
@@ -223,11 +276,14 @@ export class BattleEngine {
   _mainDmgMult() {
     const bloodChaliceMult = this._bloodChaliceTurns > 0 ? 1 + this._bloodChaliceBonus : 1;
     const tempAtkMult = this._tempAtkTurns > 0 ? 1 + this._tempAtkBonus : 1;
+    // ATKバフはplayer.buffs.atk（_effectiveAtk()）側へ移動したため、ここでは
+    // 加算しない（旧buffAtkMultの項をここから除去）。学者MASTER「完全解析」の
+    // 一時的な与ダメージ加算だけ、既存の加算バケット方式にならって追加する。
     return 1
       + (this.awakenMult - 1)
-      + (this.player.buffTurns > 0 ? this.player.buffAtkMult - 1 : 0)
       + (bloodChaliceMult - 1)
-      + (tempAtkMult - 1);
+      + (tempAtkMult - 1)
+      + (this._tempDmgBonusTurns > 0 ? this._tempDmgBonus : 0);
   }
 
   _critDamageBoostMult() {
@@ -242,6 +298,8 @@ export class BattleEngine {
       if (eff.kind === 'bossDmg') bonus += eff.power;
       if (eff.kind === 'executioner' && target && target.maxHp > 0 && target.hp / target.maxHp <= eff.hpThreshold) bonus += eff.power;
     }
+    // 狩人「獣狩り」：Boss/Elite限定の一時的な与ダメージ加算
+    if (this._tempBossDmgTurns > 0 && target && (target.boss || target.elite)) bonus += this._tempBossDmgBonus;
     return 1 + bonus;
   }
 
@@ -250,6 +308,22 @@ export class BattleEngine {
     const w = enemy.weaken && enemy.weaken[stat];
     if (w && w.turnsLeft > 0) return base * (1 - w.power);
     return base;
+  }
+
+  // weaken/burnStackの適用処理を1箇所に集約する。装備固有効果（_applyOneEffect）
+  // と職業とくぎ・じゅもん（skills.js/spells.jsのweaken/dotフィールド）の
+  // どちらから呼ばれても、同じenemy.weaken/dotStacks構造へ書き込む
+  // （新しい状態異常システムを増やさず、既存の仕組みへ合流させる）。
+  _applyWeakenToTarget(target, stat, power, turnsLeft) {
+    if (!target || target.dead) return;
+    target.weaken = target.weaken || {};
+    target.weaken[stat] = { power, turnsLeft };
+  }
+  _applyDotToTarget(target, power, turnsLeft, maxStacks = 99) {
+    if (!target || target.dead) return;
+    target.dotStacks = Math.min(maxStacks, (target.dotStacks || 0) + 1);
+    target.dotTurnsLeft = turnsLeft;
+    target.dotPower = power;
   }
 
   // calculateDamage(): 攻撃側atk・防御側defから最終ダメージを算出する。
@@ -261,10 +335,14 @@ export class BattleEngine {
     const effectiveDef = rawDef * (1 - armorPen);
     const mitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectiveDef / (effectiveDef + DAMAGE_BUCKET.MITIGATION_K));
     let dmg = Math.max(1, atk * (1 - mitigation));
-    const critPct = opts.critPct != null ? opts.critPct : this.player.critPct;
+    const critPct = opts.critPct != null ? opts.critPct : this._effectiveCritPct();
     const critical = Math.random() * 100 < critPct;
     if (critical) dmg *= DAMAGE_BUCKET.CRIT_MULTIPLIER * this._critDamageBoostMult();
-    if (target && target.boss && !opts.noBossMult) dmg *= this._bossDmgMult(target);
+    // 狩人「獣狩り」（Boss/Elite特効）に対応するため、既存のbossDmg/executioner
+    // 判定条件をelite含みに広げる（Boss限定だった既存の挙動自体は変えない＝
+    // target.boss===trueの場合は従来どおり必ず適用される。target.elite===true
+    // のケースだけが新たに対象に加わる）。
+    if (target && (target.boss || target.elite) && !opts.noBossMult) dmg *= this._bossDmgMult(target);
     return { damage: Math.round(dmg), critical };
   }
 
@@ -273,7 +351,7 @@ export class BattleEngine {
   // （元指示6番：「最終被ダメージ×guardMultiplier」として、DEF軽減とは
   // 独立に処理する）。
   _enemyAttackDamage(atk, opts = {}) {
-    const effectiveDef = (this.player.def || 0) * (this.player.buffTurns > 0 ? this.player.buffDefMult : 1);
+    const effectiveDef = this._effectiveDef();
     const mitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectiveDef / (effectiveDef + DAMAGE_BUCKET.MITIGATION_K));
     let dmg = Math.max(1, atk * (1 - mitigation));
     if (opts.mult == null) {
@@ -291,7 +369,13 @@ export class BattleEngine {
       // BOSS_AI_LAYER側の値をそのまま活かす）に引き上げる。
       dmg *= TEXT_BATTLE_LAYER.NORMAL_ATTACK_DAMAGE_MULT * opts.mult * TEXT_BATTLE_LAYER.TELEGRAPH_MULT_SCALE;
     }
-    if (this.player.guarding) dmg *= TEXT_BATTLE_LAYER.GUARD_DAMAGE_MULT;
+    // 大工「受け流し」「要塞化」：通常のGUARD_DAMAGE_MULTより強い軽減率を
+    // 一時的に使う（guardOverrideMultがnullの間は従来どおり）。完全無敵には
+    // ならないよう、guardOverrideMult自体も0より大きい値のみをskills.js側で
+    // 定義している。
+    if (this.player.guarding) {
+      dmg *= this.player.guardOverrideMult != null ? this.player.guardOverrideMult : TEXT_BATTLE_LAYER.GUARD_DAMAGE_MULT;
+    }
     return Math.max(1, Math.round(dmg));
   }
 
@@ -302,7 +386,8 @@ export class BattleEngine {
     if (action.type === 'attack') return this._playerAttack(action.targetId);
     if (action.type === 'guard') return this._playerGuard();
     if (action.type === 'flee') return this._playerFlee();
-    if (action.type === 'skill') return this._playerSkill();
+    if (action.type === 'skill') return this._playerTechnique('skill', action.techId, action.targetId);
+    if (action.type === 'spell') return this._playerTechnique('spell', action.techId, action.targetId);
     return { action: action.type, noop: true };
   }
 
@@ -324,7 +409,7 @@ export class BattleEngine {
   // 「1ラウンド1回攻撃」では手数が足りず本来の強さで攻略できなくなる
   // （実際に3章・5章の中型/tank敵で検証中に発覚し、この対応で解消した）。
   _playerAttackCooldown() {
-    return clamp(1.0 - this.player.spd * 0.012, CAPS_LAYER.ATTACK_INTERVAL_MIN, 1.1);
+    return clamp(1.0 - this._effectiveSpd() * 0.012, CAPS_LAYER.ATTACK_INTERVAL_MIN, 1.1);
   }
   _playerHitsPerRound() {
     return Math.max(1, Math.round(TEXT_BATTLE_LAYER.SECONDS_PER_ROUND / this._playerAttackCooldown()));
@@ -339,7 +424,7 @@ export class BattleEngine {
     // クールダウン短縮の代わりに、こちらの核心挙動をターン制でも維持する）
     const berserkerDoubled = !!this._berserkerDoubleAttack;
     if (berserkerDoubled) hitCount *= 2;
-    const atkValue = this.player.atk * this._mainDmgMult();
+    const atkValue = this._effectiveAtk() * this._mainDmgMult();
     // ChatGPTレビュー指摘1番：multi-hitは1発ごとに独立して会心判定・
     // ダメージ乱数を振り（分散を実時間相当に保つ）、かつ1発ごとに
     // _applyDamageToEnemy()を呼んでonHit/onCritをその場で発火させる
@@ -374,44 +459,274 @@ export class BattleEngine {
     return result;
   }
 
-  _playerSkill() {
-    const skill = this.job.skill;
-    if (this._skillCdTurns > 0) return { action: 'skill', onCooldown: true };
-    if (this.player.mp < skill.mpCost) return { action: 'skill', noMp: true };
+  // ---------------------------------------------------------
+  // とくぎ・じゅもん（職業技）：基本職15種を対象にした共通実行系。
+  // 元指示：「profile→自動生成のまま／skills・spells→職業ごとの手動
+  // コンテンツ」の責務分離を前提とし、上級職・特級職・勇者はautoSkillFor()
+  // が生成した単一技をjobs.js側でjob.skills[0]へラップして流用する
+  // （このBattleEngine側は常にjob.skills[]/job.spells[]の配列だけを見る）。
+  // ---------------------------------------------------------
+  _isTechniqueLearned(tech) {
+    if (tech.learnLevel === 'master') return state.isMastered(state.currentJobId);
+    return state.currentLevel >= tech.learnLevel;
+  }
+
+  // 習得済み（かつpassiveではない＝コマンドとして選択可能な）技一覧
+  availableSkills() { return (this.job.skills || []).filter((t) => this._isTechniqueLearned(t) && !t.passive); }
+  availableSpells() { return (this.job.spells || []).filter((t) => this._isTechniqueLearned(t) && !t.passive); }
+
+  _techniqueGoldCost(tech) {
+    if (tech.goldCostFlat != null) return tech.goldCostFlat;
+    if (tech.goldCostPct != null) return Math.max(tech.goldCostMin || 0, Math.round(state.data.gold * tech.goldCostPct));
+    return 0;
+  }
+
+  // MP・クールダウン・Gold・習得状態を確認するだけの副作用なしチェック。
+  // advanceTurn()側でコマンド選択の可否を先に判定する（にげるBoss不可判定と
+  // 同じ「実行そのものが成立しないコマンドはラウンドを消費しない」扱いに
+  // するため）のと、_playerTechnique()内部の実行直前チェックの両方で使う。
+  _probeTechnique(kind, techId) {
+    const list = kind === 'spell' ? this.availableSpells() : this.availableSkills();
+    const tech = list.find((t) => t.id === techId);
+    if (!tech) return { ok: false, reason: 'notLearned' };
+    if ((this.skillCooldowns[tech.id] || 0) > 0) return { ok: false, reason: 'onCooldown' };
+    if (this.player.mp < tech.mpCost) return { ok: false, reason: 'noMp' };
+    if (tech.goldCostPct != null || tech.goldCostFlat != null) {
+      if (state.data.gold < this._techniqueGoldCost(tech)) return { ok: false, reason: 'noGold' };
+    }
+    return { ok: true, tech };
+  }
+
+  _playerTechnique(kind, techId, targetId) {
+    const probe = this._probeTechnique(kind, techId);
+    if (!probe.ok) return { action: kind, blocked: true, reason: probe.reason };
+    const tech = probe.tech;
     this.player.guarding = false;
-    this.player.mp -= skill.mpCost;
-    this._skillCdTurns = Math.max(1, roundsFromSeconds(skill.cooldown * state.jobMasterCooldownMult()));
+    this.player.mp -= tech.mpCost;
+    let goldSpent = 0;
+    if (tech.goldCostPct != null || tech.goldCostFlat != null) {
+      goldSpent = this._techniqueGoldCost(tech);
+      // 元指示：Goldが0未満にならないこと
+      state.data.gold = Math.max(0, state.data.gold - goldSpent);
+    }
+    if (tech.cooldownTurns > 0) {
+      this.skillCooldowns[tech.id] = Math.max(1, Math.round(tech.cooldownTurns * state.jobMasterCooldownMult()));
+      // このラウンドの_afterRoundChecks()でうっかり即座に1減らしてしまうと、
+      // 「cooldownTurns:1」が実質ノークールダウンと同義になってしまう
+      // （使った直後のラウンド終了処理で1→0まで進んでしまうため）。設定した
+      // ラウンドぶんだけは減算をスキップし、次のラウンド以降で正しく減り
+      // 始めるようにする。
+      this._skillCooldownsSetThisRound.add(tech.id);
+    }
+    // 装備onSkillエフェクト（cdRefund/haste）は、旧・単一skill運用時と同じ
+    // 意味論のまま「何らかのとくぎ/じゅもんを使った」瞬間全般に効かせる
     for (const eff of this._effectsOf('onSkill')) {
-      if (eff.kind === 'cdRefund' && Math.random() < eff.chance) this._skillCdTurns = 0;
+      if (eff.kind === 'cdRefund' && Math.random() < eff.chance) this.skillCooldowns[tech.id] = 0;
       else if (eff.kind === 'haste') { this._tempAtkBonus = eff.power; this._tempAtkTurns = roundsFromSeconds(eff.duration); }
     }
 
-    const result = { action: 'skill', name: skill.name, skillType: skill.type, targets: [] };
-    if (skill.type === 'damage') {
-      const skillPowerMult = state.jobMasterSkillPowerMult();
-      const targets = this.aliveEnemies.slice(0, 3);
-      for (const t of targets) {
-        const atkValue = (skill.power * skillPowerMult + this.player.atk * 0.4 + this.player.mag * 0.6) * this._mainDmgMult();
-        const { damage, critical } = this.calculateDamage(atkValue, t);
-        const hit = this._applyDamageToEnemy(t, damage, critical);
-        hit.critical = critical;
-        result.targets.push(hit);
-      }
-    } else if (skill.type === 'heal') {
-      const healPowerMult = state.jobMasterHealPowerMult();
-      const healMult = this.stage.healMult || 1;
-      const amount = Math.round((skill.power * healPowerMult + this.player.mag * 0.5) * healMult);
-      this.player.hp = Math.min(this.player.maxHp, this.player.hp + amount);
-      result.healAmount = amount;
-    } else if (skill.type === 'buff') {
-      this.player.buffAtkMult = 1.35;
-      this.player.buffDefMult = 1.35;
-      this.player.buffTurns = 2; // 実時間6秒相当→約2ターン
-      result.buffed = true;
+    const result = { action: kind, techId: tech.id, name: tech.name, techType: tech.type, goldSpent, targets: [] };
+    switch (tech.type) {
+      case 'damage': this._resolveTechniqueDamage(tech, targetId, result); break;
+      case 'heal': this._resolveTechniqueHeal(tech, result); break;
+      case 'buff': this._resolveTechniqueBuff(tech, result); break;
+      case 'debuff': this._resolveTechniqueDebuff(tech, targetId, result); break;
+      case 'steal': this._resolveTechniqueSteal(tech, targetId, result); break;
+      case 'inspect': this._resolveTechniqueInspect(tech, targetId, result); break;
+      case 'burst': this._resolveTechniqueBurst(tech, targetId, result); break;
+      case 'cleanse': this._resolveTechniqueCleanse(tech, result); break;
+      case 'utility': this._resolveTechniqueUtility(tech, result); break;
+      default: break;
     }
-    this._actionTypesUsed.add('skill');
+    this._actionTypesUsed.add(kind === 'spell' ? 'spell' : 'skill');
     this._checkActionDiversityBurst(result);
     return result;
+  }
+
+  _resolveTargets(tech, targetId) {
+    if (tech.target === 'allEnemies') return this.aliveEnemies.slice();
+    if (tech.target === 'self') return [];
+    const t = this._pickTarget(targetId);
+    return t ? [t] : [];
+  }
+
+  _resolveTechniqueDamage(tech, targetId, result) {
+    const statValue = tech.magic ? this._effectiveMag() : this._effectiveAtk();
+    const hits = tech.hits || 1;
+    const targets = this._resolveTargets(tech, targetId);
+    if (targets.length === 0) { result.noTarget = true; return; }
+    const opts = {};
+    if (tech.armorPenBonus) opts.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, (this.player.armorPen || 0) + tech.armorPenBonus);
+    for (const target of targets) {
+      let totalDamage = 0, criticalCount = 0, hitsLanded = 0;
+      const effects = []; let kill = null;
+      for (let i = 0; i < hits; i++) {
+        if (target.dead) break;
+        const atkValue = statValue * tech.power * this._mainDmgMult();
+        const { damage, critical } = this.calculateDamage(atkValue, target, opts);
+        if (critical) criticalCount++;
+        hitsLanded++;
+        totalDamage += damage;
+        const hit = this._applyDamageToEnemy(target, damage, critical);
+        effects.push(...hit.effects);
+        if (hit.kill) kill = hit.kill;
+      }
+      if (tech.weaken && !target.dead) this._applyWeakenToTarget(target, tech.weaken.stat, tech.weaken.pct, tech.weaken.turns);
+      if (tech.dot && !target.dead) this._applyDotToTarget(target, tech.dot.power, tech.dot.turns, tech.dot.maxStacks || 99);
+      result.targets.push({
+        targetId: target.id, targetName: target.name, damage: totalDamage, defeated: target.dead,
+        critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, effects, kill,
+      });
+    }
+  }
+
+  // weaken（能力低下）・dot（毒/DoT付与）・stun（低確率の行動阻害）のいずれか、
+  // または複数を組み合わせて持つ「純粋なデバフ技」（ダメージを伴わない）を扱う。
+  // 錬金術師「毒薬」のようにweakenを持たずdotのみの技もあるため、両方とも
+  // 存在チェックしてから適用する。
+  _resolveTechniqueDebuff(tech, targetId, result) {
+    const targets = this._resolveTargets(tech, targetId);
+    if (targets.length === 0) { result.noTarget = true; return; }
+    for (const target of targets) {
+      const entry = { targetId: target.id, targetName: target.name };
+      if (tech.weaken) {
+        let pct = tech.weaken.pct;
+        // 狩人「足止め」等：Bossには効果量を減衰させる
+        if (target.boss && tech.weaken.bossMultiplier != null) pct *= tech.weaken.bossMultiplier;
+        this._applyWeakenToTarget(target, tech.weaken.stat, pct, tech.weaken.turns);
+        entry.weakenStat = tech.weaken.stat;
+        entry.weakenPct = pct;
+      }
+      if (tech.dot) {
+        this._applyDotToTarget(target, tech.dot.power, tech.dot.turns, tech.dot.maxStacks || 99);
+        entry.dotApplied = true;
+        entry.dotStacks = target.dotStacks;
+      }
+      // 忍者「影縫い」・魔法使い「氷槍」：Bossには完全停止を適用しない（弱体化）
+      if (tech.stunChance && !(tech.stunExcludesBoss && target.boss) && Math.random() < tech.stunChance) {
+        target.frozenTurns = Math.max(target.frozenTurns, tech.stunTurns || 1);
+        entry.stunned = true;
+      }
+      result.targets.push(entry);
+    }
+  }
+
+  _resolveTechniqueHeal(tech, result) {
+    const healPowerMult = state.jobMasterHealPowerMult();
+    const healMult = this.stage.healMult || 1;
+    const amount = Math.round(this.player.maxHp * tech.healPct * healPowerMult * healMult + this._effectiveMag() * (tech.healMagRatio || 0));
+    this.player.hp = Math.min(this.player.maxHp, this.player.hp + amount);
+    result.healAmount = amount;
+  }
+
+  _setBuff(stat, pct, turns) { this.player.buffs[stat] = { mult: 1 + pct, turnsLeft: turns }; }
+  _setAddBuff(key, value, turns) {
+    if (key === 'critAdd') this.player.buffs.critAdd = { value: Math.min(value, CAPS_LAYER.CRIT_PCT_MAX), turnsLeft: turns };
+    else if (key === 'evasionAdd') this.player.buffs.evasionAdd = { value: Math.min(value, CAPS_LAYER.EVASION_MAX), turnsLeft: turns };
+    else if (key === 'regenAdd') this.player.buffs.regenAdd = { value, turnsLeft: turns };
+  }
+
+  _applyBuffPayload(b, result) {
+    if (!b) return;
+    if (b.atkPct) this._setBuff('atk', b.atkPct, b.turns);
+    if (b.defPct) this._setBuff('def', b.defPct, b.turns);
+    if (b.spdPct) this._setBuff('spd', b.spdPct, b.turns);
+    if (b.magPct) this._setBuff('mag', b.magPct, b.turns);
+    if (b.critAdd) this._setAddBuff('critAdd', b.critAdd, b.turns);
+    if (b.evasionAdd) this._setAddBuff('evasionAdd', b.evasionAdd, b.turns);
+    if (b.regenAdd) this._setAddBuff('regenAdd', b.regenAdd, b.turns);
+    if (b.goldMultAdd) { this._tempGoldBonus = b.goldMultAdd; this._tempGoldBonusTurns = b.turns; }
+    if (b.bossGuardPct) { this.player.guardOverrideMult = 1 - b.bossGuardPct; this.player.guardOverrideTurns = b.turns; }
+    if (b.bossDmgAdd) { this._tempBossDmgBonus = b.bossDmgAdd; this._tempBossDmgTurns = b.turns; }
+    if (b.dmgBonusAdd) { this._tempDmgBonus = b.dmgBonusAdd; this._tempDmgBonusTurns = b.turns; }
+    result.buffed = true;
+  }
+
+  _resolveTechniqueBuff(tech, result) {
+    // 農民「根性」：HPが低いほど恩恵が大きい（無駄打ちを避けるため、
+    // 通常時も最低限のbuffは必ず得られるようにしてある）
+    if (tech.lowHpThreshold != null && tech.lowHpBonus) {
+      const hpRatio = this.player.maxHp > 0 ? this.player.hp / this.player.maxHp : 1;
+      if (hpRatio <= tech.lowHpThreshold) {
+        if (tech.lowHpBonus.healPct) {
+          const amount = Math.round(this.player.maxHp * tech.lowHpBonus.healPct);
+          this.player.hp = Math.min(this.player.maxHp, this.player.hp + amount);
+          result.healAmount = amount;
+        }
+        this._applyBuffPayload({ defPct: tech.lowHpBonus.defPct, turns: tech.lowHpBonus.turns }, result);
+        return;
+      }
+    }
+    this._applyBuffPayload(tech.buff, result);
+    if (tech.haste) { this._hasteInitiativeBonus = tech.haste.power; this._hasteInitiativeTurns = tech.haste.turns; }
+  }
+
+  _resolveTechniqueUtility(tech, result) {
+    if (tech.guardOverride) {
+      this.player.guarding = true;
+      this.player.guardOverrideMult = tech.guardOverride.mult;
+      this.player.guardOverrideTurns = tech.guardOverride.turns;
+    }
+    if (tech.buff) this._applyBuffPayload(tech.buff, result);
+    if (tech.tempEffect) this._addTempEffect(tech.tempEffect.effect, tech.tempEffect.turns);
+    result.utility = true;
+  }
+
+  // 盗賊「盗む」：同一敵からの連続窃盗を防ぐため、_stolenEnemyIdsで1戦/1敵に
+  // 制限する（既存の_rollDrop・stateのGold加算をそのまま再利用する）
+  _resolveTechniqueSteal(tech, targetId, result) {
+    const target = this._pickTarget(targetId);
+    if (!target) { result.noTarget = true; return; }
+    if (this._stolenEnemyIds.has(target.id)) { result.alreadyStolen = true; return; }
+    this._stolenEnemyIds.add(target.id);
+    const goldGain = Math.max(1, Math.round(target.gold * (tech.stealGoldMult || 1.5)));
+    state.gainGold(goldGain);
+    this.runGold += goldGain;
+    result.stolenGold = goldGain;
+    if (Math.random() < (tech.stealDropChance || 0.25)) {
+      const dropInfo = this._rollDrop();
+      if (dropInfo) result.stolenItem = dropInfo;
+    }
+  }
+
+  // 学者「解析」：敵のステータスをログに表示するだけの情報技（Bossにも有効）
+  _resolveTechniqueInspect(tech, targetId, result) {
+    const target = this._pickTarget(targetId);
+    if (!target) { result.noTarget = true; return; }
+    result.inspected = {
+      name: target.name, hp: target.hp, maxHp: target.maxHp,
+      atk: target.atk, def: target.def, spd: target.spd, boss: target.boss, elite: target.elite,
+    };
+  }
+
+  // 錬金術師「起爆」：対象の現在のDoT（burnStack）を消費してボーナスダメージを与える
+  _resolveTechniqueBurst(tech, targetId, result) {
+    const target = this._pickTarget(targetId);
+    if (!target) { result.noTarget = true; return; }
+    const stacks = target.dotStacks || 0;
+    const atkValue = this._effectiveAtk() * (tech.power + stacks * (tech.stackPowerMult || 0.5)) * this._mainDmgMult();
+    const { damage, critical } = this.calculateDamage(atkValue, target);
+    const hit = this._applyDamageToEnemy(target, damage, critical);
+    target.dotStacks = 0; target.dotTurnsLeft = 0;
+    result.targets.push({
+      targetId: target.id, targetName: target.name, damage, critical, defeated: target.dead,
+      effects: hit.effects, kill: hit.kill, consumedStacks: stacks,
+    });
+  }
+
+  // 僧侶「浄化」：現状プレイヤーへweaken/DoTを与える敵手段は存在しないため、
+  // 空のnegativeStatusをクリアするだけの将来拡張向けスキャフォールドとして動作する
+  _resolveTechniqueCleanse(tech, result) {
+    this.player.negativeStatus = { weaken: {}, dotStacks: 0, dotTurnsLeft: 0 };
+    result.cleansed = true;
+  }
+
+  // 技（大工「反撃」等）が付与する一時的なonHit/onCrit/onHurt/onKill効果。
+  // 既存の装備固有効果（_applyOneEffect）と全く同じ形のオブジェクトを
+  // this.effectsへ一時的に追加するだけなので、新しい発動経路を作らずに
+  // 既存のcounter等をそのまま再利用できる。
+  _addTempEffect(effObj, turns) {
+    this.effects.push({ ...effObj, __tempTurnsLeft: turns });
   }
 
   _playerGuard() {
@@ -430,7 +745,7 @@ export class BattleEngine {
     const alive = this.aliveEnemies;
     const avgEnemySpd = alive.length > 0 ? alive.reduce((s, e) => s + e.spd, 0) / alive.length : 0;
     const stagePenalty = this.stage.isAbyss ? 0.05 : 0;
-    const chance = clamp(0.5 + (this.player.spd - avgEnemySpd) * 0.01 - stagePenalty, 0.1, 0.9);
+    const chance = clamp(0.5 + (this._effectiveSpd() - avgEnemySpd) * 0.01 - stagePenalty, 0.1, 0.9);
     const success = Math.random() < chance;
     return { action: 'flee', success };
   }
@@ -470,12 +785,10 @@ export class BattleEngine {
         return { kind: 'bloodChalice' };
       }
       if (eff.kind === 'weaken' && !target.dead) {
-        target.weaken = target.weaken || {};
-        target.weaken[eff.stat] = { power: eff.power, turnsLeft: roundsFromSeconds(eff.duration) };
+        this._applyWeakenToTarget(target, eff.stat, eff.power, roundsFromSeconds(eff.duration));
         return { kind: 'weaken', stat: eff.stat };
       }
       if (eff.kind === 'burnStack' && !target.dead) {
-        target.dotStacks = Math.min(eff.maxStacks, (target.dotStacks || 0) + 1);
         // ChatGPTレビュー指摘4番：durationをそのままroundsFromSeconds()に
         // 通すと「何ラウンド居座るか」であって「何回tickするか」ではなく
         // なってしまう（実時間ではtickInterval=1秒毎、duration=3〜4秒＝
@@ -485,8 +798,8 @@ export class BattleEngine {
         // ターン制の運用は保ったまま、tick回数（=dotTurnsLeft）自体を
         // duration/tickIntervalの実時間tick総数で決めることで、1tickあたりの
         // 威力（dotPower）は変えずに合計期待ダメージを実時間相当に保つ。
-        target.dotTurnsLeft = Math.max(1, Math.round(eff.duration / (eff.tickInterval || TEXT_BATTLE_LAYER.SECONDS_PER_ROUND)));
-        target.dotPower = eff.power;
+        const turns = Math.max(1, Math.round(eff.duration / (eff.tickInterval || TEXT_BATTLE_LAYER.SECONDS_PER_ROUND)));
+        this._applyDotToTarget(target, eff.power, turns, eff.maxStacks);
         return { kind: 'burnStack', stacks: target.dotStacks };
       }
       if (eff.kind === 'everyNHits' && !target.dead) {
@@ -640,6 +953,8 @@ export class BattleEngine {
   _goldMult() {
     let m = this.blessing && this.blessing.kind === 'goldMult' ? 1 + this.blessing.power : 1;
     if (this.stage.isAbyss && this.stage.boss) m *= state.abyssBossFloorRewardMult();
+    // 商人「商魂」・農民「大収穫」：戦闘中の一時的なGold獲得ボーナス
+    if (this._tempGoldBonusTurns > 0) m *= (1 + this._tempGoldBonus);
     return m;
   }
   _expMult() {
@@ -734,7 +1049,7 @@ export class BattleEngine {
     // 表現されているため、行動そのものは単純な通常攻撃で十分。将来、回復/
     // バフ/デバフ/魔法/防御タイプの敵を追加する際はここに分岐を増やす。
     const enemyAtk = this._effectiveEnemyStat(enemy, 'atk');
-    if (Math.random() < (this.player.evasion || 0)) {
+    if (Math.random() < this._effectiveEvasion()) {
       return { enemyId: enemy.id, name: enemy.name, kind: 'attack', evaded: true };
     }
     const dmg = this._enemyAttackDamage(enemyAtk);
@@ -785,7 +1100,7 @@ export class BattleEngine {
 
     // 通常攻撃
     const enemyAtk = this._effectiveEnemyStat(enemy, 'atk');
-    if (Math.random() < (this.player.evasion || 0)) {
+    if (Math.random() < this._effectiveEvasion()) {
       return { enemyId: enemy.id, name: enemy.name, kind: 'attack', evaded: true, phased: justPhased };
     }
     const dmg = this._enemyAttackDamage(enemyAtk);
@@ -814,7 +1129,7 @@ export class BattleEngine {
       charge: BOSS_AI_LAYER.CHARGE_DAMAGE_MULT,
       projectile: BOSS_AI_LAYER.PROJECTILE_DAMAGE_MULT,
     };
-    if (Math.random() < (this.player.evasion || 0)) {
+    if (Math.random() < this._effectiveEvasion()) {
       return { enemyId: enemy.id, name: enemy.name, kind: 'special', specialKind: kind, evaded: true, phased: !!justPhased };
     }
     const dmg = this._enemyAttackDamage(enemyAtk, { mult: multByKind[kind] });
@@ -886,6 +1201,33 @@ export class BattleEngine {
       return { events, over: end.over, result: this.finalResult };
     }
 
+    // とくぎ・じゅもんは、MP不足/クールダウン中/未習得で実行そのものが
+    // 成立しない場合、にげるのBoss不可判定と同じく「行動選択自体が無効」
+    // として扱い、ラウンドを消費しない（元指示：MP不足の場合はターンを
+    // 消費しない仕様を推奨）。実行できる場合は、下の先攻/後攻ロジックに
+    // そのまま合流させる（performPlayerAction→_playerTechnique()が
+    // 実際の消費・効果適用を行う）。
+    let preResolvedPlayerResult = null;
+    if (command.type === 'skill' || command.type === 'spell') {
+      const probe = this._probeTechnique(command.type, command.techId);
+      if (!probe.ok) {
+        const result = { action: command.type, blocked: true, reason: probe.reason };
+        events.push({ type: 'playerAction', result });
+        return { events, over: false };
+      }
+      // ガードと全く同じ理由で、自己対象のbuff/utility技（挑発・不屈の構え・
+      // 受け流し・要塞化・魔力集中・鼓舞の歌等）は、先攻/後攻の判定結果に
+      // 関わらずこのラウンドの敵行動解決より前に実行しておく必要がある。
+      // でなければ、敵が先攻の場面で「防御系とくぎを選んだのに同じラウンドの
+      // 敵攻撃を防げない」という、ぼうぎょで既に修正済みのバグと同じ問題が
+      // 受け流し・要塞化等でも再発する（実測：guardedDamageが軽減されない
+      // 不具合として発覚）。
+      if (probe.tech.target === 'self' && (probe.tech.type === 'buff' || probe.tech.type === 'utility')) {
+        preResolvedPlayerResult = this.performPlayerAction(command);
+        events.push({ type: 'playerAction', result: preResolvedPlayerResult });
+      }
+    }
+
     // ガードは「このラウンドに飛んでくる敵の攻撃を軽減する」ためのコマンドなので、
     // 先攻/後攻の判定結果に関わらず、このラウンドの敵行動解決より前に有効化しておく
     // 必要がある。旧実装ではperformPlayerAction経由の_playerGuard()でしか
@@ -894,12 +1236,13 @@ export class BattleEngine {
     // （3章のtank系敵での検証で発覚）。
     if (command.type === 'guard') this.player.guarding = true;
 
-    const playerInitiative = this.player.spd + this._hasteInitiativeBonus + rand(0, 8);
+    const playerInitiative = this._effectiveSpd() + this._hasteInitiativeBonus + rand(0, 8);
     const alive = this.aliveEnemies;
     const enemyInitiative = (alive.reduce((s, e) => s + e.spd, 0) / Math.max(1, alive.length)) + rand(0, 8);
     const playerFirst = playerInitiative >= enemyInitiative;
 
     const runPlayer = () => {
+      if (preResolvedPlayerResult) return preResolvedPlayerResult; // 既に実行済み（二重実行防止）
       const result = this.performPlayerAction(command);
       events.push({ type: 'playerAction', result });
       return result;
@@ -967,11 +1310,37 @@ export class BattleEngine {
         if (enemy.dotTurnsLeft <= 0) enemy.dotStacks = 0;
       }
     }
-    if (this.player.buffTurns > 0) { this.player.buffTurns--; if (this.player.buffTurns <= 0) { this.player.buffAtkMult = 1; this.player.buffDefMult = 1; } }
+    // player.buffsの汎用構造（元指示：どうしても必要な汎用status構造）：
+    // ステータスごとに独立したターン経過。旧buffAtkMult/buffDefMult/
+    // buffTurns（ATK・DEFが1本のタイマーで連動していた）はこれに統合した。
+    for (const key of Object.keys(this.player.buffs)) {
+      const b = this.player.buffs[key];
+      if (b.turnsLeft > 0) {
+        b.turnsLeft--;
+        if (b.turnsLeft <= 0) { b.mult = 1; b.value = 0; }
+      }
+    }
+    if (this.player.guardOverrideTurns > 0) {
+      this.player.guardOverrideTurns--;
+      if (this.player.guardOverrideTurns <= 0) this.player.guardOverrideMult = null;
+    }
     if (this._bloodChaliceTurns > 0) this._bloodChaliceTurns--;
     if (this._tempAtkTurns > 0) this._tempAtkTurns--;
     if (this._hasteInitiativeTurns > 0) { this._hasteInitiativeTurns--; if (this._hasteInitiativeTurns <= 0) this._hasteInitiativeBonus = 0; }
-    if (this._skillCdTurns > 0) this._skillCdTurns--;
+    if (this._tempGoldBonusTurns > 0) this._tempGoldBonusTurns--;
+    if (this._tempBossDmgTurns > 0) this._tempBossDmgTurns--;
+    if (this._tempDmgBonusTurns > 0) this._tempDmgBonusTurns--;
+    for (const key in this.skillCooldowns) {
+      if (this._skillCooldownsSetThisRound.has(key)) continue;
+      if (this.skillCooldowns[key] > 0) this.skillCooldowns[key]--;
+    }
+    this._skillCooldownsSetThisRound.clear();
+    // 大工「反撃」等、技が一時的に付与したonHit/onCrit/onHurt/onKill効果の期限切れ処理
+    this.effects = this.effects.filter((e) => {
+      if (e.__tempTurnsLeft == null) return true;
+      e.__tempTurnsLeft--;
+      return e.__tempTurnsLeft > 0;
+    });
     this._updatePassiveEffects();
     // ChatGPTレビュー指摘4番：_regenPowerは（CAPS_LAYER.REGEN_PCT_PER_SEC_MAXも
     // 含めて）「1秒あたり」の割合のまま保持している。1ラウンド
@@ -1005,6 +1374,9 @@ export class BattleEngine {
       // 廃止するが、「HP一定割合以下で2回攻撃」という核心の挙動は維持する
       if (eff.kind === 'berserker' && hpRatio <= eff.threshold) doubleAttack = true;
     }
+    // 僧侶「祈り」・吟遊詩人「癒しの旋律」：一時的なregenボーナスも同じ
+    // 「毎秒%」の意味で合算し、既存のCAPS_LAYER上限をそのまま適用する
+    if (this.player.buffs.regenAdd.turnsLeft > 0) regenPower += this.player.buffs.regenAdd.value;
     this.awakenMult = mult;
     this._regenPower = Math.min(CAPS_LAYER.REGEN_PCT_PER_SEC_MAX, regenPower);
     this._berserkerDoubleAttack = doubleAttack;
@@ -1016,10 +1388,19 @@ export class BattleEngine {
   checkBattleEnd() {
     if (this.over) return { over: true };
     if (this.player.hp <= 0) {
+      // 深淵の蘇生（既存・より強力な50%蘇生）を優先し、それが使えない場合に
+      // のみ農民MASTER「百姓魂」を判定する（重複ルール：深淵蘇生が最優先）
       if (this.stage.isAbyss && !this._abyssReviveUsed && state.hasAbyssRevive()) {
         this._abyssReviveUsed = true;
         this.player.hp = Math.round(this.player.maxHp * 0.5);
         return { over: false, revived: true };
+      }
+      if (state.currentJobId === 'farmer' && state.isMastered('farmer') && !this._farmerSurviveUsed) {
+        this._farmerSurviveUsed = true;
+        if (Math.random() < FARMER_SURVIVE_CHANCE) {
+          this.player.hp = 1;
+          return { over: false, revived: true, farmerSurvive: true };
+        }
       }
       this._finishBattle(false, false);
       return { over: true };

@@ -165,6 +165,17 @@
       <button id="tbItemBtn" class="tb-cmd-btn" disabled>どうぐ</button>
       <button id="tbFleeBtn" class="tb-cmd-btn tb-cmd-flee">にげる</button>
     </div>
+
+    <!-- とくぎ・じゅもんの技一覧サブメニュー（元指示：習得済みskills/spells一覧を
+         表示し、選択後に必要ならターゲット選択（既存のtbEnemyListタップ選択）へ
+         移る）。tbCommandGridと排他表示。 -->
+    <div id="tbTechMenu" class="tb-tech-menu hidden">
+      <div class="tb-tech-menu-header">
+        <button id="tbTechBackBtn" class="btn-icon">←</button>
+        <span id="tbTechMenuTitle">とくぎ</span>
+      </div>
+      <div id="tbTechList" class="tb-tech-list"></div>
+    </div>
   </section>
 
   <!-- ============ リザルト ============ -->

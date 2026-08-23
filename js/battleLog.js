@@ -104,21 +104,71 @@ function describePlayerAction(result) {
     else lines.push('しかし逃げられなかった！');
     return lines;
   }
-  if (result.action === 'skill') {
-    if (result.onCooldown) { lines.push('そのとくぎはまだ使えない（クールタイム中）'); return lines; }
-    if (result.noMp) { lines.push('MPが足りない！'); return lines; }
+  if (result.action === 'skill' || result.action === 'spell') {
+    if (result.blocked) {
+      const label = result.action === 'spell' ? 'そのじゅもん' : 'そのとくぎ';
+      if (result.reason === 'noMp') lines.push('MPが足りない！');
+      else if (result.reason === 'onCooldown') lines.push(`${label}はまだ使えない（クールタイム中）`);
+      else if (result.reason === 'noGold') lines.push('Goldが足りない！');
+      else lines.push(`${label}はまだ使えない`);
+      return lines;
+    }
     lines.push(`「${result.name}」！`);
-    if (result.skillType === 'damage') {
-      for (const hit of result.targets || []) {
-        const critTag = hit.critical ? '会心の一撃！ ' : '';
-        lines.push(`${critTag}${hit.targetName}に${hit.damage}のダメージ！`);
-        lines.push(...describeHitEffects(hit.effects));
-        if (hit.defeated) lines.push(...describeKill(hit.kill, hit.targetName));
-      }
-    } else if (result.skillType === 'heal') {
-      lines.push(`HPを${result.healAmount}回復した！`);
-    } else if (result.skillType === 'buff') {
-      lines.push('身体能力が上がった！');
+    switch (result.techType) {
+      case 'damage':
+        for (const hit of result.targets || []) {
+          const critTag = hit.critical ? '会心の一撃！ ' : '';
+          lines.push(`${critTag}${hit.targetName}に${hit.damage}のダメージ！`);
+          lines.push(...describeHitEffects(hit.effects));
+          if (hit.defeated) lines.push(...describeKill(hit.kill, hit.targetName));
+        }
+        if ((result.targets || []).length === 0) lines.push('しかし、狙う相手がいなかった！');
+        break;
+      case 'heal':
+        lines.push(`HPを${result.healAmount}回復した！`);
+        break;
+      case 'buff':
+        if (result.healAmount) lines.push(`HPを${result.healAmount}回復した！`);
+        lines.push('身体能力が上がった！');
+        break;
+      case 'debuff':
+        for (const t of result.targets || []) {
+          if (t.weakenStat) lines.push(`${t.targetName}の${STAT_JP[t.weakenStat] || t.weakenStat}を弱体化させた！`);
+          if (t.dotApplied) lines.push(`${t.targetName}を蝕む毒を送り込んだ！`);
+          if (t.stunned) lines.push(`${t.targetName}の動きを封じた！`);
+        }
+        if ((result.targets || []).length === 0) lines.push('しかし、狙う相手がいなかった！');
+        break;
+      case 'steal':
+        if (result.alreadyStolen) lines.push('すでに奪えるものは奪った後だった…');
+        else if (result.noTarget) lines.push('しかし、狙う相手がいなかった！');
+        else {
+          lines.push(`ゴールドを${result.stolenGold}奪った！`);
+          if (result.stolenItem) lines.push(`${result.stolenItem.name}を奪い取った！`);
+        }
+        break;
+      case 'inspect':
+        if (result.inspected) {
+          const t = result.inspected;
+          lines.push(`${t.name}：HP ${t.hp}/${t.maxHp}　ATK ${t.atk}　DEF ${t.def}　SPD ${t.spd}`);
+        } else lines.push('しかし、狙う相手がいなかった！');
+        break;
+      case 'burst':
+        for (const t of result.targets || []) {
+          const critTag = t.critical ? '会心の一撃！ ' : '';
+          lines.push(`${critTag}${t.targetName}に${t.damage}のダメージ！（${t.consumedStacks}スタック分の毒を起爆！）`);
+          if (t.defeated) lines.push(...describeKill(t.kill, t.targetName));
+        }
+        if ((result.targets || []).length === 0) lines.push('しかし、狙う相手がいなかった！');
+        break;
+      case 'cleanse':
+        lines.push('体を蝕むものが消え去った！');
+        break;
+      case 'utility':
+        if (result.buffed) lines.push('身体能力が上がった！');
+        lines.push('構えを固めた！');
+        break;
+      default: break;
     }
     lines.push(...describeActionDiversityBurst(result.actionDiversityBurst));
     return lines;
