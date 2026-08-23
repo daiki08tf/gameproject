@@ -7,6 +7,7 @@
    ============================================================ */
 import { state } from '../state.js';
 import { getArtifact } from '../data/artifacts.js';
+import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER } from '../data/balance.js';
 import { AWAKENING_V2_RANKS, awakeningRankDef, evaluateAwakeningRequirements, SYSTEM_ROLE_MAP } from '../data/awakeningMilestones.js';
 
 function ensureCleanupData() {
@@ -115,6 +116,27 @@ state.isAwakeningFeatureUnlocked = function isAwakeningFeatureUnlocked(feature) 
   return rank >= (gates[feature] || 99);
 };
 
+// 旧「覚醒ポイント」は廃止されたため、装備の目覚めはRank1解放後に魔石を使う。
+// これで新規プレイヤーも旧覚醒を経由せず上位装備育成を進められる。
+state.awakenWeaponCost = function awakenWeaponCostV2(rank) {
+  return 20 + Math.max(0, Math.floor(Number(rank) || 0)) * 15;
+};
+state.canAwakenWeapon = function canAwakenWeaponV2(itemId) {
+  if (!this.isAwakeningFeatureUnlocked('awakenedEquipment')) return false;
+  if (this.weaponEnhanceLevel(itemId) < AWAKENED_EQUIP_LAYER.REQUIRE_ENHANCE_LEVEL) return false;
+  const rank = this.weaponAwakenedRank(itemId);
+  if (rank >= AWAKENED_EQUIP_LAYER.MAX_RANK) return false;
+  return (this.data.manastone || 0) >= this.awakenWeaponCost(rank);
+};
+state.awakenWeapon = function awakenWeaponV2(itemId) {
+  if (!this.canAwakenWeapon(itemId)) return false;
+  const rank = this.weaponAwakenedRank(itemId);
+  this.data.manastone -= this.awakenWeaponCost(rank);
+  this.data.awakenedWeapons[itemId] = rank + 1;
+  this.save();
+  return true;
+};
+
 state.artifactUnlockCostV2 = function artifactUnlockCostV2() {
   const n = Array.isArray(this.data.unlockedArtifacts) ? this.data.unlockedArtifacts.length : 0;
   return { gold: 1500 + n * 1750, manastone: 30 + n * 15 };
@@ -142,5 +164,18 @@ state.unlockArtifact = function unlockArtifactV2(id) {
 // DOM上の旧Rune導線も消す。blacksmith.js自体は互換のため残す。
 const legacyRuneTab = document.querySelector('#blacksmithScreen [data-tab="rune"]');
 if (legacyRuneTab) legacyRuneTab.remove();
+
+// blacksmith.jsは旧UIのままなので「💠」表記だけ現行通貨「💎」へ補正する。
+const blacksmithContent = document.getElementById('blacksmithContent');
+if (blacksmithContent && typeof MutationObserver !== 'undefined') {
+  const observer = new MutationObserver(() => {
+    blacksmithContent.querySelectorAll('.forge-card-btn').forEach((btn) => {
+      if (btn.textContent.includes('目覚めさせる') && btn.textContent.includes('💠')) {
+        btn.textContent = btn.textContent.replace('💠', '💎');
+      }
+    });
+  });
+  observer.observe(blacksmithContent, { childList: true, subtree: true });
+}
 
 export { ensureCleanupData };
