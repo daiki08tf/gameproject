@@ -1,0 +1,71 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import {
+  COMPANION_SPECIES,
+  companionExpToNext,
+  companionStats,
+} from '../js/data/companions.js';
+
+async function source(path) {
+  return readFile(new URL(`../${path}`, import.meta.url), 'utf8');
+}
+
+test('companion species data stays usable and growth is monotonic', () => {
+  for (const id of ['slime', 'goblin', 'bat']) {
+    const species = COMPANION_SPECIES[id];
+    assert.ok(species, `${id} should exist`);
+    const lv1 = companionStats(species, { level: 1, nature: 'balanced', talent: {} });
+    const lv10 = companionStats(species, { level: 10, nature: 'balanced', talent: {} });
+    for (const stat of ['hp', 'mp', 'atk', 'def', 'mag', 'spd']) {
+      assert.ok(lv1[stat] >= 1, `${id}.${stat} should be positive`);
+      assert.ok(lv10[stat] >= lv1[stat], `${id}.${stat} should not shrink with level`);
+    }
+  }
+});
+
+test('companion EXP curve increases with level', () => {
+  let prev = 0;
+  for (let level = 1; level <= 100; level++) {
+    const next = companionExpToNext(level);
+    assert.ok(next > prev, `EXP requirement should increase at Lv.${level}`);
+    prev = next;
+  }
+});
+
+test('battle patch keeps final-hit, frozen, and zero-XP guards', async () => {
+  const text = await source('js/patches/companionBattle.js');
+  const frozenGuard = text.indexOf('enemy && enemy.frozenTurns > 0');
+  const companionTargetBranch = text.indexOf('companionCanBeTargeted(this)');
+  assert.ok(frozenGuard >= 0 && companionTargetBranch >= 0 && frozenGuard < companionTargetBranch,
+    'frozen check must happen before companion targeting');
+  assert.match(text, /\(enemy\.xp \|\| 0\) > 0/, 'zero-XP enemies must not grant companion EXP');
+  assert.match(text, /this\.aliveEnemies\.length === 0[\s\S]*this\.checkBattleEnd\(\)/,
+    'companion final hit must trigger battle-end recheck');
+});
+
+test('foundation keeps one-time starter and allows a truly empty roster', async () => {
+  const text = await source('js/patches/companionFoundation.js');
+  assert.match(text, /starterCompanionGranted/, 'starter grant must be persisted');
+  assert.match(text, /this\.data\.companionParty\[0\] = null;[\s\S]*delete this\.data\.companionInstances\[instanceId\]/,
+    'releasing active companion should clear party slot before deleting the instance');
+  assert.doesNotMatch(text, /if \(state\.companionList\(\)\.length === 0\) \{\s*const starter/s,
+    'an empty roster alone must not recreate the starter');
+});
+
+test('recruitment is type-based and elite recruits have a rarity floor', async () => {
+  const text = await source('js/patches/companionRecruitment.js');
+  assert.match(text, /grunt:\s*'goblin'/);
+  assert.match(text, /fast:\s*'bat'/);
+  assert.match(text, /RECRUIT_SPECIES_BY_ENEMY_TYPE\[enemy\.type\]/,
+    'recruitment must use enemy type, not localized display name');
+  assert.match(text, /minRarity:\s*'rare'/, 'elite recruitment should guarantee Rare or better');
+  assert.match(text, /let resolved = false[\s\S]*if \(resolved\) return;/,
+    'recruit prompt should guard double taps');
+});
+
+test('revival spell serializes the whole state payload', async () => {
+  const text = await source('js/screens/spellScreen.js');
+  assert.match(text, /encodeSpell\(state\.data\)/,
+    'companion fields must stay included in revival spell serialization');
+});
