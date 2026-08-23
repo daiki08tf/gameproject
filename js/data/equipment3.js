@@ -1,16 +1,12 @@
 /* ============================================================
    Equipment 3.0 — Item Power / naming / affix-role foundation
    ------------------------------------------------------------
-   E1-E2 foundation only. Existing equipment stats and Affix combat effects
-   remain authoritative; this layer adds a long-term loot-quality axis that
-   can scale from the main story into the Lv99,999 endgame without breaking
-   old saves.
+   Existing equipment stats and Affix combat effects remain authoritative;
+   this layer adds a long-term loot-quality axis from story into Lv99,999.
    ============================================================ */
 
 export const ITEM_POWER_MAX = 10000;
 
-// Main-story Item Power is deliberately compressed into 1..1000.
-// 1000+ is reserved for Abyss / EX / Nemesis / future endgame sources.
 export const CHAPTER_ITEM_POWER = Object.freeze({
   1: [10, 80],
   2: [60, 130],
@@ -45,8 +41,6 @@ export const EQUIPMENT3_AFFIX_SLOTS = Object.freeze({
   mythic: [4, 5],
 });
 
-// These are display roles, not a second combat-affix system. They translate
-// existing Affix categories into readable generated loot names.
 export const AFFIX_NAME_PARTS = Object.freeze({
   OFFENSE: { prefix: '猛攻の', suffix: '・破軍' },
   MAGIC: { prefix: '魔導の', suffix: '・秘奥' },
@@ -73,7 +67,6 @@ export function inferChapterNumber(item) {
   const id = String(item?.id || '');
   const m = id.match(/^ch(\d+)_/);
   if (m) return clamp(Number(m[1]) || 1, 1, 15);
-  // Chapter 1 hand-authored equipment ids do not carry a chapter prefix.
   if (/^(wp_|sh_|hd_|bd_|ac_)/.test(id)) return 1;
   return 1;
 }
@@ -81,7 +74,7 @@ export function inferChapterNumber(item) {
 function deterministicJitter(key) {
   const s = String(key || 'bladevale');
   let h = 2166136261;
-  for (let i = 0; i < s.length; i++) {
+  for (let i = 0; i < s.length; i += 1) {
     h ^= s.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
@@ -89,9 +82,22 @@ function deterministicJitter(key) {
 }
 
 export function itemPowerForDrop(item, ctx = {}, instanceKey = '') {
+  // E9: Abyss/EX/Nemesis can pass an explicit target IP. Source quality still gives
+  // a small positive roll so Boss/Elite/Nemesis remain exciting at the same depth.
+  const explicitTarget = Math.floor(Number(ctx.itemPowerTarget) || 0);
+  if (explicitTarget > 0) {
+    const spread = Math.max(30, Math.round(explicitTarget * 0.025));
+    const jitter = Math.round((deterministicJitter(instanceKey) - 0.35) * spread);
+    const sourceBonus = (ctx.elite ? Math.round(spread * 0.55) : 0)
+      + (ctx.boss ? Math.round(spread * 0.85) : 0)
+      + (ctx.nemesis ? Math.round(spread * 1.4) : 0)
+      + (ctx.ex ? Math.round(spread * 1.0) : 0);
+    return clamp(explicitTarget + jitter + sourceBonus, 1, ITEM_POWER_MAX);
+  }
+
   const depth = Math.max(0, Math.floor(Number(ctx.depth) || 0));
   if (depth > 0) {
-    // Depth 1 begins around IP1000. Very deep Abyss can reach the hard cap.
+    // Legacy/fallback route for callers that provide depth but no explicit E9 target.
     const base = 1000 + Math.floor(Math.pow(depth, 0.92) * 9.5);
     const sourceBonus = (ctx.elite ? 120 : 0) + (ctx.boss ? 180 : 0) + (ctx.nemesis ? 350 : 0) + (ctx.ex ? 220 : 0);
     const jitter = Math.floor(deterministicJitter(instanceKey) * 90);
