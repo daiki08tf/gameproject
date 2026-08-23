@@ -38,11 +38,11 @@ export const SKILLS = {
   // ---------------------------------------------------------
   warrior_power_strike: {
     id: 'warrior_power_strike', name: '渾身の一撃', type: 'damage', target: 'enemy',
-    power: 2.4, mpCost: 6, cooldownTurns: 0,
+    power: 3, mpCost: 6, cooldownTurns: 0,
   },
   warrior_armor_break: {
     id: 'warrior_armor_break', name: 'かぶと割り', type: 'damage', target: 'enemy',
-    power: 1.6, mpCost: 8, cooldownTurns: 1,
+    power: 3, mpCost: 8, cooldownTurns: 1,
     weaken: { stat: 'def', pct: 0.25, turns: 3 },
   },
   warrior_provoke: {
@@ -63,7 +63,7 @@ export const SKILLS = {
   // ---------------------------------------------------------
   fighter_flurry: {
     id: 'fighter_flurry', name: '連撃拳', type: 'damage', target: 'enemy',
-    power: 0.75, hits: 3, mpCost: 6, cooldownTurns: 0,
+    power: 1, hits: 3, mpCost: 6, cooldownTurns: 0,
   },
   fighter_focus: {
     id: 'fighter_focus', name: 'ためる', type: 'buff', target: 'self',
@@ -72,12 +72,12 @@ export const SKILLS = {
   },
   fighter_straight_punch: {
     id: 'fighter_straight_punch', name: '正拳突き', type: 'damage', target: 'enemy',
-    power: 2.8, mpCost: 9, cooldownTurns: 1, armorPenBonus: 0.15,
+    power: 3, mpCost: 9, cooldownTurns: 1, armorPenBonus: 0.15,
   },
   fighter_tiger_flurry: {
     // hit数は固定5・SPDによる過剰hit増加は起こさない（multi-hit系の暴走防止）
     id: 'fighter_tiger_flurry', name: '猛虎連撃', type: 'damage', target: 'enemy',
-    power: 0.7, hits: 5, mpCost: 16, cooldownTurns: 2,
+    power: 1.04, hits: 5, mpCost: 16, cooldownTurns: 2,
   },
 
   // ---------------------------------------------------------
@@ -103,12 +103,12 @@ export const SKILLS = {
   // ---------------------------------------------------------
   thief_dark_slash: {
     id: 'thief_dark_slash', name: 'くらやみ斬り', type: 'damage', target: 'enemy',
-    power: 2.2, mpCost: 6, cooldownTurns: 0,
+    power: 3, mpCost: 6, cooldownTurns: 0,
     weaken: { stat: 'atk', pct: 0.20, turns: 2 },
   },
   thief_poison_blade: {
     id: 'thief_poison_blade', name: '毒刃', type: 'damage', target: 'enemy',
-    power: 1.6, mpCost: 8, cooldownTurns: 1,
+    power: 3, mpCost: 8, cooldownTurns: 1,
     dot: { power: 0.14, turns: 3, maxStacks: 2 },
   },
   thief_steal: {
@@ -127,11 +127,11 @@ export const SKILLS = {
   // ---------------------------------------------------------
   merchant_golden_strike: {
     id: 'merchant_golden_strike', name: '黄金の一撃', type: 'damage', target: 'enemy',
-    power: 2.0, mpCost: 5, cooldownTurns: 0,
+    power: 3, mpCost: 5, cooldownTurns: 0,
   },
   merchant_coin_toss: {
     id: 'merchant_coin_toss', name: '銭投げ', type: 'damage', target: 'enemy',
-    power: 1.8, mpCost: 4, cooldownTurns: 1, armorPenBonus: 0.25,
+    power: 3, mpCost: 4, cooldownTurns: 1, armorPenBonus: 0.25,
     goldCostPct: 0.05, goldCostMin: 10,
   },
   merchant_business_sense: {
@@ -141,7 +141,7 @@ export const SKILLS = {
   },
   merchant_grand_giveaway: {
     id: 'merchant_grand_giveaway', name: '大盤振る舞い', type: 'damage', target: 'allEnemies',
-    power: 2.0, mpCost: 10, cooldownTurns: 2,
+    power: 3.9, mpCost: 10, cooldownTurns: 2,
     goldCostPct: 0.15, goldCostMin: 50,
   },
 
@@ -150,7 +150,7 @@ export const SKILLS = {
   // ---------------------------------------------------------
   hunter_piercing_arrow: {
     id: 'hunter_piercing_arrow', name: '貫通の矢', type: 'damage', target: 'enemy',
-    power: 2.3, mpCost: 6, cooldownTurns: 0, armorPenBonus: 0.25,
+    power: 3, mpCost: 6, cooldownTurns: 0, armorPenBonus: 0.25,
   },
   hunter_aim: {
     id: 'hunter_aim', name: '狙い撃ち', type: 'buff', target: 'self',
@@ -174,11 +174,11 @@ export const SKILLS = {
   // ---------------------------------------------------------
   ninja_shadow_slash: {
     id: 'ninja_shadow_slash', name: '分身斬り', type: 'damage', target: 'enemy',
-    power: 0.65, hits: 4, mpCost: 7, cooldownTurns: 0,
+    power: 0.75, hits: 4, mpCost: 7, cooldownTurns: 0,
   },
   ninja_poison_star: {
     id: 'ninja_poison_star', name: '毒手裏剣', type: 'damage', target: 'enemy',
-    power: 1.6, mpCost: 8, cooldownTurns: 1,
+    power: 3, mpCost: 8, cooldownTurns: 1,
     dot: { power: 0.13, turns: 3, maxStacks: 2 },
   },
   ninja_pin: {
@@ -190,7 +190,7 @@ export const SKILLS = {
   },
   ninja_katon: {
     id: 'ninja_katon', name: '火遁', type: 'damage', target: 'allEnemies',
-    power: 2.0, mpCost: 16, cooldownTurns: 2,
+    power: 5.2, mpCost: 16, cooldownTurns: 2,
   },
 
   // ---------------------------------------------------------
@@ -228,7 +228,7 @@ export const SKILLS = {
   },
   dancer_blade_dance: {
     id: 'dancer_blade_dance', name: '剣の舞', type: 'damage', target: 'enemy',
-    power: 0.8, hits: 3, mpCost: 8, cooldownTurns: 1,
+    power: 1, hits: 3, mpCost: 8, cooldownTurns: 1,
   },
   dancer_haste_dance: {
     // SPD上昇はinitiative（先攻判定）にも反映される（_effectiveSpd経由）
@@ -247,12 +247,15 @@ export const SKILLS = {
   // ---------------------------------------------------------
   alchemist_explosive_potion: {
     id: 'alchemist_explosive_potion', name: '爆裂薬', type: 'damage', target: 'allEnemies',
-    power: 1.7, mpCost: 9, cooldownTurns: 1,
+    power: 3, mpCost: 9, cooldownTurns: 1,
   },
   alchemist_poison_potion: {
+    // バランス再較正：直接ダメージを持たないDoT専業技は、4ターン合計が
+    // 通常攻撃1回分にも満たない水準だったため、power自体を引き上げた
+    // （元指示：3〜5ターン継続時の総DoTダメージが通常攻撃より弱すぎない水準）
     id: 'alchemist_poison_potion', name: '毒薬', type: 'debuff', target: 'enemy',
     mpCost: 7, cooldownTurns: 0,
-    dot: { power: 0.16, turns: 4, maxStacks: 3 },
+    dot: { power: 1.13, turns: 4, maxStacks: 3 },
   },
   alchemist_boost_potion: {
     id: 'alchemist_boost_potion', name: '強化薬', type: 'buff', target: 'self',
@@ -262,7 +265,7 @@ export const SKILLS = {
   alchemist_detonate: {
     // 現在のDoT/burnStackを消費してスタック数に応じた追加ダメージを与える
     id: 'alchemist_detonate', name: '起爆', type: 'burst', target: 'enemy',
-    power: 1.0, stackPowerMult: 0.5, mpCost: 10, cooldownTurns: 2,
+    power: 1.95, stackPowerMult: 0.98, mpCost: 10, cooldownTurns: 2,
   },
 
   // ---------------------------------------------------------
@@ -290,7 +293,7 @@ export const SKILLS = {
   // ---------------------------------------------------------
   farmer_scythe_sweep: {
     id: 'farmer_scythe_sweep', name: '鎌払い', type: 'damage', target: 'allEnemies',
-    power: 1.5, mpCost: 6, cooldownTurns: 1,
+    power: 3, mpCost: 6, cooldownTurns: 1,
   },
   farmer_grit: {
     // HPが低いほど恩恵が大きい（無駄打ちにならないよう、通常時も小さな
@@ -384,7 +387,7 @@ export const SKILLS = {
   paladin_holy_slash: {
     // hybrid：ATKとMAGの両方を参照するハイブリッド攻撃（新フィールド）
     id: 'paladin_holy_slash', name: '聖光斬', type: 'damage', target: 'enemy',
-    hybrid: true, power: 2.2, mpCost: 9, cooldownTurns: 1,
+    hybrid: true, power: 3, mpCost: 9, cooldownTurns: 1,
   },
   paladin_healing_counter: {
     // 次に被弾した瞬間、既存のcounter（onHurt）とguardianHeal（onHurt）を
@@ -413,11 +416,11 @@ export const SKILLS = {
   // ---------------------------------------------------------
   battlemaster_armor_breaker: {
     id: 'battlemaster_armor_breaker', name: '破甲撃', type: 'damage', target: 'enemy',
-    power: 2.6, mpCost: 8, cooldownTurns: 0, armorPenBonus: 0.25,
+    power: 3, mpCost: 8, cooldownTurns: 0, armorPenBonus: 0.25,
   },
   battlemaster_rapid_break: {
     id: 'battlemaster_rapid_break', name: '連破斬', type: 'damage', target: 'enemy',
-    power: 0.85, hits: 3, mpCost: 10, cooldownTurns: 1,
+    power: 1.33, hits: 3, mpCost: 10, cooldownTurns: 1,
   },
   battlemaster_fighting_spirit: {
     // 攻め特化のリスク技：ATK/Critは大きく上がるがDEFは下がる
@@ -429,7 +432,7 @@ export const SKILLS = {
     // 固定4hit。通常攻撃の最大9hitに対し「hit数で勝負しない」設計
     // （元指示：単純hit数だけで優位を作らない）
     id: 'battlemaster_peerless', name: '天下無双', type: 'damage', target: 'enemy',
-    power: 0.95, hits: 4, mpCost: 18, cooldownTurns: 3,
+    power: 1.63, hits: 4, mpCost: 18, cooldownTurns: 3,
   },
 
   // ---------------------------------------------------------
@@ -437,17 +440,17 @@ export const SKILLS = {
   // ---------------------------------------------------------
   spellblade_flame_slash: {
     id: 'spellblade_flame_slash', name: '火炎斬', type: 'damage', target: 'enemy', element: 'fire',
-    hybrid: true, power: 2.0, mpCost: 8, cooldownTurns: 0,
+    hybrid: true, power: 3, mpCost: 8, cooldownTurns: 0,
   },
   spellblade_frost_slash: {
     id: 'spellblade_frost_slash', name: '氷結斬', type: 'damage', target: 'enemy', element: 'ice',
-    hybrid: true, power: 1.7, mpCost: 9, cooldownTurns: 1,
+    hybrid: true, power: 3, mpCost: 9, cooldownTurns: 1,
     weaken: { stat: 'spd', pct: 0.20, turns: 2 },
   },
   spellblade_thunder_slash: {
     // critBonus：この一撃だけ会心率に加算する（新フィールド）
     id: 'spellblade_thunder_slash', name: '雷鳴斬', type: 'damage', target: 'enemy', element: 'lightning',
-    hybrid: true, power: 2.4, mpCost: 11, cooldownTurns: 1, critBonus: 20,
+    hybrid: true, power: 4, mpCost: 11, cooldownTurns: 1, critBonus: 20,
   },
   spellblade_mana_blade: {
     // 数ターン、通常攻撃にもMAG補正を追加する（新フィールド hybridAtkAdd）。
@@ -463,8 +466,8 @@ export const SKILLS = {
   swordsaint2_iai: {
     // conditionBonus：このラウンド先攻した場合のみ威力上昇（新フィールド）
     id: 'swordsaint2_iai', name: '居合', type: 'damage', target: 'enemy',
-    power: 2.0, mpCost: 7, cooldownTurns: 0,
-    conditionBonus: { condition: 'playerFirst', power: 1.0 },
+    power: 3, mpCost: 7, cooldownTurns: 0,
+    conditionBonus: { condition: 'playerFirst', power: 2.1 },
   },
   swordsaint2_mikiri: {
     // Evasion上昇＋回避成功時に自動反撃（新トリガーonEvade、既存counterを流用）
@@ -475,13 +478,13 @@ export const SKILLS = {
   },
   swordsaint2_samidare: {
     id: 'swordsaint2_samidare', name: '五月雨斬り', type: 'damage', target: 'enemy',
-    power: 0.75, hits: 4, mpCost: 12, cooldownTurns: 1,
+    power: 1.25, hits: 4, mpCost: 12, cooldownTurns: 1,
   },
   swordsaint2_mushin: {
     // 高いcritBonusに加え、Boss予兆が出ている間はさらに強化される
     id: 'swordsaint2_mushin', name: '無心斬', type: 'damage', target: 'enemy',
-    power: 2.6, mpCost: 16, cooldownTurns: 2, critBonus: 25,
-    conditionBonus: { condition: 'telegraphActive', power: 1.2 },
+    power: 7.8, mpCost: 16, cooldownTurns: 2, critBonus: 25,
+    conditionBonus: { condition: 'telegraphActive', power: 6 },
   },
 
   // ---------------------------------------------------------
@@ -494,7 +497,7 @@ export const SKILLS = {
   },
   armsknight_shield_break: {
     id: 'armsknight_shield_break', name: 'シールドブレイク', type: 'damage', target: 'enemy',
-    power: 1.7, mpCost: 9, cooldownTurns: 1,
+    power: 3, mpCost: 9, cooldownTurns: 1,
     weaken: { stat: 'def', pct: 0.25, turns: 3 },
   },
   armsknight_bulwark: {
@@ -526,8 +529,8 @@ export const SKILLS = {
   phantomthief_phantom_slash: {
     // 高Evasion状態（現在の有効回避率が閾値以上）で威力上昇
     id: 'phantomthief_phantom_slash', name: '幻影斬', type: 'damage', target: 'enemy',
-    power: 1.9, mpCost: 7, cooldownTurns: 0,
-    conditionBonus: { condition: 'highEvasion', power: 1.0, evasionThreshold: 0.15 },
+    power: 4, mpCost: 7, cooldownTurns: 0,
+    conditionBonus: { condition: 'highEvasion', power: 2.8, evasionThreshold: 0.15 },
   },
   phantomthief_grand_theft: {
     // 盗むの上位版。既存の_rollDrop()（ステージのdropTableのみ）を使うため、
@@ -543,8 +546,8 @@ export const SKILLS = {
   phantomthief_backstab: {
     // 先攻していた、または直前の敵手番を回避していた場合に威力上昇
     id: 'phantomthief_backstab', name: '背後の一撃', type: 'damage', target: 'enemy',
-    power: 2.6, mpCost: 15, cooldownTurns: 2,
-    conditionBonus: { condition: 'firstOrEvaded', power: 1.4 },
+    power: 10.4, mpCost: 15, cooldownTurns: 2,
+    conditionBonus: { condition: 'firstOrEvaded', power: 8 },
   },
 
   // ---------------------------------------------------------
@@ -559,7 +562,7 @@ export const SKILLS = {
   },
   treasurehunter_gem_toss: {
     id: 'treasurehunter_gem_toss', name: '宝石投げ', type: 'damage', target: 'enemy',
-    power: 1.9, mpCost: 6, cooldownTurns: 1, armorPenBonus: 0.20,
+    power: 4, mpCost: 6, cooldownTurns: 1, armorPenBonus: 0.20,
     goldCostPct: 0.04, goldCostMin: 10,
   },
   treasurehunter_appraisal: {
@@ -582,8 +585,8 @@ export const SKILLS = {
   // ---------------------------------------------------------
   scoutmaster_ambush: {
     id: 'scoutmaster_ambush', name: '奇襲', type: 'damage', target: 'enemy',
-    power: 2.1, mpCost: 7, cooldownTurns: 0,
-    conditionBonus: { condition: 'playerFirst', power: 0.9 },
+    power: 3, mpCost: 7, cooldownTurns: 0,
+    conditionBonus: { condition: 'playerFirst', power: 2.1 },
   },
   scoutmaster_recon: {
     // 敵解析（学者「解析」と同じ情報）とDEF低下を同時に行う
@@ -593,13 +596,13 @@ export const SKILLS = {
   },
   scoutmaster_weakshot: {
     id: 'scoutmaster_weakshot', name: '弱点射撃', type: 'damage', target: 'enemy',
-    power: 2.2, mpCost: 9, cooldownTurns: 1, armorPenBonus: 0.20, critBonus: 15,
+    power: 5, mpCost: 9, cooldownTurns: 1, armorPenBonus: 0.20, critBonus: 15,
   },
   scoutmaster_shadowhunt: {
     // 弱体（weaken）またはDoTが乗っている敵へ追加ダメージ
     id: 'scoutmaster_shadowhunt', name: '影狩り', type: 'damage', target: 'enemy',
-    power: 2.0, mpCost: 14, cooldownTurns: 2,
-    targetBonus: { when: 'debuffed', power: 1.3 },
+    power: 9.1, mpCost: 14, cooldownTurns: 2,
+    targetBonus: { when: 'debuffed', power: 7 },
   },
 
   // ---------------------------------------------------------
@@ -613,19 +616,20 @@ export const SKILLS = {
     selfBuff: { evasionAdd: 0.10, turns: 2 },
   },
   enchantdancer_poison_dance: {
+    // バランス再較正：DoT専業技のpowerを底上げ（同上の理由）
     id: 'enchantdancer_poison_dance', name: '毒舞', type: 'debuff', target: 'allEnemies',
     mpCost: 10, cooldownTurns: 1,
-    dot: { power: 0.13, turns: 3, maxStacks: 2 },
+    dot: { power: 2.0, turns: 3, maxStacks: 2 },
   },
   enchantdancer_blade_dance: {
     id: 'enchantdancer_blade_dance', name: '剣舞', type: 'damage', target: 'enemy',
-    power: 0.85, hits: 3, mpCost: 10, cooldownTurns: 1,
+    power: 1.67, hits: 3, mpCost: 10, cooldownTurns: 1,
   },
   enchantdancer_dream_flurry: {
     // 戦闘中に回避へ成功した回数に応じて威力上昇（上限あり、過剰乱数防止）
     id: 'enchantdancer_dream_flurry', name: '夢幻乱舞', type: 'damage', target: 'enemy',
-    power: 1.6, mpCost: 16, cooldownTurns: 2,
-    evasionCountScale: { perCount: 0.35, max: 1.4 },
+    power: 9.1, mpCost: 16, cooldownTurns: 2,
+    evasionCountScale: { perCount: 0.35, max: 7 },
   },
 
   // ---------------------------------------------------------
@@ -633,7 +637,7 @@ export const SKILLS = {
   // ---------------------------------------------------------
   fistsaint_explosive_fist: {
     id: 'fistsaint_explosive_fist', name: '爆裂拳', type: 'damage', target: 'enemy',
-    power: 0.7, hits: 4, mpCost: 8, cooldownTurns: 0,
+    power: 0.75, hits: 4, mpCost: 8, cooldownTurns: 0,
   },
   fistsaint_afterimage: {
     id: 'fistsaint_afterimage', name: '残影', type: 'buff', target: 'self',
@@ -643,14 +647,14 @@ export const SKILLS = {
   fistsaint_chain_fist: {
     // 直前の自分の行動が「攻撃系」（通常攻撃かdamage技）だった場合に威力上昇
     id: 'fistsaint_chain_fist', name: '連環拳', type: 'damage', target: 'enemy',
-    power: 1.8, mpCost: 10, cooldownTurns: 1,
-    conditionBonus: { condition: 'prevActionAttack', power: 1.0 },
+    power: 5, mpCost: 10, cooldownTurns: 1,
+    conditionBonus: { condition: 'prevActionAttack', power: 3.5 },
   },
   fistsaint_hundred_strikes: {
     // 固定6hit。通常攻撃のhit数（SPD依存・最大9hit）とは完全に独立した
     // 別設計にしてある（元指示：hit数だけで優位を作らない）
     id: 'fistsaint_hundred_strikes', name: '百裂拳', type: 'damage', target: 'enemy',
-    power: 0.55, hits: 6, mpCost: 18, cooldownTurns: 3,
+    power: 1.52, hits: 6, mpCost: 18, cooldownTurns: 3,
   },
 
   // ---------------------------------------------------------
@@ -658,28 +662,28 @@ export const SKILLS = {
   // ---------------------------------------------------------
   assassinfist_vital_strike: {
     id: 'assassinfist_vital_strike', name: '急所突き', type: 'damage', target: 'enemy',
-    power: 1.8, mpCost: 7, cooldownTurns: 0, critBonus: 30,
+    power: 3, mpCost: 7, cooldownTurns: 0, critBonus: 30,
   },
   assassinfist_death_palm: {
     // HP50%以下の敵に追加倍率（新フィールド targetBonus:lowHp）
     id: 'assassinfist_death_palm', name: '致命掌', type: 'damage', target: 'enemy',
-    power: 1.9, mpCost: 9, cooldownTurns: 1,
-    targetBonus: { when: 'lowHp', hpThreshold: 0.5, power: 1.1 },
+    power: 4, mpCost: 9, cooldownTurns: 1,
+    targetBonus: { when: 'lowHp', hpThreshold: 0.5, power: 2.8 },
   },
   assassinfist_desperation: {
     // 自HPが低いほど威力上昇（上限あり、即死級暴走は禁止）
     id: 'assassinfist_desperation', name: '背水拳', type: 'damage', target: 'enemy',
-    power: 1.6, mpCost: 10, cooldownTurns: 1,
-    lowHpScalePower: { maxBonus: 1.5 },
+    power: 5, mpCost: 10, cooldownTurns: 1,
+    lowHpScalePower: { maxBonus: 3.5 },
   },
   assassinfist_assassinate: {
     // 雑魚のみ低確率の即死。Eliteには一切効かず、Bossには即死の代わりに
     // Execution（既存bossDmg/executioner思想と同じ「低HP相手に追加ダメ」）
     // へ変換する（元指示：Boss/Eliteは即死無効・Executionへ変換）
     id: 'assassinfist_assassinate', name: '暗殺', type: 'damage', target: 'enemy',
-    power: 2.0, mpCost: 14, cooldownTurns: 3,
+    power: 9.1, mpCost: 14, cooldownTurns: 3,
     instaKill: { chance: 0.12 },
-    targetBonus: { when: 'bossOrElite', power: 1.3 },
+    targetBonus: { when: 'bossOrElite', power: 7 },
   },
 
   // ---------------------------------------------------------
@@ -687,8 +691,8 @@ export const SKILLS = {
   // ---------------------------------------------------------
   beasttamer_beast_strike: {
     id: 'beasttamer_beast_strike', name: '猛獣撃', type: 'damage', target: 'enemy',
-    power: 1.9, mpCost: 7, cooldownTurns: 0,
-    targetBonus: { when: 'bossOrElite', power: 0.6 },
+    power: 3, mpCost: 7, cooldownTurns: 0,
+    targetBonus: { when: 'bossOrElite', power: 2.1 },
   },
   beasttamer_roar: {
     id: 'beasttamer_roar', name: '咆哮', type: 'debuff', target: 'enemy',
@@ -703,8 +707,8 @@ export const SKILLS = {
   },
   beasttamer_king_fang: {
     id: 'beasttamer_king_fang', name: '王獣の牙', type: 'damage', target: 'enemy',
-    power: 2.6, mpCost: 15, cooldownTurns: 2,
-    targetBonus: { when: 'bossOrElite', power: 1.2 },
+    power: 7.8, mpCost: 15, cooldownTurns: 2,
+    targetBonus: { when: 'bossOrElite', power: 6 },
   },
 
   // ---------------------------------------------------------
@@ -712,7 +716,7 @@ export const SKILLS = {
   // ---------------------------------------------------------
   sumo_slap: {
     id: 'sumo_slap', name: '張り手', type: 'damage', target: 'enemy',
-    power: 0.9, hits: 3, mpCost: 7, cooldownTurns: 0,
+    power: 1, hits: 3, mpCost: 7, cooldownTurns: 0,
   },
   sumo_immovable: {
     // 状態異常耐性相当は現状プレイヤーへ与える敵手段が無いためDEF上昇のみが
@@ -723,7 +727,7 @@ export const SKILLS = {
   },
   sumo_body_slam: {
     id: 'sumo_body_slam', name: '渾身投げ', type: 'damage', target: 'enemy',
-    power: 2.7, mpCost: 11, cooldownTurns: 1,
+    power: 4, mpCost: 11, cooldownTurns: 1,
   },
   sumo_stand_firm: {
     // 農民「根性」と同型：HP一定以下で恩恵が跳ね上がる（通常時も最低限の
@@ -740,12 +744,12 @@ export const SKILLS = {
   // ---------------------------------------------------------
   huntking_weakshot: {
     id: 'huntking_weakshot', name: '弱点狙撃', type: 'damage', target: 'enemy',
-    power: 2.2, mpCost: 7, cooldownTurns: 0, armorPenBonus: 0.30,
+    power: 3, mpCost: 7, cooldownTurns: 0, armorPenBonus: 0.30,
   },
   huntking_followup: {
     // 会心が出た場合、同じ相手へ即座に追撃を1回加える（新フィールド critFollowup）
     id: 'huntking_followup', name: '追撃', type: 'damage', target: 'enemy',
-    power: 1.8, mpCost: 9, cooldownTurns: 1,
+    power: 4, mpCost: 9, cooldownTurns: 1,
     critFollowup: { powerMult: 0.9 },
   },
   huntking_mark: {
@@ -758,8 +762,8 @@ export const SKILLS = {
   huntking_slayer: {
     // マーク中の相手へ大ダメージ（マーク自体の割増＋この技固有の追加倍率の二重取り）
     id: 'huntking_slayer', name: '魔獣殺し', type: 'damage', target: 'enemy',
-    power: 2.8, mpCost: 16, cooldownTurns: 2,
-    targetBonus: { when: 'marked', power: 1.0 },
+    power: 9.1, mpCost: 16, cooldownTurns: 2,
+    targetBonus: { when: 'marked', power: 7 },
   },
 
   // ---------------------------------------------------------
@@ -767,7 +771,7 @@ export const SKILLS = {
   // ---------------------------------------------------------
   forestbard_spirit_arrow: {
     id: 'forestbard_spirit_arrow', name: '精霊矢', type: 'damage', target: 'enemy',
-    hybrid: true, power: 2.0, mpCost: 7, cooldownTurns: 0,
+    hybrid: true, power: 3, mpCost: 7, cooldownTurns: 0,
   },
   forestbard_forest_song: {
     id: 'forestbard_forest_song', name: '森の歌', type: 'buff', target: 'self',
@@ -791,7 +795,7 @@ export const SKILLS = {
   primadiva_sword_aria: {
     // 攻撃と同時に自分のATKも上げる（新フィールド selfBuff、damage側でも利用可）
     id: 'primadiva_sword_aria', name: '剣の舞曲', type: 'damage', target: 'enemy',
-    power: 1.7, mpCost: 8, cooldownTurns: 1,
+    power: 3, mpCost: 8, cooldownTurns: 1,
     selfBuff: { atkPct: 0.15, turns: 2 },
   },
   primadiva_evasion_aria: {
@@ -815,14 +819,24 @@ export const SKILLS = {
   // 語り部（bard+scholar）：解析と長期バフで戦況を支配する。
   // ---------------------------------------------------------
   loremaster_heroic_tale: {
+    // バランス再較正：語り部は直接ダメージ技も回復技も持たず通常攻撃が
+    // 唯一の攻撃手段のため、ATKバフを強めにして通常攻撃だけでも十分な
+    // 火力が出るようにし、さらに回復手段の代わりとしてDEFも同時に上げる
+    // （元指示：45職横比較で勝率が極端に低い職の是正。Boss予兆の重さが
+    // 目安どおりに引き上がったことで、無防備な支援型職の生存が特に厳しく
+    // なったため、ぼうぎょと併用できる自己バフとして機能させる）
     id: 'loremaster_heroic_tale', name: '英雄譚', type: 'buff', target: 'self',
     mpCost: 7, cooldownTurns: 1,
-    buff: { atkPct: 0.25, turns: 3 },
+    buff: { atkPct: 0.45, defPct: 0.25, turns: 3 },
   },
   loremaster_monster_lore: {
+    // バランス再較正：語り部は回復技を一切持たないため、唯一の継戦手段
+    // としてこの技にRegenを追加する（既存selfBuff機構の再利用のみ、
+    // 新しい回復経路は作らない）
     id: 'loremaster_monster_lore', name: '魔物語り', type: 'debuff', target: 'enemy',
     mpCost: 6, cooldownTurns: 1, inspect: true,
     weaken: { stat: 'def', pct: 0.18, turns: 3 },
+    selfBuff: { regenAdd: 0.035, turns: 4 },
   },
   loremaster_victory_tale: {
     // 撃破時に短時間バフが自動発動する一時効果を仕込む（新effect種
@@ -835,7 +849,7 @@ export const SKILLS = {
     // 数ターン与ダメージ＋経験値取得の両方を底上げする（新フィールド expMultAdd）
     id: 'loremaster_legend_verse', name: '伝説の一節', type: 'buff', target: 'self',
     mpCost: 15, cooldownTurns: 3,
-    buff: { dmgBonusAdd: 0.15, expMultAdd: 0.20, turns: 3 },
+    buff: { dmgBonusAdd: 0.40, expMultAdd: 0.20, turns: 3 },
   },
 
   // ---------------------------------------------------------
@@ -866,9 +880,10 @@ export const SKILLS = {
   // 幻術師（dancer+alchemist）：幻惑・毒・DoTを連鎖させる。
   // ---------------------------------------------------------
   illusionist_poison_mist: {
+    // バランス再較正：DoT専業技のpowerを底上げ（同上の理由）
     id: 'illusionist_poison_mist', name: '毒霧', type: 'debuff', target: 'allEnemies',
     mpCost: 10, cooldownTurns: 1,
-    dot: { power: 0.13, turns: 3, maxStacks: 2 },
+    dot: { power: 1.5, turns: 3, maxStacks: 2 },
   },
   illusionist_hallucination: {
     // 敵ATK・SPDを同時に弱体（weakenが配列を受理できるよう一般化済み）
@@ -877,17 +892,18 @@ export const SKILLS = {
     weaken: [{ stat: 'atk', pct: 0.20, turns: 2 }, { stat: 'spd', pct: 0.20, turns: 2 }],
   },
   illusionist_corrosion: {
+    // バランス再較正：DoT成分のpowerを底上げ（weaken部分は変更しない）
     id: 'illusionist_corrosion', name: '腐食', type: 'debuff', target: 'enemy',
     mpCost: 9, cooldownTurns: 1,
     weaken: { stat: 'def', pct: 0.20, turns: 3 },
-    dot: { power: 0.12, turns: 3, maxStacks: 2 },
+    dot: { power: 2.0, turns: 3, maxStacks: 2 },
   },
   illusionist_toxic_burst: {
     // 対象にかかっているデバフ／DoTの数に応じて追加ダメージ（burst型を
     // stackSource:'debuffCount'で汎用化。既存の起爆＝dotStacks消費とは
     // 別カウント方式だが、同じ_resolveTechniqueBurst()を共有する）
     id: 'illusionist_toxic_burst', name: '幻毒爆', type: 'burst', target: 'enemy',
-    power: 1.1, stackPowerMult: 0.4, stackSource: 'debuffCount', mpCost: 14, cooldownTurns: 2,
+    power: 3.76, stackPowerMult: 1.37, stackSource: 'debuffCount', mpCost: 14, cooldownTurns: 2,
   },
 
   // ---------------------------------------------------------
@@ -916,7 +932,7 @@ export const SKILLS = {
   // ---------------------------------------------------------
   artificer_mana_cannon: {
     id: 'artificer_mana_cannon', name: '魔導砲', type: 'damage', target: 'enemy',
-    magic: true, power: 2.4, mpCost: 9, cooldownTurns: 0,
+    magic: true, power: 3, mpCost: 9, cooldownTurns: 0,
   },
   artificer_armor_boost: {
     id: 'artificer_armor_boost', name: '装甲強化', type: 'buff', target: 'self',
@@ -971,9 +987,11 @@ export const SKILLS = {
   // ギルドマスター（merchant+craftsman）：指揮・補給・防衛管理。
   // ---------------------------------------------------------
   guildmaster_command: {
+    // バランス再較正：ギルドマスターも直接ダメージ技を持たない支援型のため、
+    // ATKバフを強めにして通常攻撃だけで十分にBossを削れるようにする
     id: 'guildmaster_command', name: '号令', type: 'buff', target: 'self',
     mpCost: 6, cooldownTurns: 1,
-    buff: { atkPct: 0.15, defPct: 0.15, turns: 2 },
+    buff: { atkPct: 0.30, defPct: 0.15, turns: 2 },
   },
   guildmaster_supply: {
     // Gold消費でHP/MPを同時回復する（新フィールド mpRestorePct）
@@ -989,7 +1007,7 @@ export const SKILLS = {
   guildmaster_mobilize: {
     id: 'guildmaster_mobilize', name: '総動員', type: 'buff', target: 'self',
     mpCost: 12, cooldownTurns: 3,
-    buff: { atkPct: 0.20, defPct: 0.20, spdPct: 0.15, turns: 3 },
+    buff: { atkPct: 0.40, defPct: 0.20, spdPct: 0.15, turns: 3 },
     goldCostPct: 0.12, goldCostMin: 40,
   },
 
@@ -1007,7 +1025,7 @@ export const SKILLS = {
   // ---------------------------------------------------------
   ironyeoman_scythe_storm: {
     id: 'ironyeoman_scythe_storm', name: '鎌乱舞', type: 'damage', target: 'allEnemies',
-    power: 1.6, mpCost: 8, cooldownTurns: 1,
+    power: 3, mpCost: 8, cooldownTurns: 1,
   },
   ironyeoman_iron_skin: {
     id: 'ironyeoman_iron_skin', name: '鉄皮', type: 'buff', target: 'self',

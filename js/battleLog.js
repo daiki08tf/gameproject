@@ -205,7 +205,11 @@ function describeEnemyAction(result) {
     return lines;
   }
   if (result.kind === 'summon') {
-    lines.push(`${result.name}が手下を呼び出した！ ${(result.added || []).join('、')}が加わった！`);
+    if (result.capped || (result.added || []).length === 0) {
+      lines.push(`${result.name}が手下を呼び出そうとしたが、これ以上は展開しきれないようだ！`);
+    } else {
+      lines.push(`${result.name}が手下を呼び出した！ ${result.added.join('、')}が加わった！`);
+    }
     return lines;
   }
   // kind === 'attack'

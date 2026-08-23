@@ -23,21 +23,21 @@ export const SPELLS = {
   // ---------------------------------------------------------
   mage_fireball: {
     id: 'mage_fireball', name: '火球', type: 'damage', target: 'enemy', magic: true, element: 'fire',
-    power: 2.3, mpCost: 6, cooldownTurns: 0,
+    power: 3.6, mpCost: 6, cooldownTurns: 0,
   },
   mage_ice_lance: {
     // 低確率で敵を1ターン行動阻害（完全ハメ防止のため確率・持続とも小さめ）
     id: 'mage_ice_lance', name: '氷槍', type: 'damage', target: 'enemy', magic: true, element: 'ice',
-    power: 2.6, mpCost: 9, cooldownTurns: 0,
+    power: 3.6, mpCost: 9, cooldownTurns: 0,
     stunChance: 0.15, stunTurns: 1, stunExcludesBoss: true,
   },
   mage_thunder: {
     id: 'mage_thunder', name: '雷撃', type: 'damage', target: 'enemy', magic: true, element: 'lightning',
-    power: 3.4, mpCost: 12, cooldownTurns: 0,
+    power: 3.6, mpCost: 12, cooldownTurns: 0,
   },
   mage_inferno: {
     id: 'mage_inferno', name: '爆炎', type: 'damage', target: 'allEnemies', magic: true, element: 'fire',
-    power: 2.6, mpCost: 20, cooldownTurns: 2,
+    power: 4.5, mpCost: 20, cooldownTurns: 2,
   },
 
   // ---------------------------------------------------------
@@ -69,7 +69,7 @@ export const SPELLS = {
   // ---------------------------------------------------------
   scholar_elemental: {
     id: 'scholar_elemental', name: '元素術', type: 'damage', target: 'enemy', magic: true, element: 'random',
-    power: 3.0, mpCost: 10, cooldownTurns: 0,
+    power: 3.6, mpCost: 10, cooldownTurns: 0,
   },
 
   // ---------------------------------------------------------
@@ -95,7 +95,7 @@ export const SPELLS = {
   // ---------------------------------------------------------
   sage_mid_flame: {
     id: 'sage_mid_flame', name: '中級火炎', type: 'damage', target: 'enemy', magic: true, element: 'fire',
-    power: 2.6, mpCost: 9, cooldownTurns: 0,
+    power: 3.6, mpCost: 9, cooldownTurns: 0,
   },
   sage_mid_heal: {
     id: 'sage_mid_heal', name: '中級回復', type: 'heal', target: 'self',
@@ -115,7 +115,7 @@ export const SPELLS = {
   // ---------------------------------------------------------
   archmage_explosion: {
     id: 'archmage_explosion', name: '爆炎', type: 'damage', target: 'allEnemies', magic: true, element: 'fire',
-    power: 3.0, mpCost: 18, cooldownTurns: 1,
+    power: 3.6, mpCost: 18, cooldownTurns: 1,
   },
   archmage_absolute_zero: {
     id: 'archmage_absolute_zero', name: '極氷', type: 'damage', target: 'enemy', magic: true, element: 'ice',
@@ -124,7 +124,7 @@ export const SPELLS = {
   },
   archmage_swift_thunder: {
     id: 'archmage_swift_thunder', name: '迅雷', type: 'damage', target: 'enemy', magic: true, element: 'lightning',
-    power: 4.0, mpCost: 16, cooldownTurns: 1,
+    power: 4.8, mpCost: 16, cooldownTurns: 1,
   },
   archmage_manic_surge: {
     // spellPowerを大幅に上げる代わりに、この技自体のMPコストを高くしてある
@@ -139,7 +139,7 @@ export const SPELLS = {
   // ---------------------------------------------------------
   astromancer_star_bullet: {
     id: 'astromancer_star_bullet', name: '星弾', type: 'damage', target: 'enemy', magic: true,
-    power: 2.6, mpCost: 8, cooldownTurns: 0, critBonus: 15,
+    power: 3.6, mpCost: 8, cooldownTurns: 0, critBonus: 15,
   },
   astromancer_star_eclipse: {
     // 敵ATK・MAG相当を同時に弱体化（weakenの配列受理を利用）
@@ -206,7 +206,7 @@ export const SPELLS = {
   // ---------------------------------------------------------
   arcanist_mana_bomb: {
     id: 'arcanist_mana_bomb', name: '魔力爆弾', type: 'damage', target: 'allEnemies', magic: true,
-    power: 2.4, mpCost: 12, cooldownTurns: 1,
+    power: 3.6, mpCost: 12, cooldownTurns: 1,
   },
 
   // ---------------------------------------------------------

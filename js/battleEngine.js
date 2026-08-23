@@ -1415,17 +1415,40 @@ export class BattleEngine {
       return this._resolveBossSpecial(enemy, kind, justPhased);
     }
 
-    // 新規の特殊攻撃を予兆する／雑魚を召喚する／通常攻撃する、の判定
+    // 新規の特殊攻撃を予兆する／雑魚を召喚する／通常攻撃する、の判定。
+    // ------------------------------------------------------------
+    // バランス再較正（元指示：Boss手番の優先度競合によるstarvation防止）：
+    // 旧実装はslam→charge→projectile→summonの順に「早い者勝ち」で判定して
+    // おり、どれか1つが自分のカウンタを0にした瞬間に即returnしていた。
+    // slamが最短間隔（約2ラウンド）のため最も頻繁に条件を満たし、その度に
+    // charge/projectile/summon側のカウンタ判定そのものへ処理が到達しなくなる
+    // （早期returnで後続のif文が実行されない＝後続の技は「順番待ちで減り
+    // 続ける」だけになり、20手番中でも滅多に順番が回ってこない：実測で
+    // summonが5章Bossの20手番中0回だった）。
+    // 修正：まず全ての技のカウンタを毎回必ず減算し、「準備完了(<=0)」に
+    // なった技を全て集めてから、直前に使った技を除外した上で乱数選択する
+    // （どれも準備完了していなければ通常攻撃）。選ばれなかった準備完了済みの
+    // 技はカウンタをリセットしない＝次の判定機会でも引き続き候補に残るため、
+    // 取りこぼされない。同じ技の連続使用も（他に選択肢がある限り）避ける。
     const phaseMult = enemy.aiPhase === 2 ? BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT : 1;
-    if (enemy.slamTurns != null) { enemy.slamTurns--; if (enemy.slamTurns <= 0) return this._startBossTelegraph(enemy, 'slam', phaseMult, justPhased); }
-    if (enemy.chargeTurns != null) { enemy.chargeTurns--; if (enemy.chargeTurns <= 0) return this._startBossTelegraph(enemy, 'charge', phaseMult, justPhased); }
-    if (enemy.projectileTurns != null) { enemy.projectileTurns--; if (enemy.projectileTurns <= 0) return this._startBossTelegraph(enemy, 'projectile', phaseMult, justPhased); }
-    if (enemy.summonTurns != null) {
-      enemy.summonTurns--;
-      if (enemy.summonTurns <= 0) {
+    const readyMoves = [];
+    if (enemy.slamTurns != null) { enemy.slamTurns--; if (enemy.slamTurns <= 0) readyMoves.push('slam'); }
+    if (enemy.chargeTurns != null) { enemy.chargeTurns--; if (enemy.chargeTurns <= 0) readyMoves.push('charge'); }
+    if (enemy.projectileTurns != null) { enemy.projectileTurns--; if (enemy.projectileTurns <= 0) readyMoves.push('projectile'); }
+    if (enemy.summonTurns != null) { enemy.summonTurns--; if (enemy.summonTurns <= 0) readyMoves.push('summon'); }
+    if (readyMoves.length > 0) {
+      let candidates = readyMoves;
+      if (readyMoves.length > 1 && enemy._lastMoveKind) {
+        const withoutLast = readyMoves.filter((k) => k !== enemy._lastMoveKind);
+        if (withoutLast.length > 0) candidates = withoutLast;
+      }
+      const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+      enemy._lastMoveKind = chosen;
+      if (chosen === 'summon') {
         enemy.summonTurns = Math.max(1, Math.round(roundsFromSeconds(BOSS_AI_LAYER.SUMMON_INTERVAL_SEC) * phaseMult));
         return this._bossSummon(enemy, justPhased);
       }
+      return this._startBossTelegraph(enemy, chosen, phaseMult, justPhased);
     }
 
     // 通常攻撃
@@ -1472,9 +1495,15 @@ export class BattleEngine {
 
   // Boss AI「雑魚召喚」（元指示7番：summon）：現在の遭遇グループへ手下を
   // 追加する。報酬インフレを避けるためxp/goldは与えない（元battle.jsと同じ）。
+  // バランス再較正：Boss手番のstarvation修正により、これまで滅多に選ばれな
+  // かったsummonが定期的に発動するようになったため、長引いたBoss戦で手下が
+  // 際限なく積み上がらないよう同時召喚数の上限を設ける（元指示：6〜8体）。
   _bossSummon(enemy, justPhased) {
     const added = [];
-    for (let i = 0; i < BOSS_AI_LAYER.SUMMON_COUNT; i++) {
+    const aliveNonBoss = this.enemies.filter((e) => !e.dead && !e.boss).length;
+    const room = Math.max(0, BOSS_AI_LAYER.SUMMON_MAX_ALIVE - aliveNonBoss);
+    const spawnCount = Math.min(BOSS_AI_LAYER.SUMMON_COUNT, room);
+    for (let i = 0; i < spawnCount; i++) {
       const hp = Math.max(1, Math.round(enemy.maxHp * 0.05));
       const summon = {
         id: `${enemy.id}_summon_${this._nextEnemyId = (this._nextEnemyId || 0) + 1}`,
@@ -1486,7 +1515,9 @@ export class BattleEngine {
       added.push(summon.name);
       this.totalToDefeat++; // 召喚された手下も「倒すべき敵」の総数に加える（残り表示の整合性）
     }
-    return { enemyId: enemy.id, name: enemy.name, kind: 'summon', added, phased: !!justPhased };
+    // 上限に達していて1体も召喚できなかった場合は、召喚を試みたが増援が
+    // 間に合わなかった、という体裁にする（BattleLog側でaddedが空の分岐を用意）
+    return { enemyId: enemy.id, name: enemy.name, kind: 'summon', added, capped: spawnCount === 0, phased: !!justPhased };
   }
 
   // ---------------------------------------------------------
