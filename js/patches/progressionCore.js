@@ -4,6 +4,7 @@
 import { state } from '../state.js';
 import { TIERS } from '../data/jobs.js';
 import { CHARACTER_LEVEL_MAX, characterExpToNext, characterLevelBand } from '../data/progression.js';
+import { jobExpToNext } from '../data/jobProgression.js';
 
 const JOB_MASTERY_LEVELS = { basic:20, advanced:40, special:60, hero:100 };
 
@@ -27,6 +28,19 @@ Object.defineProperties(state,{
 });
 state.characterExpToNext=function(level=this.characterLevel){return characterExpToNext(level);};
 state.characterLevelBand=function(level=this.characterLevel){return characterLevelBand(level);};
+state.jobExpToNext=function(level=this.currentJobLevel,jobId=this.currentJobId){const tier=getJobTier(jobId);return jobExpToNext(level,tier);};
+// Legacy callers (jobs UI / gainExp in state.js) use expToNext(). Redirect only that
+// Job-facing helper to the dedicated short-form curve. Character EXP keeps its own helper.
+state.expToNext=function progression2JobExpToNext(level){return this.jobExpToNext(level,this.currentJobId);};
+
+function getJobTier(jobId){
+  const job=state.data.currentJobId===jobId?state.currentJob:null;
+  if(job?.tier)return job.tier;
+  // Fallback for callers before/around a job switch; getJob is indirectly available via current data.
+  const previousId=state.data.currentJobId;
+  if(previousId===jobId)return state.currentJob?.tier||'basic';
+  return 'basic';
+}
 
 const originalGainExp=state.gainExp.bind(state);
 state.gainExp=function gainExpWithCharacterProgress(amount){
