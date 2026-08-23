@@ -1,0 +1,27 @@
+/* Character dashboard - loaded dynamically by status.js */
+.character-entry { border-color: rgba(242,201,76,.45) !important; background: linear-gradient(145deg, rgba(242,201,76,.12), rgba(255,255,255,.05)) !important; }
+.character-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; position:sticky; top:0; z-index:3; padding:4px 0 10px; background:var(--bg,#101014); }
+.character-tab { border:1px solid rgba(255,255,255,.16); border-radius:9px; padding:10px 4px; background:rgba(255,255,255,.05); color:#eee; font-weight:700; }
+.character-tab.active { background:rgba(242,201,76,.18); border-color:rgba(242,201,76,.65); color:#f2c94c; }
+.character-hero-card { display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; padding:14px; border:1px solid rgba(242,201,76,.28); border-radius:12px; background:linear-gradient(135deg,rgba(242,201,76,.10),rgba(255,255,255,.04)); margin:6px 0 14px; }
+.character-avatar { width:46px; height:46px; display:grid; place-items:center; border-radius:50%; font-size:24px; background:rgba(255,255,255,.08); }
+.character-job { font-size:19px; font-weight:800; }
+.character-meta { font-size:11px; opacity:.65; margin-top:3px; }
+.character-power { text-align:right; }
+.character-power small { display:block; font-size:9px; opacity:.55; }
+.character-power strong { display:block; font-size:20px; color:#f2c94c; margin-top:2px; }
+.character-hint { font-size:9px; font-weight:400; opacity:.5; margin-left:5px; }
+.character-metric-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; }
+.character-metric { padding:10px; border-radius:9px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); display:flex; flex-direction:column; gap:4px; }
+.character-metric span { font-size:10px; opacity:.6; }
+.character-metric strong { font-size:16px; }
+.character-equip-list { display:flex; flex-direction:column; gap:8px; }
+.character-equip-card { padding:11px 12px; border-radius:10px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.11); }
+.character-equip-card.empty { opacity:.5; }
+.equip-slot-label { font-size:9px; opacity:.5; text-transform:uppercase; margin-bottom:3px; }
+.equip-name { font-weight:800; font-size:14px; }
+.equip-sub { font-size:10px; opacity:.62; margin-top:3px; }
+#statusScreen .status-row.tappable { padding:7px 5px; margin:0 -5px; border-radius:6px; }
+#statusScreen .status-row.tappable:active { background:rgba(242,201,76,.09); }
+#statusScreen .status-breakdown { grid-column:1 / -1; }
+@media (min-width:600px) { .character-metric-grid { grid-template-columns:repeat(3,1fr); } }
