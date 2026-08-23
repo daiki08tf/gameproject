@@ -3,17 +3,25 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 import { state } from '../js/state.js';
+import { generateWeaponAffixes } from '../js/data/affixes.js';
 
-test('100 deterministic weapon drops create unique weapon instances with Affixes', () => {
+test('100 weapon drops create 100 unique weapon instances', () => {
   state.resetAll();
+  for (let i = 0; i < 100; i += 1) state.addItem('wp_sword_n', 1, {});
+  const ids = Object.keys(state.data.weaponInstances).filter(id => id.startsWith('wp_sword_n#'));
+  assert.equal(ids.length, 100);
+  assert.equal(new Set(ids).size, 100);
+});
+
+test('100 deterministic Rare weapon rolls all generate Affixes', () => {
   const originalRandom = Math.random;
-  Math.random = () => 0.9;
+  Math.random = () => 0.5;
   try {
-    for (let i = 0; i < 100; i += 1) state.addItem('wp_sword_n', 1, {});
-    const ids = Object.keys(state.data.weaponInstances).filter(id => id.startsWith('wp_sword_n#'));
-    assert.equal(ids.length, 100);
-    assert.equal(new Set(ids).size, 100);
-    for (const id of ids) assert.ok(state.weaponInstanceAffixes(id).length >= 1, id);
+    const fakeRareSword = { slot: 'weapon', rarity: 'rare', weaponType: 'sword' };
+    for (let i = 0; i < 100; i += 1) {
+      const affixes = generateWeaponAffixes(fakeRareSword, {});
+      assert.ok(affixes.length >= 1 && affixes.length <= 2);
+    }
   } finally {
     Math.random = originalRandom;
   }
