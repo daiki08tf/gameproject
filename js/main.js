@@ -1,5 +1,6 @@
 import { state } from './state.js';
 import './patches/progressionCore.js';
+import './patches/statusCalculationCore.js';
 import './patches/weaponInstanceFoundation.js';
 import './patches/companionFoundation.js';
 import './patches/companionBattle.js';
