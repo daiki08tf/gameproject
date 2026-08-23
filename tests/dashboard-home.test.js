@@ -14,7 +14,9 @@ test('character dashboard exposes the growth tab and saved progression', async (
   assert.match(text, /state\.data\.abyssBestDepth/);
   assert.match(text, /state\.data\.weaponMastery/);
   assert.match(text, /state\.companionList/);
-  assert.match(text, /state\.expToNext\(state\.currentLevel\)/);
+  assert.match(text, /state\.characterExpToNext\(state\.characterLevel\)/);
+  assert.match(text, /state\.expToNext\(state\.currentJobLevel\)/);
+  assert.match(text, /最高到達Lv/);
 });
 
 test('home navigation groups existing buttons without replacing their IDs', async () => {
