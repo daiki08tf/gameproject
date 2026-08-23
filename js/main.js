@@ -2,11 +2,13 @@ import { state } from './state.js';
 import './patches/progressionCore.js';
 import './patches/statusCalculationCore.js';
 import './patches/inheritanceCore.js';
+import './patches/rune2Core.js';
 import './patches/weaponInstanceFoundation.js';
 import './patches/companionFoundation.js';
 import './patches/companionBattle.js';
 import './patches/companionRecruitment.js';
 import './patches/homeNavigation.js';
+import './patches/rune2Ui.js';
 // 旧リアルタイムCanvas戦闘（js/battle.js）はそのまま未使用で残し、こちらの
 // テキスト戦闘（TextBattleScreen）へ切り替える（元指示19番）
 import { TextBattleScreen } from './screens/textBattle.js';
@@ -49,7 +51,13 @@ function goAbyssList() {
 function startBattle(stage, blessingId) {
   lastStageId = stage.id;
   showScreen('textBattleScreen');
-  battle.start(stage.id, (result) => { renderResult(result); showScreen('resultScreen'); }, blessingId);
+  battle.start(stage.id, (result) => {
+    if (result.cleared && state.rollRune2DropForStage) {
+      result.rune2Drops = state.rollRune2DropForStage(stage.id);
+    } else result.rune2Drops = [];
+    renderResult(result);
+    showScreen('resultScreen');
+  }, blessingId);
 }
 
 document.getElementById('titleStartBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });

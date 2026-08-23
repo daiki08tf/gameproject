@@ -1,8 +1,8 @@
 import { getItem, RARITY, rarityIndex } from '../data/equipment.js';
 import { getRune } from '../data/runes.js';
+import { getRune2 } from '../data/runes2.js';
 
-// ドロップは装備アイテムだけでなくルーンの場合もあるため、両方から解決する
-// レアリティが高いほど★の数を増やし、一目で価値が分かるようにする（Phase 6）
+// ドロップは装備アイテムだけでなく旧ルーンの場合もあるため、両方から解決する
 function resolveDrop(itemId) {
   const item = getItem(itemId);
   if (item) {
@@ -11,7 +11,6 @@ function resolveDrop(itemId) {
   }
   const rune = getRune(itemId);
   if (rune) return { name: `✨ ${rune.name}`, color: 'var(--accent)' };
-  // 未知のIDでも画面遷移自体は止めない
   return { name: itemId, color: '' };
 }
 
@@ -35,10 +34,12 @@ export function renderResult(result) {
     + (result.cleared ? '' : '（撃破分のみ・レベルや装備は失われません）');
 
   itemsEl.innerHTML = '';
-  if (result.items.length === 0) {
+  const normalItems = Array.isArray(result.items) ? result.items : [];
+  const rune2Drops = Array.isArray(result.rune2Drops) ? result.rune2Drops : [];
+  if (normalItems.length === 0 && rune2Drops.length === 0) {
     itemsEl.innerHTML = '<span class="hint" style="opacity:.6;font-size:12px;">ドロップなし</span>';
   } else {
-    for (const itemId of result.items) {
+    for (const itemId of normalItems) {
       const resolved = resolveDrop(itemId);
       const chip = document.createElement('div');
       chip.className = 'result-item-chip';
@@ -46,9 +47,17 @@ export function renderResult(result) {
       chip.textContent = resolved.name;
       itemsEl.appendChild(chip);
     }
+    for (const drop of rune2Drops) {
+      const rune = getRune2(drop.id);
+      if (!rune) continue;
+      const chip = document.createElement('div');
+      chip.className = 'result-item-chip';
+      chip.style.color = 'var(--accent)';
+      chip.textContent = `✨ RUNE ${rune.name} +${drop.amount}刻（${drop.owned}刻）`;
+      itemsEl.appendChild(chip);
+    }
   }
 
-  // ドロップがあった時だけ「装備を見る」導線を出す（何もない時は無意味なので隠す）
   const equipBtn = document.getElementById('resultEquipBtn');
-  equipBtn.classList.toggle('hidden', result.items.length === 0);
+  equipBtn.classList.toggle('hidden', normalItems.length === 0);
 }
