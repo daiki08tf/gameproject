@@ -167,7 +167,17 @@ for (const ch of CHAPTER_SPECS) {
 for (const w of WEAPON_CODEX_ITEMS) ITEMS.set(w.id, w);
 for (const w of BOSS_WEAPON_ITEMS) ITEMS.set(w.id, w);
 
-export function getItem(id) { return ITEMS.get(id); }
+// 武器Affix（Part A）：ドロップごとに固有の武器インスタンスIDを
+// `${baseItemId}#${seq}` の形で発行する（state.js側）。getItem()は
+// インスタンスIDを渡されても常に「そのインスタンスの元になった武器定義」を
+// 返すよう、'#'以降を無視して静的定義を引く。これにより既存のgetItem()
+// 呼び出し箇所（33箇所以上）は一切変更せずインスタンスID対応になる。
+export function baseItemId(id) {
+  if (typeof id !== 'string') return id;
+  const i = id.indexOf('#');
+  return i === -1 ? id : id.slice(0, i);
+}
+export function getItem(id) { return ITEMS.get(baseItemId(id)); }
 export function allItems() { return Array.from(ITEMS.values()); }
 export function itemsBySlot(slot) { return allItems().filter((i) => i.slot === slot); }
 

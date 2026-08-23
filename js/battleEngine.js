@@ -34,6 +34,8 @@ import { getRune } from './data/runes.js';
 import { DAMAGE_BUCKET, ECONOMY, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER, CAPS_LAYER, BOSS_AI_LAYER, resolveBossAIProfile, TEXT_BATTLE_LAYER } from './data/balance.js';
 import { getBlessing } from './data/blessings.js';
 import { weaponDropPoolForStage, bossWeaponForChapter } from './data/weapons.js';
+import { sumPassivePower } from './data/combatStats.js';
+import { hasRareAffix, highestAffixRarity } from './data/affixes.js';
 
 const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -122,6 +124,7 @@ export class BattleEngine {
     this.awakenMult = 1;
     this._regenPower = 0;
     this._hitCounters = {};
+    this._actionProcCounts = {}; // 武器Affix（Part A）proc暴走防止：1アクションごとにリセット
     this._tempAtkBonus = 0;
     this._tempAtkTurns = 0;
     this._bloodChaliceBonus = 0;
@@ -305,10 +308,27 @@ export class BattleEngine {
   _effectiveAtk() { const b = this.player.buffs.atk; return this.player.atk * (b.turnsLeft > 0 ? b.mult : 1); }
   _effectiveMag() { const b = this.player.buffs.mag; return this.player.mag * (b.turnsLeft > 0 ? b.mult : 1); }
   _effectiveDef() { const b = this.player.buffs.def; return this.player.def * (b.turnsLeft > 0 ? b.mult : 1); }
-  _effectiveSpd() { const b = this.player.buffs.spd; return this.player.spd * (b.turnsLeft > 0 ? b.mult : 1); }
+  // Build Affix「死線」：HPが閾値以下の間だけSPDも底上げする
+  _effectiveSpd() {
+    const b = this.player.buffs.spd;
+    let spd = this.player.spd * (b.turnsLeft > 0 ? b.mult : 1);
+    spd *= 1 + this._deathlineBonus('spd');
+    return spd;
+  }
+  _hpRatio() { return this.player.maxHp > 0 ? this.player.hp / this.player.maxHp : 1; }
+  _deathlineBonus(which) {
+    let bonus = 0;
+    const hpRatio = this._hpRatio();
+    for (const eff of this._effectsOf('passive')) {
+      if (eff.kind === 'deathlineBoost' && hpRatio <= eff.threshold) bonus += eff.power;
+    }
+    return bonus;
+  }
   _effectiveCritPct() {
     const b = this.player.buffs.critAdd;
-    return Math.min(CAPS_LAYER.CRIT_PCT_MAX, this.player.critPct + (b.turnsLeft > 0 ? b.value : 0));
+    // Build Affix「死線」：HP閾値以下でCritも底上げ（percentage point換算）
+    const deathline = this._deathlineBonus('crit') * 100;
+    return Math.min(CAPS_LAYER.CRIT_PCT_MAX, this.player.critPct + (b.turnsLeft > 0 ? b.value : 0) + deathline);
   }
   _effectiveEvasion() {
     const b = this.player.buffs.evasionAdd;
@@ -360,17 +380,30 @@ export class BattleEngine {
   // ---------------------------------------------------------
   _effectsOf(trigger) { return this.effects.filter((e) => e.trigger === trigger); }
 
-  _mainDmgMult() {
+  // sourceKind: 'normal'|'skill'|'spell' を渡すと、武器Affix（Part A）の
+  // 「通常攻撃/とくぎ/じゅもんDamage+」（normalDmgAdd/skillDmgAdd/
+  // spellDmgAdd）のうち該当するものだけを追加で乗せる（省略時は無視＝
+  // AoE反撃・自動砲台等の既存呼び出しは今まで通り）
+  _mainDmgMult(sourceKind) {
     const bloodChaliceMult = this._bloodChaliceTurns > 0 ? 1 + this._bloodChaliceBonus : 1;
     const tempAtkMult = this._tempAtkTurns > 0 ? 1 + this._tempAtkBonus : 1;
     // ATKバフはplayer.buffs.atk（_effectiveAtk()）側へ移動したため、ここでは
     // 加算しない（旧buffAtkMultの項をここから除去）。学者MASTER「完全解析」の
     // 一時的な与ダメージ加算だけ、既存の加算バケット方式にならって追加する。
-    return 1
+    let mult = 1
       + (this.awakenMult - 1)
       + (bloodChaliceMult - 1)
       + (tempAtkMult - 1)
       + (this._tempDmgBonusTurns > 0 ? this._tempDmgBonus : 0);
+    for (const eff of this._effectsOf('passive')) {
+      if (eff.kind === 'dmgBonusAdd') mult += eff.power;
+      else if (sourceKind === 'normal' && eff.kind === 'normalDmgAdd') mult += eff.power;
+      else if (sourceKind === 'skill' && eff.kind === 'skillDmgAdd') mult += eff.power;
+      else if (sourceKind === 'spell' && eff.kind === 'spellDmgAdd') mult += eff.power;
+      // Build Affix「早撃ち」：このラウンド自分が先攻していればDamageも上乗せ
+      else if (eff.kind === 'firstStrikeBonus' && this._lastPlayerFirst) mult += eff.power;
+    }
+    return mult;
   }
 
   _critDamageBoostMult() {
@@ -381,9 +414,17 @@ export class BattleEngine {
 
   _bossDmgMult(target) {
     let bonus = state.awakeningBossDmgMult() - 1;
+    const debuffed = target && ((target.weaken && Object.keys(target.weaken).length > 0) || (target.dotStacks || 0) > 0);
     for (const eff of this._effectsOf('passive')) {
+      // bossDmgは既存挙動どおりBoss/Elite両方に適用する（元指示：既存の
+      // 判定条件を変更しない）。eliteDmgはAffix追加分でElite限定に上乗せする
       if (eff.kind === 'bossDmg') bonus += eff.power;
+      if (eff.kind === 'eliteDmg' && target && target.elite) bonus += eff.power;
       if (eff.kind === 'executioner' && target && target.maxHp > 0 && target.hp / target.maxHp <= eff.hpThreshold) bonus += eff.power;
+      // 武器Affix「弱毒撃」：weaken/DoTが乗っている相手へのDamage+
+      if (eff.kind === 'debuffedDmg' && debuffed) bonus += eff.power;
+      // Build Affix「毒心」：DoTスタック数に比例してDamage+
+      if (eff.kind === 'dotStackDmg' && target) bonus += eff.power * (target.dotStacks || 0);
     }
     // 狩人「獣狩り」：Boss/Elite限定の一時的な与ダメージ加算
     if (this._tempBossDmgTurns > 0 && target && (target.boss || target.elite)) bonus += this._tempBossDmgBonus;
@@ -404,16 +445,24 @@ export class BattleEngine {
   // アルカニスト「錬成陣」・MASTER「賢者の触媒」：自分がかけるweaken/dotの
   // 効果量を一時的に底上げする（_tempDebuffPowerBonus）。両メソッドを通る
   // 経路すべて（装備固有効果・基本職skills.js・上級職skills.js）へ自動で乗る
-  _debuffPowerMult() { return this._tempDebuffPowerBonusTurns > 0 ? 1 + this._tempDebuffPowerBonus : 1; }
+  // 武器Affix「弱点看破の心得」：弱体化/DoT付与の効果量を恒常的に底上げする
+  _debuffPowerMult() {
+    const temp = this._tempDebuffPowerBonusTurns > 0 ? this._tempDebuffPowerBonus : 0;
+    return 1 + temp + sumPassivePower(this.effects, 'debuffPowerAdd');
+  }
   _applyWeakenToTarget(target, stat, power, turnsLeft) {
     if (!target || target.dead) return;
     target.weaken = target.weaken || {};
     target.weaken[stat] = { power: power * this._debuffPowerMult(), turnsLeft };
   }
+  // 武器Affix「侵蝕」「積毒」：DoTの持続ターン・最大スタック数を底上げする
+  _dotDurationMult() { return 1 + sumPassivePower(this.effects, 'dotDuration'); }
+  _dotStackCapMult() { return 1 + sumPassivePower(this.effects, 'dotStackCap'); }
   _applyDotToTarget(target, power, turnsLeft, maxStacks = 99) {
     if (!target || target.dead) return;
-    target.dotStacks = Math.min(maxStacks, (target.dotStacks || 0) + 1);
-    target.dotTurnsLeft = turnsLeft;
+    const cap = Math.max(1, Math.round(maxStacks * this._dotStackCapMult()));
+    target.dotStacks = Math.min(cap, (target.dotStacks || 0) + 1);
+    target.dotTurnsLeft = Math.max(1, Math.round(turnsLeft * this._dotDurationMult()));
     target.dotPower = power * this._debuffPowerMult();
   }
   // 星詠みの魔女「星蝕」・幻術師「幻覚」等：weakenを配列（複数ステータス）でも
@@ -476,6 +525,13 @@ export class BattleEngine {
       // TELEGRAPH_MULT_SCALEで狙った強弱（slam/charge/projectileの相対比は
       // BOSS_AI_LAYER側の値をそのまま活かす）に引き上げる。
       dmg *= TEXT_BATTLE_LAYER.NORMAL_ATTACK_DAMAGE_MULT * opts.mult * TEXT_BATTLE_LAYER.TELEGRAPH_MULT_SCALE;
+      // 武器Affix「対怪異の心得」：Boss特殊攻撃を常に一定割合軽減する
+      dmg *= 1 - Math.min(0.5, sumPassivePower(this.effects, 'bossSpecialMitigation'));
+      // Build Affix「魔導防壁」：MPが一定割合以上残っている間だけ、Boss特殊
+      // 攻撃をさらに軽減する（MPを維持するプレイスタイルへのコストになる）
+      for (const eff of this._effectsOf('passive')) {
+        if (eff.kind === 'mpShield' && this.player.maxMp > 0 && this.player.mp / this.player.maxMp >= eff.threshold) dmg *= 1 - eff.power;
+      }
     }
     // 大工「受け流し」「要塞化」：通常のGUARD_DAMAGE_MULTより強い軽減率を
     // 一時的に使う（guardOverrideMultがnullの間は従来どおり）。完全無敵には
@@ -483,6 +539,8 @@ export class BattleEngine {
     // 定義している。
     if (this.player.guarding) {
       dmg *= this.player.guardOverrideMult != null ? this.player.guardOverrideMult : TEXT_BATTLE_LAYER.GUARD_DAMAGE_MULT;
+      // 武器Affix「要塞の心得」：ぼうぎょ軽減率をさらに底上げする（0にはしない）
+      dmg *= Math.max(0.1, 1 - sumPassivePower(this.effects, 'guardMitigation'));
     }
     return Math.max(1, Math.round(dmg));
   }
@@ -491,6 +549,9 @@ export class BattleEngine {
   // プレイヤー行動
   // ---------------------------------------------------------
   performPlayerAction(action) {
+    // 武器Affix（Part A）proc暴走防止：1アクションごとにperActionCapの
+    // カウンタをリセットする
+    this._actionProcCounts = {};
     if (action.type === 'attack') return this._playerAttack(action.targetId);
     if (action.type === 'guard') return this._playerGuard();
     if (action.type === 'flee') return this._playerFlee();
@@ -517,7 +578,9 @@ export class BattleEngine {
   // 「1ラウンド1回攻撃」では手数が足りず本来の強さで攻略できなくなる
   // （実際に3章・5章の中型/tank敵で検証中に発覚し、この対応で解消した）。
   _playerAttackCooldown() {
-    return clamp(1.0 - this._effectiveSpd() * 0.012, CAPS_LAYER.ATTACK_INTERVAL_MIN, 1.1);
+    // 武器Affix「瞬撃の心得」：攻撃間隔をさらに短縮する（下限は既存踏襲）
+    const atkSpeedMult = 1 - Math.min(0.5, sumPassivePower(this.effects, 'atkSpeedAdd'));
+    return clamp((1.0 - this._effectiveSpd() * 0.012) * atkSpeedMult, CAPS_LAYER.ATTACK_INTERVAL_MIN, 1.1);
   }
   _playerHitsPerRound() {
     return Math.max(1, Math.round(TEXT_BATTLE_LAYER.SECONDS_PER_ROUND / this._playerAttackCooldown()));
@@ -535,7 +598,7 @@ export class BattleEngine {
     // 魔法剣士MASTER「魔力剣」：数ターンだけ通常攻撃にもMAG補正を追加する
     // （永続化しないよう必ずturnsで管理された一時ボーナスのみを見る）
     const hybridBonus = this._tempHybridMagTurns > 0 ? this._effectiveMag() * this._tempHybridMagRatio : 0;
-    const atkValue = (this._effectiveAtk() + hybridBonus) * this._mainDmgMult();
+    const atkValue = (this._effectiveAtk() + hybridBonus) * this._mainDmgMult('normal');
     // ChatGPTレビュー指摘1番：multi-hitは1発ごとに独立して会心判定・
     // ダメージ乱数を振り（分散を実時間相当に保つ）、かつ1発ごとに
     // _applyDamageToEnemy()を呼んでonHit/onCritをその場で発火させる
@@ -554,7 +617,7 @@ export class BattleEngine {
       if (critical) criticalCount++;
       hitsLanded++;
       totalDamage += damage;
-      const hit = this._applyDamageToEnemy(target, damage, critical);
+      const hit = this._applyDamageToEnemy(target, damage, critical, i, hitCount);
       effects.push(...hit.effects);
       if (hit.kill) kill = hit.kill; // 同一targetなので、直前の（＝唯一の）撃破結果が最終結果
     }
@@ -587,6 +650,11 @@ export class BattleEngine {
   availableSkills() { return (this.job.skills || []).filter((t) => this._isTechniqueLearned(t) && !t.passive); }
   availableSpells() { return (this.job.spells || []).filter((t) => this._isTechniqueLearned(t) && !t.passive); }
 
+  // 武器Affix「省魔の心得」：MPコストを恒常的に割り引く
+  _effectiveMpCost(tech) {
+    const mult = Math.min(0.7, sumPassivePower(this.effects, 'mpCostReduce'));
+    return Math.max(0, Math.round(tech.mpCost * (1 - mult)));
+  }
   _techniqueGoldCost(tech) {
     let cost;
     if (tech.goldCostFlat != null) cost = tech.goldCostFlat;
@@ -610,7 +678,7 @@ export class BattleEngine {
     // 切れて再度使えてしまわないよう、明示的に使用済みセットで縛る）
     if (tech.oncePerBattle && this._oncePerBattleUsed.has(tech.id)) return { ok: false, reason: 'usedThisBattle' };
     if ((this.skillCooldowns[tech.id] || 0) > 0) return { ok: false, reason: 'onCooldown' };
-    if (this.player.mp < tech.mpCost) return { ok: false, reason: 'noMp' };
+    if (this.player.mp < this._effectiveMpCost(tech)) return { ok: false, reason: 'noMp' };
     if (tech.goldCostPct != null || tech.goldCostFlat != null) {
       if (state.data.gold < this._techniqueGoldCost(tech)) return { ok: false, reason: 'noGold' };
     }
@@ -622,7 +690,7 @@ export class BattleEngine {
     if (!probe.ok) return { action: kind, blocked: true, reason: probe.reason };
     const tech = probe.tech;
     this.player.guarding = false;
-    this.player.mp -= tech.mpCost;
+    this.player.mp -= this._effectiveMpCost(tech);
     let goldSpent = 0;
     if (tech.goldCostPct != null || tech.goldCostFlat != null) {
       goldSpent = this._techniqueGoldCost(tech);
@@ -631,7 +699,10 @@ export class BattleEngine {
     }
     if (tech.oncePerBattle) this._oncePerBattleUsed.add(tech.id);
     if (tech.cooldownTurns > 0) {
-      this.skillCooldowns[tech.id] = Math.max(1, Math.round(tech.cooldownTurns * state.jobMasterCooldownMult()));
+      // 武器Affix「型の冴え」：職業MASTERのCDRとは別枠で、恒常的にさらに
+      // クールダウンを短縮する（既存CAPS_LAYER.CDR_MULT_MINの下限を共有）
+      const cdrMult = Math.max(CAPS_LAYER.CDR_MULT_MIN, state.jobMasterCooldownMult() - sumPassivePower(this.effects, 'cdrAdd'));
+      this.skillCooldowns[tech.id] = Math.max(1, Math.round(tech.cooldownTurns * cdrMult));
       // このラウンドの_afterRoundChecks()でうっかり即座に1減らしてしまうと、
       // 「cooldownTurns:1」が実質ノークールダウンと同義になってしまう
       // （使った直後のラウンド終了処理で1→0まで進んでしまうため）。設定した
@@ -644,18 +715,38 @@ export class BattleEngine {
     for (const eff of this._effectsOf('onSkill')) {
       if (eff.kind === 'cdRefund' && Math.random() < eff.chance) this.skillCooldowns[tech.id] = 0;
       else if (eff.kind === 'haste') { this._tempAtkBonus = eff.power; this._tempAtkTurns = roundsFromSeconds(eff.duration); }
+      // 武器Affix「魔力循環の心得」「還元の術理」：じゅもん限定で発動する
+      // （spellOnly指定。procChanceは既存のchanceフィールドをそのまま使う）
+      else if (eff.spellOnly && kind !== 'spell') continue;
+      else if (eff.kind === 'spellMagBuff') this._applyBuffPayload({ magPct: eff.power, turns: eff.turns }, {});
+      else if (eff.kind === 'spellMpRefund' && eff.chance != null && Math.random() < eff.chance) {
+        const refund = Math.round(tech.mpCost * eff.power);
+        this.player.mp = Math.min(this.player.maxMp, this.player.mp + refund);
+      }
+      // Build Affix「魔力反響」：低確率でMAGベースの追加ダメージを飛ばす
+      // （技そのものを再帰的に再発動するとMP/CD/連続詠唱等と衝突するため、
+      // 「もう一撃分の魔力弾」として独立したダメージ処理にとどめる＝
+      // 「連続詠唱との無限連鎖禁止」を構造的に満たす）
+      else if (eff.kind === 'spellEcho' && eff.chance != null && Math.random() < eff.chance) {
+        const echoTarget = this._pickTarget(targetId);
+        if (echoTarget && !echoTarget.dead) {
+          const atkValue = this._effectiveMag() * 0.5 * this._mainDmgMult('spell');
+          const { damage, critical } = this.calculateDamage(atkValue, echoTarget);
+          this._applyDamageToEnemy(echoTarget, damage, critical);
+        }
+      }
     }
 
     const result = { action: kind, techId: tech.id, name: tech.name, techType: tech.type, goldSpent, targets: [] };
     const dispatchTechnique = () => {
       switch (tech.type) {
-        case 'damage': this._resolveTechniqueDamage(tech, targetId, result); break;
+        case 'damage': this._resolveTechniqueDamage(tech, targetId, result, kind); break;
         case 'heal': this._resolveTechniqueHeal(tech, result); break;
         case 'buff': this._resolveTechniqueBuff(tech, result); break;
         case 'debuff': this._resolveTechniqueDebuff(tech, targetId, result); break;
         case 'steal': this._resolveTechniqueSteal(tech, targetId, result); break;
         case 'inspect': this._resolveTechniqueInspect(tech, targetId, result); break;
-        case 'burst': this._resolveTechniqueBurst(tech, targetId, result); break;
+        case 'burst': this._resolveTechniqueBurst(tech, targetId, result, kind); break;
         case 'cleanse': this._resolveTechniqueCleanse(tech, result); break;
         case 'utility': this._resolveTechniqueUtility(tech, result); break;
         default: break;
@@ -687,7 +778,7 @@ export class BattleEngine {
     return t ? [t] : [];
   }
 
-  _resolveTechniqueDamage(tech, targetId, result) {
+  _resolveTechniqueDamage(tech, targetId, result, kind) {
     // 星詠みの魔女「流星」：ランダムな相手へ独立してhit数ぶん撃つ特殊分岐
     if (tech.target === 'randomEnemies') { this._resolveTechniqueDamageRandom(tech, result); return; }
     // hybrid：パラディン/魔法剣士/森の吟遊詩人等、ATKとMAGを両方参照する
@@ -731,17 +822,17 @@ export class BattleEngine {
       for (let i = 0; i < hits; i++) {
         if (target.dead) break;
         const power = tech.power + conditionBonusPower + targetBonusPower;
-        const atkValue = statValue * power * this._mainDmgMult();
+        const atkValue = statValue * power * this._mainDmgMult(kind);
         const { damage, critical } = this.calculateDamage(atkValue, target, opts);
         if (critical) criticalCount++;
         hitsLanded++;
         totalDamage += damage;
-        const hit = this._applyDamageToEnemy(target, damage, critical);
+        const hit = this._applyDamageToEnemy(target, damage, critical, i, hits);
         effects.push(...hit.effects);
         if (hit.kill) kill = hit.kill;
         // 狩猟王「追撃」：会心が出たら同じ相手へ即座に追加の一撃を加える
         if (critical && tech.critFollowup && !target.dead) {
-          const followAtk = statValue * tech.power * tech.critFollowup.powerMult * this._mainDmgMult();
+          const followAtk = statValue * tech.power * tech.critFollowup.powerMult * this._mainDmgMult(kind);
           const follow = this.calculateDamage(followAtk, target, opts);
           hitsLanded++;
           totalDamage += follow.damage;
@@ -752,7 +843,10 @@ export class BattleEngine {
         }
       }
       if (tech.weaken && !target.dead) this._applyWeakenList(target, tech.weaken, target);
-      if (tech.dot && !target.dead) this._applyDotToTarget(target, tech.dot.power, tech.dot.turns, tech.dot.maxStacks || 99);
+      if (tech.dot && !target.dead) {
+        this._applyDotToTarget(target, tech.dot.power, tech.dot.turns, tech.dot.maxStacks || 99);
+        this.applyEffect('onDot', {}); // 武器Affix「毒煙の呼吸」
+      }
       result.targets.push({
         targetId: target.id, targetName: target.name, damage: totalDamage, defeated: target.dead,
         critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, effects, kill,
@@ -810,6 +904,8 @@ export class BattleEngine {
         this._applyDotToTarget(target, tech.dot.power, tech.dot.turns, tech.dot.maxStacks || 99);
         entry.dotApplied = true;
         entry.dotStacks = target.dotStacks;
+        // 武器Affix「毒煙の呼吸」：DoT付与時にMP回復
+        entry.dotAffixEvents = this.applyEffect('onDot', {});
       }
       // 狩猟王「狩人の印」：Boss/Elite限定のマーク（既存weakenと対になる
       // enemy.vulnerable。マーク中は一律ダメージ増加がcalculateDamage側で乗る）
@@ -1012,7 +1108,7 @@ export class BattleEngine {
   }
 
   // 錬金術師「起爆」：対象の現在のDoT（burnStack）を消費してボーナスダメージを与える
-  _resolveTechniqueBurst(tech, targetId, result) {
+  _resolveTechniqueBurst(tech, targetId, result, kind) {
     const target = this._pickTarget(targetId);
     if (!target) { result.noTarget = true; return; }
     // 幻術師MASTER「幻毒爆」：stackSource:'debuffCount'でDoTだけでなく
@@ -1021,7 +1117,7 @@ export class BattleEngine {
     const stacks = tech.stackSource === 'debuffCount'
       ? (target.dotStacks || 0) + (target.weaken ? Object.keys(target.weaken).length : 0)
       : (target.dotStacks || 0);
-    const atkValue = this._effectiveAtk() * (tech.power + stacks * (tech.stackPowerMult || 0.5)) * this._mainDmgMult();
+    const atkValue = this._effectiveAtk() * (tech.power + stacks * (tech.stackPowerMult || 0.5)) * this._mainDmgMult(kind);
     const { damage, critical } = this.calculateDamage(atkValue, target);
     const hit = this._applyDamageToEnemy(target, damage, critical);
     target.dotStacks = 0; target.dotTurnsLeft = 0;
@@ -1049,7 +1145,9 @@ export class BattleEngine {
 
   _playerGuard() {
     this.player.guarding = true;
-    return { action: 'guard' };
+    // 武器Affix（Part A）：ぼうぎょ成功時に発動するonGuardトリガー
+    const guardEvents = this.applyEffect('onGuard', {});
+    return { action: 'guard', guardEvents };
   }
 
   // にげる（元指示17番）：Boss戦・エリート混在戦では不可。プレイヤーSPD・
@@ -1075,6 +1173,17 @@ export class BattleEngine {
     const events = [];
     for (const eff of this._effectsOf(trigger)) {
       if (eff.chance != null && Math.random() > eff.chance) continue;
+      // 武器Affix（Part A）proc暴走防止：perActionCapを持つ効果は、
+      // 1プレイヤーアクション（通常攻撃/とくぎ/じゅもん1回）につき最大N回
+      // までしか発動しない。multi-hit通常攻撃・拳聖等の連撃でonHit/onCritが
+      // 何度も呼ばれても、同じAffixが際限なく積み重ならないようにする
+      // （performPlayerAction()で1アクションごとにカウンタをリセットする）
+      if (eff.perActionCap) {
+        const key = eff.__affixId || eff.kind;
+        const used = this._actionProcCounts[key] || 0;
+        if (used >= eff.perActionCap) continue;
+        this._actionProcCounts[key] = used + 1;
+      }
       const ev = this._applyOneEffect(eff, trigger, ctx);
       if (ev) events.push(ev);
     }
@@ -1091,6 +1200,31 @@ export class BattleEngine {
         const healed = Math.round(dmg * applied);
         this.player.hp = Math.min(this.player.maxHp, this.player.hp + healed);
         return { kind: 'lifesteal', amount: healed };
+      }
+      // Build Affix「血刃」：HPが閾値以下の間だけLifestealが上乗せされる
+      // （既存lifestealと同じLIFESTEAL_PCT_MAX上限を共有する）
+      if (eff.kind === 'lifestealLowHp' && this._hpRatio() <= eff.hpThreshold) {
+        const allowed = Math.max(0, CAPS_LAYER.LIFESTEAL_PCT_MAX - (ctx.lifestealUsed || 0));
+        const applied = Math.min(eff.power, allowed);
+        ctx.lifestealUsed = (ctx.lifestealUsed || 0) + applied;
+        const healed = Math.round(dmg * applied);
+        this.player.hp = Math.min(this.player.maxHp, this.player.hp + healed);
+        return { kind: 'lifestealLowHp', amount: healed };
+      }
+      // 武器Affix「呪毒の刃」：hit時低確率でDoTを付与する
+      if (eff.kind === 'hitApplyDot' && !target.dead) {
+        this._applyDotToTarget(target, eff.power, eff.dotTurns || 3, eff.maxStacks || 3);
+        return { kind: 'hitApplyDot', stacks: target.dotStacks };
+      }
+      // Build Affix「千刃」：multi-hit通常攻撃/連撃技の最後の一撃にだけ
+      // 追加ダメージを乗せる（ctx.hitIndex/ctx.hitsTotalが渡されない
+      // 呼び出し元では単発とみなしそのまま発動する）
+      if (eff.kind === 'lastHitBonus' && !target.dead) {
+        const isLast = ctx.hitsTotal == null || ctx.hitIndex === ctx.hitsTotal - 1;
+        if (!isLast) return null;
+        const bonus = Math.round(dmg * eff.power);
+        const kill = this._applyRawDamageAndReward(target, bonus);
+        return { kind: 'lastHitBonus', amount: bonus, targetName: target.name, targetDead: target.dead, kill };
       }
       if (eff.kind === 'burnDamage' && !target.dead) {
         const burn = Math.round(this.player.atk * eff.power);
@@ -1150,6 +1284,27 @@ export class BattleEngine {
         target.frozenTurns = Math.max(target.frozenTurns, roundsFromSeconds(eff.duration));
         return { kind: 'timeStop' };
       }
+      // 武器Affix「会心の癒し」「会心の閃き」「魔力循環」（Build強化型込み）
+      if (eff.kind === 'healOnCrit') {
+        const healed = Math.round(this.player.maxHp * eff.power);
+        this.player.hp = Math.min(this.player.maxHp, this.player.hp + healed);
+        return { kind: 'healOnCrit', amount: healed };
+      }
+      if (eff.kind === 'mpOnCrit') {
+        const restored = Math.round(this.player.maxMp * eff.power);
+        this.player.mp = Math.min(this.player.maxMp, this.player.mp + restored);
+        return { kind: 'mpOnCrit', amount: restored };
+      }
+      // 武器Affix「会心の連撃」：会心時に低確率で追撃（perActionCapで暴走防止済み）
+      if (eff.kind === 'critExtraAttack' && !target.dead) {
+        const atkValue = this._effectiveAtk() * eff.power;
+        const { damage } = this.calculateDamage(atkValue, target, { noBossMult: false });
+        const hit = this._applyDamageToEnemy(target, damage, false);
+        return { kind: 'critExtraAttack', amount: damage, targetName: target.name, targetDead: target.dead, kill: hit.kill };
+      }
+      // 武器Affix「会心の高揚」「会心の踏込」：会心時に短時間の自己バフ
+      if (eff.kind === 'critAtkBuff') { this._applyBuffPayload({ atkPct: eff.power, turns: eff.turns }, {}); return { kind: 'critAtkBuff' }; }
+      if (eff.kind === 'critSpdBuff') { this._applyBuffPayload({ spdPct: eff.power, turns: eff.turns }, {}); return { kind: 'critSpdBuff' }; }
     } else if (trigger === 'onHurt') {
       const { attacker } = ctx;
       if (eff.kind === 'counter' && attacker && !attacker.dead) {
@@ -1189,6 +1344,17 @@ export class BattleEngine {
         this._applyBuffPayload(eff.buffPayload, {});
         return { kind: 'selfBuffOnKill' };
       }
+      // 武器Affix「喰らいし刃」「魂の残滓」：撃破時にHP/MPを回復する
+      if (eff.kind === 'healOnKill') {
+        const healed = Math.round(this.player.maxHp * eff.power);
+        this.player.hp = Math.min(this.player.maxHp, this.player.hp + healed);
+        return { kind: 'healOnKill', amount: healed };
+      }
+      if (eff.kind === 'mpOnKill') {
+        const restored = Math.round(this.player.maxMp * eff.power);
+        this.player.mp = Math.min(this.player.maxMp, this.player.mp + restored);
+        return { kind: 'mpOnKill', amount: restored };
+      }
     } else if (trigger === 'onEvade') {
       // 剣豪「見切り」・鉄農兵系：回避に成功した瞬間の反撃（既存counterと
       // 同じ計算式を、新しいトリガー名onEvadeで発火させるだけ）
@@ -1197,6 +1363,41 @@ export class BattleEngine {
         const counterDmg = Math.round(this.player.atk * eff.power);
         const kill = this._applyRawDamageAndReward(attacker, counterDmg);
         return { kind: 'counter', amount: counterDmg, targetName: attacker.name, targetDead: attacker.dead, kill };
+      }
+      // 武器Affix「見切りの心得」：回避成功後、短時間Critが上がる
+      if (eff.kind === 'evadeCritBuff') {
+        this._applyBuffPayload({ critAdd: eff.power, turns: eff.turns }, {});
+        return { kind: 'evadeCritBuff' };
+      }
+    } else if (trigger === 'onGuard') {
+      // 武器Affix「守りの心得」「静寂の呼吸」「受けの構え」「鉄の復讐」：
+      // ぼうぎょ成功時に発動する（_playerGuard()から呼ばれる新規trigger）
+      if (eff.kind === 'healOnGuard') {
+        const healed = Math.round(this.player.maxHp * eff.power);
+        this.player.hp = Math.min(this.player.maxHp, this.player.hp + healed);
+        return { kind: 'healOnGuard', amount: healed };
+      }
+      if (eff.kind === 'mpOnGuard') {
+        const restored = Math.round(this.player.maxMp * eff.power);
+        this.player.mp = Math.min(this.player.maxMp, this.player.mp + restored);
+        return { kind: 'mpOnGuard', amount: restored };
+      }
+      if (eff.kind === 'guardNextAtkBuff') {
+        this._tempAtkBonus = eff.power; this._tempAtkTurns = 1;
+        return { kind: 'guardNextAtkBuff' };
+      }
+      // Build Affix「鉄の復讐」：次に被弾した瞬間だけ反撃する一時効果を積む
+      // （既存の技tempEffect＝_addTempEffectと全く同じ仕組みを再利用）
+      if (eff.kind === 'guardCounter') {
+        this._addTempEffect({ trigger: 'onHurt', kind: 'counter', power: eff.power }, 1);
+        return { kind: 'guardCounter' };
+      }
+    } else if (trigger === 'onDot') {
+      // 武器Affix「毒煙の呼吸」：DoT付与時にMP回復
+      if (eff.kind === 'mpOnDot') {
+        const restored = Math.round(this.player.maxMp * eff.power);
+        this.player.mp = Math.min(this.player.maxMp, this.player.mp + restored);
+        return { kind: 'mpOnDot', amount: restored };
       }
     }
     return null;
@@ -1222,9 +1423,11 @@ export class BattleEngine {
   // このメソッドを1hitごとに呼び出すことで、1hit単位のonHit/onCrit発火・
   // lifesteal上限を成立させる。criticalは呼び出し側がそのhitの会心判定
   // 結果を明示的に渡す＝以前参照していた未初期化のthis.lastHitCritは廃止）。
-  _applyDamageToEnemy(target, dmg, critical = false) {
+  // hitIndex/hitsTotal（Build Affix「千刃」用）：multi-hit呼び出し元だけが
+  // 渡す。省略時（他の全呼び出し）は単発扱いとしてlastHitBonusが素直に発動する
+  _applyDamageToEnemy(target, dmg, critical = false, hitIndex = null, hitsTotal = null) {
     const killResult = this._applyRawDamageAndReward(target, dmg);
-    const hitEvents = this.applyEffect('onHit', { target, dmg, lifestealUsed: 0 });
+    const hitEvents = this.applyEffect('onHit', { target, dmg, lifestealUsed: 0, hitIndex, hitsTotal });
     const critEvents = critical ? this.applyEffect('onCrit', { target }) : [];
     return {
       damage: dmg, targetId: target.id, targetName: target.name, defeated: target.dead,
@@ -1261,9 +1464,11 @@ export class BattleEngine {
     state.addItemAwakenKills();
     if (enemy.elite) state.addAbyssShards(ABYSS_EXPANSION_LAYER.ELITE_SHARD_DROP);
     const onKillEvents = this.applyEffect('onKill', { enemy });
+    // 武器Affix（Part A）：深淵深度・Elite・Boss討伐でAffix品質が少し上がる
+    const dropCtx = { depth: this.stage.isAbyss ? (this.stage.abyssDepth || 0) : 0, elite: !!enemy.elite, boss: !!enemy.boss };
     const drops = [];
-    const dropInfo = this._rollDrop(); if (dropInfo) drops.push(dropInfo);
-    const weaponDropInfo = this._rollWeaponDrop(); if (weaponDropInfo) drops.push(weaponDropInfo);
+    const dropInfo = this._rollDrop(dropCtx); if (dropInfo) drops.push(dropInfo);
+    const weaponDropInfo = this._rollWeaponDrop(dropCtx); if (weaponDropInfo) drops.push(weaponDropInfo);
     const manastone = this._rollManastone(enemy);
     let bossSlayerBuff = null;
     if (enemy.boss) {
@@ -1274,7 +1479,7 @@ export class BattleEngine {
           bossSlayerBuff = true;
         }
       }
-      const bossWeaponDrop = this._rollBossWeaponDrop();
+      const bossWeaponDrop = this._rollBossWeaponDrop(dropCtx);
       if (bossWeaponDrop) drops.push(bossWeaponDrop);
       this.boss = null;
     }
@@ -1289,6 +1494,8 @@ export class BattleEngine {
     if (this.stage.isAbyss && this.stage.boss) m *= state.abyssBossFloorRewardMult();
     // 商人「商魂」・農民「大収穫」：戦闘中の一時的なGold獲得ボーナス
     if (this._tempGoldBonusTurns > 0) m *= (1 + this._tempGoldBonus);
+    // 武器Affix「商才」
+    m *= 1 + sumPassivePower(this.effects, 'goldMultAdd');
     return m;
   }
   _expMult() {
@@ -1296,13 +1503,20 @@ export class BattleEngine {
     if (this.stage.isAbyss && this.stage.boss) m *= state.abyssBossFloorRewardMult();
     // 語り部「伝説の一節」：数ターンの経験値取得ボーナス
     if (this._tempExpBonusTurns > 0) m *= (1 + this._tempExpBonus);
+    // 武器Affix「習熟の心得」
+    m *= 1 + sumPassivePower(this.effects, 'expMultAdd');
     return m;
   }
   // トレジャーハンター「目利き」・大商人「鑑定眼」：戦闘中だけドロップ率を
-  // 底上げする一時ボーナス（既存のstate.dropRateMult()等・永続進行度は変更しない）
-  _dropChanceBonusMult() { return this._tempDropRateBonusTurns > 0 ? (1 + this._tempDropRateBonus) : 1; }
+  // 底上げする一時ボーナス（既存のstate.dropRateMult()等・永続進行度は変更しない）。
+  // 武器Affix「幸運」も同じ「戦闘中だけの掛け算ボーナス」枠に合流させる
+  _dropChanceBonusMult() {
+    let m = this._tempDropRateBonusTurns > 0 ? (1 + this._tempDropRateBonus) : 1;
+    m *= 1 + sumPassivePower(this.effects, 'dropRateMultAdd');
+    return m;
+  }
 
-  _rollWeaponDrop() {
+  _rollWeaponDrop(dropCtx) {
     if (Math.random() > WEAPON_CODEX_LAYER.DROP_CHANCE * state.dropRateMult() * this._dropChanceBonusMult()) return null;
     const pool = weaponDropPoolForStage(this.stage);
     if (pool.length === 0) return null;
@@ -1311,23 +1525,23 @@ export class BattleEngine {
     for (const d of pool) {
       r -= d.weight;
       if (r <= 0) {
-        const isNew = state.addItem(d.itemId, 1);
+        const isNew = state.addItem(d.itemId, 1, dropCtx);
         this.runItems.push(d.itemId);
-        return this._describeDrop(d.itemId, isNew);
+        return this._describeDrop(d.itemId, isNew, state.consumeLastWeaponInstanceId());
       }
     }
     return null;
   }
 
-  _rollBossWeaponDrop() {
+  _rollBossWeaponDrop(dropCtx) {
     if (this._bossWeaponDropped || !this.chapter) return null;
     const bossWeapon = bossWeaponForChapter(this.chapter.id);
     if (!bossWeapon) return null;
     if (Math.random() > WEAPON_CODEX_LAYER.BOSS_WEAPON_DROP_CHANCE) return null;
     this._bossWeaponDropped = true;
-    const isNew = state.addItem(bossWeapon.id, 1);
+    const isNew = state.addItem(bossWeapon.id, 1, dropCtx);
     this.runItems.push(bossWeapon.id);
-    return this._describeDrop(bossWeapon.id, isNew);
+    return this._describeDrop(bossWeapon.id, isNew, state.consumeLastWeaponInstanceId());
   }
 
   _rollManastone(enemy) {
@@ -1342,7 +1556,7 @@ export class BattleEngine {
     return amount;
   }
 
-  _rollDrop() {
+  _rollDrop(dropCtx) {
     const table = this.stage.dropTable || [];
     if (table.length === 0) return null;
     const abyssMult = this.stage.isAbyss ? (this.stage.dropMult || 1) * state.abyssDropRateMult() : 1;
@@ -1358,17 +1572,27 @@ export class BattleEngine {
     for (const d of pool) {
       r -= d.weight;
       if (r <= 0) {
-        const isNew = state.addItem(d.itemId, 1);
+        const isNew = state.addItem(d.itemId, 1, dropCtx);
         this.runItems.push(d.itemId);
-        return this._describeDrop(d.itemId, isNew);
+        return this._describeDrop(d.itemId, isNew, state.consumeLastWeaponInstanceId());
       }
     }
     return null;
   }
 
-  _describeDrop(itemId, isNew) {
+  // instanceId（武器Affix・Part A）：武器ドロップの場合だけ渡される。
+  // Legendary以上のAffixを含む場合はhasRareAffixを立て、画面側のログ演出
+  // （元指示「レアAffix演出」）が参照できるようにする
+  _describeDrop(itemId, isNew, instanceId) {
     const item = getItem(itemId);
-    if (item) return { itemId, name: item.name, rarity: item.rarity, isNew, isBossWeapon: !!item.isBossWeapon };
+    if (item) {
+      const affixes = instanceId ? state.weaponInstanceAffixes(instanceId) : [];
+      return {
+        itemId, name: item.name, rarity: item.rarity, isNew, isBossWeapon: !!item.isBossWeapon,
+        instanceId: instanceId || null, affixCount: affixes.length,
+        hasRareAffix: hasRareAffix(affixes), highestAffixRarity: highestAffixRarity(affixes),
+      };
+    }
     const rune = getRune(itemId);
     if (rune) return { itemId, name: rune.name, rarity: null, isNew, isRune: true };
     return { itemId, name: itemId, rarity: null, isNew };
@@ -1694,7 +1918,9 @@ export class BattleEngine {
         if (enemy.vulnerable.turnsLeft <= 0) enemy.vulnerable = null;
       }
       if (enemy.dotStacks > 0 && enemy.dotTurnsLeft > 0) {
-        const dmg = Math.max(1, Math.round(this.player.atk * enemy.dotPower * enemy.dotStacks));
+        // 武器Affix「毒手」：DoT Damage+
+        const dotDmgMult = 1 + sumPassivePower(this.effects, 'dotDmg');
+        const dmg = Math.max(1, Math.round(this.player.atk * enemy.dotPower * enemy.dotStacks * dotDmgMult));
         // ChatGPTレビュー指摘2番：DoT撃破も他の経路と同じ共通処理へ統一する
         const kill = this._applyRawDamageAndReward(enemy, dmg);
         events.push({ type: 'dotTick', enemyId: enemy.id, name: enemy.name, amount: dmg, targetDead: enemy.dead, kill });

@@ -1,6 +1,7 @@
 import { state } from '../state.js';
 import { getItem, RARITY, powerScore, WEAPON_TYPES, WEAPON_MASTERY_THRESHOLD } from '../data/equipment.js';
 import { WEAPON_SERIES } from '../data/weapons.js';
+import { describeAffix, AFFIX_RARITY_COLOR, AFFIX_RARITY_LABEL } from '../data/affixes.js';
 import { Audio_ } from '../audio.js';
 
 const ELEMENT_LABEL = {
@@ -73,14 +74,18 @@ function compareLine(candidate, current) {
   return statsPart + effectPart + scorePart;
 }
 
-function statLine(item) {
+// id：インベントリ/装備スロットに実際に入っているキー（武器はPart A
+// （Affix）導入によりドロップごとに一意なインスタンスIDになっているため、
+// 強化Lv等の進行度は必ずitem.id（静的定義側の常にbase id）ではなく、この
+// idをそのまま使う。item自体はgetItem(id)で解決済みの静的定義を渡す。
+function statLine(item, id) {
   const stats = Object.entries(item.stats).map(([k, v]) => `${STAT_LABEL_JA[k] || k.toUpperCase()}+${v}`).join(' ');
   const parts = [stats];
   if (item.weaponType) {
     const wt = WEAPON_TYPES[item.weaponType];
     const match = state.currentJob.weapon === item.weaponType;
     parts.push(`${wt.name}${match ? '（適性◎+8%）' : ''}`);
-    const enhLv = state.weaponEnhanceLevel(item.id);
+    const enhLv = state.weaponEnhanceLevel(id);
     if (enhLv > 0) parts.push(`強化Lv.${enhLv}（+${enhLv * 5}%）`);
   }
   // Blade Vale 2.1：武器図鑑武器の追加情報（必要Lv・属性・ベース特性・シリーズ）
@@ -92,6 +97,21 @@ function statLine(item) {
     for (const eff of item.effects) parts.push(`✨${eff.name}: ${eff.desc}`);
   }
   return parts.join(' / ');
+}
+
+// 武器ランダムAffix（Part A）の表示。武器スロット以外・Affixを持たない
+// インスタンスでは空文字を返す（既存rarity CSS変数をそのまま再利用）。
+function affixBlock(id) {
+  if (!state.isWeaponInstance(id)) return '';
+  const affixes = state.weaponInstanceAffixes(id);
+  if (affixes.length === 0) return '';
+  const lines = affixes.map((a) => {
+    const d = describeAffix(a);
+    return `<div class="affix-line" style="border-left:3px solid ${AFFIX_RARITY_COLOR[a.rarity]}">`
+      + `<span class="affix-rarity" style="color:${AFFIX_RARITY_COLOR[a.rarity]}">[${AFFIX_RARITY_LABEL[a.rarity]}]</span> `
+      + `<span class="affix-name">${d.name}</span><br><span class="affix-desc">${d.desc}</span></div>`;
+  }).join('');
+  return `<div class="affix-block">${lines}</div>`;
 }
 
 // お気に入り・ロック（元指示27番）：一覧上の名前の右にバッジとして表示し、
@@ -171,7 +191,7 @@ export function renderEquipment() {
     row.className = 'pick-row equipped';
     const item = getItem(currentId);
     row.innerHTML = `
-      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name}${favoriteLockBadges(currentId)}</div><div class="item-stats">${statLine(item)}</div></div>
+      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name}${favoriteLockBadges(currentId)}</div><div class="item-stats">${statLine(item, currentId)}</div>${affixBlock(currentId)}</div>
       <button data-action="unequip">外す</button>
     `;
     row.querySelector('button').addEventListener('click', () => {
@@ -195,7 +215,7 @@ export function renderEquipment() {
     const row = document.createElement('div');
     row.className = 'pick-row';
     row.innerHTML = `
-      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${state.data.inventory[c.id]}${favoriteLockBadges(c.id)}</div><div class="item-stats">${statLine(item)}${lockReason ? `<br>${lockReason}` : ''}</div>${compareLine(item, currentItemForCompare)}</div>
+      <div><div class="item-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${state.data.inventory[c.id]}${favoriteLockBadges(c.id)}</div><div class="item-stats">${statLine(item, c.id)}${lockReason ? `<br>${lockReason}` : ''}</div>${affixBlock(c.id)}${compareLine(item, currentItemForCompare)}</div>
       <button data-action="equip" ${locked ? 'disabled' : ''}>装備</button>
     `;
     if (!locked) {
