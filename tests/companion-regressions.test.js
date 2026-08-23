@@ -88,6 +88,16 @@ test('main imports all integration patches in stable order', async () => {
   assert.ok(order.every((n, i) => i === 0 || n > order[i - 1]), 'patch imports must stay ordered');
 });
 
+test('character dashboard keeps basic, equipment, and detail views', async () => {
+  const text = await source('js/screens/status.js');
+  assert.match(text, /\['basic','基本'\]/);
+  assert.match(text, /\['equipment','装備'\]/);
+  assert.match(text, /\['detail','詳細'\]/);
+  assert.match(text, /state\.getStatBreakdown\(key\)/, 'stat breakdown must reuse shared state calculation');
+  assert.match(text, /state\.weaponItemPower/, 'equipment tab should surface weapon Item Power');
+  assert.match(text, /characterDashboardCss/, 'dashboard stylesheet should be loaded once');
+});
+
 test('revival spell serializes the whole state payload', async () => {
   const text = await source('js/screens/spellScreen.js');
   assert.match(text, /encodeSpell\(state\.data\)/,
