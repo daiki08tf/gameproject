@@ -9,6 +9,7 @@ import './patches/jobCodexUi.js';
 import './patches/inheritanceCore.js';
 import './patches/rune2Core.js';
 import './patches/rune2Special.js';
+import './patches/equipment3Archetypes.js';
 import './patches/weaponInstanceFoundation.js';
 import './patches/equipment3Foundation.js';
 import './patches/equipment3Greater.js';
