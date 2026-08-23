@@ -4,7 +4,7 @@
 import { state } from '../state.js';
 import { TIERS } from '../data/jobs.js';
 import { CHARACTER_LEVEL_MAX, characterExpToNext, characterLevelBand } from '../data/progression.js';
-import { jobExpToNext } from '../data/jobProgression.js';
+import { JOB_EXP_REWARD_SHARE, splitProgressionExp } from '../data/jobProgression.js';
 
 const JOB_MASTERY_LEVELS = { basic:20, advanced:40, special:60, hero:100 };
 
@@ -28,27 +28,24 @@ Object.defineProperties(state,{
 });
 state.characterExpToNext=function(level=this.characterLevel){return characterExpToNext(level);};
 state.characterLevelBand=function(level=this.characterLevel){return characterLevelBand(level);};
-state.jobExpToNext=function(level=this.currentJobLevel,jobId=this.currentJobId){const tier=getJobTier(jobId);return jobExpToNext(level,tier);};
-// Legacy callers (jobs UI / gainExp in state.js) use expToNext(). Redirect only that
-// Job-facing helper to the dedicated short-form curve. Character EXP keeps its own helper.
-state.expToNext=function progression2JobExpToNext(level){return this.jobExpToNext(level,this.currentJobId);};
-
-function getJobTier(jobId){
-  const job=state.data.currentJobId===jobId?state.currentJob:null;
-  if(job?.tier)return job.tier;
-  // Fallback for callers before/around a job switch; getJob is indirectly available via current data.
-  const previousId=state.data.currentJobId;
-  if(previousId===jobId)return state.currentJob?.tier||'basic';
-  return 'basic';
-}
 
 const originalGainExp=state.gainExp.bind(state);
 state.gainExp=function gainExpWithCharacterProgress(amount){
   ensureProgressionData();
-  const jobResult=originalGainExp(amount);
-  const jobGained=Math.max(0,Number(jobResult?.gained)||0);
-  const characterMult=Math.max(0,Number(this.characterExpRewardMult?.() ?? 1)||0);
-  const characterGained=Math.max(0,Math.round(jobGained*characterMult));
+
+  // Character and Job intentionally do NOT receive the same reward amount.
+  // Character gets the full reward; Job gets 10% of it so MASTERing a job is
+  // a slower side-progression track rather than mirroring Character Lv.
+  const passive=this.currentJob.passive;
+  const commonExpMult=(passive&&passive.exp?passive.exp:1)*this.awakeningStatMult('exp')*this.jobMasterPassiveMult('exp');
+  const characterOnlyMult=Math.max(0,Number(this.characterExpRewardMult?.()??1)||0);
+  const split=splitProgressionExp(amount,commonExpMult,characterOnlyMult);
+
+  // originalGainExp applies the same common EXP multipliers internally, so feed it
+  // only the unmultiplied 10% share to avoid double-applying bonuses.
+  const jobResult=originalGainExp((Math.max(0,Number(amount)||0))*JOB_EXP_REWARD_SHARE);
+  const characterGained=split.character;
+
   let characterLeveledUp=false;
   if(this.data.characterLevel<CHARACTER_LEVEL_MAX){
     this.data.characterExp+=characterGained;
@@ -63,4 +60,4 @@ state.gainExp=function gainExpWithCharacterProgress(amount){
   this.save();
   return {...jobResult,characterGained,characterLeveledUp,characterLevel:this.data.characterLevel,characterBand:this.characterLevelBand().id,jobLevel:this.currentJobLevel};
 };
-export { ensureProgressionData, JOB_MASTERY_LEVELS, CHARACTER_LEVEL_MAX };
+export { ensureProgressionData, JOB_MASTERY_LEVELS, CHARACTER_LEVEL_MAX, JOB_EXP_REWARD_SHARE };
