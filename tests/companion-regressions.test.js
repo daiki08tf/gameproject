@@ -5,6 +5,8 @@ import {
   COMPANION_SPECIES,
   companionExpToNext,
   companionStats,
+  companionTraitEffect,
+  companionTraitLabel,
 } from '../js/data/companions.js';
 
 async function source(path) {
@@ -24,6 +26,15 @@ test('companion species data stays usable and growth is monotonic', () => {
   }
 });
 
+test('companion traits have real effects and honest labels', () => {
+  assert.deepEqual(companionTraitEffect('ぷにぷにボディ'), {
+    kind: 'physicalMitigation', power: 0.10, desc: '通常攻撃の被ダメージ -10%',
+  });
+  assert.equal(companionTraitEffect('悪知恵').kind, 'lowHpDamage');
+  assert.equal(companionTraitEffect('夜目').kind, 'initiativeSpd');
+  assert.match(companionTraitLabel('夜目'), /SPD \+15%/);
+});
+
 test('companion EXP curve increases with level', () => {
   let prev = 0;
   for (let level = 1; level <= 100; level++) {
@@ -33,7 +44,7 @@ test('companion EXP curve increases with level', () => {
   }
 });
 
-test('battle patch keeps final-hit, frozen, and zero-XP guards', async () => {
+test('battle patch keeps final-hit, frozen, zero-XP, shared DEF, and SPD guards', async () => {
   const text = await source('js/patches/companionBattle.js');
   const frozenGuard = text.indexOf('enemy && enemy.frozenTurns > 0');
   const companionTargetBranch = text.indexOf('companionCanBeTargeted(this)');
@@ -42,6 +53,14 @@ test('battle patch keeps final-hit, frozen, and zero-XP guards', async () => {
   assert.match(text, /\(enemy\.xp \|\| 0\) > 0/, 'zero-XP enemies must not grant companion EXP');
   assert.match(text, /this\.aliveEnemies\.length === 0[\s\S]*this\.checkBattleEnd\(\)/,
     'companion final hit must trigger battle-end recheck');
+  assert.match(text, /defMitigationPct\(target\.def \|\| 0\)/,
+    'companion damage must use the shared DEF mitigation rule');
+  assert.match(text, /defMitigationPct\(companion\.def \|\| 0\)/,
+    'damage to companions must use the shared DEF mitigation rule');
+  assert.doesNotMatch(text, /\+ 55\)/, 'companion combat must not keep a private DEF constant');
+  assert.match(text, /effectiveCompanionSpd\(c\) >= fastestEnemy/,
+    'companion SPD must influence whether it acts before the enemy phase');
+  assert.match(text, /originalRunEnemyPhase/, 'SPD ordering must integrate at the enemy phase boundary');
 });
 
 test('foundation keeps one-time starter and allows a truly empty roster', async () => {
@@ -55,6 +74,7 @@ test('foundation keeps one-time starter and allows a truly empty roster', async 
   const flagSet = text.indexOf('state.data.starterCompanionGranted = true', starterCreate);
   assert.ok(outerGuard >= 0 && emptyRosterCheck > outerGuard && starterCreate > emptyRosterCheck && flagSet > starterCreate,
     'empty-roster starter creation must be nested inside the persisted one-time grant guard');
+  assert.match(text, /map\(companionTraitLabel\)/, 'companion screen should describe actual trait effects');
 });
 
 test('recruitment is type-based and elite recruits have a rarity floor', async () => {
