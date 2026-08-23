@@ -1,5 +1,6 @@
 import { state } from './state.js';
 import './patches/companionFoundation.js';
+import './patches/companionBattle.js';
 // 旧リアルタイムCanvas戦闘（js/battle.js）はそのまま未使用で残し、こちらの
 // テキスト戦闘（TextBattleScreen）へ切り替える（元指示19番）
 import { TextBattleScreen } from './screens/textBattle.js';
