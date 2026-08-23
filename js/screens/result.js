@@ -1,5 +1,6 @@
 import { state } from '../state.js';
 import { getItem, RARITY, rarityIndex } from '../data/equipment.js';
+import { describeAffix } from '../data/affixes.js';
 import { getRune } from '../data/runes.js';
 import { getRune2 } from '../data/runes2.js';
 import { equipment3Presentation, equipment3MetaText, equipment3SpecialLines, equipment3DropHeadline } from '../data/equipment3Presentation.js';
@@ -12,9 +13,19 @@ function resolveDrop(itemId) {
     const inst = isInstance ? state.data.weaponInstances?.[itemId] || null : null;
     const p = equipment3Presentation(item, inst);
     if (p && inst && p.affixes.length === 0 && legacyAffixes.length > 0) {
-      // weaponInstanceAffixes is the legacy public contract used by the result UI.
-      // Presentation normally reads the same source, so this is only a safety net.
-      p.affixes = legacyAffixes.map((a) => ({ id: a.id, name: a.id, desc: String(a.roll ?? ''), rarity: a.rarity, rarityLabel: a.rarity, greater: !!a.greater, roll: a.roll }));
+      // weaponInstanceAffixes + describeAffix は従来のリザルト表示契約として維持する。
+      p.affixes = legacyAffixes.map((a) => {
+        const d = describeAffix(a);
+        return {
+          id: a.id,
+          name: d.name,
+          desc: d.desc,
+          rarity: a.rarity,
+          rarityLabel: a.rarity,
+          greater: !!a.greater,
+          roll: a.roll,
+        };
+      });
     }
     const stars = '★'.repeat(rarityIndex(item.rarity));
     let name = `${item.unique ? '◆ UNIQUE ' : ''}${stars ? stars + ' ' : ''}${p?.name || item.name}`;
