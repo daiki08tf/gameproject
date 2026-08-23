@@ -30,8 +30,6 @@ function ensureSaveShape() {
       changed = true;
     }
   }
-  // Migration rule: saves that already contain companions have necessarily
-  // passed through the starter phase, so do not ever grant another starter.
   if (state.data.starterCompanionGranted == null) {
     state.data.starterCompanionGranted = Object.keys(state.data.companionInstances || {}).length > 0;
     changed = true;
@@ -132,16 +130,12 @@ state.gainCompanionExp = function gainCompanionExp(amount, instanceId = this.act
 
 state.releaseCompanion = function releaseCompanion(instanceId) {
   if (!this.data.companionInstances[instanceId]) return false;
-  // Releasing the active unit is blocked at the state layer as well as the UI,
-  // preventing accidental dangling party references from future callers.
-  if (this.activeCompanionId() === instanceId) return false;
+  if (this.activeCompanionId() === instanceId) this.data.companionParty[0] = null;
   delete this.data.companionInstances[instanceId];
   this.save();
   return true;
 };
 
-// Starter is a one-time grant. Once the flag is set, an intentionally empty
-// roster stays empty across reloads.
 if (!state.data.starterCompanionGranted) {
   if (state.companionList().length === 0) {
     const starter = state.createCompanion('slime', { rarity: 'normal', nature: 'balanced', origin: 'starter' });
@@ -190,7 +184,7 @@ function renderCompanionScreen() {
       <div class="forge-card-sub">EXP ${instance.exp} / ${xpNeed}　特性: ${escapeHtml((species.traits || []).join('・') || 'なし')}</div>
       <div class="confirm-actions" style="margin-top:8px;">
         <button class="btn-sub companion-set-btn" data-id="${escapeHtml(id)}" ${active ? 'disabled' : ''}>${active ? '同行中' : '同行させる'}</button>
-        <button class="btn-sub companion-release-btn" data-id="${escapeHtml(id)}" ${active ? 'disabled' : ''}>${active ? '同行中は帰せない' : '帰す'}</button>
+        <button class="btn-sub companion-release-btn" data-id="${escapeHtml(id)}">${active ? '同行解除して帰す' : '帰す'}</button>
       </div>
     </div>`;
   }).join('');
@@ -206,7 +200,9 @@ function renderCompanionScreen() {
       const c = state.getCompanion(btn.dataset.id);
       if (!c) return;
       const name = c.instance.nickname || c.species.name;
-      if (!window.confirm(`${name}を帰しますか？`)) return;
+      const active = state.activeCompanionId() === btn.dataset.id;
+      const message = active ? `${name}の同行を解除して帰しますか？` : `${name}を帰しますか？`;
+      if (!window.confirm(message)) return;
       state.releaseCompanion(btn.dataset.id);
       renderCompanionScreen();
     });
