@@ -1,5 +1,5 @@
 /* ============================================================
-   Progression 2.0 Phase 5 — Rune 2.0 definitions
+   Progression 2.0 Phase 5/6 — Rune 2.0 definitions
    ============================================================ */
 
 export const RUNE2_DEFS = [
@@ -29,9 +29,17 @@ export function runesForStage(stageId) { return RUNE2_DEFS.filter((r) => r.stage
 
 export function rune2EffectText(rune, marks = 1) {
   if (!rune) return '';
-  if (rune.kind === 'statMult') return `${rune.stat.toUpperCase()} +${Math.round(rune.perMark * marks * 100)}%`;
-  if (rune.id === 'challenge') return '100刻ごとにChallenge Lv+1（Phase 6で戦闘へ接続）';
-  if (rune.id === 'greed') return '50刻ごとにドロップ品質を強化（Phase 6で接続）';
-  if (rune.id === 'observe') return '刻数に応じて敵情報を解禁（Phase 6で接続）';
-  return '特殊効果（Phase 6で戦闘・周回システムへ接続）';
+  const n = Math.max(0, Math.floor(Number(marks) || 0));
+  if (rune.kind === 'statMult') return `${rune.stat.toUpperCase()} +${Math.round(rune.perMark * n * 100)}%`;
+  if (rune.id === 'challenge') {
+    const lv = Math.min(20, Math.floor(n / 100));
+    return `Challenge Lv.${lv}：敵HP +${lv*10}% / ATK +${lv*5}% / EXP +${lv*10}% / Gold +${lv*5}% / Rune抽選率 +${lv*2}%`;
+  }
+  if (rune.id === 'greed') return `50刻ごとに通常Dropの最低レア帯を1段除外（現在 ${Math.floor(n/50)}段）`;
+  if (rune.id === 'observe') return `1/50/100/250/500刻で敵のHP・能力・報酬・分類・解析IDを順次表示`;
+  if (rune.id === 'swift') return `先攻判定速度 +${Math.min(50, n*0.1).toFixed(1)}%（効果上限500刻 / ★500）`;
+  if (rune.id === 'fists') return `通常攻撃間隔 -${Math.min(50, n*0.1).toFixed(1)}%（効果上限500刻 / ★500）`;
+  if (rune.id === 'gold') return 'Gold系特殊効果（後続Phaseで拡張）';
+  if (rune.id === 'hawkeye' || rune.id === 'illusion' || rune.id === 'bless' || rune.id === 'bastion') return '戦闘系特殊効果（後続Phaseで接続）';
+  return '特殊効果（仲間・装備・エンドゲーム拡張Phaseで接続）';
 }
