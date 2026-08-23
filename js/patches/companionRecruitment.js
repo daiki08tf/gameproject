@@ -8,17 +8,18 @@
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
-import { COMPANION_SPECIES, getCompanionSpecies } from '../data/companions.js';
+import { getCompanionSpecies } from '../data/companions.js';
 
-const speciesByEnemyName = new Map(
-  Object.values(COMPANION_SPECIES)
-    .filter((s) => s.type === 'monster')
-    .map((s) => [s.name, s.id]),
-);
+// Explicit combat-type mapping. Recruitment must not depend on localized enemy
+// display names; future variants can opt in by adding their concrete type here.
+const RECRUIT_SPECIES_BY_ENEMY_TYPE = Object.freeze({
+  grunt: 'goblin',
+  fast: 'bat',
+});
 
 function recruitSpeciesForEnemy(enemy) {
   if (!enemy || enemy.boss || enemy.type === '__boss_summon__') return null;
-  return speciesByEnemyName.get(enemy.name) || null;
+  return RECRUIT_SPECIES_BY_ENEMY_TYPE[enemy.type] || null;
 }
 
 function ensureRecruitTracker(engine) {
@@ -32,6 +33,7 @@ BattleEngine.prototype._grantKillRewards = function patchedRecruitGrantKillRewar
   if (speciesId) {
     this._recruitDefeats.push({
       speciesId,
+      enemyType: enemy.type,
       enemyName: enemy.name,
       elite: !!enemy.elite,
     });
@@ -39,13 +41,22 @@ BattleEngine.prototype._grantKillRewards = function patchedRecruitGrantKillRewar
   return originalGrantKillRewards.call(this, enemy);
 };
 
+function shuffledCopy(items) {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 function rollRecruitCandidate(engine) {
   ensureRecruitTracker(engine);
   if (!engine._recruitDefeats.length) return null;
 
-  // Each defeated recruitable monster gets one roll. Shuffle first so a
-  // repeated species does not always take priority over another species.
-  const rolls = [...engine._recruitDefeats].sort(() => Math.random() - 0.5);
+  // Each defeated recruitable monster gets one roll; at most one candidate can
+  // succeed per cleared battle.
+  const rolls = shuffledCopy(engine._recruitDefeats);
   for (const entry of rolls) {
     const species = getCompanionSpecies(entry.speciesId);
     if (!species || !species.recruit) continue;
@@ -96,7 +107,7 @@ function showRecruitPrompt(candidate, onDone) {
   panel.innerHTML = `
     <div style="font-size:46px;text-align:center;margin-bottom:8px;">${candidate.icon || '🐾'}</div>
     <h2 style="text-align:center;">${candidate.name}がこちらを見ている……</h2>
-    <p class="sub" style="text-align:center;">仲間になりたそうだ！${candidate.elite ? '<br>エリート個体の気配を感じる。' : ''}</p>
+    <p class="sub" style="text-align:center;">仲間になりたそうだ！${candidate.elite ? '<br>エリート出身：レア以上の個体になる。' : ''}</p>
     <div class="confirm-actions" style="margin-top:16px;">
       <button class="btn-sub" id="recruitDeclineBtn">帰す</button>
       <button class="btn-main" id="recruitAcceptBtn">仲間にする</button>
@@ -105,10 +116,16 @@ function showRecruitPrompt(candidate, onDone) {
   overlay.appendChild(panel);
   document.body.appendChild(overlay);
 
+  let resolved = false;
   const finish = (accepted) => {
+    if (resolved) return;
+    resolved = true;
     let recruitResult = null;
     if (accepted && state.createCompanion) {
-      const instanceId = state.createCompanion(candidate.speciesId);
+      const opts = candidate.elite
+        ? { minRarity: 'rare', origin: 'eliteRecruit' }
+        : { origin: 'recruit' };
+      const instanceId = state.createCompanion(candidate.speciesId, opts);
       const companion = instanceId && state.getCompanion ? state.getCompanion(instanceId) : null;
       if (instanceId && companion) {
         recruitResult = {
@@ -119,6 +136,7 @@ function showRecruitPrompt(candidate, onDone) {
           rarity: companion.instance.rarity,
           nature: companion.instance.nature,
           level: companion.instance.level,
+          eliteOrigin: !!candidate.elite,
         };
       }
     }
@@ -130,9 +148,6 @@ function showRecruitPrompt(candidate, onDone) {
   panel.querySelector('#recruitDeclineBtn').addEventListener('click', () => finish(false));
 }
 
-// Wrap TextBattleScreen's completion callback instead of changing its battle
-// flow. The standard result screen still receives the same result object, with
-// an optional recruitResult added after the player makes a choice.
 const originalStart = TextBattleScreen.prototype.start;
 TextBattleScreen.prototype.start = function patchedRecruitStart(stageId, onEnd, blessingId) {
   const wrappedOnEnd = (result) => {
