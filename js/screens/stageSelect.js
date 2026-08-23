@@ -3,30 +3,53 @@ import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 import { rollBlessingChoices } from '../data/blessings.js';
 
+/**
+ * ステージは「存在を知っているものだけ」表示する。
+ * - 各章の1ステージ目は章解放時から表示
+ * - 本編2〜5は直前の本編ステージをクリアすると初めて出現
+ * - 分岐は従来どおり requires 達成後に初めて出現
+ *
+ * 未到達ステージを ??? のカードとして並べないことで、
+ * 次に何が待っているか分からない探索感を残す。
+ */
+export function isStageDiscovered(chapter, stage, stageIndex) {
+  if (!chapter || !stage) return false;
+  if (stage.branch) return !stage.requires || state.isStageCleared(stage.requires);
+  if (stageIndex === 0) return true;
+
+  // 分岐ステージは配列末尾へ追加されるため、本編の直前要素を参照すればよい。
+  const previousMainStage = chapter.stages
+    .slice(0, stageIndex)
+    .filter((candidate) => !candidate.branch)
+    .at(-1);
+  return !!previousMainStage && state.isStageCleared(previousMainStage.id);
+}
+
 export function renderStageSelect(chapterIndex, onPick) {
   const chapter = CHAPTERS[chapterIndex];
   document.getElementById('chapterTitle').textContent = chapter.name;
   const list = document.getElementById('stageList');
   list.innerHTML = '';
-  for (const stage of chapter.stages) {
-    const locked = stage.requires && !state.isStageCleared(stage.requires);
+
+  chapter.stages.forEach((stage, stageIndex) => {
+    if (!isStageDiscovered(chapter, stage, stageIndex)) return;
+
     const card = document.createElement('div');
     card.className = 'stage-card'
       + (stage.boss ? ' boss' : '')
-      + (stage.branch ? ' branch' : '')
-      + (locked ? ' locked' : '');
+      + (stage.branch ? ' branch' : '');
     const cleared = state.isStageCleared(stage.id);
     const icon = stage.branch ? '🔀 ' : (stage.boss ? '👑 ' : '');
     card.innerHTML = `
       <div>
-        <div class="name">${icon}${locked ? '???' : stage.name}</div>
-        <div class="rec">${locked ? '本編ステージ3をクリアすると出現' : `推奨Lv ${stage.recLevel}`}</div>
+        <div class="name">${icon}${stage.name}</div>
+        <div class="rec">推奨Lv ${stage.recLevel}</div>
       </div>
       <div class="cleared">${cleared ? '★' : ''}</div>
     `;
-    if (!locked) card.addEventListener('click', () => { Audio_.tap(); onPick(stage); });
+    card.addEventListener('click', () => { Audio_.tap(); onPick(stage); });
     list.appendChild(card);
-  }
+  });
 }
 
 // 加護（Blessing）の3択と選択状態はこのモジュール内だけで保持する
