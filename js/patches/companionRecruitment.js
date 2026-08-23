@@ -1,0 +1,152 @@
+/* ============================================================
+   Companion System Phase 3 - monster recruitment
+   ------------------------------------------------------------
+   Records recruitable defeated monsters, rolls at most one successful
+   recruit after a cleared battle, then lets the player accept/decline
+   before the normal result screen transition.
+   ============================================================ */
+import { state } from '../state.js';
+import { BattleEngine } from '../battleEngine.js';
+import { TextBattleScreen } from '../screens/textBattle.js';
+import { COMPANION_SPECIES, getCompanionSpecies } from '../data/companions.js';
+
+const speciesByEnemyName = new Map(
+  Object.values(COMPANION_SPECIES)
+    .filter((s) => s.type === 'monster')
+    .map((s) => [s.name, s.id]),
+);
+
+function recruitSpeciesForEnemy(enemy) {
+  if (!enemy || enemy.boss || enemy.type === '__boss_summon__') return null;
+  return speciesByEnemyName.get(enemy.name) || null;
+}
+
+function ensureRecruitTracker(engine) {
+  if (!engine._recruitDefeats) engine._recruitDefeats = [];
+}
+
+const originalGrantKillRewards = BattleEngine.prototype._grantKillRewards;
+BattleEngine.prototype._grantKillRewards = function patchedRecruitGrantKillRewards(enemy) {
+  ensureRecruitTracker(this);
+  const speciesId = recruitSpeciesForEnemy(enemy);
+  if (speciesId) {
+    this._recruitDefeats.push({
+      speciesId,
+      enemyName: enemy.name,
+      elite: !!enemy.elite,
+    });
+  }
+  return originalGrantKillRewards.call(this, enemy);
+};
+
+function rollRecruitCandidate(engine) {
+  ensureRecruitTracker(engine);
+  if (!engine._recruitDefeats.length) return null;
+
+  // Each defeated recruitable monster gets one roll. Shuffle first so a
+  // repeated species does not always take priority over another species.
+  const rolls = [...engine._recruitDefeats].sort(() => Math.random() - 0.5);
+  for (const entry of rolls) {
+    const species = getCompanionSpecies(entry.speciesId);
+    if (!species || !species.recruit) continue;
+    const eliteBonus = entry.elite ? 0.05 : 0;
+    const chance = Math.min(0.35, (species.recruit.baseChance || 0) + eliteBonus);
+    if (Math.random() < chance) {
+      return {
+        speciesId: species.id,
+        name: species.name,
+        icon: species.icon || '🐾',
+        chance,
+        elite: entry.elite,
+      };
+    }
+  }
+  return null;
+}
+
+const originalFinishBattle = BattleEngine.prototype._finishBattle;
+BattleEngine.prototype._finishBattle = function patchedRecruitFinishBattle(cleared, retreated) {
+  originalFinishBattle.call(this, cleared, retreated);
+  if (!cleared || retreated || !this.finalResult) return;
+  const candidate = rollRecruitCandidate(this);
+  if (candidate) this.finalResult.recruitCandidate = candidate;
+};
+
+function removeRecruitOverlay() {
+  const old = document.getElementById('companionRecruitOverlay');
+  if (old) old.remove();
+}
+
+function showRecruitPrompt(candidate, onDone) {
+  removeRecruitOverlay();
+  const overlay = document.createElement('div');
+  overlay.id = 'companionRecruitOverlay';
+  overlay.style.position = 'fixed';
+  overlay.style.inset = '0';
+  overlay.style.zIndex = '9999';
+  overlay.style.background = 'rgba(0,0,0,.72)';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.padding = '20px';
+
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.style.width = 'min(420px, 92vw)';
+  panel.innerHTML = `
+    <div style="font-size:46px;text-align:center;margin-bottom:8px;">${candidate.icon || '🐾'}</div>
+    <h2 style="text-align:center;">${candidate.name}がこちらを見ている……</h2>
+    <p class="sub" style="text-align:center;">仲間になりたそうだ！${candidate.elite ? '<br>エリート個体の気配を感じる。' : ''}</p>
+    <div class="confirm-actions" style="margin-top:16px;">
+      <button class="btn-sub" id="recruitDeclineBtn">帰す</button>
+      <button class="btn-main" id="recruitAcceptBtn">仲間にする</button>
+    </div>
+  `;
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+
+  const finish = (accepted) => {
+    let recruitResult = null;
+    if (accepted && state.createCompanion) {
+      const instanceId = state.createCompanion(candidate.speciesId);
+      const companion = instanceId && state.getCompanion ? state.getCompanion(instanceId) : null;
+      if (instanceId && companion) {
+        recruitResult = {
+          accepted: true,
+          instanceId,
+          speciesId: candidate.speciesId,
+          name: companion.instance.nickname || companion.species.name,
+          rarity: companion.instance.rarity,
+          nature: companion.instance.nature,
+          level: companion.instance.level,
+        };
+      }
+    }
+    removeRecruitOverlay();
+    onDone(recruitResult || { accepted: false });
+  };
+
+  panel.querySelector('#recruitAcceptBtn').addEventListener('click', () => finish(true));
+  panel.querySelector('#recruitDeclineBtn').addEventListener('click', () => finish(false));
+}
+
+// Wrap TextBattleScreen's completion callback instead of changing its battle
+// flow. The standard result screen still receives the same result object, with
+// an optional recruitResult added after the player makes a choice.
+const originalStart = TextBattleScreen.prototype.start;
+TextBattleScreen.prototype.start = function patchedRecruitStart(stageId, onEnd, blessingId) {
+  const wrappedOnEnd = (result) => {
+    if (!result || !result.cleared || !result.recruitCandidate) {
+      onEnd(result);
+      return;
+    }
+    const candidate = result.recruitCandidate;
+    showRecruitPrompt(candidate, (recruitResult) => {
+      result.recruitResult = recruitResult;
+      onEnd(result);
+    });
+  };
+  return originalStart.call(this, stageId, wrappedOnEnd, blessingId);
+};
+
+export { rollRecruitCandidate };
