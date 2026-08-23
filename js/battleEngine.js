@@ -91,6 +91,10 @@ export class BattleEngine {
       // 僧侶「浄化」用の空のスキャフォールドとしてのみ保持する（将来Boss等が
       // プレイヤーを弱体化させる手段を持った際にここへ書き込む想定）。
       negativeStatus: { weaken: {}, dotStacks: 0, dotTurnsLeft: 0 },
+      // 魔導技師「自動砲台」：設置中は_afterRoundChecks()でラウンド終了時に
+      // 1回だけ自動で追撃する（新規summon・実弾は作らず、既存の
+      // calculateDamage/_applyRawDamageAndRewardをそのまま呼ぶだけの軽量tick）
+      autoTurret: null,
     };
     if (this.blessing) {
       const b = this.blessing;
@@ -141,6 +145,49 @@ export class BattleEngine {
     this._farmerSurviveUsed = false;
     // 盗賊「盗む」：対象ごとに1戦1回だけ成立させるため、盗んだ敵のidを記録する
     this._stolenEnemyIds = new Set();
+
+    /* --------------------------------------------------------
+       ここから上級職30種（第2フェーズ）向けに追加した状態。
+       いずれも「既存の一時バフ／一時ボーナスと同じturns管理の薄いフィールド」
+       であり、新しい状態異常システムではない（元指示：どうしても必要な
+       ものだけ汎用status/buff構造へ追加する）。
+       -------------------------------------------------------- */
+    // 魔法剣士MASTER「魔力剣」：数ターン、通常攻撃にもMAG補正を追加する
+    this._tempHybridMagRatio = 0; this._tempHybridMagTurns = 0;
+    // 大商人/大工系「値切り」：Gold消費技のコストを一時的に割り引く
+    this._tempGoldCostReduce = 0; this._tempGoldCostReduceTurns = 0;
+    // トレジャーハンター「目利き」・大商人「鑑定眼」：戦闘中だけドロップ率を底上げ
+    this._tempDropRateBonus = 0; this._tempDropRateBonusTurns = 0;
+    // アルカニスト「錬成陣」等：自分がかけるweaken/dotの効果量を一時的に底上げ
+    this._tempDebuffPowerBonus = 0; this._tempDebuffPowerBonusTurns = 0;
+    // 語り部「伝説の一節」：数ターン経験値取得を底上げ
+    this._tempExpBonus = 0; this._tempExpBonusTurns = 0;
+    // アームズナイトMASTER「完全武装」：Armor Penへの一時加算
+    this._tempArmorPenBonus = 0; this._tempArmorPenTurns = 0;
+    // 賢者MASTER「連続詠唱」：次に唱えるspell1回だけ2回発動させる予約フラグ
+    this._doubleCastArmed = false;
+    // 剣豪「居合」・密偵「奇襲」等：このラウンド先攻したか（advanceTurn側で設定）
+    this._lastPlayerFirst = false;
+    // 怪盗MASTER「背後の一撃」：直前に敵の攻撃を回避していたか
+    this._playerEvadedLastRound = false;
+    // 幻惑の舞姫MASTER「夢幻乱舞」：戦闘中に回避へ成功した累計回数
+    this._playerEvasionCount = 0;
+    // 拳聖「連環拳」：直前の自分の行動が攻撃系（通常攻撃 or damage技）だったか
+    this._lastActionWasAttack = false;
+    // トレジャーハンター「発掘」・大商人「市場支配」：戦闘クリア時に1回だけ
+    // 追加報酬を判定する予約（{goldPct, dropChance}）。既存_rollDrop()のみを
+    // 使うためBoss固有武器・初回クリア報酬（別経路）は対象外＝無限増殖しない
+    this._battleEndBonusReward = null;
+    // トレジャーハンターMASTER「大発見」・村の癒し手MASTER「村人の奇跡」等、
+    // 技ID単位で「1戦1回」を厳密に保証する汎用セット（_probeTechnique/
+    // _playerTechnique側で共通に参照する）
+    this._oncePerBattleUsed = new Set();
+    // パラディンMASTER「不落の誓い」：致死ダメージを1戦1回だけ耐える権利を
+    // 技の使用時に「起動」する（農民の百姓魂＝常時パッシブとは異なり、
+    // 使った時だけ有効になる）。checkBattleEnd()では深淵蘇生→百姓魂→
+    // この順で判定し、重複発動しないようにする
+    this._paladinDeathGuardArmed = false;
+    this._paladinSurviveUsed = false;
 
     this.runExp = 0;
     this.runGold = 0;
@@ -267,6 +314,46 @@ export class BattleEngine {
     const b = this.player.buffs.evasionAdd;
     return Math.min(CAPS_LAYER.EVASION_MAX, (this.player.evasion || 0) + (b.turnsLeft > 0 ? b.value : 0));
   }
+  // アームズナイトMASTER「完全武装」用：既存player.armorPenへの一時加算を
+  // 一箇所で反映する（通常攻撃・とくぎ・じゅもんの全経路がここを経由する）
+  _effectiveArmorPen() {
+    return Math.min(CAPS_LAYER.ARMOR_PEN_MAX, (this.player.armorPen || 0) + (this._tempArmorPenTurns > 0 ? this._tempArmorPenBonus : 0));
+  }
+
+  // パラディン「聖盾」・剣豪MASTER「無心斬」・巫女MASTER「神託」等：Boss予兆
+  // （既存pendingSpecial）が出ている間だけ強化される技で共通して使う判定
+  _hasActiveTelegraph() { return this.aliveEnemies.some((e) => e.pendingSpecial); }
+
+  // 自己参照（プレイヤー・戦況側）の条件で威力を上乗せする技（居合・奇襲・
+  // 背後の一撃・無心斬・連環拳・背水拳等）が共通で使う判定。target側の条件は
+  // 別途_targetBonusPower()で扱う（新しい状態異常システムではなく、既存の
+  // フラグ・カウンタを読むだけの薄いヘルパー）
+  _conditionMet(cb) {
+    if (!cb) return false;
+    switch (cb.condition) {
+      case 'playerFirst': return !!this._lastPlayerFirst;
+      case 'evadedLastRound': return !!this._playerEvadedLastRound;
+      case 'firstOrEvaded': return !!this._lastPlayerFirst || !!this._playerEvadedLastRound;
+      case 'telegraphActive': return this._hasActiveTelegraph();
+      case 'prevActionAttack': return !!this._lastActionWasAttack;
+      case 'highEvasion': return this._effectiveEvasion() >= (cb.evasionThreshold != null ? cb.evasionThreshold : 0.15);
+      default: return false;
+    }
+  }
+
+  // 対象（敵）側の状態で威力を上乗せする技（猛獣使い・暗殺拳・密偵・
+  // 狩猟王等）が共通で使う判定。'marked'は狩猟王「狩人の印」が刻む
+  // enemy.vulnerable（既存weakenと同じ形の追加フィールド）を見る
+  _targetBonusPower(tb, target) {
+    if (!tb || !target) return 0;
+    switch (tb.when) {
+      case 'bossOrElite': return (target.boss || target.elite) ? tb.power : 0;
+      case 'lowHp': return (target.maxHp > 0 && target.hp / target.maxHp <= (tb.hpThreshold != null ? tb.hpThreshold : 0.5)) ? tb.power : 0;
+      case 'debuffed': return ((target.weaken && Object.keys(target.weaken).length > 0) || (target.dotStacks || 0) > 0) ? tb.power : 0;
+      case 'marked': return (target.vulnerable && target.vulnerable.turnsLeft > 0) ? tb.power : 0;
+      default: return 0;
+    }
+  }
 
   // ---------------------------------------------------------
   // ダメージ計算（PR#2のDamage Bucketをそのまま流用。新式は作らない）
@@ -314,16 +401,33 @@ export class BattleEngine {
   // と職業とくぎ・じゅもん（skills.js/spells.jsのweaken/dotフィールド）の
   // どちらから呼ばれても、同じenemy.weaken/dotStacks構造へ書き込む
   // （新しい状態異常システムを増やさず、既存の仕組みへ合流させる）。
+  // アルカニスト「錬成陣」・MASTER「賢者の触媒」：自分がかけるweaken/dotの
+  // 効果量を一時的に底上げする（_tempDebuffPowerBonus）。両メソッドを通る
+  // 経路すべて（装備固有効果・基本職skills.js・上級職skills.js）へ自動で乗る
+  _debuffPowerMult() { return this._tempDebuffPowerBonusTurns > 0 ? 1 + this._tempDebuffPowerBonus : 1; }
   _applyWeakenToTarget(target, stat, power, turnsLeft) {
     if (!target || target.dead) return;
     target.weaken = target.weaken || {};
-    target.weaken[stat] = { power, turnsLeft };
+    target.weaken[stat] = { power: power * this._debuffPowerMult(), turnsLeft };
   }
   _applyDotToTarget(target, power, turnsLeft, maxStacks = 99) {
     if (!target || target.dead) return;
     target.dotStacks = Math.min(maxStacks, (target.dotStacks || 0) + 1);
     target.dotTurnsLeft = turnsLeft;
-    target.dotPower = power;
+    target.dotPower = power * this._debuffPowerMult();
+  }
+  // 星詠みの魔女「星蝕」・幻術師「幻覚」等：weakenを配列（複数ステータス）でも
+  // 単一オブジェクトでも受理できるよう一般化した共通ヘルパー
+  _applyWeakenList(target, weaken, bossMultiplierTarget) {
+    const list = Array.isArray(weaken) ? weaken : [weaken];
+    const applied = [];
+    for (const w of list) {
+      let pct = w.pct;
+      if (bossMultiplierTarget && bossMultiplierTarget.boss && w.bossMultiplier != null) pct *= w.bossMultiplier;
+      this._applyWeakenToTarget(target, w.stat, pct, w.turns);
+      applied.push({ stat: w.stat, pct });
+    }
+    return applied;
   }
 
   // calculateDamage(): 攻撃側atk・防御側defから最終ダメージを算出する。
@@ -331,7 +435,7 @@ export class BattleEngine {
   // そのまま踏襲する（js/battle.js旧_rollDamage()と数式は完全に同一）。
   calculateDamage(atk, target, opts = {}) {
     const rawDef = target ? this._effectiveEnemyStat(target, 'def') : 0;
-    const armorPen = opts.armorPen != null ? opts.armorPen : (this.player.armorPen || 0);
+    const armorPen = opts.armorPen != null ? opts.armorPen : this._effectiveArmorPen();
     const effectiveDef = rawDef * (1 - armorPen);
     const mitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectiveDef / (effectiveDef + DAMAGE_BUCKET.MITIGATION_K));
     let dmg = Math.max(1, atk * (1 - mitigation));
@@ -343,6 +447,10 @@ export class BattleEngine {
     // target.boss===trueの場合は従来どおり必ず適用される。target.elite===true
     // のケースだけが新たに対象に加わる）。
     if (target && (target.boss || target.elite) && !opts.noBossMult) dmg *= this._bossDmgMult(target);
+    // 狩猟王「狩人の印」：マーク中の相手への一律ダメージ増加。既存weakenと
+    // 対になる新フィールドenemy.vulnerableだけを見る薄い追加（新しい状態
+    // 異常システムを作らず、既存のダメージ計算の最後に1項足すだけ）
+    if (target && target.vulnerable && target.vulnerable.turnsLeft > 0) dmg *= (1 + target.vulnerable.pct);
     return { damage: Math.round(dmg), critical };
   }
 
@@ -424,7 +532,10 @@ export class BattleEngine {
     // クールダウン短縮の代わりに、こちらの核心挙動をターン制でも維持する）
     const berserkerDoubled = !!this._berserkerDoubleAttack;
     if (berserkerDoubled) hitCount *= 2;
-    const atkValue = this._effectiveAtk() * this._mainDmgMult();
+    // 魔法剣士MASTER「魔力剣」：数ターンだけ通常攻撃にもMAG補正を追加する
+    // （永続化しないよう必ずturnsで管理された一時ボーナスのみを見る）
+    const hybridBonus = this._tempHybridMagTurns > 0 ? this._effectiveMag() * this._tempHybridMagRatio : 0;
+    const atkValue = (this._effectiveAtk() + hybridBonus) * this._mainDmgMult();
     // ChatGPTレビュー指摘1番：multi-hitは1発ごとに独立して会心判定・
     // ダメージ乱数を振り（分散を実時間相当に保つ）、かつ1発ごとに
     // _applyDamageToEnemy()を呼んでonHit/onCritをその場で発火させる
@@ -455,6 +566,7 @@ export class BattleEngine {
       critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, berserkerDoubled,
     };
     this._actionTypesUsed.add('attack');
+    this._lastActionWasAttack = true; // 拳聖「連環拳」：直前の行動が攻撃系だったかの判定に使う
     this._checkActionDiversityBurst(result);
     return result;
   }
@@ -476,9 +588,13 @@ export class BattleEngine {
   availableSpells() { return (this.job.spells || []).filter((t) => this._isTechniqueLearned(t) && !t.passive); }
 
   _techniqueGoldCost(tech) {
-    if (tech.goldCostFlat != null) return tech.goldCostFlat;
-    if (tech.goldCostPct != null) return Math.max(tech.goldCostMin || 0, Math.round(state.data.gold * tech.goldCostPct));
-    return 0;
+    let cost;
+    if (tech.goldCostFlat != null) cost = tech.goldCostFlat;
+    else if (tech.goldCostPct != null) cost = Math.max(tech.goldCostMin || 0, Math.round(state.data.gold * tech.goldCostPct));
+    else return 0;
+    // 大商人「値切り」：Gold消費技のコストを一時的に割り引く
+    if (this._tempGoldCostReduceTurns > 0) cost = Math.max(0, Math.round(cost * (1 - this._tempGoldCostReduce)));
+    return cost;
   }
 
   // MP・クールダウン・Gold・習得状態を確認するだけの副作用なしチェック。
@@ -489,6 +605,10 @@ export class BattleEngine {
     const list = kind === 'spell' ? this.availableSpells() : this.availableSkills();
     const tech = list.find((t) => t.id === techId);
     if (!tech) return { ok: false, reason: 'notLearned' };
+    // トレジャーハンターMASTER「大発見」・村の癒し手MASTER「村人の奇跡」等：
+    // 技ID単位の「1戦1回」制限（クールダウンとは別枠。長い戦闘でCDが
+    // 切れて再度使えてしまわないよう、明示的に使用済みセットで縛る）
+    if (tech.oncePerBattle && this._oncePerBattleUsed.has(tech.id)) return { ok: false, reason: 'usedThisBattle' };
     if ((this.skillCooldowns[tech.id] || 0) > 0) return { ok: false, reason: 'onCooldown' };
     if (this.player.mp < tech.mpCost) return { ok: false, reason: 'noMp' };
     if (tech.goldCostPct != null || tech.goldCostFlat != null) {
@@ -509,6 +629,7 @@ export class BattleEngine {
       // 元指示：Goldが0未満にならないこと
       state.data.gold = Math.max(0, state.data.gold - goldSpent);
     }
+    if (tech.oncePerBattle) this._oncePerBattleUsed.add(tech.id);
     if (tech.cooldownTurns > 0) {
       this.skillCooldowns[tech.id] = Math.max(1, Math.round(tech.cooldownTurns * state.jobMasterCooldownMult()));
       // このラウンドの_afterRoundChecks()でうっかり即座に1減らしてしまうと、
@@ -526,18 +647,34 @@ export class BattleEngine {
     }
 
     const result = { action: kind, techId: tech.id, name: tech.name, techType: tech.type, goldSpent, targets: [] };
-    switch (tech.type) {
-      case 'damage': this._resolveTechniqueDamage(tech, targetId, result); break;
-      case 'heal': this._resolveTechniqueHeal(tech, result); break;
-      case 'buff': this._resolveTechniqueBuff(tech, result); break;
-      case 'debuff': this._resolveTechniqueDebuff(tech, targetId, result); break;
-      case 'steal': this._resolveTechniqueSteal(tech, targetId, result); break;
-      case 'inspect': this._resolveTechniqueInspect(tech, targetId, result); break;
-      case 'burst': this._resolveTechniqueBurst(tech, targetId, result); break;
-      case 'cleanse': this._resolveTechniqueCleanse(tech, result); break;
-      case 'utility': this._resolveTechniqueUtility(tech, result); break;
-      default: break;
+    const dispatchTechnique = () => {
+      switch (tech.type) {
+        case 'damage': this._resolveTechniqueDamage(tech, targetId, result); break;
+        case 'heal': this._resolveTechniqueHeal(tech, result); break;
+        case 'buff': this._resolveTechniqueBuff(tech, result); break;
+        case 'debuff': this._resolveTechniqueDebuff(tech, targetId, result); break;
+        case 'steal': this._resolveTechniqueSteal(tech, targetId, result); break;
+        case 'inspect': this._resolveTechniqueInspect(tech, targetId, result); break;
+        case 'burst': this._resolveTechniqueBurst(tech, targetId, result); break;
+        case 'cleanse': this._resolveTechniqueCleanse(tech, result); break;
+        case 'utility': this._resolveTechniqueUtility(tech, result); break;
+        default: break;
+      }
+    };
+    dispatchTechnique();
+    // 賢者MASTER「連続詠唱」：直前に予約されていれば、次に唱えたspell1回に
+    // 限り2回発動させる（MPは2回分消費、不足していれば1回のみで諦める＝
+    // ラウンド自体はすでに成立しているので失敗にはしない）。連続詠唱自身の
+    // 再発動はtech.armDoubleCastで明示的に除外しているため無限ループしない
+    if (kind === 'spell' && this._doubleCastArmed && !tech.armDoubleCast) {
+      this._doubleCastArmed = false;
+      if (this.player.mp >= tech.mpCost) {
+        this.player.mp -= tech.mpCost;
+        dispatchTechnique();
+        result.doubleCast = true;
+      }
     }
+    this._lastActionWasAttack = tech.type === 'damage' || tech.type === 'burst';
     this._actionTypesUsed.add(kind === 'spell' ? 'spell' : 'skill');
     this._checkActionDiversityBurst(result);
     return result;
@@ -551,18 +688,50 @@ export class BattleEngine {
   }
 
   _resolveTechniqueDamage(tech, targetId, result) {
-    const statValue = tech.magic ? this._effectiveMag() : this._effectiveAtk();
+    // 星詠みの魔女「流星」：ランダムな相手へ独立してhit数ぶん撃つ特殊分岐
+    if (tech.target === 'randomEnemies') { this._resolveTechniqueDamageRandom(tech, result); return; }
+    // hybrid：パラディン/魔法剣士/森の吟遊詩人等、ATKとMAGを両方参照する
+    // ハイブリッド攻撃（新フィールド。既存のmagic:trueとは独立に扱う）
+    const statValue = tech.hybrid ? (this._effectiveAtk() + this._effectiveMag()) / 2
+      : (tech.magic ? this._effectiveMag() : this._effectiveAtk());
     const hits = tech.hits || 1;
     const targets = this._resolveTargets(tech, targetId);
     if (targets.length === 0) { result.noTarget = true; return; }
     const opts = {};
-    if (tech.armorPenBonus) opts.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, (this.player.armorPen || 0) + tech.armorPenBonus);
+    if (tech.armorPenBonus) opts.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, this._effectiveArmorPen() + tech.armorPenBonus);
+    // critBonus：魔法剣士「雷鳴斬」・急所突き等、この技の一撃だけ会心率に加算する
+    if (tech.critBonus) opts.critPct = Math.min(CAPS_LAYER.CRIT_PCT_MAX, this._effectiveCritPct() + tech.critBonus);
+    // 自己参照の条件付き威力ボーナス（先攻/回避直後/Boss予兆中/直前の行動/
+    // 背水/回避回数）。対象ごとには変わらないため先に1回だけ計算する
+    let conditionBonusPower = 0;
+    if (tech.conditionBonus && this._conditionMet(tech.conditionBonus)) conditionBonusPower += tech.conditionBonus.power;
+    if (tech.lowHpScalePower) {
+      const hpRatio = this.player.maxHp > 0 ? this.player.hp / this.player.maxHp : 1;
+      conditionBonusPower += tech.lowHpScalePower.maxBonus * Math.max(0, 1 - hpRatio);
+    }
+    if (tech.evasionCountScale) {
+      const c = tech.evasionCountScale;
+      conditionBonusPower += Math.min(c.max, c.perCount * (this._playerEvasionCount || 0));
+    }
     for (const target of targets) {
+      // 暗殺拳MASTER「暗殺」：雑魚のみ低確率の即死。Eliteには一切効かず、
+      // Bossは即死せずtargetBonus（Execution扱い）へ完全に置き換わる
+      if (tech.instaKill && !target.dead && !target.boss && !target.elite && Math.random() < tech.instaKill.chance) {
+        const dmg = target.hp;
+        const hit = this._applyDamageToEnemy(target, dmg, false);
+        result.targets.push({
+          targetId: target.id, targetName: target.name, damage: dmg, defeated: target.dead,
+          critical: false, criticalCount: 0, hitCount: 1, effects: hit.effects, kill: hit.kill, instaKilled: true,
+        });
+        continue;
+      }
+      const targetBonusPower = this._targetBonusPower(tech.targetBonus, target);
       let totalDamage = 0, criticalCount = 0, hitsLanded = 0;
       const effects = []; let kill = null;
       for (let i = 0; i < hits; i++) {
         if (target.dead) break;
-        const atkValue = statValue * tech.power * this._mainDmgMult();
+        const power = tech.power + conditionBonusPower + targetBonusPower;
+        const atkValue = statValue * power * this._mainDmgMult();
         const { damage, critical } = this.calculateDamage(atkValue, target, opts);
         if (critical) criticalCount++;
         hitsLanded++;
@@ -570,14 +739,54 @@ export class BattleEngine {
         const hit = this._applyDamageToEnemy(target, damage, critical);
         effects.push(...hit.effects);
         if (hit.kill) kill = hit.kill;
+        // 狩猟王「追撃」：会心が出たら同じ相手へ即座に追加の一撃を加える
+        if (critical && tech.critFollowup && !target.dead) {
+          const followAtk = statValue * tech.power * tech.critFollowup.powerMult * this._mainDmgMult();
+          const follow = this.calculateDamage(followAtk, target, opts);
+          hitsLanded++;
+          totalDamage += follow.damage;
+          if (follow.critical) criticalCount++;
+          const followHit = this._applyDamageToEnemy(target, follow.damage, follow.critical);
+          effects.push(...followHit.effects);
+          if (followHit.kill) kill = followHit.kill;
+        }
       }
-      if (tech.weaken && !target.dead) this._applyWeakenToTarget(target, tech.weaken.stat, tech.weaken.pct, tech.weaken.turns);
+      if (tech.weaken && !target.dead) this._applyWeakenList(target, tech.weaken, target);
       if (tech.dot && !target.dead) this._applyDotToTarget(target, tech.dot.power, tech.dot.turns, tech.dot.maxStacks || 99);
       result.targets.push({
         targetId: target.id, targetName: target.name, damage: totalDamage, defeated: target.dead,
         critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, effects, kill,
       });
     }
+    // プリマ・ディーヴァ「剣の舞曲」等：攻撃と同時に自分へバフをかける
+    if (tech.selfBuff) this._applyBuffPayload(tech.selfBuff, result);
+  }
+
+  // 星詠みの魔女「流星」専用：固定hit数ぶん、毎回独立してランダムな生存中の
+  // 敵を選び直す（過剰乱数防止のためhit数自体は固定・SPD等に依存しない）
+  _resolveTechniqueDamageRandom(tech, result) {
+    const hits = tech.hits || 1;
+    const statValue = tech.magic ? this._effectiveMag() : this._effectiveAtk();
+    for (let i = 0; i < hits; i++) {
+      const alive = this.aliveEnemies;
+      if (alive.length === 0) break;
+      const target = alive[Math.floor(Math.random() * alive.length)];
+      const atkValue = statValue * tech.power * this._mainDmgMult();
+      const { damage, critical } = this.calculateDamage(atkValue, target);
+      const hit = this._applyDamageToEnemy(target, damage, critical);
+      let entry = result.targets.find((t) => t.targetId === target.id);
+      if (!entry) {
+        entry = { targetId: target.id, targetName: target.name, damage: 0, criticalCount: 0, hitCount: 0, effects: [], defeated: false, kill: null };
+        result.targets.push(entry);
+      }
+      entry.damage += damage; entry.hitCount++;
+      if (critical) entry.criticalCount++;
+      entry.effects.push(...hit.effects);
+      entry.defeated = target.dead;
+      entry.critical = entry.criticalCount > 0;
+      if (hit.kill) entry.kill = hit.kill;
+    }
+    if (result.targets.length === 0) result.noTarget = true;
   }
 
   // weaken（能力低下）・dot（毒/DoT付与）・stun（低確率の行動阻害）のいずれか、
@@ -590,25 +799,41 @@ export class BattleEngine {
     for (const target of targets) {
       const entry = { targetId: target.id, targetName: target.name };
       if (tech.weaken) {
-        let pct = tech.weaken.pct;
-        // 狩人「足止め」等：Bossには効果量を減衰させる
-        if (target.boss && tech.weaken.bossMultiplier != null) pct *= tech.weaken.bossMultiplier;
-        this._applyWeakenToTarget(target, tech.weaken.stat, pct, tech.weaken.turns);
-        entry.weakenStat = tech.weaken.stat;
-        entry.weakenPct = pct;
+        // 星詠みの魔女「星蝕」・幻術師「幻覚」：weakenは単一オブジェクトでも
+        // 配列（複数ステータス同時弱体）でも受理できる
+        const applied = this._applyWeakenList(target, tech.weaken, target);
+        entry.weakenApplied = applied;
+        entry.weakenStat = applied[0].stat; // 既存BattleLog互換のためトップレベルにも残す
+        entry.weakenPct = applied[0].pct;
       }
       if (tech.dot) {
         this._applyDotToTarget(target, tech.dot.power, tech.dot.turns, tech.dot.maxStacks || 99);
         entry.dotApplied = true;
         entry.dotStacks = target.dotStacks;
       }
+      // 狩猟王「狩人の印」：Boss/Elite限定のマーク（既存weakenと対になる
+      // enemy.vulnerable。マーク中は一律ダメージ増加がcalculateDamage側で乗る）
+      if (tech.vulnerable && (!tech.vulnerable.bossEliteOnly || target.boss || target.elite)) {
+        target.vulnerable = { pct: tech.vulnerable.pct, turnsLeft: tech.vulnerable.turns };
+        entry.marked = true;
+      }
       // 忍者「影縫い」・魔法使い「氷槍」：Bossには完全停止を適用しない（弱体化）
       if (tech.stunChance && !(tech.stunExcludesBoss && target.boss) && Math.random() < tech.stunChance) {
         target.frozenTurns = Math.max(target.frozenTurns, tech.stunTurns || 1);
         entry.stunned = true;
       }
+      // 密偵「偵察」・語り部「魔物語り」：解析（学者「解析」と同じ情報）を
+      // デバフと同時に行う
+      if (tech.inspect) {
+        entry.inspected = {
+          name: target.name, hp: target.hp, maxHp: target.maxHp,
+          atk: target.atk, def: target.def, spd: target.spd, boss: target.boss, elite: target.elite,
+        };
+      }
       result.targets.push(entry);
     }
+    // 幻惑の舞姫「幻惑舞」：敵デバフと同時に自分へバフをかける
+    if (tech.selfBuff) this._applyBuffPayload(tech.selfBuff, result);
   }
 
   _resolveTechniqueHeal(tech, result) {
@@ -617,6 +842,15 @@ export class BattleEngine {
     const amount = Math.round(this.player.maxHp * tech.healPct * healPowerMult * healMult + this._effectiveMag() * (tech.healMagRatio || 0));
     this.player.hp = Math.min(this.player.maxHp, this.player.hp + amount);
     result.healAmount = amount;
+    // ギルドマスター「補給」：Gold消費でHP/MPを同時回復する
+    if (tech.mpRestorePct) {
+      const mpAmount = Math.round(this.player.maxMp * tech.mpRestorePct);
+      this.player.mp = Math.min(this.player.maxMp, this.player.mp + mpAmount);
+      result.mpRestored = mpAmount;
+    }
+    // プリマ・ディーヴァ「癒しの舞曲」・聖歌隊長/村の癒し手のMASTER技等：
+    // 回復と同時にバフをかける（既存_applyBuffPayloadをそのまま再利用）
+    if (tech.buff) this._applyBuffPayload(tech.buff, result);
   }
 
   _setBuff(stat, pct, turns) { this.player.buffs[stat] = { mult: 1 + pct, turnsLeft: turns }; }
@@ -639,12 +873,25 @@ export class BattleEngine {
     if (b.bossGuardPct) { this.player.guardOverrideMult = 1 - b.bossGuardPct; this.player.guardOverrideTurns = b.turns; }
     if (b.bossDmgAdd) { this._tempBossDmgBonus = b.bossDmgAdd; this._tempBossDmgTurns = b.turns; }
     if (b.dmgBonusAdd) { this._tempDmgBonus = b.dmgBonusAdd; this._tempDmgBonusTurns = b.turns; }
+    // 上級職向けに追加した一時ボーナス各種（元指示：どうしても必要なものだけ
+    // 汎用status/buff構造へ追加する。いずれも既存の_tempXxx/_tempXxxTurnsと
+    // 同じ「turnsで必ず切れる」パターンを踏襲している）
+    if (b.armorPenAdd) { this._tempArmorPenBonus = b.armorPenAdd; this._tempArmorPenTurns = b.turns; }
+    if (b.goldCostReduceAdd) { this._tempGoldCostReduce = b.goldCostReduceAdd; this._tempGoldCostReduceTurns = b.turns; }
+    if (b.dropRateMultAdd) { this._tempDropRateBonus = b.dropRateMultAdd; this._tempDropRateBonusTurns = b.turns; }
+    if (b.debuffPowerAdd) { this._tempDebuffPowerBonus = b.debuffPowerAdd; this._tempDebuffPowerBonusTurns = b.turns; }
+    if (b.expMultAdd) { this._tempExpBonus = b.expMultAdd; this._tempExpBonusTurns = b.turns; }
+    if (b.hybridAtkAdd) { this._tempHybridMagRatio = b.hybridAtkAdd.ratio; this._tempHybridMagTurns = b.hybridAtkAdd.turns; }
+    // 魔導技師MASTER「超過駆動」：設置中の自動砲台がある場合だけ威力を底上げする
+    if (b.turretPowerAdd && this.player.autoTurret) this.player.autoTurret.power += b.turretPowerAdd;
     result.buffed = true;
   }
 
   _resolveTechniqueBuff(tech, result) {
-    // 農民「根性」：HPが低いほど恩恵が大きい（無駄打ちを避けるため、
-    // 通常時も最低限のbuffは必ず得られるようにしてある）
+    // 農民「根性」・剛力士MASTER「仁王立ち」・鉄農兵MASTER「不屈の農兵」等：
+    // HPが低いほど恩恵が大きい（無駄打ちを避けるため、通常時も最低限のbuffは
+    // 必ず得られるようにしてある）。lowHpBonus側はatkPct/defPct/guardOverride
+    // まで受理できるよう一般化してある
     if (tech.lowHpThreshold != null && tech.lowHpBonus) {
       const hpRatio = this.player.maxHp > 0 ? this.player.hp / this.player.maxHp : 1;
       if (hpRatio <= tech.lowHpThreshold) {
@@ -653,22 +900,69 @@ export class BattleEngine {
           this.player.hp = Math.min(this.player.maxHp, this.player.hp + amount);
           result.healAmount = amount;
         }
-        this._applyBuffPayload({ defPct: tech.lowHpBonus.defPct, turns: tech.lowHpBonus.turns }, result);
+        this._applyBuffPayload({ atkPct: tech.lowHpBonus.atkPct, defPct: tech.lowHpBonus.defPct, turns: tech.lowHpBonus.turns }, result);
+        if (tech.lowHpBonus.guardOverride) {
+          this.player.guarding = true;
+          this.player.guardOverrideMult = tech.lowHpBonus.guardOverride.mult;
+          this.player.guardOverrideTurns = tech.lowHpBonus.guardOverride.turns;
+        }
         return;
       }
+    }
+    // パラディン「聖盾」・巫女「神託」の同型buff版等：Boss予兆が出ている間に
+    // 使うと、通常のbuffの代わりに強化版（telegraphBonus）が乗る
+    if (tech.telegraphBonus && this._hasActiveTelegraph()) {
+      if (tech.telegraphBonus.buff) this._applyBuffPayload(tech.telegraphBonus.buff, result);
+      if (tech.telegraphBonus.guardOverride) {
+        this.player.guarding = true;
+        this.player.guardOverrideMult = tech.telegraphBonus.guardOverride.mult;
+        this.player.guardOverrideTurns = tech.telegraphBonus.guardOverride.turns;
+      }
+      result.telegraphBonusApplied = true;
+      if (tech.haste) { this._hasteInitiativeBonus = tech.haste.power; this._hasteInitiativeTurns = tech.haste.turns; }
+      return;
     }
     this._applyBuffPayload(tech.buff, result);
     if (tech.haste) { this._hasteInitiativeBonus = tech.haste.power; this._hasteInitiativeTurns = tech.haste.turns; }
   }
 
   _resolveTechniqueUtility(tech, result) {
-    if (tech.guardOverride) {
-      this.player.guarding = true;
-      this.player.guardOverrideMult = tech.guardOverride.mult;
-      this.player.guardOverrideTurns = tech.guardOverride.turns;
+    // 巫女MASTER「神託」等（utility型のtelegraphBonus）：Boss予兆が出ている
+    // 間に使うと通常のguardOverride/buffの代わりに強化版が乗る
+    if (tech.telegraphBonus && this._hasActiveTelegraph()) {
+      if (tech.telegraphBonus.guardOverride) {
+        this.player.guarding = true;
+        this.player.guardOverrideMult = tech.telegraphBonus.guardOverride.mult;
+        this.player.guardOverrideTurns = tech.telegraphBonus.guardOverride.turns;
+      }
+      if (tech.telegraphBonus.buff) this._applyBuffPayload(tech.telegraphBonus.buff, result);
+      result.telegraphBonusApplied = true;
+    } else {
+      if (tech.guardOverride) {
+        this.player.guarding = true;
+        this.player.guardOverrideMult = tech.guardOverride.mult;
+        this.player.guardOverrideTurns = tech.guardOverride.turns;
+      }
+      if (tech.buff) this._applyBuffPayload(tech.buff, result);
     }
-    if (tech.buff) this._applyBuffPayload(tech.buff, result);
     if (tech.tempEffect) this._addTempEffect(tech.tempEffect.effect, tech.tempEffect.turns);
+    // パラディン「癒しの反撃」：カウンター＋回復を同時に一時付与する等、
+    // 複数effectを同時に付与したい場合はtempEffects（配列）を使う
+    if (tech.tempEffects) for (const te of tech.tempEffects) this._addTempEffect(te.effect, te.turns);
+    // 賢者MASTER「連続詠唱」：次のspell1回を2回発動させる予約
+    if (tech.armDoubleCast) this._doubleCastArmed = true;
+    // パラディンMASTER「不落の誓い」：致死ダメージを1戦1回だけ耐える権利を起動
+    if (tech.deathGuard) this._paladinDeathGuardArmed = true;
+    // トレジャーハンター「発掘」・大商人「市場支配」：戦闘クリア時の追加報酬を予約
+    if (tech.bonusRewardArm) this._battleEndBonusReward = { goldPct: tech.bonusRewardArm.goldPct, dropChance: tech.bonusRewardArm.dropChance };
+    // トレジャーハンターMASTER「大発見」：既存_rollDrop()のみを使うため
+    // Boss固有武器・初回クリア報酬（別経路）は対象外
+    if (tech.instantDropRoll && Math.random() < tech.instantDropRoll.chance) {
+      const dropInfo = this._rollDrop();
+      if (dropInfo) result.instantDrop = dropInfo;
+    }
+    // 魔導技師「自動砲台」：設置（既存の一時効果と同じturns管理）
+    if (tech.autoTurretArm) this.player.autoTurret = { power: tech.autoTurretArm.power, turnsLeft: tech.autoTurretArm.turns };
     result.utility = true;
   }
 
@@ -703,11 +997,17 @@ export class BattleEngine {
   _resolveTechniqueBurst(tech, targetId, result) {
     const target = this._pickTarget(targetId);
     if (!target) { result.noTarget = true; return; }
-    const stacks = target.dotStacks || 0;
+    // 幻術師MASTER「幻毒爆」：stackSource:'debuffCount'でDoTだけでなく
+    // weakenの本数も合算できるよう一般化した（既定'dot'は錬金術師「起爆」と
+    // 完全に同じ挙動のまま）
+    const stacks = tech.stackSource === 'debuffCount'
+      ? (target.dotStacks || 0) + (target.weaken ? Object.keys(target.weaken).length : 0)
+      : (target.dotStacks || 0);
     const atkValue = this._effectiveAtk() * (tech.power + stacks * (tech.stackPowerMult || 0.5)) * this._mainDmgMult();
     const { damage, critical } = this.calculateDamage(atkValue, target);
     const hit = this._applyDamageToEnemy(target, damage, critical);
     target.dotStacks = 0; target.dotTurnsLeft = 0;
+    if (tech.stackSource === 'debuffCount') target.weaken = {};
     result.targets.push({
       targetId: target.id, targetName: target.name, damage, critical, defeated: target.dead,
       effects: hit.effects, kill: hit.kill, consumedStacks: stacks,
@@ -864,6 +1164,22 @@ export class BattleEngine {
         }
         return { kind: 'deathNova', amount: nova, hits, kills };
       }
+      // 語り部「勝利の物語」：撃破時に短時間の自己バフが自動発動する
+      // （既存の_addTempEffectでonKillトリガーへ一時付与された効果を、
+      // 通常のonKillディスパッチ経路でそのまま処理するだけの薄い追加）
+      if (eff.kind === 'selfBuffOnKill') {
+        this._applyBuffPayload(eff.buffPayload, {});
+        return { kind: 'selfBuffOnKill' };
+      }
+    } else if (trigger === 'onEvade') {
+      // 剣豪「見切り」・鉄農兵系：回避に成功した瞬間の反撃（既存counterと
+      // 同じ計算式を、新しいトリガー名onEvadeで発火させるだけ）
+      const { attacker } = ctx;
+      if (eff.kind === 'counter' && attacker && !attacker.dead) {
+        const counterDmg = Math.round(this.player.atk * eff.power);
+        const kill = this._applyRawDamageAndReward(attacker, counterDmg);
+        return { kind: 'counter', amount: counterDmg, targetName: attacker.name, targetDead: attacker.dead, kill };
+      }
     }
     return null;
   }
@@ -960,11 +1276,16 @@ export class BattleEngine {
   _expMult() {
     let m = this.blessing && this.blessing.kind === 'expMult' ? 1 + this.blessing.power : 1;
     if (this.stage.isAbyss && this.stage.boss) m *= state.abyssBossFloorRewardMult();
+    // 語り部「伝説の一節」：数ターンの経験値取得ボーナス
+    if (this._tempExpBonusTurns > 0) m *= (1 + this._tempExpBonus);
     return m;
   }
+  // トレジャーハンター「目利き」・大商人「鑑定眼」：戦闘中だけドロップ率を
+  // 底上げする一時ボーナス（既存のstate.dropRateMult()等・永続進行度は変更しない）
+  _dropChanceBonusMult() { return this._tempDropRateBonusTurns > 0 ? (1 + this._tempDropRateBonus) : 1; }
 
   _rollWeaponDrop() {
-    if (Math.random() > WEAPON_CODEX_LAYER.DROP_CHANCE * state.dropRateMult()) return null;
+    if (Math.random() > WEAPON_CODEX_LAYER.DROP_CHANCE * state.dropRateMult() * this._dropChanceBonusMult()) return null;
     const pool = weaponDropPoolForStage(this.stage);
     if (pool.length === 0) return null;
     const totalW = pool.reduce((s, d) => s + d.weight, 0);
@@ -1007,7 +1328,7 @@ export class BattleEngine {
     const table = this.stage.dropTable || [];
     if (table.length === 0) return null;
     const abyssMult = this.stage.isAbyss ? (this.stage.dropMult || 1) * state.abyssDropRateMult() : 1;
-    const chance = ECONOMY.BASE_DROP_CHANCE * state.dropRateMult() * abyssMult;
+    const chance = ECONOMY.BASE_DROP_CHANCE * state.dropRateMult() * abyssMult * this._dropChanceBonusMult();
     if (Math.random() > chance) return null;
     let pool = table;
     if (Math.random() < state.awakeningUnownedBiasChance()) {
@@ -1050,12 +1371,21 @@ export class BattleEngine {
     // バフ/デバフ/魔法/防御タイプの敵を追加する際はここに分岐を増やす。
     const enemyAtk = this._effectiveEnemyStat(enemy, 'atk');
     if (Math.random() < this._effectiveEvasion()) {
-      return { enemyId: enemy.id, name: enemy.name, kind: 'attack', evaded: true };
+      const evadeEvents = this._onPlayerEvaded(enemy);
+      return { enemyId: enemy.id, name: enemy.name, kind: 'attack', evaded: true, evadeEvents };
     }
     const dmg = this._enemyAttackDamage(enemyAtk);
     this.player.hp -= dmg;
     const hurtEvents = this.applyEffect('onHurt', { attacker: enemy });
     return { enemyId: enemy.id, name: enemy.name, kind: 'attack', damage: dmg, evaded: false, hurtEvents };
+  }
+
+  // 剣豪「見切り」・怪盗MASTER「背後の一撃」・幻惑の舞姫MASTER「夢幻乱舞」：
+  // 回避成功を検知する3箇所（通常敵・Boss通常攻撃・Boss特殊攻撃）で共通に呼ぶ
+  _onPlayerEvaded(attacker) {
+    this._playerEvadedLastRound = true;
+    this._playerEvasionCount = (this._playerEvasionCount || 0) + 1;
+    return this.applyEffect('onEvade', { attacker });
   }
 
   _performBossTurn(enemy) {
@@ -1101,7 +1431,8 @@ export class BattleEngine {
     // 通常攻撃
     const enemyAtk = this._effectiveEnemyStat(enemy, 'atk');
     if (Math.random() < this._effectiveEvasion()) {
-      return { enemyId: enemy.id, name: enemy.name, kind: 'attack', evaded: true, phased: justPhased };
+      const evadeEvents = this._onPlayerEvaded(enemy);
+      return { enemyId: enemy.id, name: enemy.name, kind: 'attack', evaded: true, phased: justPhased, evadeEvents };
     }
     const dmg = this._enemyAttackDamage(enemyAtk);
     this.player.hp -= dmg;
@@ -1130,7 +1461,8 @@ export class BattleEngine {
       projectile: BOSS_AI_LAYER.PROJECTILE_DAMAGE_MULT,
     };
     if (Math.random() < this._effectiveEvasion()) {
-      return { enemyId: enemy.id, name: enemy.name, kind: 'special', specialKind: kind, evaded: true, phased: !!justPhased };
+      const evadeEvents = this._onPlayerEvaded(enemy);
+      return { enemyId: enemy.id, name: enemy.name, kind: 'special', specialKind: kind, evaded: true, phased: !!justPhased, evadeEvents };
     }
     const dmg = this._enemyAttackDamage(enemyAtk, { mult: multByKind[kind] });
     this.player.hp -= dmg;
@@ -1165,6 +1497,10 @@ export class BattleEngine {
   advanceTurn(command) {
     const events = [];
     this.round++;
+    // 怪盗MASTER「背後の一撃」等：直前の敵手番の回避判定は毎ラウンド持ち越さない
+    // （このラウンドの敵手番でまた立て直る。playerFirstかどうかで「前ラウンド」
+    // 「同ラウンド」いずれの回避も拾えるようここでリセットする）
+    this._playerEvadedLastRound = false;
 
     // 新しい遭遇グループが出現したラウンドは、敵がまだ接触距離まで移動してくる
     // 「間合い」に相当し、この1ラウンドだけは敵の手番を発生させない（実時間版でも
@@ -1240,6 +1576,8 @@ export class BattleEngine {
     const alive = this.aliveEnemies;
     const enemyInitiative = (alive.reduce((s, e) => s + e.spd, 0) / Math.max(1, alive.length)) + rand(0, 8);
     const playerFirst = playerInitiative >= enemyInitiative;
+    // 剣豪「居合」・密偵「奇襲」等：このラウンド先攻したかを技解決側から読めるようにする
+    this._lastPlayerFirst = playerFirst;
 
     const runPlayer = () => {
       if (preResolvedPlayerResult) return preResolvedPlayerResult; // 既に実行済み（二重実行防止）
@@ -1301,6 +1639,11 @@ export class BattleEngine {
           if (enemy.weaken[stat].turnsLeft <= 0) delete enemy.weaken[stat];
         }
       }
+      // 狩猟王「狩人の印」：既存weakenと同じturns管理のマーク
+      if (enemy.vulnerable && enemy.vulnerable.turnsLeft > 0) {
+        enemy.vulnerable.turnsLeft--;
+        if (enemy.vulnerable.turnsLeft <= 0) enemy.vulnerable = null;
+      }
       if (enemy.dotStacks > 0 && enemy.dotTurnsLeft > 0) {
         const dmg = Math.max(1, Math.round(this.player.atk * enemy.dotPower * enemy.dotStacks));
         // ChatGPTレビュー指摘2番：DoT撃破も他の経路と同じ共通処理へ統一する
@@ -1330,6 +1673,26 @@ export class BattleEngine {
     if (this._tempGoldBonusTurns > 0) this._tempGoldBonusTurns--;
     if (this._tempBossDmgTurns > 0) this._tempBossDmgTurns--;
     if (this._tempDmgBonusTurns > 0) this._tempDmgBonusTurns--;
+    // 上級職向けに追加した一時ボーナス各種のターン経過（既存パターンと同型）
+    if (this._tempGoldCostReduceTurns > 0) this._tempGoldCostReduceTurns--;
+    if (this._tempDropRateBonusTurns > 0) this._tempDropRateBonusTurns--;
+    if (this._tempDebuffPowerBonusTurns > 0) this._tempDebuffPowerBonusTurns--;
+    if (this._tempExpBonusTurns > 0) this._tempExpBonusTurns--;
+    if (this._tempArmorPenTurns > 0) this._tempArmorPenTurns--;
+    if (this._tempHybridMagTurns > 0) this._tempHybridMagTurns--;
+    // 魔導技師「自動砲台」：ラウンド終了時に1回だけ自動で追撃する（既存の
+    // calculateDamage/_applyRawDamageAndRewardをそのまま呼ぶだけの軽量tick。
+    // DoT tick等と同様、onHit/onCritは発火させない＝「命中」ではなく設置物の
+    // 自動着弾という扱いにしてある）
+    if (this.player.autoTurret && this.player.autoTurret.turnsLeft > 0 && this.aliveEnemies.length > 0) {
+      const target = this.aliveEnemies[0];
+      const atkValue = this._effectiveMag() * this.player.autoTurret.power * this._mainDmgMult();
+      const { damage, critical } = this.calculateDamage(atkValue, target);
+      const kill = this._applyRawDamageAndReward(target, damage);
+      events.push({ type: 'autoTurret', targetId: target.id, targetName: target.name, damage, critical, targetDead: target.dead, kill });
+      this.player.autoTurret.turnsLeft--;
+      if (this.player.autoTurret.turnsLeft <= 0) this.player.autoTurret = null;
+    }
     for (const key in this.skillCooldowns) {
       if (this._skillCooldownsSetThisRound.has(key)) continue;
       if (this.skillCooldowns[key] > 0) this.skillCooldowns[key]--;
@@ -1402,6 +1765,15 @@ export class BattleEngine {
           return { over: false, revived: true, farmerSurvive: true };
         }
       }
+      // パラディンMASTER「不落の誓い」：技を使って起動していた場合のみ、
+      // 1戦1回だけ致死ダメージを耐える（深淵蘇生→百姓魂→この順で判定する
+      // ことで、既存の死亡回避系と重複しても二重発動しない）
+      if (this._paladinDeathGuardArmed && !this._paladinSurviveUsed) {
+        this._paladinSurviveUsed = true;
+        this._paladinDeathGuardArmed = false;
+        this.player.hp = 1;
+        return { over: false, revived: true, paladinGuard: true };
+      }
       this._finishBattle(false, false);
       return { over: true };
     }
@@ -1436,6 +1808,19 @@ export class BattleEngine {
         stageGold = Math.round(this.stage.rewards.gold * this._goldMult());
         state.gainExp(stageExp);
         state.gainGold(stageGold);
+        // トレジャーハンター「発掘」・大商人「市場支配」：戦闘クリア時に1回だけ
+        // 追加報酬を判定する。既存runGoldに対する割合ボーナスのみ・
+        // 既存_rollDrop()（ステージのdropTableのみ）しか使わないため、
+        // Boss固有武器・初回クリア報酬（別経路）は対象外＝無限増殖しない
+        if (this._battleEndBonusReward) {
+          const bonus = this._battleEndBonusReward;
+          this._battleEndBonusReward = null;
+          if (bonus.goldPct && this.runGold > 0) {
+            const bonusGold = Math.round(this.runGold * bonus.goldPct);
+            if (bonusGold > 0) { state.gainGold(bonusGold); this.runGold += bonusGold; }
+          }
+          if (bonus.dropChance && Math.random() < bonus.dropChance) this._rollDrop();
+        }
         if (this.stage.isAbyss) {
           state.recordAbyssClear(this.stage.abyssDepth);
         } else {

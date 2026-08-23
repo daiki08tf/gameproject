@@ -206,37 +206,223 @@ function resolveTechRefs(refs, lookup, kind) {
 // ---------------------------------------------------------
 // 上級職 30種（必要基本職2つ。プロファイル/スキルは自動生成）
 // ---------------------------------------------------------
+// 上級職のskills/spells：基本職と同じ{id, learnLevel}参照配列。
+// learnLevelは元指示どおりLv1/10/20/'master'（TIER_INFO.advanced.masteryLv=30）
+// を基本形とする。各職に持たせるskills/spellsの内訳（技名とその狙い）は
+// js/data/skills.js・spells.jsの該当セクションのコメントを参照。
 const ADVANCED_RAW = [
-  { id: 'paladin', name: 'パラディン', requires: ['warrior', 'priest'] },
-  { id: 'battlemaster', name: 'バトルマスター', requires: ['warrior', 'fighter'] },
-  { id: 'spellblade', name: '魔法剣士', requires: ['warrior', 'mage'] },
-  { id: 'swordsaint2', name: '剣豪', requires: ['warrior', 'thief'] },
-  { id: 'armsknight', name: 'アームズナイト', requires: ['warrior', 'craftsman'] },
-  { id: 'sage', name: '賢者', requires: ['mage', 'priest'] },
-  { id: 'archmage', name: '大魔導士', requires: ['mage', 'scholar'] },
-  { id: 'astromancer', name: '星詠みの魔女', requires: ['mage', 'fortune'] },
-  { id: 'miko', name: '巫女', requires: ['priest', 'fortune'] },
-  { id: 'choirmaster', name: '聖歌隊長', requires: ['priest', 'bard'] },
-  { id: 'phantomthief', name: '怪盗', requires: ['thief', 'ninja'] },
-  { id: 'treasurehunter', name: 'トレジャーハンター', requires: ['thief', 'merchant'] },
-  { id: 'scoutmaster', name: '密偵', requires: ['thief', 'hunter'] },
-  { id: 'enchantdancer', name: '幻惑の舞姫', requires: ['thief', 'dancer'] },
-  { id: 'fistsaint', name: '拳聖', requires: ['fighter', 'ninja'] },
-  { id: 'assassinfist', name: '暗殺拳', requires: ['fighter', 'thief'] },
-  { id: 'beasttamer', name: '猛獣使い', requires: ['fighter', 'hunter'] },
-  { id: 'sumo', name: '剛力士', requires: ['fighter', 'farmer'] },
-  { id: 'huntking', name: '狩猟王', requires: ['hunter', 'ninja'] },
-  { id: 'forestbard', name: '森の吟遊詩人', requires: ['hunter', 'bard'] },
-  { id: 'primadiva', name: 'プリマ・ディーヴァ', requires: ['bard', 'dancer'] },
-  { id: 'loremaster', name: '語り部', requires: ['bard', 'scholar'] },
-  { id: 'fatedancer', name: '運命の踊り子', requires: ['dancer', 'fortune'] },
-  { id: 'illusionist', name: '幻術師', requires: ['dancer', 'alchemist'] },
-  { id: 'arcanist', name: 'アルカニスト', requires: ['alchemist', 'scholar'] },
-  { id: 'artificer', name: '魔導技師', requires: ['alchemist', 'craftsman'] },
-  { id: 'merchantlord', name: '大商人', requires: ['merchant', 'scholar'] },
-  { id: 'guildmaster', name: 'ギルドマスター', requires: ['merchant', 'craftsman'] },
-  { id: 'healerfolk', name: '村の癒し手', requires: ['priest', 'farmer'] },
-  { id: 'ironyeoman', name: '鉄農兵', requires: ['farmer', 'craftsman'] },
+  { id: 'paladin', name: 'パラディン', requires: ['warrior', 'priest'],
+    skills: [
+      { id: 'paladin_holy_shield', learnLevel: 1 },
+      { id: 'paladin_holy_slash', learnLevel: 10 },
+      { id: 'paladin_healing_counter', learnLevel: 20 },
+      { id: 'paladin_unfallen_oath', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'battlemaster', name: 'バトルマスター', requires: ['warrior', 'fighter'],
+    skills: [
+      { id: 'battlemaster_armor_breaker', learnLevel: 1 },
+      { id: 'battlemaster_rapid_break', learnLevel: 10 },
+      { id: 'battlemaster_fighting_spirit', learnLevel: 20 },
+      { id: 'battlemaster_peerless', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'spellblade', name: '魔法剣士', requires: ['warrior', 'mage'],
+    skills: [
+      { id: 'spellblade_flame_slash', learnLevel: 1 },
+      { id: 'spellblade_frost_slash', learnLevel: 10 },
+      { id: 'spellblade_thunder_slash', learnLevel: 20 },
+      { id: 'spellblade_mana_blade', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'swordsaint2', name: '剣豪', requires: ['warrior', 'thief'],
+    skills: [
+      { id: 'swordsaint2_iai', learnLevel: 1 },
+      { id: 'swordsaint2_mikiri', learnLevel: 10 },
+      { id: 'swordsaint2_samidare', learnLevel: 20 },
+      { id: 'swordsaint2_mushin', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'armsknight', name: 'アームズナイト', requires: ['warrior', 'craftsman'],
+    skills: [
+      { id: 'armsknight_weapon_guard', learnLevel: 1 },
+      { id: 'armsknight_shield_break', learnLevel: 10 },
+      { id: 'armsknight_bulwark', learnLevel: 20 },
+      { id: 'armsknight_full_armament', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'sage', name: '賢者', requires: ['mage', 'priest'],
+    skills: [{ id: 'sage_magic_barrier', learnLevel: 20 }],
+    spells: [
+      { id: 'sage_mid_flame', learnLevel: 1 },
+      { id: 'sage_mid_heal', learnLevel: 10 },
+      { id: 'sage_twin_cast', learnLevel: 'master' },
+    ] },
+  { id: 'archmage', name: '大魔導士', requires: ['mage', 'scholar'],
+    skills: [],
+    spells: [
+      { id: 'archmage_explosion', learnLevel: 1 },
+      { id: 'archmage_absolute_zero', learnLevel: 10 },
+      { id: 'archmage_swift_thunder', learnLevel: 20 },
+      { id: 'archmage_manic_surge', learnLevel: 'master' },
+    ] },
+  { id: 'astromancer', name: '星詠みの魔女', requires: ['mage', 'fortune'],
+    skills: [],
+    spells: [
+      { id: 'astromancer_star_bullet', learnLevel: 1 },
+      { id: 'astromancer_star_eclipse', learnLevel: 10 },
+      { id: 'astromancer_meteor', learnLevel: 20 },
+      { id: 'astromancer_star_blessing', learnLevel: 'master' },
+    ] },
+  { id: 'miko', name: '巫女', requires: ['priest', 'fortune'],
+    skills: [],
+    spells: [
+      { id: 'miko_prayer_chant', learnLevel: 1 },
+      { id: 'miko_barrier', learnLevel: 10 },
+      { id: 'miko_purification', learnLevel: 20 },
+      { id: 'miko_oracle', learnLevel: 'master' },
+    ] },
+  { id: 'choirmaster', name: '聖歌隊長', requires: ['priest', 'bard'],
+    skills: [],
+    spells: [
+      { id: 'choirmaster_healing_chorus', learnLevel: 1 },
+      { id: 'choirmaster_miracle_chorus', learnLevel: 'master' },
+    ] },
+  { id: 'phantomthief', name: '怪盗', requires: ['thief', 'ninja'],
+    skills: [
+      { id: 'phantomthief_phantom_slash', learnLevel: 1 },
+      { id: 'phantomthief_grand_theft', learnLevel: 10 },
+      { id: 'phantomthief_smoke_step', learnLevel: 20 },
+      { id: 'phantomthief_backstab', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'treasurehunter', name: 'トレジャーハンター', requires: ['thief', 'merchant'],
+    skills: [
+      { id: 'treasurehunter_dig', learnLevel: 1 },
+      { id: 'treasurehunter_gem_toss', learnLevel: 10 },
+      { id: 'treasurehunter_appraisal', learnLevel: 20 },
+      { id: 'treasurehunter_big_find', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'scoutmaster', name: '密偵', requires: ['thief', 'hunter'],
+    skills: [
+      { id: 'scoutmaster_ambush', learnLevel: 1 },
+      { id: 'scoutmaster_recon', learnLevel: 10 },
+      { id: 'scoutmaster_weakshot', learnLevel: 20 },
+      { id: 'scoutmaster_shadowhunt', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'enchantdancer', name: '幻惑の舞姫', requires: ['thief', 'dancer'],
+    skills: [
+      { id: 'enchantdancer_illusion', learnLevel: 1 },
+      { id: 'enchantdancer_poison_dance', learnLevel: 10 },
+      { id: 'enchantdancer_blade_dance', learnLevel: 20 },
+      { id: 'enchantdancer_dream_flurry', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'fistsaint', name: '拳聖', requires: ['fighter', 'ninja'],
+    skills: [
+      { id: 'fistsaint_explosive_fist', learnLevel: 1 },
+      { id: 'fistsaint_afterimage', learnLevel: 10 },
+      { id: 'fistsaint_chain_fist', learnLevel: 20 },
+      { id: 'fistsaint_hundred_strikes', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'assassinfist', name: '暗殺拳', requires: ['fighter', 'thief'],
+    skills: [
+      { id: 'assassinfist_vital_strike', learnLevel: 1 },
+      { id: 'assassinfist_death_palm', learnLevel: 10 },
+      { id: 'assassinfist_desperation', learnLevel: 20 },
+      { id: 'assassinfist_assassinate', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'beasttamer', name: '猛獣使い', requires: ['fighter', 'hunter'],
+    skills: [
+      { id: 'beasttamer_beast_strike', learnLevel: 1 },
+      { id: 'beasttamer_roar', learnLevel: 10 },
+      { id: 'beasttamer_feral', learnLevel: 20 },
+      { id: 'beasttamer_king_fang', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'sumo', name: '剛力士', requires: ['fighter', 'farmer'],
+    skills: [
+      { id: 'sumo_slap', learnLevel: 1 },
+      { id: 'sumo_immovable', learnLevel: 10 },
+      { id: 'sumo_body_slam', learnLevel: 20 },
+      { id: 'sumo_stand_firm', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'huntking', name: '狩猟王', requires: ['hunter', 'ninja'],
+    skills: [
+      { id: 'huntking_weakshot', learnLevel: 1 },
+      { id: 'huntking_followup', learnLevel: 10 },
+      { id: 'huntking_mark', learnLevel: 20 },
+      { id: 'huntking_slayer', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'forestbard', name: '森の吟遊詩人', requires: ['hunter', 'bard'],
+    skills: [
+      { id: 'forestbard_spirit_arrow', learnLevel: 1 },
+      { id: 'forestbard_forest_song', learnLevel: 10 },
+      { id: 'forestbard_hunters_cheer', learnLevel: 20 },
+      { id: 'forestbard_spirit_blessing', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'primadiva', name: 'プリマ・ディーヴァ', requires: ['bard', 'dancer'],
+    skills: [
+      { id: 'primadiva_sword_aria', learnLevel: 1 },
+      { id: 'primadiva_evasion_aria', learnLevel: 10 },
+      { id: 'primadiva_healing_aria', learnLevel: 20 },
+      { id: 'primadiva_queens_stage', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'loremaster', name: '語り部', requires: ['bard', 'scholar'],
+    skills: [
+      { id: 'loremaster_heroic_tale', learnLevel: 1 },
+      { id: 'loremaster_monster_lore', learnLevel: 10 },
+      { id: 'loremaster_victory_tale', learnLevel: 20 },
+      { id: 'loremaster_legend_verse', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'fatedancer', name: '運命の踊り子', requires: ['dancer', 'fortune'],
+    skills: [
+      { id: 'fatedancer_lucky_dance', learnLevel: 1 },
+      { id: 'fatedancer_evasion_dance', learnLevel: 10 },
+      { id: 'fatedancer_fate_reverse', learnLevel: 20 },
+      { id: 'fatedancer_grand_wheel', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'illusionist', name: '幻術師', requires: ['dancer', 'alchemist'],
+    skills: [
+      { id: 'illusionist_poison_mist', learnLevel: 1 },
+      { id: 'illusionist_hallucination', learnLevel: 10 },
+      { id: 'illusionist_corrosion', learnLevel: 20 },
+      { id: 'illusionist_toxic_burst', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'arcanist', name: 'アルカニスト', requires: ['alchemist', 'scholar'],
+    skills: [
+      { id: 'arcanist_element_shift', learnLevel: 10 },
+      { id: 'arcanist_circle', learnLevel: 20 },
+      { id: 'arcanist_catalyst', learnLevel: 'master' },
+    ],
+    spells: [{ id: 'arcanist_mana_bomb', learnLevel: 1 }] },
+  { id: 'artificer', name: '魔導技師', requires: ['alchemist', 'craftsman'],
+    skills: [
+      { id: 'artificer_mana_cannon', learnLevel: 1 },
+      { id: 'artificer_armor_boost', learnLevel: 10 },
+      { id: 'artificer_auto_turret', learnLevel: 20 },
+      { id: 'artificer_overdrive', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'merchantlord', name: '大商人', requires: ['merchant', 'scholar'],
+    skills: [
+      { id: 'merchantlord_haggle', learnLevel: 1 },
+      { id: 'merchantlord_investment', learnLevel: 10 },
+      { id: 'merchantlord_appraising_eye', learnLevel: 20 },
+      { id: 'merchantlord_market_control', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'guildmaster', name: 'ギルドマスター', requires: ['merchant', 'craftsman'],
+    skills: [
+      { id: 'guildmaster_command', learnLevel: 1 },
+      { id: 'guildmaster_supply', learnLevel: 10 },
+      { id: 'guildmaster_defense_order', learnLevel: 20 },
+      { id: 'guildmaster_mobilize', learnLevel: 'master' },
+    ], spells: [] },
+  { id: 'healerfolk', name: '村の癒し手', requires: ['priest', 'farmer'],
+    skills: [{ id: 'healerfolk_vitality', learnLevel: 10 }],
+    spells: [
+      { id: 'healerfolk_herbal_cure', learnLevel: 1 },
+      { id: 'healerfolk_earthguard', learnLevel: 20 },
+      { id: 'healerfolk_miracle', learnLevel: 'master' },
+    ] },
+  { id: 'ironyeoman', name: '鉄農兵', requires: ['farmer', 'craftsman'],
+    skills: [
+      { id: 'ironyeoman_scythe_storm', learnLevel: 1 },
+      { id: 'ironyeoman_iron_skin', learnLevel: 10 },
+      { id: 'ironyeoman_counter_formation', learnLevel: 20 },
+      { id: 'ironyeoman_unbroken', learnLevel: 'master' },
+    ], spells: [] },
 ];
 
 // ---------------------------------------------------------
@@ -322,9 +508,20 @@ for (const raw of ADVANCED_RAW) {
   const reqJobs = raw.requires.map((id) => JOBS.get(id));
   const profile = mergeProfiles(reqJobs.map((j) => j.profile));
   const job = { ...raw, tier: 'advanced', profile, weapon: reqJobs[0].weapon };
+  // autoSkillFor()/autoMasterAbilityFor()自体は変更しない（元指示：将来の
+  // 特級職・勇者との互換のため）。job.skill/masterAbilityは引き続き自動生成
+  // させたうえで、今回手動定義した上級職30種はraw.skills/spellsで上書きする。
+  // 将来、上級職に手動定義を書き足していない状態（raw.skills未定義）でも
+  // 壊れないよう、その場合だけ従来どおりwrapAutoSkillAsTechniques()へ
+  // フォールバックする（元指示：将来安全に追加できる拡張構造を保つ）。
   job.skill = autoSkillFor(job);
   job.masterAbility = autoMasterAbilityFor(job);
-  wrapAutoSkillAsTechniques(job);
+  if (raw.skills || raw.spells) {
+    job.skills = resolveTechRefs(raw.skills, getSkill, 'skill');
+    job.spells = resolveTechRefs(raw.spells, getSpell, 'spell');
+  } else {
+    wrapAutoSkillAsTechniques(job);
+  }
   JOBS.set(raw.id, job);
 }
 for (const raw of SPECIAL_RAW) {

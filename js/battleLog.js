@@ -110,6 +110,7 @@ function describePlayerAction(result) {
       if (result.reason === 'noMp') lines.push('MPが足りない！');
       else if (result.reason === 'onCooldown') lines.push(`${label}はまだ使えない（クールタイム中）`);
       else if (result.reason === 'noGold') lines.push('Goldが足りない！');
+      else if (result.reason === 'usedThisBattle') lines.push(`${label}はこの戦闘ではもう使えない！`);
       else lines.push(`${label}はまだ使えない`);
       return lines;
     }
@@ -117,6 +118,7 @@ function describePlayerAction(result) {
     switch (result.techType) {
       case 'damage':
         for (const hit of result.targets || []) {
+          if (hit.instaKilled) { lines.push(`即死の一撃！ ${hit.targetName}は一瞬で崩れ落ちた！`); if (hit.defeated) lines.push(...describeKill(hit.kill, hit.targetName)); continue; }
           const critTag = hit.critical ? '会心の一撃！ ' : '';
           lines.push(`${critTag}${hit.targetName}に${hit.damage}のダメージ！`);
           lines.push(...describeHitEffects(hit.effects));
@@ -126,16 +128,22 @@ function describePlayerAction(result) {
         break;
       case 'heal':
         lines.push(`HPを${result.healAmount}回復した！`);
+        if (result.mpRestored) lines.push(`MPを${result.mpRestored}回復した！`);
+        if (result.buffed) lines.push('身体能力が上がった！');
         break;
       case 'buff':
         if (result.healAmount) lines.push(`HPを${result.healAmount}回復した！`);
-        lines.push('身体能力が上がった！');
+        lines.push(result.telegraphBonusApplied ? '相手の構えを見切り、身体能力が大きく上がった！' : '身体能力が上がった！');
         break;
       case 'debuff':
         for (const t of result.targets || []) {
-          if (t.weakenStat) lines.push(`${t.targetName}の${STAT_JP[t.weakenStat] || t.weakenStat}を弱体化させた！`);
+          for (const w of t.weakenApplied || (t.weakenStat ? [{ stat: t.weakenStat }] : [])) {
+            lines.push(`${t.targetName}の${STAT_JP[w.stat] || w.stat}を弱体化させた！`);
+          }
           if (t.dotApplied) lines.push(`${t.targetName}を蝕む毒を送り込んだ！`);
           if (t.stunned) lines.push(`${t.targetName}の動きを封じた！`);
+          if (t.marked) lines.push(`${t.targetName}に狩人の印を刻んだ！`);
+          if (t.inspected) lines.push(`${t.targetName}：HP ${t.inspected.hp}/${t.inspected.maxHp}　ATK ${t.inspected.atk}　DEF ${t.inspected.def}　SPD ${t.inspected.spd}`);
         }
         if ((result.targets || []).length === 0) lines.push('しかし、狙う相手がいなかった！');
         break;
@@ -166,10 +174,13 @@ function describePlayerAction(result) {
         break;
       case 'utility':
         if (result.buffed) lines.push('身体能力が上がった！');
-        lines.push('構えを固めた！');
+        if (result.telegraphBonusApplied) lines.push('相手の構えを見切り、大きく防御を固めた！');
+        else lines.push('構えを固めた！');
+        if (result.instantDrop) lines.push(`${result.instantDrop.isNew ? '【NEW】' : ''}${result.instantDrop.name}を手に入れた！`);
         break;
       default: break;
     }
+    if (result.doubleCast) lines.push('もう一度詠唱が発動した！');
     lines.push(...describeActionDiversityBurst(result.actionDiversityBurst));
     return lines;
   }
@@ -188,7 +199,7 @@ function describeEnemyAction(result) {
     return lines;
   }
   if (result.kind === 'special') {
-    if (result.evaded) { lines.push(`${result.name}の${SPECIAL_FLAVOR[result.specialKind] || '大技'}！ しかし華麗に回避した！`); return lines; }
+    if (result.evaded) { lines.push(`${result.name}の${SPECIAL_FLAVOR[result.specialKind] || '大技'}！ しかし華麗に回避した！`); lines.push(...describeHitEffects(result.evadeEvents)); return lines; }
     lines.push(`${result.name}の${SPECIAL_FLAVOR[result.specialKind] || '大技'}が炸裂！ ${result.damage}のダメージを受けた！`);
     lines.push(...describeHitEffects(result.hurtEvents));
     return lines;
@@ -198,7 +209,7 @@ function describeEnemyAction(result) {
     return lines;
   }
   // kind === 'attack'
-  if (result.evaded) { lines.push(`${result.name}の攻撃！ しかし回避した！`); return lines; }
+  if (result.evaded) { lines.push(`${result.name}の攻撃！ しかし回避した！`); lines.push(...describeHitEffects(result.evadeEvents)); return lines; }
   lines.push(`${result.name}の攻撃！ ${result.damage}のダメージを受けた！`);
   lines.push(...describeHitEffects(result.hurtEvents));
   return lines;
@@ -227,6 +238,12 @@ export function describeRound(events) {
         lines.push(`${ev.name}は炎に焼かれている！ ${ev.amount}のダメージ！`);
         if (ev.targetDead && ev.kill) lines.push(...describeKill(ev.kill, ev.name));
         break;
+      case 'autoTurret': {
+        const critTag = ev.critical ? '会心の一撃！ ' : '';
+        lines.push(`自動砲台が着弾！ ${critTag}${ev.targetName}に${ev.damage}のダメージ！`);
+        if (ev.targetDead && ev.kill) lines.push(...describeKill(ev.kill, ev.targetName));
+        break;
+      }
       default: break;
     }
   }
