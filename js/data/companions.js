@@ -18,6 +18,21 @@ export const COMPANION_NATURES = {
   quick: { name: 'せっかち', statMult: { spd: 1.08, def: 0.97 }, ai: 'aggressive' },
 };
 
+export const COMPANION_TRAIT_EFFECTS = Object.freeze({
+  'ぷにぷにボディ': { kind: 'physicalMitigation', power: 0.10, desc: '通常攻撃の被ダメージ -10%' },
+  '悪知恵': { kind: 'lowHpDamage', power: 0.15, threshold: 0.50, desc: 'HP50%以下の敵へのダメージ +15%' },
+  '夜目': { kind: 'initiativeSpd', power: 0.15, desc: '行動順判定時のSPD +15%' },
+});
+
+export function companionTraitEffect(name) {
+  return COMPANION_TRAIT_EFFECTS[name] || null;
+}
+
+export function companionTraitLabel(name) {
+  const effect = companionTraitEffect(name);
+  return effect ? `${name}（${effect.desc}）` : name;
+}
+
 export const COMPANION_SPECIES = {
   slime: {
     id: 'slime', name: 'スライム', type: 'monster', icon: '🔵',

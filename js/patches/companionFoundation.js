@@ -13,6 +13,7 @@ import {
   getCompanionSpecies,
   companionExpToNext,
   companionStats,
+  companionTraitLabel,
 } from '../data/companions.js';
 
 const SAVE_FIELDS = {
@@ -177,11 +178,13 @@ function renderCompanionScreen() {
     const nature = COMPANION_NATURES[instance.nature] || COMPANION_NATURES.balanced;
     const xpNeed = companionExpToNext(instance.level);
     const displayName = escapeHtml(instance.nickname || species.name);
+    const traits = (species.traits || []).map(companionTraitLabel).join('・') || 'なし';
     return `<div class="forge-card companion-card ${active ? 'companion-active' : ''}" data-companion-id="${escapeHtml(id)}">
       <div class="forge-card-name">${species.icon || '🐾'} ${displayName} ${active ? '【同行中】' : ''}</div>
       <div class="forge-card-sub">Lv.${instance.level} / ${COMPANION_RARITY_LABEL[instance.rarity]} ${rarityStars(instance.rarity)} / 性格: ${escapeHtml(nature.name)}</div>
       <div class="forge-card-sub">HP ${stats.hp}　MP ${stats.mp}　ATK ${stats.atk}　DEF ${stats.def}　MAG ${stats.mag}　SPD ${stats.spd}</div>
-      <div class="forge-card-sub">EXP ${instance.exp} / ${xpNeed}　特性: ${escapeHtml((species.traits || []).join('・') || 'なし')}</div>
+      <div class="forge-card-sub">EXP ${instance.exp} / ${xpNeed}</div>
+      <div class="forge-card-sub">特性: ${escapeHtml(traits)}</div>
       <div class="confirm-actions" style="margin-top:8px;">
         <button class="btn-sub companion-set-btn" data-id="${escapeHtml(id)}" ${active ? 'disabled' : ''}>${active ? '同行中' : '同行させる'}</button>
         <button class="btn-sub companion-release-btn" data-id="${escapeHtml(id)}">${active ? '同行解除して帰す' : '帰す'}</button>
