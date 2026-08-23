@@ -7,8 +7,15 @@ import { equipment3Presentation, equipment3MetaText, equipment3SpecialLines, equ
 function resolveDrop(itemId) {
   const item = getItem(itemId);
   if (item) {
-    const inst = state.isWeaponInstance(itemId) ? state.data.weaponInstances?.[itemId] || null : null;
+    const isInstance = state.isWeaponInstance(itemId);
+    const legacyAffixes = isInstance ? state.weaponInstanceAffixes(itemId) : [];
+    const inst = isInstance ? state.data.weaponInstances?.[itemId] || null : null;
     const p = equipment3Presentation(item, inst);
+    if (p && inst && p.affixes.length === 0 && legacyAffixes.length > 0) {
+      // weaponInstanceAffixes is the legacy public contract used by the result UI.
+      // Presentation normally reads the same source, so this is only a safety net.
+      p.affixes = legacyAffixes.map((a) => ({ id: a.id, name: a.id, desc: String(a.roll ?? ''), rarity: a.rarity, rarityLabel: a.rarity, greater: !!a.greater, roll: a.roll }));
+    }
     const stars = '★'.repeat(rarityIndex(item.rarity));
     let name = `${item.unique ? '◆ UNIQUE ' : ''}${stars ? stars + ' ' : ''}${p?.name || item.name}`;
     const lines = [];
