@@ -5,7 +5,8 @@ import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
 import { defMitigationPct } from '../data/combatStats.js';
-import { COMPANION_NATURES, companionTraitEffect } from '../data/companions.js';
+import { COMPANION_NATURES, companionTraitEffect, getCompanionSpecies } from '../data/companions.js';
+import { chooseCompanionSkill } from '../data/companionSkills.js';
 
 function ensureCompanionBattle(engine) {
   if (engine._companionBattleReady) return;
@@ -19,14 +20,9 @@ function ensureCompanionBattle(engine) {
     nature: c.instance.nature,
     traits: [...(c.species.traits || [])],
     level: c.instance.level || 1,
-    hp: c.stats.hp,
-    maxHp: c.stats.hp,
-    mp: c.stats.mp,
-    maxMp: c.stats.mp,
-    atk: c.stats.atk,
-    def: c.stats.def,
-    mag: c.stats.mag,
-    spd: c.stats.spd,
+    hp: c.stats.hp, maxHp: c.stats.hp,
+    mp: c.stats.mp, maxMp: c.stats.mp,
+    atk: c.stats.atk, def: c.stats.def, mag: c.stats.mag, spd: c.stats.spd,
     down: false,
   };
 }
@@ -44,10 +40,21 @@ function effectiveCompanionSpd(companion) {
   return companion.spd * (1 + (effect?.power || 0));
 }
 
-function companionDamage(companion, target) {
+function chooseTarget(engine, companion, skill = null) {
+  const alive = engine.aliveEnemies;
+  if (!alive.length) return null;
+  if (skill?.preferLowHp) return [...alive].sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0];
   const nature = COMPANION_NATURES[companion.nature] || COMPANION_NATURES.balanced;
-  let power = companion.atk;
-  if (nature.ai === 'support' && companion.mag > companion.atk) power = companion.mag * 0.9;
+  if (nature.ai === 'aggressive') return [...alive].sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0];
+  if (nature.ai === 'defensive') return [...alive].sort((a, b) => b.atk - a.atk)[0];
+  return alive[Math.floor(Math.random() * alive.length)];
+}
+
+function companionDamage(companion, target, skill = null) {
+  const nature = COMPANION_NATURES[companion.nature] || COMPANION_NATURES.balanced;
+  let stat = skill?.stat === 'mag' ? companion.mag : companion.atk;
+  if (!skill && nature.ai === 'support' && companion.mag > companion.atk) stat = companion.mag * 0.9;
+  let power = stat * (skill?.power || 1);
   const lowHp = traitEffect(companion, 'lowHpDamage');
   if (lowHp && target.hp / Math.max(1, target.maxHp) <= (lowHp.threshold ?? 0.5)) power *= 1 + lowHp.power;
   const variance = 0.90 + Math.random() * 0.20;
@@ -65,35 +72,43 @@ function enemyDamageToCompanion(enemy, companion, mult = 1) {
   return Math.max(1, Math.round(raw * (1 - mitigation)));
 }
 
-function chooseTarget(engine, companion) {
-  const alive = engine.aliveEnemies;
-  if (!alive.length) return null;
-  const nature = COMPANION_NATURES[companion.nature] || COMPANION_NATURES.balanced;
-  if (nature.ai === 'aggressive') return [...alive].sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0];
-  if (nature.ai === 'defensive') return [...alive].sort((a, b) => b.atk - a.atk)[0];
-  return alive[Math.floor(Math.random() * alive.length)];
-}
-
-function canCompanionHeal(companion) {
-  if (!companion || companion.down || companion.hp <= 0) return false;
-  if (companion.hp / companion.maxHp > 0.5) return false;
-  if (companion.speciesId === 'slime' && companion.level >= 8 && companion.mp >= 4) return true;
-  const nature = COMPANION_NATURES[companion.nature] || COMPANION_NATURES.balanced;
-  return nature.ai === 'support' && companion.mp >= 5;
-}
-
-function performCompanionHeal(companion) {
-  const slimeHeal = companion.speciesId === 'slime' && companion.level >= 8;
-  const cost = slimeHeal ? 4 : 5;
-  const pct = slimeHeal ? 0.32 : 0.22;
-  companion.mp -= cost;
-  const amount = Math.max(1, Math.round(companion.maxHp * pct + companion.mag * 0.6));
+function executeHeal(companion, skill) {
+  companion.mp -= skill.mpCost || 0;
+  const amount = Math.max(1, Math.round(companion.maxHp * (skill.maxHpPct || 0) + companion.mag * (skill.power || 0)));
   const before = companion.hp;
   companion.hp = Math.min(companion.maxHp, companion.hp + amount);
   return {
     action: 'skill', companion: true, companionId: companion.id, companionName: companion.name,
-    name: `${companion.name}の${slimeHeal ? 'ぷるぷる回復' : '応急回復'}`,
-    techType: 'heal', healAmount: companion.hp - before, mpRestored: 0, buffed: false, targets: [],
+    name: `${companion.name}の${skill.name}`, techType: 'heal',
+    healAmount: companion.hp - before, mpRestored: 0, buffed: false, targets: [],
+  };
+}
+
+function applySkillDebuff(target, skill) {
+  const debuff = skill?.debuff;
+  if (!debuff) return null;
+  if (debuff.kind === 'weakenAtk') {
+    target._companionAtkDebuffMult = Math.max(0.1, 1 - debuff.power);
+    target._companionAtkDebuffTurns = Math.max(target._companionAtkDebuffTurns || 0, debuff.turns || 1);
+    return { kind: debuff.kind, power: debuff.power, turns: debuff.turns || 1 };
+  }
+  return null;
+}
+
+function executeOffensiveSkill(engine, companion, skill) {
+  const target = chooseTarget(engine, companion, skill);
+  if (!target) return null;
+  companion.mp -= skill.mpCost || 0;
+  const damage = companionDamage(companion, target, skill);
+  const kill = engine._applyRawDamageAndReward(target, damage);
+  const debuff = target.dead ? null : applySkillDebuff(target, skill);
+  return {
+    action: 'skill', companion: true, companionId: companion.id, companionName: companion.name,
+    name: `${companion.name}の${skill.name}`, techType: skill.type === 'debuff' ? 'damage' : skill.type,
+    targets: [{
+      targetId: target.id, targetName: target.name, damage, critical: false,
+      defeated: target.dead, effects: debuff ? [debuff] : [], kill,
+    }],
   };
 }
 
@@ -101,16 +116,12 @@ function performCompanionTurn(engine) {
   ensureCompanionBattle(engine);
   const c = engine.companion;
   if (!c || c.down || c.hp <= 0 || engine.over) return null;
-  if (canCompanionHeal(c)) return performCompanionHeal(c);
-  const target = chooseTarget(engine, c);
-  if (!target) return null;
-  const damage = companionDamage(c, target);
-  const kill = engine._applyRawDamageAndReward(target, damage);
-  return {
-    action: 'skill', companion: true, companionId: c.id, companionName: c.name,
-    name: `${c.name}のこうげき`, techType: 'damage',
-    targets: [{ targetId: target.id, targetName: target.name, damage, critical: false, defeated: target.dead, effects: [], kill }],
-  };
+  const species = getCompanionSpecies(c.speciesId);
+  if (!species) return null;
+  const skill = chooseCompanionSkill(species, c, engine.aliveEnemies);
+  if (!skill) return null;
+  if (skill.type === 'heal') return executeHeal(c, skill);
+  return executeOffensiveSkill(engine, c, skill);
 }
 
 function companionCanBeTargeted(engine) {
@@ -130,18 +141,35 @@ function hitCompanion(engine, enemy) {
   };
 }
 
+function withCompanionEnemyDebuff(enemy, fn) {
+  if (!enemy || !enemy._companionAtkDebuffTurns || !enemy._companionAtkDebuffMult) return fn();
+  const originalAtk = enemy.atk;
+  enemy.atk = Math.max(1, Math.round(originalAtk * enemy._companionAtkDebuffMult));
+  try { return fn(); }
+  finally {
+    enemy.atk = originalAtk;
+    enemy._companionAtkDebuffTurns -= 1;
+    if (enemy._companionAtkDebuffTurns <= 0) {
+      delete enemy._companionAtkDebuffTurns;
+      delete enemy._companionAtkDebuffMult;
+    }
+  }
+}
+
 const originalPerformEnemyTurn = BattleEngine.prototype.performEnemyTurn;
 BattleEngine.prototype.performEnemyTurn = function patchedPerformEnemyTurn(enemy) {
   ensureCompanionBattle(this);
   if (enemy && enemy.frozenTurns > 0) return originalPerformEnemyTurn.call(this, enemy);
-  if (!enemy.dead && !enemy.boss && companionCanBeTargeted(this)) {
-    const c = this.companion;
-    const nature = COMPANION_NATURES[c.nature] || COMPANION_NATURES.balanced;
-    let targetChance = 0.28;
-    if (nature.ai === 'defensive') targetChance += 0.07;
-    if (Math.random() < targetChance) return hitCompanion(this, enemy);
-  }
-  return originalPerformEnemyTurn.call(this, enemy);
+  return withCompanionEnemyDebuff(enemy, () => {
+    if (!enemy.dead && !enemy.boss && companionCanBeTargeted(this)) {
+      const c = this.companion;
+      const nature = COMPANION_NATURES[c.nature] || COMPANION_NATURES.balanced;
+      let targetChance = 0.28;
+      if (nature.ai === 'defensive') targetChance += 0.07;
+      if (Math.random() < targetChance) return hitCompanion(this, enemy);
+    }
+    return originalPerformEnemyTurn.call(this, enemy);
+  });
 };
 
 function convertCompanionHitLog(event) {
@@ -246,4 +274,10 @@ TextBattleScreen.prototype._render = function patchedCompanionRender() {
   el.style.opacity = down ? '0.55' : '1';
 };
 
-export { performCompanionTurn, effectiveCompanionSpd, companionDamage, enemyDamageToCompanion };
+export {
+  performCompanionTurn,
+  effectiveCompanionSpd,
+  companionDamage,
+  enemyDamageToCompanion,
+  applySkillDebuff,
+};

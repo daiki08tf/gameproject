@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { COMPANION_SPECIES } from '../js/data/companions.js';
 import {
   COMPANION_SKILLS,
@@ -7,6 +8,10 @@ import {
   unlockedCompanionSkills,
   chooseCompanionSkill,
 } from '../js/data/companionSkills.js';
+
+async function source(path) {
+  return readFile(new URL(`../${path}`, import.meta.url), 'utf8');
+}
 
 test('all companion species skill references resolve', () => {
   for (const species of Object.values(COMPANION_SPECIES)) {
@@ -40,4 +45,28 @@ test('skill definitions cover damage, heal, and debuff roles', () => {
   assert.ok(types.has('damage'));
   assert.ok(types.has('heal'));
   assert.ok(types.has('debuff'));
+});
+
+test('battle patch executes skills through the shared skill engine', async () => {
+  const text = await source('js/patches/companionBattle.js');
+  assert.match(text, /chooseCompanionSkill\(species, c, engine\.aliveEnemies\)/,
+    'battle AI must ask the shared engine for an action');
+  assert.match(text, /skill\.type === 'heal'/,
+    'healing should be dispatched by skill type');
+  assert.match(text, /executeOffensiveSkill\(engine, c, skill\)/,
+    'damage and debuff skills should use the generic offensive dispatcher');
+  assert.doesNotMatch(text, /speciesId === 'slime'/,
+    'battle code must not special-case slime behavior');
+  assert.doesNotMatch(text, /canCompanionHeal/,
+    'legacy species-specific healing branch should be removed');
+});
+
+test('sonic debuff has a finite duration and no permanent ATK mutation', async () => {
+  const text = await source('js/patches/companionBattle.js');
+  assert.match(text, /_companionAtkDebuffTurns/);
+  assert.match(text, /const originalAtk = enemy\.atk/);
+  assert.match(text, /enemy\.atk = originalAtk/,
+    'enemy base ATK must be restored after its action');
+  assert.match(text, /delete enemy\._companionAtkDebuffMult/,
+    'temporary companion debuff must clean itself up');
 });
