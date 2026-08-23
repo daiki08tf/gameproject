@@ -29,7 +29,7 @@ function basicView(job, stats, c) {
   const tier = TIER_LABEL_JA[job.tier] || job.tier;
   const mastered = state.isMastered(state.currentJobId);
   const power = Math.round(stats.hp * 0.18 + stats.mp * 0.12 + stats.atk * 2.1 + stats.def * 1.7 + stats.mag * 1.8 + stats.spd * 1.3);
-  return `<div class="character-hero-card"><div class="character-avatar">⚔️</div><div class="character-identity"><div class="character-job">${job.name}</div><div class="character-meta">Lv.${state.currentLevel} ・ ${tier} ・ ${mastered ? 'MASTER' : '未MASTER'}</div></div><div class="character-power"><small>総合戦力</small><strong>${power.toLocaleString()}</strong></div></div>
+  return `<div class="character-hero-card"><div class="character-avatar">⚔️</div><div class="character-identity"><div class="character-job">${job.name}</div><div class="character-meta">Character Lv.${state.characterLevel} ・ ${tier} Lv.${state.currentJobLevel} ・ ${mastered ? 'MASTER' : '未MASTER'}</div></div><div class="character-power"><small>総合戦力</small><strong>${power.toLocaleString()}</strong></div></div>
   <div class="status-section"><h3>基本ステータス <span class="character-hint">ATK / DEF / MAG / SPD はタップで内訳</span></h3><div class="status-grid">${statRow('HP',stats.hp)}${statRow('MP',stats.mp)}${statRow('ATK',stats.atk,'atk')}${breakdownBlock('atk')}${statRow('DEF',stats.def,'def')}${breakdownBlock('def')}${statRow('MAG',stats.mag,'mag')}${breakdownBlock('mag')}${statRow('SPD',stats.spd,'spd')}${breakdownBlock('spd')}</div></div>
   <div class="status-section"><h3>戦闘ハイライト</h3><div class="character-metric-grid"><div class="character-metric"><span>会心率</span><strong>${pct(c.critPct/100)}</strong></div><div class="character-metric"><span>会心Damage</span><strong>×${c.critDamageMult.toFixed(2)}</strong></div><div class="character-metric"><span>Armor Pen</span><strong>${pct(c.armorPen)}</strong></div><div class="character-metric"><span>回避率</span><strong>${pct(c.evasion)}</strong></div><div class="character-metric"><span>Boss Damage</span><strong>${signPct(c.bossDmgBonus)}</strong></div><div class="character-metric"><span>Drop倍率</span><strong>×${c.dropMult.toFixed(2)}</strong></div></div></div>`;
 }
@@ -62,7 +62,8 @@ function detailView(c) {
 }
 
 function growthView() {
-  const expNeed = state.expToNext(state.currentLevel);
+  const charExpNeed = state.characterExpToNext(state.characterLevel);
+  const jobExpNeed = state.expToNext(state.currentJobLevel);
   const masterCount = (state.data.mastered || []).length;
   const companionCount = state.companionList ? state.companionList().length : Object.keys(state.data.companionInstances || {}).length;
   const stageClears = Object.values(state.data.stageProgress || {}).filter(Boolean).length;
@@ -70,8 +71,8 @@ function growthView() {
   const masteryHtml = masteryEntries.length
     ? masteryEntries.map(([type,value]) => `<div class="growth-mastery"><span>${type}</span><strong>${Number(value || 0).toLocaleString()}</strong></div>`).join('')
     : '<div class="growth-empty">まだ武器熟練の記録はありません。</div>';
-  return `<div class="status-section"><h3>成長サマリー</h3><div class="character-metric-grid"><div class="character-metric"><span>現在Lv</span><strong>${state.currentLevel}</strong></div><div class="character-metric"><span>EXP</span><strong>${state.currentExp} / ${expNeed}</strong></div><div class="character-metric"><span>転生</span><strong>${state.data.reincarnations || 0}回</strong></div><div class="character-metric"><span>覚醒</span><strong>${state.data.awakenings || 0}回</strong></div><div class="character-metric"><span>MASTER職</span><strong>${masterCount}</strong></div><div class="character-metric"><span>深淵最高</span><strong>${state.data.abyssBestDepth || 0}F</strong></div></div></div>
-  <div class="status-section"><h3>冒険記録</h3><div class="status-grid">${statRow('クリア記録',stageClears)}${statRow('仲間数',companionCount)}${statRow('武器図鑑登録',Object.keys(state.data.weaponCodexSeen || {}).length)}${statRow('所持Artifact',(state.data.unlockedArtifacts || []).length)}</div></div>
+  return `<div class="status-section"><h3>成長サマリー</h3><div class="character-metric-grid"><div class="character-metric"><span>Character Lv</span><strong>${state.characterLevel}</strong></div><div class="character-metric"><span>最高到達Lv</span><strong>${state.highestCharacterLevel}</strong></div><div class="character-metric"><span>Character EXP</span><strong>${state.characterLevel >= 99999 ? 'MAX' : `${state.characterExp} / ${charExpNeed}`}</strong></div><div class="character-metric"><span>${state.currentJob.name} Lv</span><strong>${state.currentJobLevel}</strong></div><div class="character-metric"><span>職業EXP</span><strong>${state.currentJobExp} / ${jobExpNeed}</strong></div><div class="character-metric"><span>転生</span><strong>${state.data.reincarnations || 0}回</strong></div><div class="character-metric"><span>覚醒</span><strong>${state.data.awakenings || 0}回</strong></div><div class="character-metric"><span>MASTER職</span><strong>${masterCount}</strong></div><div class="character-metric"><span>深淵最高</span><strong>${state.data.abyssBestDepth || 0}F</strong></div></div></div>
+  <div class="status-section"><h3>冒険記録</h3><div class="status-grid">${statRow('攻略済みステージ',stageClears)}${statRow('仲間数',companionCount)}${statRow('武器図鑑登録',Object.keys(state.data.weaponCodexSeen || {}).length)}${statRow('所持Artifact',(state.data.unlockedArtifacts || []).length)}</div></div>
   <div class="status-section"><h3>武器熟練</h3><div class="growth-mastery-grid">${masteryHtml}</div></div>`;
 }
 
