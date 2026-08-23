@@ -6,6 +6,8 @@
 import { state } from '../state.js';
 import { CHAPTERS } from '../data/stages.js';
 import { BOUNTIES, buildBountyStage, bountyById } from '../data/bounties.js';
+import './bounty2Foundation.js';
+import './bounty2Combat.js';
 
 for (const bounty of BOUNTIES) {
   const chapter = CHAPTERS.find((ch) => ch.id === bounty.chapterId);
