@@ -2,31 +2,63 @@ import { state } from '../state.js';
 import { getItem, RARITY, rarityIndex } from '../data/equipment.js';
 import { getRune } from '../data/runes.js';
 import { getRune2 } from '../data/runes2.js';
-import { describeAffix, AFFIX_RARITY_LABEL } from '../data/affixes.js';
+import { equipment3Presentation, equipment3MetaText, equipment3SpecialLines, equipment3DropHeadline } from '../data/equipment3Presentation.js';
 
 function resolveDrop(itemId) {
   const item = getItem(itemId);
   if (item) {
+    const inst = state.data.weaponInstances?.[itemId] || null;
+    const p = equipment3Presentation(item, inst);
     const stars = '★'.repeat(rarityIndex(item.rarity));
-    let name = `${item.unique ? '◆ UNIQUE ' : ''}${stars ? stars + ' ' : ''}${item.name}`;
-    if (!item.unique && state.isWeaponInstance(itemId)) {
-      const affixes = state.weaponInstanceAffixes(itemId);
-      if (affixes.length) {
-        const affixText = affixes.map(a => {
-          const d = describeAffix(a);
-          return `[${AFFIX_RARITY_LABEL[a.rarity]}] ${d.name}: ${d.desc}`;
-        }).join(' / ');
-        name += `\n⚙ ${affixText}`;
+    let name = `${item.unique ? '◆ UNIQUE ' : ''}${stars ? stars + ' ' : ''}${p?.name || item.name}`;
+    const lines = [];
+
+    const meta = equipment3MetaText(p);
+    if (meta) lines.push(`⚙ ${meta}`);
+
+    if (!item.unique && inst) {
+      if (p.affixes.length) {
+        for (const a of p.affixes) {
+          lines.push(`${a.greater ? '★ ' : ''}[${a.rarityLabel}] ${a.name}: ${a.desc}`);
+        }
       } else {
-        name += '\n⚙ オプションなし';
+        lines.push('⚙ オプションなし');
       }
+      lines.push(...equipment3SpecialLines(p));
     }
-    if (item.unique && item.lore) name += `\n「${item.lore}」`;
-    return { name, color: RARITY[item.rarity].color };
+
+    if (item.unique && item.lore) lines.push(`「${item.lore}」`);
+    if (lines.length) name += `\n${lines.join('\n')}`;
+    return {
+      name,
+      color: RARITY[item.rarity].color,
+      equipment3: p,
+      headline: equipment3DropHeadline(p),
+    };
   }
   const rune = getRune(itemId);
-  if (rune) return { name: `✨ ${rune.name}`, color: 'var(--accent)' };
-  return { name: itemId, color: '' };
+  if (rune) return { name: `✨ ${rune.name}`, color: 'var(--accent)', equipment3: null, headline: null };
+  return { name: itemId, color: '', equipment3: null, headline: null };
+}
+
+function appendDropChip(itemsEl, resolved) {
+  const wrap = document.createElement('div');
+  wrap.className = `result-drop-wrap${resolved.equipment3 ? ` eq3-${resolved.equipment3.quality}` : ''}`;
+
+  if (resolved.headline) {
+    const headline = document.createElement('div');
+    headline.className = 'result-loot-headline';
+    headline.textContent = resolved.headline;
+    wrap.appendChild(headline);
+  }
+
+  const chip = document.createElement('div');
+  chip.className = 'result-item-chip';
+  chip.style.color = resolved.color;
+  chip.style.whiteSpace = 'pre-line';
+  chip.textContent = resolved.name;
+  wrap.appendChild(chip);
+  itemsEl.appendChild(wrap);
 }
 
 export function renderResult(result) {
@@ -41,7 +73,7 @@ export function renderResult(result) {
     title.textContent = 'BOUNTY CLEARED — UNIQUE FOUND';
     title.style.color = '#f2c94c';
   } else if (result.bountyNemesis?.grew) {
-    title.textContent = `DEFEATED — ${result.bountyNemesis.title || 'NEMESIS'}`; 
+    title.textContent = `DEFEATED — ${result.bountyNemesis.title || 'NEMESIS'}`;
     title.style.color = '#e6425a';
   } else if (result.cleared) {
     title.textContent = 'STAGE CLEAR';
@@ -60,18 +92,11 @@ export function renderResult(result) {
   itemsEl.innerHTML = '';
   const normalItems = Array.isArray(result.items) ? result.items : [];
   const rune2Drops = Array.isArray(result.rune2Drops) ? result.rune2Drops : [];
+
   if (normalItems.length === 0 && rune2Drops.length === 0) {
     itemsEl.innerHTML = '<span class="hint" style="opacity:.6;font-size:12px;">ドロップなし</span>';
   } else {
-    for (const itemId of normalItems) {
-      const resolved = resolveDrop(itemId);
-      const chip = document.createElement('div');
-      chip.className = 'result-item-chip';
-      chip.style.color = resolved.color;
-      chip.style.whiteSpace = 'pre-line';
-      chip.textContent = resolved.name;
-      itemsEl.appendChild(chip);
-    }
+    for (const itemId of normalItems) appendDropChip(itemsEl, resolveDrop(itemId));
     for (const drop of rune2Drops) {
       const rune = getRune2(drop.id);
       if (!rune) continue;
