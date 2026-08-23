@@ -13,6 +13,7 @@ import { renderBlacksmith, initBlacksmithTabs } from './screens/blacksmith.js';
 import { renderRebirth, initRebirthTabs } from './screens/rebirth.js';
 import { renderSpellScreen, initSpellScreen } from './screens/spellScreen.js';
 import { renderResult } from './screens/result.js';
+import { renderStatus } from './screens/status.js';
 import { Audio_ } from './audio.js';
 
 const battle = new TextBattleScreen();
@@ -83,6 +84,12 @@ document.getElementById('goEquipBtn').addEventListener('click', () => {
   renderEquipment();
   showScreen('equipmentScreen');
 });
+document.getElementById('goStatusBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderStatus();
+  showScreen('statusScreen');
+});
+document.getElementById('statusBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 document.getElementById('goJobBtn').addEventListener('click', () => {
   Audio_.tap();
   renderJobs();

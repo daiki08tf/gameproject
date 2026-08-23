@@ -104,22 +104,84 @@ function describePlayerAction(result) {
     else lines.push('しかし逃げられなかった！');
     return lines;
   }
-  if (result.action === 'skill') {
-    if (result.onCooldown) { lines.push('そのとくぎはまだ使えない（クールタイム中）'); return lines; }
-    if (result.noMp) { lines.push('MPが足りない！'); return lines; }
-    lines.push(`「${result.name}」！`);
-    if (result.skillType === 'damage') {
-      for (const hit of result.targets || []) {
-        const critTag = hit.critical ? '会心の一撃！ ' : '';
-        lines.push(`${critTag}${hit.targetName}に${hit.damage}のダメージ！`);
-        lines.push(...describeHitEffects(hit.effects));
-        if (hit.defeated) lines.push(...describeKill(hit.kill, hit.targetName));
-      }
-    } else if (result.skillType === 'heal') {
-      lines.push(`HPを${result.healAmount}回復した！`);
-    } else if (result.skillType === 'buff') {
-      lines.push('身体能力が上がった！');
+  if (result.action === 'skill' || result.action === 'spell') {
+    if (result.blocked) {
+      const label = result.action === 'spell' ? 'そのじゅもん' : 'そのとくぎ';
+      if (result.reason === 'noMp') lines.push('MPが足りない！');
+      else if (result.reason === 'onCooldown') lines.push(`${label}はまだ使えない（クールタイム中）`);
+      else if (result.reason === 'noGold') lines.push('Goldが足りない！');
+      else if (result.reason === 'usedThisBattle') lines.push(`${label}はこの戦闘ではもう使えない！`);
+      else lines.push(`${label}はまだ使えない`);
+      return lines;
     }
+    lines.push(`「${result.name}」！`);
+    switch (result.techType) {
+      case 'damage':
+        for (const hit of result.targets || []) {
+          if (hit.instaKilled) { lines.push(`即死の一撃！ ${hit.targetName}は一瞬で崩れ落ちた！`); if (hit.defeated) lines.push(...describeKill(hit.kill, hit.targetName)); continue; }
+          const critTag = hit.critical ? '会心の一撃！ ' : '';
+          lines.push(`${critTag}${hit.targetName}に${hit.damage}のダメージ！`);
+          lines.push(...describeHitEffects(hit.effects));
+          if (hit.defeated) lines.push(...describeKill(hit.kill, hit.targetName));
+        }
+        if ((result.targets || []).length === 0) lines.push('しかし、狙う相手がいなかった！');
+        break;
+      case 'heal':
+        lines.push(`HPを${result.healAmount}回復した！`);
+        if (result.mpRestored) lines.push(`MPを${result.mpRestored}回復した！`);
+        if (result.buffed) lines.push('身体能力が上がった！');
+        break;
+      case 'buff':
+        if (result.healAmount) lines.push(`HPを${result.healAmount}回復した！`);
+        lines.push(result.telegraphBonusApplied ? '相手の構えを見切り、身体能力が大きく上がった！' : '身体能力が上がった！');
+        break;
+      case 'debuff':
+        for (const t of result.targets || []) {
+          for (const w of t.weakenApplied || (t.weakenStat ? [{ stat: t.weakenStat }] : [])) {
+            lines.push(`${t.targetName}の${STAT_JP[w.stat] || w.stat}を弱体化させた！`);
+          }
+          if (t.dotApplied) lines.push(`${t.targetName}を蝕む毒を送り込んだ！`);
+          if (t.stunned) lines.push(`${t.targetName}の動きを封じた！`);
+          if (t.marked) lines.push(`${t.targetName}に狩人の印を刻んだ！`);
+          if (t.inspected) lines.push(`${t.targetName}：HP ${t.inspected.hp}/${t.inspected.maxHp}　ATK ${t.inspected.atk}　DEF ${t.inspected.def}　SPD ${t.inspected.spd}`);
+        }
+        if ((result.targets || []).length === 0) lines.push('しかし、狙う相手がいなかった！');
+        if (result.telegraphBonusApplied) lines.push('相手の構えを見切り、身のこなしが軽くなった！');
+        break;
+      case 'steal':
+        if (result.alreadyStolen) lines.push('すでに奪えるものは奪った後だった…');
+        else if (result.noTarget) lines.push('しかし、狙う相手がいなかった！');
+        else {
+          lines.push(`ゴールドを${result.stolenGold}奪った！`);
+          if (result.stolenItem) lines.push(`${result.stolenItem.name}を奪い取った！`);
+        }
+        break;
+      case 'inspect':
+        if (result.inspected) {
+          const t = result.inspected;
+          lines.push(`${t.name}：HP ${t.hp}/${t.maxHp}　ATK ${t.atk}　DEF ${t.def}　SPD ${t.spd}`);
+        } else lines.push('しかし、狙う相手がいなかった！');
+        break;
+      case 'burst':
+        for (const t of result.targets || []) {
+          const critTag = t.critical ? '会心の一撃！ ' : '';
+          lines.push(`${critTag}${t.targetName}に${t.damage}のダメージ！（${t.consumedStacks}スタック分の毒を起爆！）`);
+          if (t.defeated) lines.push(...describeKill(t.kill, t.targetName));
+        }
+        if ((result.targets || []).length === 0) lines.push('しかし、狙う相手がいなかった！');
+        break;
+      case 'cleanse':
+        lines.push('体を蝕むものが消え去った！');
+        break;
+      case 'utility':
+        if (result.buffed) lines.push('身体能力が上がった！');
+        if (result.telegraphBonusApplied) lines.push('相手の構えを見切り、大きく防御を固めた！');
+        else lines.push('構えを固めた！');
+        if (result.instantDrop) lines.push(`${result.instantDrop.isNew ? '【NEW】' : ''}${result.instantDrop.name}を手に入れた！`);
+        break;
+      default: break;
+    }
+    if (result.doubleCast) lines.push('もう一度詠唱が発動した！');
     lines.push(...describeActionDiversityBurst(result.actionDiversityBurst));
     return lines;
   }
@@ -138,17 +200,21 @@ function describeEnemyAction(result) {
     return lines;
   }
   if (result.kind === 'special') {
-    if (result.evaded) { lines.push(`${result.name}の${SPECIAL_FLAVOR[result.specialKind] || '大技'}！ しかし華麗に回避した！`); return lines; }
+    if (result.evaded) { lines.push(`${result.name}の${SPECIAL_FLAVOR[result.specialKind] || '大技'}！ しかし華麗に回避した！`); lines.push(...describeHitEffects(result.evadeEvents)); return lines; }
     lines.push(`${result.name}の${SPECIAL_FLAVOR[result.specialKind] || '大技'}が炸裂！ ${result.damage}のダメージを受けた！`);
     lines.push(...describeHitEffects(result.hurtEvents));
     return lines;
   }
   if (result.kind === 'summon') {
-    lines.push(`${result.name}が手下を呼び出した！ ${(result.added || []).join('、')}が加わった！`);
+    if (result.capped || (result.added || []).length === 0) {
+      lines.push(`${result.name}が手下を呼び出そうとしたが、これ以上は展開しきれないようだ！`);
+    } else {
+      lines.push(`${result.name}が手下を呼び出した！ ${result.added.join('、')}が加わった！`);
+    }
     return lines;
   }
   // kind === 'attack'
-  if (result.evaded) { lines.push(`${result.name}の攻撃！ しかし回避した！`); return lines; }
+  if (result.evaded) { lines.push(`${result.name}の攻撃！ しかし回避した！`); lines.push(...describeHitEffects(result.evadeEvents)); return lines; }
   lines.push(`${result.name}の攻撃！ ${result.damage}のダメージを受けた！`);
   lines.push(...describeHitEffects(result.hurtEvents));
   return lines;
@@ -177,6 +243,12 @@ export function describeRound(events) {
         lines.push(`${ev.name}は炎に焼かれている！ ${ev.amount}のダメージ！`);
         if (ev.targetDead && ev.kill) lines.push(...describeKill(ev.kill, ev.name));
         break;
+      case 'autoTurret': {
+        const critTag = ev.critical ? '会心の一撃！ ' : '';
+        lines.push(`自動砲台が着弾！ ${critTag}${ev.targetName}に${ev.damage}のダメージ！`);
+        if (ev.targetDead && ev.kill) lines.push(...describeKill(ev.kill, ev.targetName));
+        break;
+      }
       default: break;
     }
   }

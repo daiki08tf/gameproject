@@ -3,7 +3,7 @@
    死亡してもリセットされない：レベル・職業・装備・所持品を保持
    ============================================================ */
 import { getJob, computeStats, isUnlocked, TIERS } from './data/jobs.js';
-import { getItem, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, WEAPON_MASTERY_THRESHOLD, rarityIndex, RARITY_ORDER } from './data/equipment.js';
+import { getItem, baseItemId, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, WEAPON_MASTERY_THRESHOLD, rarityIndex, RARITY_ORDER } from './data/equipment.js';
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
 import { isAbyssUnlocked } from './data/stages.js';
@@ -12,6 +12,8 @@ import { ALL_AWAKENING_NODES, getAwakeningNodeDef, awakeningNodeCostFor } from '
 import { getArtifact } from './data/artifacts.js';
 import { ALL_ABYSS_TREE_NODES, getAbyssTreeNodeDef, abyssTreeNodeCostFor } from './data/abyssTree.js';
 import { isAbyssBossFloor } from './data/abyss.js';
+import { generateWeaponAffixes, splitAffixesForApplication } from './data/affixes.js';
+import { deriveCombatStats } from './data/combatStats.js';
 
 const SAVE_KEY = 'bladevale_save_v1';
 
@@ -47,6 +49,14 @@ function defaultSave() {
     itemLocked: {},       // itemId -> true。ロック中は売却・分解・強化素材化の対象から除外
     itemFavorite: {},     // itemId -> true。お気に入り（表示上の目印のみ、機能的な制約はない）
     weaponEssence: 0,     // 分解で得られる汎用強化素材（同名武器の複数所持の代わりに使える）
+    // ---- 武器ランダムAffix（Part A） ----
+    // 武器はドロップごとに一意のインスタンスID（`${baseItemId}#${seq}`）を
+    // 持つ。weaponInstances: instanceId -> { itemId, affixes: [{id,rarity,roll}] }。
+    // inventory/equippedには通常のitemIdの代わりにこのinstanceIdを格納する
+    // （旧セーブの武器はinstanceID化されておらず、affixesなしとして扱う＝
+    // getItem()がinstanceIDなしのidもそのまま解決できるため後方互換）。
+    weaponInstances: {},
+    nextInstanceSeq: 1,
   };
 }
 
@@ -188,25 +198,32 @@ class StateManager {
 
     const rebirthMult = 1 + this.data.reincarnations * REBIRTH_LAYER.STAT_BONUS_PER_REBIRTH;
     const permMult = (stat) => rebirthMult * this.jobMasterStatMult(stat) * this.awakeningStatMult(stat);
+    // 武器ランダムAffix（Part A）：装備中武器のインスタンスが持つAffixのうち
+    // statKey付きのもの（ATK%/MAG%/DEF%/HP%/MP%/SPD%/Crit%/Evasion%/ArmorPen%）
+    // を、既存の永続倍率チェーン（転生・職業MASTER・覚醒）とは別枠の
+    // 追加乗数として適用する（武器の基礎statに依存せず、武器種を問わず
+    // 一貫して機能する＝既存の極Affix weaponAffix/weaponAffix2とは異なる層）。
+    const affixStat = splitAffixesForApplication(this.weaponInstanceAffixes(weaponId)).statBonus;
+    const affixMult = (stat) => 1 + (affixStat[stat] || 0);
     const stats = {
       // 転生遺物「死王の指骨」：最大HP-30%（deathKingHpMult）の代わりに極Affix強化
-      hp: Math.round((base.hp + bonus.hp) * permMult('hp') * this.deathKingHpMult()),
-      mp: Math.round((base.mp + bonus.mp) * permMult('mp')),
-      atk: Math.round((base.atk + bonus.atk) * permMult('atk')),
-      def: Math.round((base.def + bonus.def) * permMult('def')),
-      mag: Math.round((base.mag + bonus.mag) * permMult('mag')),
-      spd: Math.round((base.spd + bonus.spd) * permMult('spd') * 10) / 10,
+      hp: Math.round((base.hp + bonus.hp) * permMult('hp') * this.deathKingHpMult() * affixMult('hp')),
+      mp: Math.round((base.mp + bonus.mp) * permMult('mp') * affixMult('mp')),
+      atk: Math.round((base.atk + bonus.atk) * permMult('atk') * affixMult('atk')),
+      def: Math.round((base.def + bonus.def) * permMult('def') * affixMult('def')),
+      mag: Math.round((base.mag + bonus.mag) * permMult('mag') * affixMult('mag')),
+      spd: Math.round((base.spd + bonus.spd) * permMult('spd') * affixMult('spd') * 10) / 10,
       // critPctはPhase 1以前から転生の永続倍率を掛けていない（加算のみ）ため、その挙動は
       // 変えず、覚醒ツリー・職業MASTER（基本職の固定ボーナス＋上級/特級職の「得意武器
-      // 装備時+X%」条件付き能力）のボーナスだけをここに乗せる。
+      // 装備時+X%」条件付き能力）・武器Affix（Crit%）のボーナスだけをここに乗せる。
       critPct: Math.min(CAPS_LAYER.CRIT_PCT_MAX,
         (base.critPct + bonus.crit * 0.8) * this.jobMasterStatMult('crit') * this.awakeningStatMult('crit')
-        + this.jobMasterWeaponMatchCritBonus() * 100),
+        + this.jobMasterWeaponMatchCritBonus() * 100 + (affixStat.critPct || 0) * 100),
       // 武器図鑑武器（主に斧＝防御貫通、短剣＝回避）の新規ステータス。
       // 転生・職業MASTER等の永続倍率は掛けず、単純加算のみ（隠し上限は禁止。
       // 上限値はbalance.jsのCAPS_LAYERに集約し、装備画面から確認できる）
-      armorPen: Math.min(CAPS_LAYER.ARMOR_PEN_MAX, bonus.armorPen),
-      evasion: Math.min(CAPS_LAYER.EVASION_MAX, bonus.evasion),
+      armorPen: Math.min(CAPS_LAYER.ARMOR_PEN_MAX, bonus.armorPen + (affixStat.armorPen || 0)),
+      evasion: Math.min(CAPS_LAYER.EVASION_MAX, bonus.evasion + (affixStat.evasion || 0)),
     };
     const weaponItem = getItem(weaponId);
     const affinity = weaponAffinityBonus(weaponItem, this.currentJob.weapon);
@@ -214,16 +231,82 @@ class StateManager {
     return stats;
   }
 
+  // stat（'atk'|'def'|'mag'|'spd'|'hp'|'mp'）ごとの内訳（Part B、タップ時の
+  // 詳細表示用）。getStats()と全く同じ計算経路を再度たどるだけで、UI専用の
+  // 別式は作らない（Base/Equipment/Permanent(職業/覚醒/転生)/Affixの4分割）。
+  getStatBreakdown(stat) {
+    const base = computeStats(this.currentJobId, this.currentLevel);
+    let equipmentBonus = 0;
+    for (const slot of SLOTS) {
+      const id = this.data.equipped[slot];
+      if (!id) continue;
+      const item = getItem(id);
+      if (!item || !(stat in item.stats)) continue;
+      const baseMult = slot === 'weapon'
+        ? 1 + this.weaponEnhanceLevel(id) * EQUIPMENT_LAYER.ENHANCE_BONUS_PER_LEVEL
+              + this.weaponAwakenedRank(id) * AWAKENED_EQUIP_LAYER.BONUS_PER_RANK
+        : 1;
+      const affix1 = slot === 'weapon' ? this.weaponAffix(id) : null;
+      const affix2 = this.weaponAffix2(id);
+      let mult = baseMult;
+      if (affix1 && affix1.stat === stat) mult += affix1.pct;
+      if (affix2 && affix2.stat === stat) mult += affix2.pct;
+      equipmentBonus += item.stats[stat] * mult;
+    }
+    const baseValue = base[stat] || 0;
+    const rebirthMult = 1 + this.data.reincarnations * REBIRTH_LAYER.STAT_BONUS_PER_REBIRTH;
+    const permMult = rebirthMult * this.jobMasterStatMult(stat) * this.awakeningStatMult(stat);
+    const preAffix = (baseValue + equipmentBonus) * permMult;
+    const weaponId = this.data.equipped.weapon;
+    const affixStat = splitAffixesForApplication(this.weaponInstanceAffixes(weaponId)).statBonus;
+    const affixPct = affixStat[stat] || 0;
+    const total = Math.round(preAffix * (1 + affixPct));
+    return {
+      base: Math.round(baseValue),
+      equipment: Math.round(equipmentBonus),
+      permanent: Math.round(preAffix - (baseValue + equipmentBonus)),
+      affix: Math.round(total - preAffix),
+      total,
+    };
+  }
+
+  // ---------- Part B：詳細ステータス画面が使う共通計算 ----------
+  // 戦闘外の恒常ステータスを一箇所にまとめる。BattleEngine側の最終計算式
+  // （js/data/combatStats.js の deriveCombatStats）をそのまま呼ぶだけで、
+  // ステータスUI専用の式は一切持たない（元指示：計算責務の共通化）。
+  getCombatStats() {
+    const stats = this.getStats();
+    const effects = this.getEquippedEffects();
+    return deriveCombatStats(stats, effects, {
+      jobMasterCooldownMult: this.jobMasterCooldownMult(),
+      awakeningBossDmgMult: this.awakeningBossDmgMult(),
+      goldMult: this.jobMasterPassiveMult('gold') * this.awakeningStatMult('gold'),
+      expMult: this.jobMasterPassiveMult('exp') * this.awakeningStatMult('exp'),
+      dropMult: this.dropRateMult(),
+    });
+  }
+
   // 装備中の固有装備＋ルーン＋セット中の秘宝が持つ特殊効果を全て集める（戦闘エンジンから参照）
   getEquippedEffects() {
     const effects = [];
     for (const slot of SLOTS) {
-      const item = getItem(this.data.equipped[slot]);
-      if (!item || !item.effects) continue;
-      // 覚醒装備（キル数）がtier2（100キル）に達した固有装備は、
-      // 固有能力そのもの（chance/power）が強化された状態で発動する
-      const boosted = this.itemAwakenTier(item.id) >= 2;
-      for (const eff of item.effects) effects.push(boosted ? this._boostedItemEffect(eff) : eff);
+      const equippedId = this.data.equipped[slot];
+      const item = getItem(equippedId);
+      if (!item) continue;
+      if (item.effects) {
+        // 覚醒装備（キル数）がtier2（100キル）に達した固有装備は、
+        // 固有能力そのもの（chance/power）が強化された状態で発動する
+        const boosted = this.itemAwakenTier(item.id) >= 2;
+        for (const eff of item.effects) effects.push(boosted ? this._boostedItemEffect(eff) : eff);
+      }
+      // 武器ランダムAffix（Part A）：装備中武器インスタンスのeffect系Affix
+      // （Trigger/Build/Boss/Sustain等）をそのままeffects[]へ合流させる。
+      // 既存のonHit/onCrit/onHurt/onKill/passive等のtrigger分岐をそのまま
+      // 再利用するだけで、新しい発動経路は増やさない。
+      if (slot === 'weapon' && equippedId) {
+        const { effects: affixEffects } = splitAffixesForApplication(this.weaponInstanceAffixes(equippedId));
+        effects.push(...affixEffects);
+      }
     }
     const weaponId = this.data.equipped.weapon;
     if (weaponId) {
@@ -337,10 +420,32 @@ class StateManager {
   // 新規入手時にNEW!演出を出すため（元指示24番）、武器図鑑武器（+Boss固有
   // 武器）を初めて入手した瞬間だけtrueを返す。武器図鑑登録自体は「一度でも
   // 拾ったか」だけを記録し、個体のAffix等とは無関係（元指示23番）。
-  addItem(itemId, qty = 1) {
-    this.data.inventory[itemId] = (this.data.inventory[itemId] || 0) + qty;
-    let isNew = false;
+  // dropCtx（武器Affix・Part A）: { depth, elite, boss } を渡すと、深淵深度/
+  // エリート/Boss討伐によるAffix品質補正がかかる（省略時は通常補正）。
+  // itemIdが既存の武器インスタンスID（weaponInstances内）の場合は、
+  // 装備解除・ルーン出し戻し等で「既にAffix抽選済みの個体」を単に戻して
+  // いるだけなので、絶対に再抽選しない（セーブ再抽選禁止と同じ理由）。
+  addItem(itemId, qty = 1, dropCtx = null) {
+    if (this.data.weaponInstances[itemId]) {
+      this.data.inventory[itemId] = (this.data.inventory[itemId] || 0) + qty;
+      this.save();
+      return false;
+    }
     const item = getItem(itemId);
+    let isNew = false;
+    if (item && item.slot === 'weapon') {
+      // 新規ドロップ：本数ぶん、それぞれ独立したAffix構成のインスタンスを発行する
+      // （同じ武器名でもドロップごとに性能が変わる＝Part Aの核心）
+      for (let i = 0; i < qty; i++) {
+        const instanceId = `${itemId}#${this.data.nextInstanceSeq++}`;
+        const affixes = generateWeaponAffixes(item, dropCtx || {});
+        this.data.weaponInstances[instanceId] = { itemId, affixes };
+        this.data.inventory[instanceId] = 1;
+        this._lastWeaponInstanceId = instanceId;
+      }
+    } else {
+      this.data.inventory[itemId] = (this.data.inventory[itemId] || 0) + qty;
+    }
     if (item && item.isCodexWeapon && !this.data.weaponCodexSeen[itemId]) {
       this.data.weaponCodexSeen[itemId] = true;
       isNew = true;
@@ -349,7 +454,23 @@ class StateManager {
     return isNew;
   }
 
+  // 直近のaddItem()呼び出しで武器を新規ドロップした場合、そのインスタンスIDを
+  // 返す（ログ表示・レアAffix演出用）。武器以外・インスタンス出し戻しの
+  // 呼び出し後は前回値が残るため、呼び出し側は使い切りで参照すること。
+  consumeLastWeaponInstanceId() {
+    const id = this._lastWeaponInstanceId || null;
+    this._lastWeaponInstanceId = null;
+    return id;
+  }
+
   isWeaponCodexSeen(itemId) { return !!this.data.weaponCodexSeen[itemId]; }
+
+  // ---------- 武器ランダムAffix（Part A） ----------
+  isWeaponInstance(id) { return !!(id && this.data.weaponInstances[id]); }
+  weaponInstanceAffixes(id) {
+    const inst = this.data.weaponInstances[id];
+    return inst ? inst.affixes : [];
+  }
 
   // requiredLevel（Blade Vale 2.1）：転生（覚醒）で職業Lvがリセットされる
   // ため、現在の職業レベルでゲートする（元指示19番：転生直後に高性能装備で

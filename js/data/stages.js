@@ -8,6 +8,7 @@ import { buildAbyssStage } from './abyss.js';
 
 const CHAPTER_1 = {
   id: 'ch1',
+  num: 1,
   name: '第1章 はじまりの平原',
   stages: [
     {
@@ -149,7 +150,13 @@ function buildChapter(ch) {
       dropTable: [],
     });
   }
-  return { id: ch.id, name: `第${ch.num}章 ${ch.name}`, stages };
+  // num（章番号）を返り値にも含める。関数内部（chapterMult/ステージID生成等）
+  // ではch.numを使っているのに、以前は返り値のchapterオブジェクト自体には
+  // numを積んでおらず、CHAPTERS配列の各要素からはchapter.numが常に
+  // undefinedになっていた（BattleEngine/battle.jsのresolveBossAIProfile()
+  // 呼び出しがこれに依存しており、章5・8・10のBossが本来のfull profileに
+  // ならず、常にdefault=slam+chargeのみになってしまうバグの原因だった）。
+  return { id: ch.id, num: ch.num, name: `第${ch.num}章 ${ch.name}`, stages };
 }
 
 function scaleReward(base, mult) {

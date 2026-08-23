@@ -537,3 +537,72 @@ button { font-family: inherit; }
 .tb-cmd-btn[disabled] { opacity: 0.35; cursor: default; }
 .tb-cmd-btn.tb-cmd-guard { background: rgba(74,194,232,0.15); }
 .tb-cmd-btn.tb-cmd-flee { background: rgba(255,255,255,0.05); }
+
+/* とくぎ・じゅもんの技一覧サブメニュー */
+.tb-tech-menu {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  max-height: 260px;
+}
+.tb-tech-menu-header { display: flex; align-items: center; gap: 10px; }
+.tb-tech-menu-header span { font-weight: bold; font-size: 15px; }
+.tb-tech-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+.tb-tech-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: #f0f0f5;
+  font-size: 14px;
+  cursor: pointer;
+}
+.tb-tech-item:active { transform: scale(0.98); }
+.tb-tech-item[disabled] { opacity: 0.4; cursor: default; }
+.tb-tech-item .tb-tech-cost { font-size: 12px; opacity: 0.8; }
+.tb-tech-empty { padding: 14px; text-align: center; opacity: 0.6; font-size: 13px; }
+
+/* 武器ランダムAffix（Part A）：装備画面・武器詳細でのAffix一覧表示 */
+.affix-block { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+.affix-line { padding: 3px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; font-size: 11px; }
+.affix-rarity { font-weight: bold; }
+.affix-name { font-weight: bold; opacity: 0.95; }
+.affix-desc { opacity: 0.75; }
+
+/* 詳細ステータス画面（Part B） */
+.status-section { margin: 10px 0; }
+.status-section h3 {
+  font-size: 13px; opacity: 0.7; margin: 0 0 6px; padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+.status-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 13px; padding: 4px 0; cursor: default;
+}
+.status-row.tappable { cursor: pointer; }
+.status-row .status-label { opacity: 0.7; }
+.status-row .status-value { font-weight: bold; }
+.status-row .status-cap { font-size: 11px; opacity: 0.55; margin-left: 4px; }
+.status-row .status-cap.maxed { color: #f2c94c; }
+.status-breakdown {
+  font-size: 11px; opacity: 0.75; margin: 2px 0 8px; padding: 6px 10px;
+  background: rgba(255,255,255,0.05); border-radius: 6px; display: none;
+}
+.status-breakdown.open { display: block; }
+.status-breakdown .bd-line { display: flex; justify-content: space-between; }
+.status-equip-card {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--card-bg); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px; padding: 10px 12px; margin-top: 6px;
+}

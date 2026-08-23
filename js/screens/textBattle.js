@@ -29,19 +29,28 @@ export class TextBattleScreen {
       enemyList: document.getElementById('tbEnemyList'),
       log: document.getElementById('tbLog'),
       retreatBtn: document.getElementById('tbRetreatBtn'),
+      commandGrid: document.getElementById('tbCommandGrid'),
       attackBtn: document.getElementById('tbAttackBtn'),
       spellBtn: document.getElementById('tbSpellBtn'),
       skillBtn: document.getElementById('tbSkillBtn'),
       guardBtn: document.getElementById('tbGuardBtn'),
       itemBtn: document.getElementById('tbItemBtn'),
       fleeBtn: document.getElementById('tbFleeBtn'),
+      techMenu: document.getElementById('tbTechMenu'),
+      techMenuTitle: document.getElementById('tbTechMenuTitle'),
+      techList: document.getElementById('tbTechList'),
+      techBackBtn: document.getElementById('tbTechBackBtn'),
     };
 
     this.el.attackBtn.addEventListener('click', () => this._onCommand({ type: 'attack', targetId: this.selectedTargetId }));
     this.el.guardBtn.addEventListener('click', () => this._onCommand({ type: 'guard' }));
-    this.el.skillBtn.addEventListener('click', () => this._onCommand({ type: 'skill' }));
+    // とくぎ・じゅもんは単一技ではなく習得済み技一覧のサブメニューを開く
+    // （元指示：「とくぎ」ボタンを押したら習得済みskills一覧を表示する）
+    this.el.skillBtn.addEventListener('click', () => this._openTechMenu('skill'));
+    this.el.spellBtn.addEventListener('click', () => this._openTechMenu('spell'));
+    this.el.techBackBtn.addEventListener('click', () => this._closeTechMenu());
     this.el.fleeBtn.addEventListener('click', () => this._onCommand({ type: 'flee' }));
-    // じゅもん・どうぐは今回のスコープでは拡張ポイントのスタブ（元指示1・14・15番）。
+    // どうぐは今回のスコープでは拡張ポイントのスタブ（元指示1・15番）。
     // ボタン自体はhtml側でdisabledにしてあるため、クリックしても何も起きない。
 
     // 画面上部の✕は「にげる」コマンド（成功率あり・Boss戦不可）とは別物で、
@@ -56,6 +65,7 @@ export class TextBattleScreen {
     this.selectedTargetId = null;
     this.logLines = [];
     this.locked = false;
+    this.techMenuKind = null; // 'skill' | 'spell' | null（開いていない）
 
     this.el.stageName.textContent = this.engine.stage.name;
     this._pushLines(['戦闘開始！']);
@@ -84,6 +94,7 @@ export class TextBattleScreen {
     if (command.type === 'attack' && this.engine.aliveEnemies.length === 0) return;
     Audio_.tap();
     this.locked = true;
+    this.techMenuKind = null; // 技を選んだら（あるいは選ばずに他コマンドを押したら）サブメニューは閉じる
     const { events, over, result } = this.engine.advanceTurn(command);
     this._pushLines(describeRound(events));
     if (over) {
@@ -96,6 +107,21 @@ export class TextBattleScreen {
     }
     this._revealNextGroupIfNeeded();
     this.locked = false;
+    this._render();
+  }
+
+  // とくぎ・じゅもんの技一覧サブメニューを開閉する（コマンドグリッドと排他表示）
+  _openTechMenu(kind) {
+    if (!this.engine || this.engine.over || this.locked) return;
+    const list = kind === 'spell' ? this.engine.availableSpells() : this.engine.availableSkills();
+    if (list.length === 0) return; // 念のため（習得済み0件ならボタン自体disabledのはず）
+    Audio_.tap();
+    this.techMenuKind = kind;
+    this._render();
+  }
+  _closeTechMenu() {
+    Audio_.tap();
+    this.techMenuKind = null;
     this._render();
   }
 
@@ -127,6 +153,7 @@ export class TextBattleScreen {
     this._renderEnemies();
     this._renderLog();
     this._renderCommands();
+    this._renderTechMenu();
   }
 
   _renderEnemies() {
@@ -163,16 +190,52 @@ export class TextBattleScreen {
 
   _renderCommands() {
     const { engine } = this;
-    const skill = engine.job && engine.job.skill;
-    const skillReady = skill && engine.player.mp >= skill.mpCost && engine._skillCdTurns <= 0;
-    this.el.skillBtn.textContent = skill ? skill.name : 'とくぎ';
-    this.el.skillBtn.disabled = !skill || engine.over;
-    this.el.skillBtn.classList.toggle('hidden', false);
-    this.el.skillBtn.title = skill ? `MP${skill.mpCost}` : '';
-    this.el.skillBtn.style.opacity = skillReady ? '' : '0.6';
+    // コマンドグリッドとサブメニューは排他表示（元指示：「とくぎ」ボタンを
+    // 押したら習得済みskills一覧を表示する）
+    this.el.commandGrid.classList.toggle('hidden', !!this.techMenuKind);
+    this.el.techMenu.classList.toggle('hidden', !this.techMenuKind);
+    if (this.techMenuKind) return; // サブメニュー表示中はグリッド側のdisabled更新は不要
+
+    const skills = engine.availableSkills();
+    const spells = engine.availableSpells();
+    this.el.skillBtn.disabled = engine.over || skills.length === 0;
+    this.el.spellBtn.disabled = engine.over || spells.length === 0;
 
     this.el.fleeBtn.disabled = engine.over || !engine.canFlee();
     this.el.attackBtn.disabled = engine.over || engine.aliveEnemies.length === 0;
     this.el.guardBtn.disabled = engine.over;
+  }
+
+  // とくぎ・じゅもんの技一覧サブメニューの中身を描画する（元指示の表示例：
+  // 「渾身の一撃　MP6」のように名前とMPコストを並べる。未習得技は表示しない）
+  _renderTechMenu() {
+    if (!this.techMenuKind) return;
+    const { engine } = this;
+    const kind = this.techMenuKind;
+    this.el.techMenuTitle.textContent = kind === 'spell' ? 'じゅもん' : 'とくぎ';
+    const list = kind === 'spell' ? engine.availableSpells() : engine.availableSkills();
+    this.el.techList.innerHTML = '';
+    if (list.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'tb-tech-empty';
+      empty.textContent = kind === 'spell' ? 'まだ習得したじゅもんがない' : 'まだ習得したとくぎがない';
+      this.el.techList.appendChild(empty);
+      return;
+    }
+    for (const tech of list) {
+      const probe = engine._probeTechnique(kind, tech.id);
+      const item = document.createElement('div');
+      item.className = 'tb-tech-item';
+      const costLabel = tech.goldCostPct != null || tech.goldCostFlat != null
+        ? `MP${tech.mpCost}${tech.mpCost ? '・' : ''}Gold`
+        : `MP${tech.mpCost}`;
+      item.innerHTML = `<span>${tech.name}</span><span class="tb-tech-cost">${costLabel}</span>`;
+      if (!probe.ok) item.setAttribute('disabled', 'true');
+      item.addEventListener('click', () => {
+        if (!probe.ok) return; // クールダウン中等は選択そのものを弾く（無駄なコマンド送信を避ける）
+        this._onCommand({ type: kind, techId: tech.id, targetId: this.selectedTargetId });
+      });
+      this.el.techList.appendChild(item);
+    }
   }
 }
