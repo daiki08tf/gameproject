@@ -3,10 +3,11 @@
    ------------------------------------------------------------
    Keeps the existing BattleEngine turn order intact and layers companion
    participation on top: autonomous attacks, HP/MP, enemy targeting,
-   recovery AI, battle-down state and companion EXP.
+   recovery AI, battle-down state, HUD and companion EXP.
    ============================================================ */
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
+import { TextBattleScreen } from '../screens/textBattle.js';
 import { COMPANION_NATURES } from '../data/companions.js';
 
 function ensureCompanionBattle(engine) {
@@ -68,9 +69,6 @@ function chooseTarget(engine, companion) {
 function canCompanionHeal(companion) {
   if (!companion || companion.down || companion.hp <= 0) return false;
   if (companion.hp / companion.maxHp > 0.5) return false;
-  // Slime learns its recovery move at Lv8. Support-nature companions can use
-  // a weaker generic recovery once they have enough MP; this is intentionally
-  // conservative until companion skill definitions become executable objects.
   if (companion.speciesId === 'slime' && companion.level >= 8 && companion.mp >= 4) return true;
   const nature = COMPANION_NATURES[companion.nature] || COMPANION_NATURES.balanced;
   return nature.ai === 'support' && companion.mp >= 5;
@@ -84,17 +82,18 @@ function performCompanionHeal(companion) {
   const amount = Math.max(1, Math.round(companion.maxHp * pct + companion.mag * 0.6));
   const before = companion.hp;
   companion.hp = Math.min(companion.maxHp, companion.hp + amount);
+  const healed = companion.hp - before;
   return {
-    action: 'guard',
+    action: 'skill',
     companion: true,
     companionId: companion.id,
     companionName: companion.name,
-    targetName: `${companion.name}は傷を癒した（HP +${companion.hp - before}）`,
-    damage: 0,
-    critical: false,
-    defeated: false,
-    effects: [],
-    companionHeal: companion.hp - before,
+    name: `${companion.name}の${slimeHeal ? 'ぷるぷる回復' : '応急回復'}`,
+    techType: 'heal',
+    healAmount: healed,
+    mpRestored: 0,
+    buffed: false,
+    targets: [],
   };
 }
 
@@ -102,7 +101,6 @@ function performCompanionTurn(engine) {
   ensureCompanionBattle(engine);
   const c = engine.companion;
   if (!c || c.down || c.hp <= 0 || engine.over) return null;
-
   if (canCompanionHeal(c)) return performCompanionHeal(c);
 
   const target = chooseTarget(engine, c);
@@ -110,19 +108,21 @@ function performCompanionTurn(engine) {
   const damage = companionDamage(c, target);
   const kill = engine._applyRawDamageAndReward(target, damage);
   return {
-    action: 'attack',
+    action: 'skill',
     companion: true,
     companionId: c.id,
     companionName: c.name,
-    targetId: target.id,
-    // Existing BattleLog compatibility. Dedicated companion log events can be
-    // introduced later without changing the combat contract.
-    targetName: `${c.name}の攻撃 → ${target.name}`,
-    damage,
-    critical: false,
-    defeated: target.dead,
-    effects: [],
-    kill,
+    name: `${c.name}のこうげき`,
+    techType: 'damage',
+    targets: [{
+      targetId: target.id,
+      targetName: target.name,
+      damage,
+      critical: false,
+      defeated: target.dead,
+      effects: [],
+      kill,
+    }],
   };
 }
 
@@ -150,8 +150,6 @@ function hitCompanion(engine, enemy) {
   };
 }
 
-// Some normal-enemy attacks are redirected to the companion. Boss actions stay
-// on the player in Phase 2.1 so telegraphs/special damage remain calibrated.
 const originalPerformEnemyTurn = BattleEngine.prototype.performEnemyTurn;
 BattleEngine.prototype.performEnemyTurn = function patchedPerformEnemyTurn(enemy) {
   ensureCompanionBattle(this);
@@ -165,10 +163,35 @@ BattleEngine.prototype.performEnemyTurn = function patchedPerformEnemyTurn(enemy
   return originalPerformEnemyTurn.call(this, enemy);
 };
 
+function convertCompanionHitLog(event) {
+  if (!event || event.type !== 'enemyAction' || !event.result || !event.result.companionTarget) return event;
+  const r = event.result;
+  return {
+    type: 'playerAction',
+    result: {
+      action: 'skill',
+      name: `${r.name}の攻撃${r.companionDown ? `（${r.companionName}は力尽きた）` : ''}`,
+      techType: 'damage',
+      targets: [{
+        targetName: r.companionName,
+        damage: r.damage,
+        critical: false,
+        defeated: false,
+        effects: [],
+        kill: null,
+      }],
+    },
+  };
+}
+
 const originalAdvanceTurn = BattleEngine.prototype.advanceTurn;
 BattleEngine.prototype.advanceTurn = function patchedAdvanceTurn(command) {
   ensureCompanionBattle(this);
   const out = originalAdvanceTurn.call(this, command);
+
+  // Rewrite companion-target enemy events into the already-supported technique
+  // log shape: 「ゴブリンの攻撃」！ スライムにXのダメージ！
+  if (out.events) out.events = out.events.map(convertCompanionHitLog);
 
   const blocked = out.events && out.events.some((ev) => ev.type === 'playerAction' && ev.result && ev.result.blocked);
   const fled = out.result && out.result.retreated;
@@ -190,6 +213,39 @@ BattleEngine.prototype._grantKillRewards = function patchedGrantKillRewards(enem
     result.companionLevel = exp.level;
   }
   return result;
+};
+
+// Lightweight HUD injected without changing index.html. The existing screen
+// renderer remains authoritative; this only mirrors engine.companion state.
+function ensureCompanionHud(screen) {
+  if (!screen || !screen.engine) return null;
+  ensureCompanionBattle(screen.engine);
+  let el = document.getElementById('tbCompanionHud');
+  if (!screen.engine.companion) {
+    if (el) el.remove();
+    return null;
+  }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'tbCompanionHud';
+    el.className = 'forge-card-sub';
+    el.style.padding = '5px 10px';
+    el.style.margin = '4px 8px';
+    const hud = document.querySelector('#textBattleScreen .tb-hud');
+    if (hud) hud.appendChild(el);
+  }
+  return el;
+}
+
+const originalRender = TextBattleScreen.prototype._render;
+TextBattleScreen.prototype._render = function patchedCompanionRender() {
+  originalRender.call(this);
+  const el = ensureCompanionHud(this);
+  if (!el || !this.engine.companion) return;
+  const c = this.engine.companion;
+  const down = c.down || c.hp <= 0;
+  el.textContent = `🐾 ${c.name} Lv.${c.level}　HP ${Math.max(0, c.hp)}/${c.maxHp}　MP ${Math.max(0, c.mp)}/${c.maxMp}${down ? '　【戦闘不能】' : ''}`;
+  el.style.opacity = down ? '0.55' : '1';
 };
 
 export { performCompanionTurn };
