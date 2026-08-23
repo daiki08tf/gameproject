@@ -9,8 +9,9 @@ function renderSecretCodexBlock(){
   const block=document.createElement('div'); block.id='secretJobCodexBlock'; block.className='status-section';
   const found=jobs.filter(j=>state.isSecretJobDiscovered(j.id)).length;
   block.innerHTML=`<h3>秘密職 ${found}/???</h3><p class="hint">秘密職は条件を満たすまで正体も総数も明かされません。</p>`+jobs.map(j=>{
-    const known=state.isSecretJobDiscovered(j.id); const cond=state.secretJobConditions(j.id);
-    return `<div class="pick-row" style="margin:6px 0"><div><div class="item-name">${known?j.name:'？？？？？'}</div><div class="item-stats">${known?`${j.desc}<br>${cond.map(c=>`${c.done?'✓':'□'} ${c.label}`).join(' / ')}<br>Job Lv.${state.jobProgress(j.id).level} / MASTER ${j.masteryLv}`:j.hint}</div></div></div>`;
+    const known=state.isSecretJobDiscovered(j.id); const cond=state.secretJobConditions(j.id); const p2=state.getSecretJobPhase2Display?.(j.id);
+    const tech=known&&p2?.techniques?.length?`<br><b>固有能力</b><br>${p2.techniques.map(t=>`Lv.${t.level} ${t.name}：${t.desc}`).join('<br>')}`:'';
+    return `<div class="pick-row" style="margin:6px 0"><div><div class="item-name">${known?j.name:'？？？？？'}</div><div class="item-stats">${known?`${j.desc}<br>${cond.map(c=>`${c.done?'✓':'□'} ${c.label}`).join(' / ')}<br>Job Lv.${state.jobProgress(j.id).level} / MASTER ${j.masteryLv}${tech}`:j.hint}</div></div></div>`;
   }).join('');
   content.appendChild(block);
 }
