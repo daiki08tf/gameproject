@@ -1,6 +1,7 @@
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 import { buildAbyssStage } from '../data/abyss.js';
+import { ABYSS_ENDGAME_MILESTONES } from '../data/abyssEndgame.js';
 import { ALL_ABYSS_TREE_NODES, abyssTreeNodeCostFor } from '../data/abyssTree.js';
 
 let abyssActiveTab = 'challenge';
@@ -26,14 +27,39 @@ function syncAbyssTabs() {
   if (abyssActiveTab === 'tree') renderAbyssTree();
 }
 
-// 最高到達階＋1（次に挑める階）を先頭に、新しい順に並べて表示する。
-// 章のように事前生成された配列がないため、必要な分だけその場で作る。
+// 数千階を全DOM化しない。最新40階を基本に、到達済みのロードマップ節目を残す。
+// 初期〜40階は従来どおり全階表示されるため序盤UXは変わらない。
+export function abyssVisibleDepths(bestDepth) {
+  const best = Math.max(0, Math.floor(Number(bestDepth) || 0));
+  const next = best + 1;
+  const keep = new Set();
+  const recentStart = Math.max(1, next - 39);
+  for (let d = recentStart; d <= next; d += 1) keep.add(d);
+  keep.add(1);
+  for (const milestone of ABYSS_ENDGAME_MILESTONES) {
+    if (milestone.depth <= next) keep.add(milestone.depth);
+  }
+  return [...keep].sort((a, b) => b - a);
+}
+
 export function renderAbyssList(onPick) {
   const list = document.getElementById('abyssList');
   list.innerHTML = '';
   const best = state.data.abyssBestDepth;
   const maxShown = best + 1;
-  for (let depth = maxShown; depth >= 1; depth--) {
+  const depths = abyssVisibleDepths(best);
+
+  for (let index = 0; index < depths.length; index += 1) {
+    const depth = depths[index];
+    const previous = index > 0 ? depths[index - 1] : null;
+    if (previous != null && previous - depth > 1) {
+      const gap = document.createElement('div');
+      gap.className = 'hint';
+      gap.style.textAlign = 'center';
+      gap.textContent = `⋯ ${previous - depth - 1}階省略 ⋯`;
+      list.appendChild(gap);
+    }
+
     const stage = buildAbyssStage(depth);
     const isNext = depth === maxShown;
     const cleared = depth <= best;
@@ -45,7 +71,8 @@ export function renderAbyssList(onPick) {
     card.innerHTML = `
       <div>
         <div class="name">${stage.name}${isNext ? '　<span style="color:var(--accent)">NEW</span>' : ''}</div>
-        <div class="rec">推奨Lv ${stage.recLevel}</div>
+        <div class="rec">推奨Lv ${stage.recLevel.toLocaleString()} ／ 目標IP ${stage.itemPowerTarget.toLocaleString()}</div>
+        <div class="rec">${stage.abyssEra}</div>
         ${modText}
       </div>
       <div class="cleared">${cleared ? '★' : ''}</div>
@@ -56,9 +83,6 @@ export function renderAbyssList(onPick) {
   syncAbyssTabs();
 }
 
-// ---------------------------------------------------------
-// 深淵ツリー（深淵拡張：覚醒ツリーとは別枠、深淵の欠片で永続強化）
-// ---------------------------------------------------------
 function renderAbyssTree() {
   const content = document.getElementById('abyssTreeContent');
   content.innerHTML = '';
@@ -66,9 +90,7 @@ function renderAbyssTree() {
   hint.className = 'hint';
   hint.textContent = '深淵の欠片は、深淵のエリート撃破・ボスフロア踏破で入手できる。深淵限定の永続強化に使う（覚醒しても失われない）。';
   content.appendChild(hint);
-  for (const node of ALL_ABYSS_TREE_NODES) {
-    content.appendChild(renderAbyssTreeNodeCard(node));
-  }
+  for (const node of ALL_ABYSS_TREE_NODES) content.appendChild(renderAbyssTreeNodeCard(node));
 }
 
 function renderAbyssTreeNodeCard(node) {
