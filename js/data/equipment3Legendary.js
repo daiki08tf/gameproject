@@ -78,7 +78,11 @@ function pickDeterministic(obj, key) {
 
 export function legendaryEffectChance(item, itemPower, ctx = {}) {
   const rarity = item?.rarity;
-  let chance = rarity === 'mythic' ? 0.40 : rarity === 'legendary' ? 0.20 : rarity === 'epic' && itemPower >= 900 ? 0.04 : 0;
+  // Equipment 3.0 E4 is intentionally Epic+ only. High Item Power or a
+  // Nemesis/EX source may improve an eligible item's chance, but may never
+  // promote a Rare/Normal base into the Legendary Effect pool.
+  if (!['epic', 'legendary', 'mythic'].includes(rarity)) return 0;
+  let chance = rarity === 'mythic' ? 0.40 : rarity === 'legendary' ? 0.20 : itemPower >= 900 ? 0.04 : 0;
   chance += Math.min(0.12, Math.max(0, Number(itemPower) - 1000) / 75000);
   if (ctx.boss) chance += 0.05;
   if (ctx.ex) chance += 0.08;
