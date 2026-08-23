@@ -50,16 +50,15 @@ function buildPanel(){
   host.prepend(panel);
 }
 
-// equipment.jsは内部操作のたびにequipPickerを再描画するため、再描画を監視して
-// 試練パネルを自動で戻す。自分自身の追加による無限ループを防ぐためフラグを使う。
-const host=document.getElementById('equipPicker');
-if(host){
-  let rendering=false;
-  const observer=new MutationObserver(()=>{
-    if(rendering) return;
-    rendering=true;
-    queueMicrotask(()=>{ buildPanel(); rendering=false; });
-  });
-  observer.observe(host,{childList:true});
-}
+// equipment.jsはクリック操作のたびに同期的に再描画するため、クリック処理の
+// 完了後に1回だけ試練パネルを差し戻す。MutationObserverは自己更新ループを
+// 起こしやすいため使わない。
+document.addEventListener('click',(ev)=>{
+  const target=ev.target;
+  const equipmentScreen=document.getElementById('equipmentScreen');
+  const opensEquipment=['goEquipBtn','resultEquipBtn','weaponCodexBackBtn'].includes(target?.id);
+  const insideEquipment=equipmentScreen?.contains(target);
+  if(opensEquipment||insideEquipment) queueMicrotask(buildPanel);
+});
+
 export { buildPanel as renderUniqueTrialPanel };
