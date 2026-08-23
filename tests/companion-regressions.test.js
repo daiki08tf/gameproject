@@ -49,8 +49,12 @@ test('foundation keeps one-time starter and allows a truly empty roster', async 
   assert.match(text, /starterCompanionGranted/, 'starter grant must be persisted');
   assert.match(text, /this\.data\.companionParty\[0\] = null;[\s\S]*delete this\.data\.companionInstances\[instanceId\]/,
     'releasing active companion should clear party slot before deleting the instance');
-  assert.doesNotMatch(text, /if \(state\.companionList\(\)\.length === 0\) \{\s*const starter/s,
-    'an empty roster alone must not recreate the starter');
+  const outerGuard = text.indexOf('if (!state.data.starterCompanionGranted)');
+  const emptyRosterCheck = text.indexOf('if (state.companionList().length === 0)', outerGuard);
+  const starterCreate = text.indexOf("state.createCompanion('slime'", emptyRosterCheck);
+  const flagSet = text.indexOf('state.data.starterCompanionGranted = true', starterCreate);
+  assert.ok(outerGuard >= 0 && emptyRosterCheck > outerGuard && starterCreate > emptyRosterCheck && flagSet > starterCreate,
+    'empty-roster starter creation must be nested inside the persisted one-time grant guard');
 });
 
 test('recruitment is type-based and elite recruits have a rarity floor', async () => {
