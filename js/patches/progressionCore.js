@@ -1,19 +1,21 @@
 /* ============================================================
-   Progression 2.0 Phase 1 — Character / Job level split
+   Progression 2.0 — Character / Job split + Character EXP 2.0
    ------------------------------------------------------------
    Character Lv is the long-term 1..99,999 progression axis.
    Existing per-job levels remain the job mastery / skill axis.
 
-   This patch intentionally keeps state.currentLevel/currentExp as the
-   legacy *current job* aliases for compatibility. New code should use
-   characterLevel/characterExp for character progression and
-   currentJobLevel/currentJobExp for job progression.
+   state.currentLevel/currentExp intentionally remain legacy *job* aliases
+   for compatibility. New progression code should use characterLevel /
+   characterExp and currentJobLevel / currentJobExp explicitly.
    ============================================================ */
 
 import { state } from '../state.js';
 import { TIERS } from '../data/jobs.js';
-
-export const CHARACTER_LEVEL_MAX = 99999;
+import {
+  CHARACTER_LEVEL_MAX,
+  characterExpToNext,
+  characterLevelBand,
+} from '../data/progression.js';
 
 const JOB_MASTERY_LEVELS = {
   basic: 20,
@@ -63,11 +65,12 @@ Object.defineProperties(state, {
   },
 });
 
-// Phase 2 will replace this temporary curve with the dedicated Lv99,999 curve.
-// Keeping the old curve here makes Phase 1 a structural migration only.
-state.characterExpToNext = function characterExpToNext(level = this.characterLevel) {
-  if (level >= CHARACTER_LEVEL_MAX) return 0;
-  return Math.round(20 + level * 18 + Math.pow(level, 1.6) * 2);
+state.characterExpToNext = function characterExpRequirement(level = this.characterLevel) {
+  return characterExpToNext(level);
+};
+
+state.characterLevelBand = function currentCharacterLevelBand(level = this.characterLevel) {
+  return characterLevelBand(level);
 };
 
 const originalGainExp = state.gainExp.bind(state);
@@ -99,8 +102,9 @@ state.gainExp = function gainExpWithCharacterProgress(amount) {
     characterGained: gained,
     characterLeveledUp,
     characterLevel: this.data.characterLevel,
+    characterBand: this.characterLevelBand().id,
     jobLevel: this.currentJobLevel,
   };
 };
 
-export { ensureProgressionData, JOB_MASTERY_LEVELS };
+export { ensureProgressionData, JOB_MASTERY_LEVELS, CHARACTER_LEVEL_MAX };
