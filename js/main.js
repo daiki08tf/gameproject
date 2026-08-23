@@ -18,6 +18,7 @@ import './patches/homeNavigation.js';
 import './patches/rune2Ui.js';
 import './patches/rune2ObserveUi.js';
 import './patches/systemCleanupAwakeningV2.js';
+import './patches/legacyRuneRetirement.js';
 import { TextBattleScreen } from './screens/textBattle.js';
 import { renderHome } from './screens/home.js';
 import { renderChapterSelect } from './screens/chapterSelect.js';
