@@ -1,52 +1,36 @@
 /* ============================================================
-   深淵（Abyss）ステージ生成（Blade Vale 2.0 Phase 4、深淵拡張でモディファイア追加）
-   全10章のボスを撃破すると解放される、無限に深くなるエンドコンテンツ。
-   1〜9999...と際限なく続くため、章のように事前生成せず、
-   findStage('abyss-<depth>') が呼ばれるたびにその場でフロアを作る。
-
-   モディファイア／エリートの設計方針：
-   このファイルは純粋なデータ生成モジュールとして保つため、プレイヤー状態
-   （深淵ツリーの投資状況など）には一切依存させない。エリート出現やモディ
-   ファイアの「敵の強さ」側（ATK/DEF/SPD、接触ダメージ）は、深淵ツリーの
-   「混沌への耐性」で軽減できる必要があるため、あえてここでは適用せず、
-   raw な倍率（enemyAtkMult等）をステージデータとして持たせるだけにして
-   おき、実際の適用は state を参照できる battle.js 側（_spawnEnemy等）で
-   行う。一方、報酬・出現数・ドロップ率・回復量の倍率はプレイヤー状態に
-   依存しない純粋な計算なので、このファイルの中で確定させてしまって良い。
+   深淵（Abyss）ステージ生成 — Equipment 3.0 E9
+   本編15章（Lv700 / IP1000）からLv99,999 / IP10,000へ接続する長期エンドゲーム。
+   3,000階でレベル/IP軸は上限へ到達し、それ以降は自己ベスト更新帯として継続する。
    ============================================================ */
 import { CHAPTER_SPECS, chapterMult } from './chapters.js';
-import { ENEMY_TYPES, hpMult, atkMult, defMult, bossHpMult } from './enemies.js';
-import { ABYSS_LAYER, abyssBandMult } from './balance.js';
+import { ENEMY_TYPES } from './enemies.js';
+import { ABYSS_LAYER } from './balance.js';
+import {
+  abyssRecommendedLevel,
+  abyssTargetItemPower,
+  abyssEraForDepth,
+  abyssCombatScale,
+  abyssStageExpBudget,
+} from './abyssEndgame.js';
 
-const CH10 = CHAPTER_SPECS.find((c) => c.num === 10);
+const CH15 = CHAPTER_SPECS.find((c) => c.num === 15);
 
-// 深淵モディファイア：1つにつき必ず「敵を強くする／リスクを増やす」効果と
-// 「報酬を増やす」効果がセットになっている（ハイリスク・ハイリターン）。
 export const ABYSS_MODIFIERS = [
-  { id: 'mod_frenzy', name: '狂乱の霧', desc: '敵の移動速度+25% ／ 獲得ゴールド+40%',
-    enemySpeedMult: 1.25, goldMult: 1.4 },
-  { id: 'mod_fortress', name: '鉄壁の守り', desc: '敵の防御力+30% ／ ドロップ率+50%',
-    enemyDefMult: 1.3, dropMult: 1.5 },
-  { id: 'mod_swarm', name: '群れの巣窟', desc: '出現数+30% ／ 獲得経験値+30%',
-    enemyCountMult: 1.3, expMult: 1.3 },
-  { id: 'mod_glass', name: '脆き猛威', desc: '敵HP-20% ／ 敵攻撃力+35%',
-    enemyHpMult: 0.8, enemyAtkMult: 1.35 },
-  { id: 'mod_venom', name: '瘴気だまり', desc: '敵との接触ダメージ+25% ／ 獲得経験値+25%',
-    contactDmgMult: 1.25, expMult: 1.25 },
-  { id: 'mod_blessed', name: '静穏の加護', desc: '回復量+50% ／ 獲得ゴールド-15%',
-    healMult: 1.5, goldMult: 0.85 },
+  { id: 'mod_frenzy', name: '狂乱の霧', desc: '敵の移動速度+25% ／ 獲得ゴールド+40%', enemySpeedMult: 1.25, goldMult: 1.4 },
+  { id: 'mod_fortress', name: '鉄壁の守り', desc: '敵の防御力+30% ／ ドロップ率+50%', enemyDefMult: 1.3, dropMult: 1.5 },
+  { id: 'mod_swarm', name: '群れの巣窟', desc: '出現数+30% ／ 獲得経験値+30%', enemyCountMult: 1.3, expMult: 1.3 },
+  { id: 'mod_glass', name: '脆き猛威', desc: '敵HP-20% ／ 敵攻撃力+35%', enemyHpMult: 0.8, enemyAtkMult: 1.35 },
+  { id: 'mod_venom', name: '瘴気だまり', desc: '敵との接触ダメージ+25% ／ 獲得経験値+25%', contactDmgMult: 1.25, expMult: 1.25 },
+  { id: 'mod_blessed', name: '静穏の加護', desc: '回復量+50% ／ 獲得ゴールド-15%', healMult: 1.5, goldMult: 0.85 },
 ];
 
-// depthから決定論的に1つ（ボスフロアは2つ）選ぶ。深淵一覧は毎回その場で
-// buildAbyssStage(depth)を呼び直すため、Math.random()で選ぶと開き直す
-// たびにモディファイアが変わってしまい混乱する。単純なLCGでdepthから
-// 決定論的な擬似乱数列を作り、常に同じ組み合わせになるようにする。
 function modifiersForDepth(depth) {
   const count = isAbyssBossFloor(depth) ? 2 : 1;
   const pool = [...ABYSS_MODIFIERS];
   const picks = [];
   let seed = (depth * 2654435761) % 2147483647;
-  for (let i = 0; i < count && pool.length > 0; i++) {
+  for (let i = 0; i < count && pool.length > 0; i += 1) {
     seed = (seed * 48271) % 2147483647;
     const idx = seed % pool.length;
     picks.push(pool.splice(idx, 1)[0]);
@@ -54,51 +38,35 @@ function modifiersForDepth(depth) {
   return picks;
 }
 
-// 深淵内の敵アーキタイプの素の基礎値（enemies.jsのNORMAL_BASE等と同じ数値を採用）
-const ARCHETYPE_BASE = {
-  normal: { name: '深淵の徘徊者', hp: 26, atk: 6, def: 2, speed: 95, radius: 15, color: '#7b3fb0', xp: 6, gold: 4 },
-  fast:   { name: '深淵の疾影',   hp: 14, atk: 4, def: 0, speed: 180, radius: 11, color: '#a566d6', xp: 5, gold: 3 },
-  tank:   { name: '深淵の巨影',   hp: 70, atk: 11, def: 5, speed: 62, radius: 22, color: '#4b2470', xp: 14, gold: 8 },
-  boss:   { name: '深淵の支配者', hp: 420, atk: 16, def: 8, speed: 68, radius: 34, color: '#d048e0', xp: 120, gold: 150, boss: true },
+const ABYSS_NAMES = {
+  normal: '深淵の徘徊者',
+  fast: '深淵の疾影',
+  tank: '深淵の巨影',
+  boss: '深淵の支配者',
 };
 
-// 報酬（gold/exp）は難易度とは独立の線形成長のまま（元指示24番の趣旨：
-// 難易度が上がるほど報酬を良くするが、これは_rollWeaponDrop等のドロップ率
-// 側で主に表現する。ここでの素の報酬カーブは緩やかな線形で十分）。
-function rewardFloorMult(depth) {
-  return chapterMult(10) * (1 + depth * ABYSS_LAYER.REWARD_STEP);
+function chapter15Anchor(kind) {
+  const key = kind === 'boss' ? 'ch15_boss' : `ch15_${kind}`;
+  return ENEMY_TYPES[key] || ENEMY_TYPES[kind] || { hp: 1, atk: 1, def: 0, speed: 80, xp: 1, gold: 1 };
 }
 
-// 難易度リバランス：敵の強さ（hp/atk/def）は「10章ボス撃破直後」の
-// ENEMY_SCALING到達値（hpMult(10)/atkMult(10)/defMult(10)、Bossだけは
-// 専用のbossHpMult(10)）を起点に、Piecewise Scaling（元指示19番）で
-// 複利的に伸ばす。深さ帯が上がるほど成長率も上がる（balance.jsの
-// ABYSS_LAYER.BANDS参照）。
-// ※以前はここを経済倍率のchapterMult(10)（=4.15、章の報酬計算専用の
-// 別軸の小さい値）で代用していたため、深淵1階が実際の10章ボスより
-// はるかに弱いという致命的な断絶があった（Phase 6再シミュレーションで
-// 発覚し修正）。報酬（xp/gold）は難易度と独立の別軸のままrewardFloorMult
-// （chapterMult(10)ベース）を使い続ける。
-// goldMult/expMult はモディファイア由来の「報酬側」倍率（プレイヤー状態に
-// 依存しない）。敵の強さ側（hp/atk/def）はここでは一切いじらない
-// （エリート化・敵ステータス系モディファイアはbattle.js側で、深淵ツリーの
-// 耐性を反映した上で適用する）。
-//
-// 仕様の明確化（PR#2レビュー第4点）：「深淵1階＝10章ボス撃破直後の到達値
-// そのもの」（仕様A）を採用する。深淵1階はまだ何の深淵専用強化も乗って
-// いない状態で、2階以降からabyssBandMult()の複利成長が始まる（同関数の
-// コメント参照）。「深淵1階は10章より少し強い最初のエンドコンテンツ階層」
-// （仕様B）ではない。
-function scaleArchetype(base, depth, goldMult, expMult) {
-  const isBoss = !!base.boss;
-  const hpBase = isBoss ? bossHpMult(10) : hpMult(10);
+// 深淵1階は15章クリア直後と連続する。levelRoadmap99999.jsが15章敵をLv700帯へ
+// 補正した後にbuildAbyssStage()が呼ばれるため、ここでは現在のch15_*を基準値として
+// 読む。旧10章固定倍率/無限指数は使わず、Lv700→99,999のロードマップ比で伸ばす。
+function scaleArchetype(kind, depth, goldMult, expMult) {
+  const anchor = chapter15Anchor(kind);
+  const scale = abyssCombatScale(depth);
+  const boss = kind === 'boss';
+  const rewardRatio = Math.max(1, scale.level / 700);
   return {
-    ...base,
-    hp: Math.round(base.hp * hpBase * abyssBandMult('hpRate', depth)),
-    atk: Math.round(base.atk * atkMult(10) * abyssBandMult('atkRate', depth)),
-    def: Math.round(base.def * defMult(10) * abyssBandMult('defRate', depth)),
-    xp: Math.round(base.xp * rewardFloorMult(depth) * expMult),
-    gold: Math.round(base.gold * rewardFloorMult(depth) * goldMult),
+    ...anchor,
+    name: ABYSS_NAMES[kind],
+    boss,
+    hp: Math.max(1, Math.round(anchor.hp * scale.hp)),
+    atk: Math.max(1, Math.round(anchor.atk * scale.atk)),
+    def: Math.max(0, Math.round(anchor.def * scale.def)),
+    xp: Math.max(1, Math.round(anchor.xp * Math.pow(rewardRatio, 0.78) * expMult)),
+    gold: Math.max(1, Math.round(anchor.gold * Math.pow(rewardRatio, 0.62) * goldMult)),
   };
 }
 
@@ -106,24 +74,23 @@ export function isAbyssBossFloor(depth) {
   return depth % ABYSS_LAYER.BOSS_FLOOR_INTERVAL === 0;
 }
 
-// 第10章ボスのドロップテーブルをそのまま再利用する
-// （現状、第10章が最高レア帯の装備の唯一の入手源であるため、
-//   深淵はその周回・稼ぎ場としてそのまま機能する）
-function ch10DropTable() {
+// 15章到達後の周回先なので、固定ドロップも15章の最高帯へ接続する。
+function ch15DropTable() {
   const dt = [
-    { itemId: `${CH10.id}_named_${CH10.items.named.slot}`, weight: 1 },
-    { itemId: `rune_effect_${CH10.items.named.effect}`, weight: 1 },
+    { itemId: `${CH15.id}_named_${CH15.items.named.slot}`, weight: 1 },
+    { itemId: `rune_effect_${CH15.items.named.effect}`, weight: 1 },
   ];
-  if (CH10.items.named2) {
+  if (CH15.items.named2) {
     dt.push(
-      { itemId: `${CH10.id}_named2_${CH10.items.named2.slot}`, weight: 1 },
-      { itemId: `rune_effect_${CH10.items.named2.effect}`, weight: 1 },
+      { itemId: `${CH15.id}_named2_${CH15.items.named2.slot}`, weight: 1 },
+      { itemId: `rune_effect_${CH15.items.named2.effect}`, weight: 1 },
     );
   }
   return dt;
 }
 
-export function buildAbyssStage(depth) {
+export function buildAbyssStage(rawDepth) {
+  const depth = Math.max(1, Math.floor(Number(rawDepth) || 1));
   const normalId = `abyss_${depth}_normal`;
   const fastId = `abyss_${depth}_fast`;
   const tankId = `abyss_${depth}_tank`;
@@ -137,19 +104,15 @@ export function buildAbyssStage(depth) {
   const dropMult = modMult('dropMult');
   const healMult = modMult('healMult');
   const contactDmgMult = modMult('contactDmgMult');
-  // 敵の強さ側（ATK/DEF/SPD/HP）は raw のままステージへ持たせる。
-  // battle.js が深淵ツリー「混沌への耐性」を反映した上で敵の実体に適用する。
   const enemyAtkMult = modMult('enemyAtkMult');
   const enemyDefMult = modMult('enemyDefMult');
   const enemySpeedMult = modMult('enemySpeedMult');
   const enemyHpMult = modMult('enemyHpMult');
 
-  // ENEMY_TYPES への登録は完全に決定的な式なので、毎回同じキーへ
-  // 上書き登録して構わない（メモ化の必要なし）
-  ENEMY_TYPES[normalId] = scaleArchetype(ARCHETYPE_BASE.normal, depth, goldMult, expMult);
-  ENEMY_TYPES[fastId] = scaleArchetype(ARCHETYPE_BASE.fast, depth, goldMult, expMult);
-  ENEMY_TYPES[tankId] = scaleArchetype(ARCHETYPE_BASE.tank, depth, goldMult, expMult);
-  ENEMY_TYPES[bossId] = scaleArchetype(ARCHETYPE_BASE.boss, depth, goldMult, expMult);
+  ENEMY_TYPES[normalId] = scaleArchetype('normal', depth, goldMult, expMult);
+  ENEMY_TYPES[fastId] = scaleArchetype('fast', depth, goldMult, expMult);
+  ENEMY_TYPES[tankId] = scaleArchetype('tank', depth, goldMult, expMult);
+  ENEMY_TYPES[bossId] = scaleArchetype('boss', depth, goldMult, expMult);
 
   const bossFloor = isAbyssBossFloor(depth);
   const waves = bossFloor
@@ -158,37 +121,35 @@ export function buildAbyssStage(depth) {
         { type: bossId, count: 1, interval: 0 },
       ]
     : [
-        // PR#2レビュー第2点：以前は出現数の上限にdepth20〜30程度で到達して
-        // しまい、それ以降（特に101〜200階）は敵の強さ（HP/ATK/DEF）だけで
-        // しか難易度が伸びない構造になっていた（「HPだけで難易度を作らない」
-        // 元指示に反する）。上限到達depthを200付近まで押し上げ、101〜200階
-        // でも出現数自体が伸び続けるようにした。200階より先は上限で頭打ち
-        // にし（フレームレート対策）、その先の難易度は主にHP/ATK/エリート
-        // 出現率（ABYSS_LAYER.BANDS・ELITE_CHANCE_DEPTH_BANDS）側で伸ばす。
-        { type: normalId, count: Math.round((3 + Math.min(10, Math.floor(depth / 20))) * enemyCountMult), interval: 1.1 },
-        { type: fastId, count: Math.round((2 + Math.min(7, Math.floor(depth / 28))) * enemyCountMult), interval: 0.9 },
-        { type: tankId, count: Math.round((1 + Math.min(6, Math.floor(depth / 35))) * enemyCountMult), interval: 1.8 },
+        // テキスト戦闘では一遭遇の表示数に上限があるため、総数は緩やかに増やし
+        // 500階付近で頭打ち。以降の難度はLv軸・Elite・modifier・Bossで作る。
+        { type: normalId, count: Math.round((3 + Math.min(12, Math.floor(depth / 40))) * enemyCountMult), interval: 1.1 },
+        { type: fastId, count: Math.round((2 + Math.min(9, Math.floor(depth / 55))) * enemyCountMult), interval: 0.9 },
+        { type: tankId, count: Math.round((1 + Math.min(7, Math.floor(depth / 70))) * enemyCountMult), interval: 1.8 },
       ];
 
-  const rewardMult = rewardFloorMult(depth) * (bossFloor ? ABYSS_LAYER.BOSS_REWARD_MULT : 1);
-  const baseReward = { gold: 200, exp: 150 };
+  const level = abyssRecommendedLevel(depth);
+  const itemPower = abyssTargetItemPower(depth);
+  const era = abyssEraForDepth(depth);
+  const expBudget = abyssStageExpBudget(depth) * expMult * (bossFloor ? 1.35 : 1);
+  const goldReward = 200 * chapterMult(15) * Math.pow(Math.max(1, level / 700), 0.72)
+    * goldMult * (bossFloor ? ABYSS_LAYER.BOSS_REWARD_MULT : 1);
 
   return {
     id: `abyss-${depth}`,
     name: `深淵 ${depth}階${bossFloor ? '（ボスフロア）' : ''}`,
-    recLevel: (CH10.recLevel[1] || 80) + depth * 3,
+    recLevel: level,
     boss: bossFloor,
     isAbyss: true,
     abyssDepth: depth,
+    abyssEra: era,
+    itemPowerTarget: itemPower,
     waves,
-    rewards: { gold: Math.round(baseReward.gold * rewardMult * goldMult), exp: Math.round(baseReward.exp * rewardMult * expMult) },
-    dropTable: ch10DropTable(),
+    rewards: { gold: Math.max(1, Math.round(goldReward)), exp: Math.max(1, Math.round(expBudget)) },
+    dropTable: ch15DropTable(),
     modifiers: modifiers.map((m) => ({ id: m.id, name: m.name, desc: m.desc })),
     dropMult, healMult, contactDmgMult,
     enemyAtkMult, enemyDefMult, enemySpeedMult, enemyHpMult,
-    // 地域別ドロップ傾向（Blade Vale 2.1）：深淵は特定属性に偏らせず、
-    // 全属性の武器図鑑武器を等しく対象にする（無限に周回できる終盤の
-    // 「何でも掘れる」場として機能させるため）
     dropRegionTags: ['fire', 'ice', 'lightning', 'wind', 'light', 'dark', 'poison'],
   };
 }
