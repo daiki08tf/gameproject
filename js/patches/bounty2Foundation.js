@@ -1,11 +1,18 @@
 import { state } from '../state.js';
 import { CHAPTERS } from '../data/stages.js';
+import { BOUNTIES, buildBountyStage } from '../data/bounties.js';
 import { BOUNTY2_STAGES, bountyBaseIdForStage } from '../data/bounty2.js';
 
 state.data.bountyMarks ??= 0;
 state.data.bountyNemesis ??= {};
 state.data.bounty2Wins ??= {};
 
+// 読み込み順に依存しないよう、通常手配書を先に保証する。
+for(const bounty of BOUNTIES){
+  const chapter=CHAPTERS.find(ch=>ch.id===bounty.chapterId);
+  if(!chapter) continue;
+  if(!chapter.stages.some(s=>s.id===bounty.id)) chapter.stages.push(buildBountyStage(bounty));
+}
 for(const stage of BOUNTY2_STAGES){
   const chapter=CHAPTERS.find(ch=>ch.stages.some(s=>s.id===stage.bountyBaseId));
   if(!chapter) continue;
