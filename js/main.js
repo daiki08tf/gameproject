@@ -21,7 +21,7 @@ const battle = new TextBattleScreen();
 let pendingStage = null;
 let lastStageId = null;
 let currentChapterIndex = 0;
-let cameFromAbyss = false;
+let cameFromAbyss = false; // stageConfirmScreenの「戻る」を章一覧/深淵一覧のどちらへ返すか
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
@@ -34,7 +34,9 @@ function goHome() {
 }
 
 function goChapterSelect() {
-  renderChapterSelect((chapterIndex) => { goStageSelect(chapterIndex); });
+  renderChapterSelect((chapterIndex) => {
+    goStageSelect(chapterIndex);
+  });
   showScreen('chapterSelectScreen');
 }
 
@@ -68,21 +70,55 @@ function startBattle(stage, blessingId) {
   }, blessingId);
 }
 
-document.getElementById('titleStartBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+// ---------------------------------------------------------
+// タイトル
+document.getElementById('titleStartBtn').addEventListener('click', () => {
+  Audio_.tap();
+  goHome();
+});
+
+// ---------------------------------------------------------
+// ホーム
 document.getElementById('goStageBtn').addEventListener('click', () => { Audio_.tap(); goChapterSelect(); });
-document.getElementById('goEquipBtn').addEventListener('click', () => { Audio_.tap(); renderEquipment(); showScreen('equipmentScreen'); });
-document.getElementById('goStatusBtn').addEventListener('click', () => { Audio_.tap(); renderStatus(); showScreen('statusScreen'); });
+document.getElementById('goEquipBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderEquipment();
+  showScreen('equipmentScreen');
+});
+document.getElementById('goStatusBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderStatus();
+  showScreen('statusScreen');
+});
 document.getElementById('statusBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
-document.getElementById('goJobBtn').addEventListener('click', () => { Audio_.tap(); renderJobs(); showScreen('jobsScreen'); });
-document.getElementById('goBlacksmithBtn').addEventListener('click', () => { Audio_.tap(); renderBlacksmith(); showScreen('blacksmithScreen'); });
-document.getElementById('goRebirthBtn').addEventListener('click', () => { Audio_.tap(); renderRebirth(); showScreen('rebirthScreen'); });
-document.getElementById('goSpellBtn').addEventListener('click', () => { Audio_.tap(); renderSpellScreen(); showScreen('spellScreen'); });
+document.getElementById('goJobBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderJobs();
+  showScreen('jobsScreen');
+});
+document.getElementById('goBlacksmithBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderBlacksmith();
+  showScreen('blacksmithScreen');
+});
+document.getElementById('goRebirthBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderRebirth();
+  showScreen('rebirthScreen');
+});
+document.getElementById('goSpellBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderSpellScreen();
+  showScreen('spellScreen');
+});
 document.getElementById('goAbyssBtn').addEventListener('click', () => {
-  if (!state.isAbyssUnlocked()) return;
+  if (!state.isAbyssUnlocked()) return; // .lockedはCSSのみで実際のクリックは阻止していないため二重にガードする
   Audio_.tap();
   goAbyssList();
 });
 
+// ---------------------------------------------------------
+// 章選択／ステージ選択／確認
 document.getElementById('chapterBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 document.getElementById('stageBackBtn').addEventListener('click', () => { Audio_.tap(); goChapterSelect(); });
 document.getElementById('confirmBackBtn').addEventListener('click', () => {
@@ -90,26 +126,56 @@ document.getElementById('confirmBackBtn').addEventListener('click', () => {
   if (cameFromAbyss) goAbyssList();
   else goStageSelect(currentChapterIndex);
 });
-document.getElementById('confirmStartBtn').addEventListener('click', () => { Audio_.tap(); startBattle(pendingStage, getSelectedBlessingId()); });
+document.getElementById('confirmStartBtn').addEventListener('click', () => {
+  Audio_.tap();
+  startBattle(pendingStage, getSelectedBlessingId());
+});
 document.getElementById('abyssBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 initAbyssTabs();
 
+// ---------------------------------------------------------
+// 装備
 document.getElementById('equipBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 document.getElementById('autoEquipBtn').addEventListener('click', () => autoEquipBest());
-document.getElementById('weaponCodexBtn').addEventListener('click', () => { Audio_.tap(); renderWeaponCodex(); showScreen('weaponCodexScreen'); });
-document.getElementById('weaponCodexBackBtn').addEventListener('click', () => { Audio_.tap(); renderEquipment(); showScreen('equipmentScreen'); });
+document.getElementById('weaponCodexBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderWeaponCodex();
+  showScreen('weaponCodexScreen');
+});
+document.getElementById('weaponCodexBackBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderEquipment();
+  showScreen('equipmentScreen');
+});
 initWeaponCodexTabs();
 
+// ---------------------------------------------------------
+// 職業
 document.getElementById('jobsBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
+
+// ---------------------------------------------------------
+// 鍛冶屋
 document.getElementById('blacksmithBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 initBlacksmithTabs();
+
+// ---------------------------------------------------------
+// 転生の祭壇
 document.getElementById('rebirthBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 initRebirthTabs();
+
+// ---------------------------------------------------------
+// ふっかつのじゅもん
 document.getElementById('spellBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 initSpellScreen();
 
+// ---------------------------------------------------------
+// リザルト
 document.getElementById('resultHomeBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
-document.getElementById('resultEquipBtn').addEventListener('click', () => { Audio_.tap(); renderEquipment(); showScreen('equipmentScreen'); });
+document.getElementById('resultEquipBtn').addEventListener('click', () => {
+  Audio_.tap();
+  renderEquipment();
+  showScreen('equipmentScreen');
+});
 document.getElementById('resultRetryBtn').addEventListener('click', () => {
   Audio_.tap();
   if (lastStageId) {
@@ -118,4 +184,5 @@ document.getElementById('resultRetryBtn').addEventListener('click', () => {
   }
 });
 
+// 初期表示
 showScreen('titleScreen');
