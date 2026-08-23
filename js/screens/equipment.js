@@ -20,6 +20,8 @@ const RARITY_FILTER_OPTIONS = [
   { rarity: 'mythic', label: '神話のみ' },
 ];
 let selectedSlot = null;
+let lootFilterAdvancedOpen = false;
+let lootFilterMessage = '';
 
 function presentationFor(id, item = getItem(id)) {
   return equipment3Presentation(item, state.data.weaponInstances?.[id] || null);
@@ -28,12 +30,149 @@ function displayName(id, item = getItem(id)) {
   return presentationFor(id, item)?.name || item?.name || id;
 }
 
+function makeFilterField(label, control) {
+  const wrap = document.createElement('label');
+  wrap.style.cssText = 'display:flex;align-items:center;gap:6px;font-size:12px;';
+  const text = document.createElement('span');
+  text.textContent = label;
+  wrap.append(text, control);
+  return wrap;
+}
+
+function makeNumberInput(value, max, onChange) {
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.min = '0';
+  input.max = String(max);
+  input.step = '100';
+  input.value = String(value || 0);
+  input.style.width = '84px';
+  input.addEventListener('change', () => onChange(Math.max(0, Math.floor(Number(input.value) || 0))));
+  return input;
+}
+
+function makeSelect(value, options, onChange) {
+  const select = document.createElement('select');
+  for (const [v, label] of options) {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = label;
+    select.appendChild(opt);
+  }
+  select.value = String(value);
+  select.addEventListener('change', () => onChange(select.value));
+  return select;
+}
+
+function makeCheckbox(checked, onChange) {
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.checked = !!checked;
+  input.addEventListener('change', () => onChange(input.checked));
+  return input;
+}
+
+function makeTextInput(value, placeholder, onChange) {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = value || '';
+  input.placeholder = placeholder;
+  input.style.width = '150px';
+  input.addEventListener('change', () => onChange(input.value));
+  return input;
+}
+
+function renderAdvancedLootFilter(row, filter) {
+  const panel = document.createElement('div');
+  panel.className = 'loot-filter-advanced';
+  panel.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:8px;width:100%;padding:8px 0;';
+
+  panel.appendChild(makeFilterField('最低IP', makeNumberInput(filter.minItemPower, 10000, (value) => {
+    state.updateLootFilter3({ minItemPower: value }); renderEquipment();
+  })));
+  panel.appendChild(makeFilterField('Greater', makeSelect(filter.minGreater, [['0', '指定なし'], ['1', '1個以上'], ['2', '2個以上'], ['3', '3個']], (value) => {
+    state.updateLootFilter3({ minGreater: Number(value) }); renderEquipment();
+  })));
+  panel.appendChild(makeFilterField('武器種', makeSelect(filter.weaponType, [
+    ['all', 'すべて'],
+    ...Object.entries(WEAPON_TYPES).map(([id, def]) => [id, def.name || id]),
+  ], (value) => {
+    state.updateLootFilter3({ weaponType: value }); renderEquipment();
+  })));
+  panel.appendChild(makeFilterField('Legendaryのみ', makeCheckbox(filter.legendaryOnly, (value) => {
+    state.updateLootFilter3({ legendaryOnly: value }); renderEquipment();
+  })));
+  panel.appendChild(makeFilterField('Curseのみ', makeCheckbox(filter.cursedOnly, (value) => {
+    state.updateLootFilter3({ cursedOnly: value }); renderEquipment();
+  })));
+  panel.appendChild(makeFilterField('Affix', makeTextInput(filter.affixQuery, '名前・効果で検索', (value) => {
+    state.updateLootFilter3({ affixQuery: value }); renderEquipment();
+  })));
+
+  const resetBtn = document.createElement('button');
+  resetBtn.className = 'inline-btn';
+  resetBtn.textContent = '詳細条件をリセット';
+  resetBtn.addEventListener('click', () => {
+    Audio_.tap();
+    state.resetLootFilter3();
+    lootFilterMessage = '詳細フィルターを初期化しました';
+    renderEquipment();
+  });
+  panel.appendChild(resetBtn);
+
+  const smart = document.createElement('div');
+  smart.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:8px;width:100%;padding-top:8px;border-top:1px solid rgba(255,255,255,.12);';
+  const smartTitle = document.createElement('strong');
+  smartTitle.textContent = '🔒 Smart Loot 自動保護';
+  smart.appendChild(smartTitle);
+  smart.appendChild(makeFilterField('ON', makeCheckbox(filter.autoLock.enabled, (value) => {
+    state.updateLootFilter3({ autoLock: { enabled: value } }); renderEquipment();
+  })));
+  smart.appendChild(makeFilterField('Legendary', makeCheckbox(filter.autoLock.legendary, (value) => {
+    state.updateLootFilter3({ autoLock: { legendary: value } }); renderEquipment();
+  })));
+  smart.appendChild(makeFilterField('Curse', makeCheckbox(filter.autoLock.cursed, (value) => {
+    state.updateLootFilter3({ autoLock: { cursed: value } }); renderEquipment();
+  })));
+  smart.appendChild(makeFilterField('Greater', makeSelect(filter.autoLock.minGreater, [['0', 'OFF'], ['1', '1個以上'], ['2', '2個以上'], ['3', '3個']], (value) => {
+    state.updateLootFilter3({ autoLock: { minGreater: Number(value) } }); renderEquipment();
+  })));
+  smart.appendChild(makeFilterField('IP', makeNumberInput(filter.autoLock.minItemPower, 10000, (value) => {
+    state.updateLootFilter3({ autoLock: { minItemPower: value } }); renderEquipment();
+  })));
+  smart.appendChild(makeFilterField('Affix', makeTextInput(filter.autoLock.affixQuery, '一致で自動ロック', (value) => {
+    state.updateLootFilter3({ autoLock: { affixQuery: value } }); renderEquipment();
+  })));
+
+  const applyBtn = document.createElement('button');
+  applyBtn.className = 'inline-btn';
+  applyBtn.textContent = '所持品へ一括適用';
+  applyBtn.addEventListener('click', () => {
+    Audio_.tap();
+    const count = state.applySmartLootLocks();
+    lootFilterMessage = count > 0 ? `${count}個をSmart Lootでロックしました` : '新たにロックする装備はありません';
+    renderEquipment();
+  });
+  smart.appendChild(applyBtn);
+  panel.appendChild(smart);
+
+  if (lootFilterMessage) {
+    const message = document.createElement('div');
+    message.className = 'hint';
+    message.style.width = '100%';
+    message.textContent = lootFilterMessage;
+    panel.appendChild(message);
+  }
+  row.appendChild(panel);
+}
+
 function renderLootFilterRow() {
   const row = document.getElementById('lootFilterRow');
   row.innerHTML = '';
+  const filter = state.getLootFilter3();
   for (const opt of RARITY_FILTER_OPTIONS) {
     const btn = document.createElement('button');
-    btn.className = 'tab-btn' + (state.data.lootFilter.minRarity === opt.rarity ? ' active' : '');
+    btn.className = 'tab-btn' + (filter.minRarity === opt.rarity ? ' active' : '');
     btn.textContent = opt.label;
     btn.addEventListener('click', () => {
       Audio_.tap();
@@ -42,6 +181,33 @@ function renderLootFilterRow() {
     });
     row.appendChild(btn);
   }
+
+  const activeAdvanced = [
+    filter.minItemPower > 0,
+    filter.minGreater > 0,
+    filter.legendaryOnly,
+    filter.cursedOnly,
+    filter.weaponType !== 'all',
+    !!filter.affixQuery,
+  ].filter(Boolean).length;
+  const advancedBtn = document.createElement('button');
+  advancedBtn.className = 'tab-btn' + (activeAdvanced ? ' active' : '');
+  advancedBtn.textContent = `⚙ 詳細${activeAdvanced ? ` (${activeAdvanced})` : ''}`;
+  advancedBtn.addEventListener('click', () => {
+    Audio_.tap();
+    lootFilterAdvancedOpen = !lootFilterAdvancedOpen;
+    lootFilterMessage = '';
+    renderEquipment();
+  });
+  row.appendChild(advancedBtn);
+
+  const smartBadge = document.createElement('span');
+  smartBadge.className = 'hint';
+  smartBadge.style.cssText = 'align-self:center;font-size:11px;';
+  smartBadge.textContent = filter.autoLock.enabled ? '🔒 Smart Loot ON' : 'Smart Loot OFF';
+  row.appendChild(smartBadge);
+
+  if (lootFilterAdvancedOpen) renderAdvancedLootFilter(row, filter);
 }
 
 function compareLine(candidate, current) {
@@ -93,9 +259,14 @@ function equipment3Block(id, item) {
       + `<span class="affix-name">${a.name}</span><br><span class="affix-desc">${a.desc}</span></div>`;
   }).join('');
   const specials = equipment3SpecialLines(p).map((line) => `<div class="eq3-special-line">${line}</div>`).join('');
+  const smartReasons = state.smartLootReasons(id);
+  const smartLine = state.isItemLocked(id) && smartReasons.length
+    ? `<div class="eq3-special-line">🔒 Smart Loot: ${smartReasons.join(' / ')}</div>`
+    : '';
   return `<div class="eq3-meta eq3-${p.quality}">${meta}</div>`
     + (affixes ? `<div class="affix-block">${affixes}</div>` : '')
-    + specials;
+    + specials
+    + smartLine;
 }
 
 function favoriteLockBadges(itemId) {
@@ -153,7 +324,7 @@ export function renderEquipment() {
   }
   candidates.sort((a, b) => powerScore(getItem(b.id)) - powerScore(getItem(a.id)));
   const unequippedCandidates = candidates.filter((c) => !c.equipped);
-  const visibleCandidates = unequippedCandidates.filter((c) => state.passesLootFilter(getItem(c.id)));
+  const visibleCandidates = unequippedCandidates.filter((c) => state.passesLootFilter(c.id, getItem(c.id)));
 
   if (currentId) {
     const item = getItem(currentId);
