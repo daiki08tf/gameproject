@@ -30,6 +30,8 @@ import './patches/uniqueTrialFoundation.js';
 import './patches/uniqueTrialCombat.js';
 import './patches/uniqueTrialUi.js';
 import './patches/uniqueBranchEffects.js';
+import './patches/secretJobsPhase1.js';
+import './patches/secretJobCodexBridge.js';
 import { TextBattleScreen } from './screens/textBattle.js';
 import { renderHome } from './screens/home.js';
 import { renderChapterSelect } from './screens/chapterSelect.js';
