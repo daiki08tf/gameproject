@@ -1,30 +1,19 @@
 /* ============================================================
-   Job Progression — short-form profession growth
+   Job Progression — EXP reward split
    ------------------------------------------------------------
-   Character Lv is the long-term 1..99,999 axis. Job Lv is deliberately
-   much faster and exists for skill unlocks, MASTER and job changing.
+   Character Lv is the long-term growth axis and receives the full EXP reward.
+   Job Lv is deliberately slower: it receives only a fraction of the same reward.
+   Job level requirements keep the existing short-form curve in state.js.
    ============================================================ */
 
-export const JOB_EXP_TIER_MULT = Object.freeze({
-  basic: 1.00,
-  advanced: 1.15,
-  special: 1.30,
-  hero: 1.50,
-});
+export const JOB_EXP_REWARD_SHARE = 0.10;
 
-// Required Job EXP to advance from `level` to `level + 1`.
-// This is intentionally shallower than Character EXP from Lv1 onward so the
-// two level displays no longer move in lockstep during normal play.
-export function jobExpToNext(level, tier = 'basic') {
-  const lv = Math.max(1, Math.floor(Number(level) || 1));
-  const tierMult = JOB_EXP_TIER_MULT[tier] || 1;
-  const base = 12 + lv * 8 + 1.2 * Math.pow(lv, 1.35);
-  return Math.max(1, Math.round(base * tierMult));
-}
-
-export function cumulativeJobExpToLevel(targetLevel, tier = 'basic') {
-  const target = Math.max(1, Math.floor(Number(targetLevel) || 1));
-  let total = 0;
-  for (let lv = 1; lv < target; lv += 1) total += jobExpToNext(lv, tier);
-  return total;
+export function splitProgressionExp(baseReward, commonExpMult = 1, characterOnlyMult = 1) {
+  const base = Math.max(0, Number(baseReward) || 0);
+  const common = Math.max(0, Number(commonExpMult) || 0);
+  const characterMult = Math.max(0, Number(characterOnlyMult) || 0);
+  return {
+    character: Math.max(0, Math.round(base * common * characterMult)),
+    job: Math.max(0, Math.round(base * JOB_EXP_REWARD_SHARE * common)),
+  };
 }
