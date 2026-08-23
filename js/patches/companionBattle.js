@@ -21,7 +21,7 @@ function ensureCompanionBattle(engine) {
   engine._companionBattleReady = true;
   const party = state.activeCompanions ? state.activeCompanions() : (state.activeCompanion?.() ? [state.activeCompanion()] : []);
   engine.companions = party.slice(0, 3).map((c, i) => battleCompanionFrom(c, i));
-  engine.companion = engine.companions[0] || null; // compatibility alias
+  engine.companion = engine.companions[0] || null;
 }
 function livingCompanions(engine) { ensureCompanionBattle(engine); return (engine.companions || []).filter(c => !c.down && c.hp > 0); }
 function traitEffect(companion, kind) { for (const name of companion?.traits || []) { const effect=companionTraitEffect(name); if(effect?.kind===kind)return effect; } return null; }
@@ -32,13 +32,48 @@ function enemyDamageToCompanion(enemy,companion,mult=1){let raw=Math.max(1,enemy
 function executeHeal(companion,skill){companion.mp-=skill.mpCost||0;const amount=Math.max(1,Math.round(companion.maxHp*(skill.maxHpPct||0)+companion.mag*(skill.power||0))),before=companion.hp;companion.hp=Math.min(companion.maxHp,companion.hp+amount);return{action:'skill',companion:true,companionId:companion.id,companionName:companion.name,name:`${companion.name}の${skill.name}`,techType:'heal',healAmount:companion.hp-before,mpRestored:0,buffed:false,targets:[]};}
 function applySkillDebuff(target,skill){const debuff=skill?.debuff;if(!debuff)return null;if(debuff.kind==='weakenAtk'){target._companionAtkDebuffMult=Math.max(.1,1-debuff.power);target._companionAtkDebuffTurns=Math.max(target._companionAtkDebuffTurns||0,debuff.turns||1);return{kind:debuff.kind,power:debuff.power,turns:debuff.turns||1};}return null;}
 function executeOffensiveSkill(engine,companion,skill){const target=chooseTarget(engine,companion,skill);if(!target)return null;companion.mp-=skill.mpCost||0;const damage=companionDamage(companion,target,skill),kill=engine._applyRawDamageAndReward(target,damage),debuff=target.dead?null:applySkillDebuff(target,skill);return{action:'skill',companion:true,companionId:companion.id,companionName:companion.name,name:`${companion.name}の${skill.name}`,techType:skill.type==='debuff'?'damage':skill.type,targets:[{targetId:target.id,targetName:target.name,damage,critical:false,defeated:target.dead,effects:debuff?[debuff]:[],kill}]};}
-function performCompanionTurn(engine, companion=null){ensureCompanionBattle(engine);const c=companion||engine.companion;if(!c||c.down||c.hp<=0||engine.over)return null;const species=getCompanionSpecies(c.speciesId);if(!species)return null;const skill=chooseCompanionSkill(species,c,engine.aliveEnemies);if(!skill)return null;if(skill.type==='heal')return executeHeal(c,skill);return executeOffensiveSkill(engine,c,skill);}
+function performCompanionTurn(engine, companion = null) {
+  ensureCompanionBattle(engine);
+  const c = companion || engine.companion;
+  if (!c || c.down || c.hp <= 0 || engine.over) return null;
+  const species = getCompanionSpecies(c.speciesId);
+  if (!species) return null;
+  const skill = chooseCompanionSkill(species, c, engine.aliveEnemies);
+  if (!skill) return null;
+  if (skill.type === 'heal') return executeHeal(c, skill);
+  return executeOffensiveSkill(engine, c, skill);
+}
 function companionCanBeTargeted(engine){return livingCompanions(engine).length>0;}
 function hitCompanion(engine,enemy){const alive=livingCompanions(engine);if(!alive.length)return null;const c=alive[Math.floor(Math.random()*alive.length)],damage=enemyDamageToCompanion(enemy,c);c.hp=Math.max(0,c.hp-damage);if(c.hp<=0)c.down=true;return{enemyId:enemy.id,name:enemy.name,kind:'attack',damage,evaded:false,companionTarget:true,companionId:c.id,companionName:c.name,companionHp:c.hp,companionMaxHp:c.maxHp,companionDown:c.down};}
-function withCompanionEnemyDebuff(enemy,fn){if(!enemy||!enemy._companionAtkDebuffTurns||!enemy._companionAtkDebuffMult)return fn();const originalAtk=enemy.atk;enemy.atk=Math.max(1,Math.round(originalAtk*enemy._companionAtkDebuffMult));try{return fn();}finally{enemy.atk=originalAtk;enemy._companionAtkDebuffTurns-=1;if(enemy._companionAtkDebuffTurns<=0){delete enemy._companionAtkDebuffTurns;delete enemy._companionAtkDebuffMult;}}}
+function withCompanionEnemyDebuff(enemy, fn) {
+  if (!enemy || !enemy._companionAtkDebuffTurns || !enemy._companionAtkDebuffMult) return fn();
+  const originalAtk = enemy.atk;
+  enemy.atk = Math.max(1, Math.round(originalAtk * enemy._companionAtkDebuffMult));
+  try { return fn(); }
+  finally {
+    enemy.atk = originalAtk;
+    enemy._companionAtkDebuffTurns -= 1;
+    if (enemy._companionAtkDebuffTurns <= 0) {
+      delete enemy._companionAtkDebuffTurns;
+      delete enemy._companionAtkDebuffMult;
+    }
+  }
+}
 
-const originalPerformEnemyTurn=BattleEngine.prototype.performEnemyTurn;
-BattleEngine.prototype.performEnemyTurn=function patchedPerformEnemyTurn(enemy){ensureCompanionBattle(this);if(enemy&&enemy.frozenTurns>0)return originalPerformEnemyTurn.call(this,enemy);return withCompanionEnemyDebuff(enemy,()=>{if(!enemy.dead&&!enemy.boss&&companionCanBeTargeted(this)){const candidates=livingCompanions(this);const defensive=candidates.filter(c=>(COMPANION_NATURES[c.nature]||COMPANION_NATURES.balanced).ai==='defensive');let targetChance=.28+(defensive.length?.07:0);if(Math.random()<targetChance)return hitCompanion(this,enemy);}return originalPerformEnemyTurn.call(this,enemy);});};
+const originalPerformEnemyTurn = BattleEngine.prototype.performEnemyTurn;
+BattleEngine.prototype.performEnemyTurn = function patchedPerformEnemyTurn(enemy) {
+  ensureCompanionBattle(this);
+  if (enemy && enemy.frozenTurns > 0) return originalPerformEnemyTurn.call(this, enemy);
+  return withCompanionEnemyDebuff(enemy, () => {
+    if (!enemy.dead && !enemy.boss && companionCanBeTargeted(this)) {
+      const candidates = livingCompanions(this);
+      const defensive = candidates.filter(c => (COMPANION_NATURES[c.nature] || COMPANION_NATURES.balanced).ai === 'defensive');
+      const targetChance = 0.28 + (defensive.length ? 0.07 : 0);
+      if (Math.random() < targetChance) return hitCompanion(this, enemy);
+    }
+    return originalPerformEnemyTurn.call(this, enemy);
+  });
+};
 function convertCompanionHitLog(event){if(!event||event.type!=='enemyAction'||!event.result||!event.result.companionTarget)return event;const r=event.result;return{type:'playerAction',result:{action:'skill',name:`${r.name}の攻撃${r.companionDown?`（${r.companionName}は力尽きた）`:''}`,techType:'damage',targets:[{targetName:r.companionName,damage:r.damage,critical:false,defeated:r.companionDown,effects:[],kill:null}]}};}
 function companionActsBeforeEnemyPhase(engine,c=null){ensureCompanionBattle(engine);const companion=c||engine.companion,enemies=engine.aliveEnemies;if(!companion||companion.down||!enemies.length)return false;const fastestEnemy=Math.max(...enemies.map(e=>e.spd||0));return effectiveCompanionSpd(companion) >= fastestEnemy;}
 function actCompanions(engine,predicate){const events=[];for(const c of livingCompanions(engine)){if(engine._companionsActedThisRound.has(c.id))continue;if(predicate&&!predicate(c))continue;const result=performCompanionTurn(engine,c);if(result){engine._companionsActedThisRound.add(c.id);events.push({type:'playerAction',result});if(engine.aliveEnemies.length===0)break;}}return events;}
