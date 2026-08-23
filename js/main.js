@@ -1,4 +1,8 @@
 import { state } from './state.js';
+import './patches/weaponInstanceFoundation.js';
+import './patches/companionFoundation.js';
+import './patches/companionBattle.js';
+import './patches/companionRecruitment.js';
 // 旧リアルタイムCanvas戦闘（js/battle.js）はそのまま未使用で残し、こちらの
 // テキスト戦闘（TextBattleScreen）へ切り替える（元指示19番）
 import { TextBattleScreen } from './screens/textBattle.js';
@@ -69,15 +73,11 @@ function startBattle(stage, blessingId) {
   }, blessingId);
 }
 
-// ---------------------------------------------------------
-// タイトル
 document.getElementById('titleStartBtn').addEventListener('click', () => {
   Audio_.tap();
   goHome();
 });
 
-// ---------------------------------------------------------
-// ホーム
 document.getElementById('goStageBtn').addEventListener('click', () => { Audio_.tap(); goChapterSelect(); });
 document.getElementById('goEquipBtn').addEventListener('click', () => {
   Audio_.tap();
@@ -111,13 +111,11 @@ document.getElementById('goSpellBtn').addEventListener('click', () => {
   showScreen('spellScreen');
 });
 document.getElementById('goAbyssBtn').addEventListener('click', () => {
-  if (!state.isAbyssUnlocked()) return; // .lockedはCSSのみで実際のクリックは阻止していないため二重にガードする
+  if (!state.isAbyssUnlocked()) return;
   Audio_.tap();
   goAbyssList();
 });
 
-// ---------------------------------------------------------
-// 章選択／ステージ選択／確認
 document.getElementById('chapterBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 document.getElementById('stageBackBtn').addEventListener('click', () => { Audio_.tap(); goChapterSelect(); });
 document.getElementById('confirmBackBtn').addEventListener('click', () => {
@@ -132,8 +130,6 @@ document.getElementById('confirmStartBtn').addEventListener('click', () => {
 document.getElementById('abyssBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 initAbyssTabs();
 
-// ---------------------------------------------------------
-// 装備
 document.getElementById('equipBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 document.getElementById('autoEquipBtn').addEventListener('click', () => autoEquipBest());
 document.getElementById('weaponCodexBtn').addEventListener('click', () => {
@@ -148,27 +144,14 @@ document.getElementById('weaponCodexBackBtn').addEventListener('click', () => {
 });
 initWeaponCodexTabs();
 
-// ---------------------------------------------------------
-// 職業
 document.getElementById('jobsBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
-
-// ---------------------------------------------------------
-// 鍛冶屋
 document.getElementById('blacksmithBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 initBlacksmithTabs();
-
-// ---------------------------------------------------------
-// 転生の祭壇
 document.getElementById('rebirthBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 initRebirthTabs();
-
-// ---------------------------------------------------------
-// ふっかつのじゅもん
 document.getElementById('spellBackBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 initSpellScreen();
 
-// ---------------------------------------------------------
-// リザルト
 document.getElementById('resultHomeBtn').addEventListener('click', () => { Audio_.tap(); goHome(); });
 document.getElementById('resultEquipBtn').addEventListener('click', () => {
   Audio_.tap();
@@ -183,5 +166,4 @@ document.getElementById('resultRetryBtn').addEventListener('click', () => {
   }
 });
 
-// 初期表示
 showScreen('titleScreen');
