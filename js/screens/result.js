@@ -7,7 +7,7 @@ import { equipment3Presentation, equipment3MetaText, equipment3SpecialLines, equ
 function resolveDrop(itemId) {
   const item = getItem(itemId);
   if (item) {
-    const inst = state.data.weaponInstances?.[itemId] || null;
+    const inst = state.isWeaponInstance(itemId) ? state.data.weaponInstances?.[itemId] || null : null;
     const p = equipment3Presentation(item, inst);
     const stars = '★'.repeat(rarityIndex(item.rarity));
     let name = `${item.unique ? '◆ UNIQUE ' : ''}${stars ? stars + ' ' : ''}${p?.name || item.name}`;
