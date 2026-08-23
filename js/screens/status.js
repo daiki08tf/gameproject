@@ -22,7 +22,7 @@ function breakdownBlock(key) {
 }
 
 function tabBar() {
-  return `<div class="character-tabs">${[['basic','基本'],['equipment','装備'],['detail','詳細']].map(([id,label]) => `<button class="character-tab${activeTab === id ? ' active' : ''}" data-character-tab="${id}">${label}</button>`).join('')}</div>`;
+  return `<div class="character-tabs">${[['basic','基本'],['equipment','装備'],['detail','詳細'],['growth','成長']].map(([id,label]) => `<button class="character-tab${activeTab === id ? ' active' : ''}" data-character-tab="${id}">${label}</button>`).join('')}</div>`;
 }
 
 function basicView(job, stats, c) {
@@ -61,6 +61,20 @@ function detailView(c) {
   <div class="status-section"><h3>速度・リソース</h3><div class="status-grid">${statRow('Attack Interval',`${c.attackIntervalSec.toFixed(2)}s`,null,`下限 ${c.attackIntervalMin}s`)}${statRow('CDR',pct(c.cdrPct),null,`/ ${pct(c.cdrMax)}`)}${statRow('EXP倍率',`×${c.expMult.toFixed(2)}`)}${statRow('Gold倍率',`×${c.goldMult.toFixed(2)}`)}${statRow('Drop倍率',`×${c.dropMult.toFixed(2)}`)}</div></div>`;
 }
 
+function growthView() {
+  const expNeed = state.expToNext(state.currentLevel);
+  const masterCount = (state.data.mastered || []).length;
+  const companionCount = state.companionList ? state.companionList().length : Object.keys(state.data.companionInstances || {}).length;
+  const stageClears = Object.values(state.data.stageProgress || {}).filter(Boolean).length;
+  const masteryEntries = Object.entries(state.data.weaponMastery || {}).sort((a,b) => (b[1] || 0) - (a[1] || 0));
+  const masteryHtml = masteryEntries.length
+    ? masteryEntries.map(([type,value]) => `<div class="growth-mastery"><span>${type}</span><strong>${Number(value || 0).toLocaleString()}</strong></div>`).join('')
+    : '<div class="growth-empty">まだ武器熟練の記録はありません。</div>';
+  return `<div class="status-section"><h3>成長サマリー</h3><div class="character-metric-grid"><div class="character-metric"><span>現在Lv</span><strong>${state.currentLevel}</strong></div><div class="character-metric"><span>EXP</span><strong>${state.currentExp} / ${expNeed}</strong></div><div class="character-metric"><span>転生</span><strong>${state.data.reincarnations || 0}回</strong></div><div class="character-metric"><span>覚醒</span><strong>${state.data.awakenings || 0}回</strong></div><div class="character-metric"><span>MASTER職</span><strong>${masterCount}</strong></div><div class="character-metric"><span>深淵最高</span><strong>${state.data.abyssBestDepth || 0}F</strong></div></div></div>
+  <div class="status-section"><h3>冒険記録</h3><div class="status-grid">${statRow('クリア記録',stageClears)}${statRow('仲間数',companionCount)}${statRow('武器図鑑登録',Object.keys(state.data.weaponCodexSeen || {}).length)}${statRow('所持Artifact',(state.data.unlockedArtifacts || []).length)}</div></div>
+  <div class="status-section"><h3>武器熟練</h3><div class="growth-mastery-grid">${masteryHtml}</div></div>`;
+}
+
 function ensureCharacterStyles() {
   if (document.getElementById('characterDashboardCss')) return;
   const link = document.createElement('link');
@@ -80,7 +94,10 @@ export function renderStatus() {
   ensureCharacterChrome();
   const content = document.getElementById('statusContent'); if (!content) return;
   const job = state.currentJob; const stats = state.getStats(); const c = state.getCombatStats();
-  let view = basicView(job,stats,c); if (activeTab === 'equipment') view = equipmentView(); if (activeTab === 'detail') view = detailView(c);
+  let view = basicView(job,stats,c);
+  if (activeTab === 'equipment') view = equipmentView();
+  if (activeTab === 'detail') view = detailView(c);
+  if (activeTab === 'growth') view = growthView();
   content.innerHTML = tabBar() + view;
   content.querySelectorAll('[data-character-tab]').forEach((btn) => btn.addEventListener('click', () => { Audio_.tap(); activeTab = btn.dataset.characterTab; openBreakdown = null; renderStatus(); }));
   content.querySelectorAll('[data-tap]').forEach((el) => el.addEventListener('click', () => { Audio_.tap(); const key = el.dataset.tap; openBreakdown = openBreakdown === key ? null : key; renderStatus(); }));
