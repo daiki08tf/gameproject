@@ -15,6 +15,7 @@ import {
   companionStats,
   companionTraitLabel,
 } from '../data/companions.js';
+import { unlockedCompanionSkills } from '../data/companionSkills.js';
 
 const SAVE_FIELDS = {
   companionInstances: {},
@@ -179,12 +180,17 @@ function renderCompanionScreen() {
     const xpNeed = companionExpToNext(instance.level);
     const displayName = escapeHtml(instance.nickname || species.name);
     const traits = (species.traits || []).map(companionTraitLabel).join('・') || 'なし';
+    const skills = unlockedCompanionSkills(species, instance.level);
+    const skillText = skills.length
+      ? skills.map((skill) => `${skill.name}${skill.mpCost ? ` MP${skill.mpCost}` : ''}: ${skill.desc}`).join(' / ')
+      : 'なし';
     return `<div class="forge-card companion-card ${active ? 'companion-active' : ''}" data-companion-id="${escapeHtml(id)}">
       <div class="forge-card-name">${species.icon || '🐾'} ${displayName} ${active ? '【同行中】' : ''}</div>
       <div class="forge-card-sub">Lv.${instance.level} / ${COMPANION_RARITY_LABEL[instance.rarity]} ${rarityStars(instance.rarity)} / 性格: ${escapeHtml(nature.name)}</div>
       <div class="forge-card-sub">HP ${stats.hp}　MP ${stats.mp}　ATK ${stats.atk}　DEF ${stats.def}　MAG ${stats.mag}　SPD ${stats.spd}</div>
       <div class="forge-card-sub">EXP ${instance.exp} / ${xpNeed}</div>
       <div class="forge-card-sub">特性: ${escapeHtml(traits)}</div>
+      <div class="forge-card-sub">技: ${escapeHtml(skillText)}</div>
       <div class="confirm-actions" style="margin-top:8px;">
         <button class="btn-sub companion-set-btn" data-id="${escapeHtml(id)}" ${active ? 'disabled' : ''}>${active ? '同行中' : '同行させる'}</button>
         <button class="btn-sub companion-release-btn" data-id="${escapeHtml(id)}">${active ? '同行解除して帰す' : '帰す'}</button>
