@@ -53,12 +53,12 @@ test('battle patch keeps final-hit, frozen, zero-XP, shared DEF, and SPD guards'
   assert.match(text, /\(enemy\.xp \|\| 0\) > 0/, 'zero-XP enemies must not grant companion EXP');
   assert.match(text, /this\.aliveEnemies\.length === 0[\s\S]*this\.checkBattleEnd\(\)/,
     'companion final hit must trigger battle-end recheck');
-  assert.match(text, /defMitigationPct\(target\.def \|\| 0\)/,
+  assert.match(text, /defMitigationPct\(target\.def\s*\|\|\s*0\)/,
     'companion damage must use the shared DEF mitigation rule');
-  assert.match(text, /defMitigationPct\(companion\.def \|\| 0\)/,
+  assert.match(text, /defMitigationPct\(companion\.def\s*\|\|\s*0\)/,
     'damage to companions must use the shared DEF mitigation rule');
   assert.doesNotMatch(text, /\+ 55\)/, 'companion combat must not keep a private DEF constant');
-  assert.match(text, /effectiveCompanionSpd\(c\) >= fastestEnemy/,
+  assert.match(text, /effectiveCompanionSpd\(companion\) >= fastestEnemy|effectiveCompanionSpd\(c\) >= fastestEnemy/,
     'companion SPD must influence whether it acts before the enemy phase');
   assert.match(text, /originalRunEnemyPhase/, 'SPD ordering must integrate at the enemy phase boundary');
 });
