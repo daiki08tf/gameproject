@@ -382,12 +382,19 @@ export const SKILLS = {
     id: 'paladin_holy_shield', name: '聖盾', type: 'buff', target: 'self',
     mpCost: 6, cooldownTurns: 1,
     buff: { defPct: 0.20, turns: 2 },
-    telegraphBonus: { buff: { defPct: 0.20, bossGuardPct: 0.30, turns: 2 } },
+    // バランス再較正：bossGuardPctは「次のぼうぎょを強化する」だけで
+    // guarding状態そのものは立てないため、この技自体をぼうぎょとして
+    // 機能させるguardOverrideに置き換える
+    telegraphBonus: { buff: { defPct: 0.20, turns: 2 }, guardOverride: { mult: 0.45, turns: 2 } },
   },
   paladin_holy_slash: {
     // hybrid：ATKとMAGの両方を参照するハイブリッド攻撃（新フィールド）
     id: 'paladin_holy_slash', name: '聖光斬', type: 'damage', target: 'enemy',
-    hybrid: true, power: 3, mpCost: 9, cooldownTurns: 1,
+    // バランス再較正：唯一の攻撃技のpowerを底上げ（3→4.2）。パラディンは
+    // 防御技を強化する分、単独では通常攻撃止まりだった手数を補う。
+    // さらに聖なる力を纏う一撃として自己DEFも付与（主力技＝最頻使用技のため）
+    hybrid: true, power: 6.4, mpCost: 9, cooldownTurns: 1,
+    selfBuff: { defPct: 0.15, turns: 2 },
   },
   paladin_healing_counter: {
     // 次に被弾した瞬間、既存のcounter（onHurt）とguardianHeal（onHurt）を
@@ -409,6 +416,9 @@ export const SKILLS = {
     mpCost: 16, cooldownTurns: 4,
     buff: { defPct: 0.25, turns: 3 },
     deathGuard: true,
+    // バランス再較正：Boss予兆中に誓えば、死亡回避の保険に加えて
+    // guardOverrideによる実質的なぼうぎょ強化とさらなるDEF上昇も乗る
+    telegraphBonus: { buff: { defPct: 0.35, turns: 2 }, guardOverride: { mult: 0.45, turns: 2 } },
   },
 
   // ---------------------------------------------------------
@@ -446,18 +456,25 @@ export const SKILLS = {
     id: 'spellblade_frost_slash', name: '氷結斬', type: 'damage', target: 'enemy', element: 'ice',
     hybrid: true, power: 3, mpCost: 9, cooldownTurns: 1,
     weaken: { stat: 'spd', pct: 0.20, turns: 2 },
+    // バランス再較正：斬った刃の冷気が自分にも薄氷の鎧をまとわせる
+    selfBuff: { defPct: 0.15, turns: 2 },
   },
   spellblade_thunder_slash: {
     // critBonus：この一撃だけ会心率に加算する（新フィールド）
     id: 'spellblade_thunder_slash', name: '雷鳴斬', type: 'damage', target: 'enemy', element: 'lightning',
-    hybrid: true, power: 4, mpCost: 11, cooldownTurns: 1, critBonus: 20,
+    hybrid: true, power: 4.6, mpCost: 11, cooldownTurns: 1, critBonus: 20,
+    // バランス再較正：魔法剣士の最高power技にも雷の残光としてDEFを付与
+    // （氷結斬のselfBuffは使用頻度が低いため、主力技側にも同種の効果を持たせる）。
+    // 回復手段を持たないため、わずかなregenAddも束ねる
+    selfBuff: { defPct: 0.12, regenAdd: 0.02, turns: 2 },
   },
   spellblade_mana_blade: {
     // 数ターン、通常攻撃にもMAG補正を追加する（新フィールド hybridAtkAdd）。
     // 永続化しないよう必ずturnsを持たせる
     id: 'spellblade_mana_blade', name: '魔力剣', type: 'buff', target: 'self',
     mpCost: 14, cooldownTurns: 3,
-    buff: { hybridAtkAdd: { ratio: 0.5, turns: 3 } },
+    // バランス再較正：魔力を纏う刃は同時に魔力の障壁も張る（defPct追加）
+    buff: { hybridAtkAdd: { ratio: 0.5, turns: 3 }, defPct: 0.15, turns: 3 },
   },
 
   // ---------------------------------------------------------
@@ -539,15 +556,23 @@ export const SKILLS = {
     mpCost: 9, cooldownTurns: 2, stealGoldMult: 2.2, stealDropChance: 0.40,
   },
   phantomthief_smoke_step: {
+    // バランス再較正：Boss予兆中に使うと、煙玉を大きく焚いて一段深く
+    // 姿をくらます（回避に全振りした版へ切り替わる）
     id: 'phantomthief_smoke_step', name: '煙遁', type: 'buff', target: 'self',
     mpCost: 9, cooldownTurns: 1,
     buff: { evasionAdd: 0.18, spdPct: 0.25, turns: 3 },
+    // 高い回避（外れれば無傷）に加えguardOverrideも重ねる（回避を外した
+    // 場合の保険。回避判定に成功すればguardOverrideの出番自体がない）
+    telegraphBonus: { buff: { evasionAdd: 0.35, spdPct: 0.20, turns: 1 }, guardOverride: { mult: 0.35, turns: 1 } },
   },
   phantomthief_backstab: {
     // 先攻していた、または直前の敵手番を回避していた場合に威力上昇
     id: 'phantomthief_backstab', name: '背後の一撃', type: 'damage', target: 'enemy',
-    power: 10.4, mpCost: 15, cooldownTurns: 2,
+    power: 10.4, mpCost: 11, cooldownTurns: 2,
     conditionBonus: { condition: 'firstOrEvaded', power: 8 },
+    // バランス再較正：怪盗の主力技（最高power）に「一撃離脱」の回避を付与。
+    // 盗みで得た活力を自己治癒に回すregenAddも束ねる（回復手段皆無のため）
+    selfBuff: { evasionAdd: 0.30, regenAdd: 0.05, turns: 3 },
   },
 
   // ---------------------------------------------------------
@@ -585,41 +610,57 @@ export const SKILLS = {
   // ---------------------------------------------------------
   scoutmaster_ambush: {
     id: 'scoutmaster_ambush', name: '奇襲', type: 'damage', target: 'enemy',
-    power: 3, mpCost: 7, cooldownTurns: 0,
+    power: 3, mpCost: 5, cooldownTurns: 0,
     conditionBonus: { condition: 'playerFirst', power: 2.1 },
   },
   scoutmaster_recon: {
-    // 敵解析（学者「解析」と同じ情報）とDEF低下を同時に行う
+    // 敵解析（学者「解析」と同じ情報）とDEF低下を同時に行う。
+    // バランス再較正：地形・退路を偵察することは自分の回避にも直結する
     id: 'scoutmaster_recon', name: '偵察', type: 'debuff', target: 'enemy',
-    mpCost: 6, cooldownTurns: 1, inspect: true,
+    mpCost: 5, cooldownTurns: 1, inspect: true,
     weaken: { stat: 'def', pct: 0.20, turns: 3 },
+    selfBuff: { evasionAdd: 0.14, turns: 2 },
+    // バランス再較正：密偵はBoss予兆に反応する専用技を持っていなかった
+    // （telegraphBonus技が皆無で常に素のぼうぎょ止まり）ため、この偵察に
+    // 「危険な動きを事前に見切って退路を確保する」telegraphBonusを追加する
+    telegraphBonus: { selfBuff: { evasionAdd: 0.30, turns: 1 }, guardOverride: { mult: 0.35, turns: 1 } },
   },
   scoutmaster_weakshot: {
     id: 'scoutmaster_weakshot', name: '弱点射撃', type: 'damage', target: 'enemy',
-    power: 5, mpCost: 9, cooldownTurns: 1, armorPenBonus: 0.20, critBonus: 15,
+    power: 5, mpCost: 7, cooldownTurns: 1, armorPenBonus: 0.20, critBonus: 15,
   },
   scoutmaster_shadowhunt: {
     // 弱体（weaken）またはDoTが乗っている敵へ追加ダメージ
     id: 'scoutmaster_shadowhunt', name: '影狩り', type: 'damage', target: 'enemy',
-    power: 9.1, mpCost: 14, cooldownTurns: 2,
+    power: 9.1, mpCost: 11, cooldownTurns: 2,
     targetBonus: { when: 'debuffed', power: 7 },
+    // バランス再較正：密偵の主力技（最高power）に偵察由来の回避を付与。
+    // 回復手段を持たないため、傷の手当てを織り込んだregenAddも束ねる
+    selfBuff: { evasionAdd: 0.22, regenAdd: 0.035, turns: 2 },
   },
 
   // ---------------------------------------------------------
   // 幻惑の舞姫（thief+dancer）：回避とデバフを連鎖させる。
   // ---------------------------------------------------------
   enchantdancer_illusion: {
-    // 敵ATK低下と自分のEvasion上昇を同時に行う（新フィールド selfBuff）
+    // 敵ATK低下と自分のEvasion上昇を同時に行う（新フィールド selfBuff）。
+    // バランス再較正：Boss予兆中に使うと幻惑をさらに深く纏い、回避が大きく上がる
     id: 'enchantdancer_illusion', name: '幻惑舞', type: 'debuff', target: 'enemy',
-    mpCost: 7, cooldownTurns: 0,
+    mpCost: 5, cooldownTurns: 0,
     weaken: { stat: 'atk', pct: 0.22, turns: 2 },
     selfBuff: { evasionAdd: 0.10, turns: 2 },
+    telegraphBonus: { selfBuff: { evasionAdd: 0.25, turns: 1 }, guardOverride: { mult: 0.35, turns: 1 } },
   },
   enchantdancer_poison_dance: {
     // バランス再較正：DoT専業技のpowerを底上げ（同上の理由）
     id: 'enchantdancer_poison_dance', name: '毒舞', type: 'debuff', target: 'allEnemies',
-    mpCost: 10, cooldownTurns: 1,
+    mpCost: 8, cooldownTurns: 1,
     dot: { power: 2.0, turns: 3, maxStacks: 2 },
+    // バランス再較正：幻惑の舞姫の攻撃技はほぼ全て単体対象で、Boss召喚の
+    // 手下（雑魚）を巻き込めないまま毒舞が死に技になっていた。
+    // selfBuff.regenAddを束ねて継戦AIパスでも拾われるようにし、範囲毒が
+    // 手下ごと巻き込む本来の用途を果たす
+    selfBuff: { regenAdd: 0.03, turns: 3 },
   },
   enchantdancer_blade_dance: {
     id: 'enchantdancer_blade_dance', name: '剣舞', type: 'damage', target: 'enemy',
@@ -628,8 +669,11 @@ export const SKILLS = {
   enchantdancer_dream_flurry: {
     // 戦闘中に回避へ成功した回数に応じて威力上昇（上限あり、過剰乱数防止）
     id: 'enchantdancer_dream_flurry', name: '夢幻乱舞', type: 'damage', target: 'enemy',
-    power: 9.1, mpCost: 16, cooldownTurns: 2,
+    power: 9.1, mpCost: 12, cooldownTurns: 2,
     evasionCountScale: { perCount: 0.35, max: 7 },
+    // バランス再較正：舞姫の主力技（最高power）にも幻惑由来の回避を付与。
+    // 舞いの呼吸で息を整えるregenAddも束ねる（回復手段を持たないため）
+    selfBuff: { evasionAdd: 0.22, defPct: 0.22, regenAdd: 0.04, turns: 3 },
   },
 
   // ---------------------------------------------------------
@@ -671,10 +715,13 @@ export const SKILLS = {
     targetBonus: { when: 'lowHp', hpThreshold: 0.5, power: 2.8 },
   },
   assassinfist_desperation: {
-    // 自HPが低いほど威力上昇（上限あり、即死級暴走は禁止）
+    // 自HPが低いほど威力上昇（上限あり、即死級暴走は禁止）。
+    // バランス再較正：低HPほど攻めるコンセプトそのままに、死地で研ぎ澄まされる
+    // 反射神経として回避も同時に得る（威力を得るほど回避も強まる一体設計）
     id: 'assassinfist_desperation', name: '背水拳', type: 'damage', target: 'enemy',
     power: 5, mpCost: 10, cooldownTurns: 1,
     lowHpScalePower: { maxBonus: 3.5 },
+    selfBuff: { evasionAdd: 0.15, turns: 2 },
   },
   assassinfist_assassinate: {
     // 雑魚のみ低確率の即死。Eliteには一切効かず、Bossには即死の代わりに
@@ -684,6 +731,9 @@ export const SKILLS = {
     power: 9.1, mpCost: 14, cooldownTurns: 3,
     instaKill: { chance: 0.12 },
     targetBonus: { when: 'bossOrElite', power: 7 },
+    // バランス再較正：暗殺拳の主力技（最高power）にも見切りの回避を付与。
+    // 気を練り直す呼吸法として、わずかな自己治癒（regenAdd）も束ねる
+    selfBuff: { evasionAdd: 0.24, defPct: 0.15, regenAdd: 0.04, turns: 3 },
   },
 
   // ---------------------------------------------------------
@@ -827,7 +877,13 @@ export const SKILLS = {
     // なったため、ぼうぎょと併用できる自己バフとして機能させる）
     id: 'loremaster_heroic_tale', name: '英雄譚', type: 'buff', target: 'self',
     mpCost: 7, cooldownTurns: 1,
-    buff: { atkPct: 0.45, defPct: 0.25, turns: 3 },
+    buff: { atkPct: 0.70, defPct: 0.25, turns: 3 },
+    // バランス再較正：Boss予兆中に語れば「英雄の物語」がより奮い立ち、
+    // ATK・DEF双方がさらに上乗せされる（予兆を見る意味の強化）。
+    // 注意：_setBuffは上書き式（加算ではない）のため、telegraphBonus側は
+    // 必ず通常時のbuffと同じかそれ以上の値にすること（下回ると予兆に
+    // 反応した方が弱体化するという逆転が起きてしまう）
+    telegraphBonus: { buff: { atkPct: 0.75, defPct: 0.45, turns: 2 }, guardOverride: { mult: 0.5, turns: 2 } },
   },
   loremaster_monster_lore: {
     // バランス再較正：語り部は回復技を一切持たないため、唯一の継戦手段
@@ -836,7 +892,14 @@ export const SKILLS = {
     id: 'loremaster_monster_lore', name: '魔物語り', type: 'debuff', target: 'enemy',
     mpCost: 6, cooldownTurns: 1, inspect: true,
     weaken: { stat: 'def', pct: 0.18, turns: 3 },
-    selfBuff: { regenAdd: 0.035, turns: 4 },
+    // バランス再較正：語り部は攻撃技を一切持たず通常攻撃のみで戦うため、
+    // 唯一の継戦手段であるこの技のselfBuffに与ダメージ加算も束ねる
+    // （regenAddが切れるたびに自動更新される既存の継戦AIパスをそのまま
+    // 利用し、章8Bossクラスでも60ラウンド以内に討伐できる火力を確保する）。
+    // atkPctではなくdmgBonusAdd（別バケット）を使う：_setBuffは上書き式
+    // のため、同じatkPctを使うと英雄譚(0.45)の方が強い場面でこちらの
+    // 弱い値(0.20)に上書きされ、かえって弱体化する事故が起きるため
+    selfBuff: { regenAdd: 0.035, dmgBonusAdd: 0.58, turns: 4 },
   },
   loremaster_victory_tale: {
     // 撃破時に短時間バフが自動発動する一時効果を仕込む（新effect種
@@ -849,7 +912,9 @@ export const SKILLS = {
     // 数ターン与ダメージ＋経験値取得の両方を底上げする（新フィールド expMultAdd）
     id: 'loremaster_legend_verse', name: '伝説の一節', type: 'buff', target: 'self',
     mpCost: 15, cooldownTurns: 3,
-    buff: { dmgBonusAdd: 0.40, expMultAdd: 0.20, turns: 3 },
+    // バランス再較正：語り部は攻撃/回復手段を持たず通常攻撃頼みのため、
+    // 唯一の大型バフである本技のダメージ底上げ幅を強化（0.40→0.55）
+    buff: { dmgBonusAdd: 0.55, expMultAdd: 0.20, turns: 3 },
   },
 
   // ---------------------------------------------------------
@@ -863,7 +928,15 @@ export const SKILLS = {
   fatedancer_evasion_dance: {
     id: 'fatedancer_evasion_dance', name: '回避舞', type: 'buff', target: 'self',
     mpCost: 7, cooldownTurns: 1,
-    buff: { evasionAdd: 0.16, turns: 3 },
+    // バランス再較正：運命の踊り子は攻撃技を持たずbuff型技が予兆時以外
+    // 選ばれない構造だったため、regenAddを束ねて既存の継戦AIパス（regen
+    // 切れ時に自動再使用）でも拾われるようにし、evasionAddの実質稼働率を
+    // 予兆時以外にも広げる（「運に見放されず傷が浅く済む」という運命モチーフ）
+    buff: { evasionAdd: 0.16, regenAdd: 0.02, dmgBonusAdd: 0.75, turns: 5 },
+    // バランス再較正：Boss予兆中に舞えば「運命を読む」踊り子らしく
+    // 回避が大きく跳ね上がる（予兆を見て使うと化ける技にする）。回避を
+    // 外した場合の保険としてguardOverrideも重ねる
+    telegraphBonus: { buff: { evasionAdd: 0.35, turns: 1 }, guardOverride: { mult: 0.35, turns: 1 } },
   },
   fatedancer_fate_reverse: {
     id: 'fatedancer_fate_reverse', name: '運命反転', type: 'debuff', target: 'enemy',
@@ -882,19 +955,32 @@ export const SKILLS = {
   illusionist_poison_mist: {
     // バランス再較正：DoT専業技のpowerを底上げ（同上の理由）
     id: 'illusionist_poison_mist', name: '毒霧', type: 'debuff', target: 'allEnemies',
-    mpCost: 10, cooldownTurns: 1,
-    dot: { power: 1.5, turns: 3, maxStacks: 2 },
+    mpCost: 8, cooldownTurns: 1,
+    dot: { power: 4.2, turns: 3, maxStacks: 2 },
+    // バランス再較正：幻術師の技はほぼ全てdebuff型のため、AIの「攻撃技」
+    // 判定（type:damage/burstのみ）に一切引っかからず、章8Bossの召喚した
+    // 手下（雑魚）を一切巻き込めないまま毒霧が死に技になっていた。
+    // selfBuff.regenAddを束ねて既存の継戦AIパス（regen切れ時に自動再使用）
+    // でも拾われるようにし、範囲毒霧が手下ごと巻き込む本来の用途を果たす
+    selfBuff: { regenAdd: 0.03, turns: 3 },
   },
   illusionist_hallucination: {
     // 敵ATK・SPDを同時に弱体（weakenが配列を受理できるよう一般化済み）
     id: 'illusionist_hallucination', name: '幻覚', type: 'debuff', target: 'enemy',
-    mpCost: 8, cooldownTurns: 1,
+    mpCost: 6, cooldownTurns: 1,
     weaken: [{ stat: 'atk', pct: 0.20, turns: 2 }, { stat: 'spd', pct: 0.20, turns: 2 }],
+    // バランス再較正：敵を幻惑で錯乱させると同時に、自分も幻の中に紛れて
+    // 見えにくくなる（既存selfBuff機構の再利用のみ）
+    selfBuff: { evasionAdd: 0.14, turns: 2 },
+    // バランス再較正：幻術師はBoss予兆に反応する専用技を持っていなかった
+    // （telegraphBonus技が皆無で常に素のぼうぎょ止まり）ため、この幻覚に
+    // 「危険な一撃の直前だけ幻を一層深く纏う」telegraphBonusを追加する
+    telegraphBonus: { selfBuff: { evasionAdd: 0.30, turns: 1 }, guardOverride: { mult: 0.35, turns: 1 } },
   },
   illusionist_corrosion: {
     // バランス再較正：DoT成分のpowerを底上げ（weaken部分は変更しない）
     id: 'illusionist_corrosion', name: '腐食', type: 'debuff', target: 'enemy',
-    mpCost: 9, cooldownTurns: 1,
+    mpCost: 7, cooldownTurns: 1,
     weaken: { stat: 'def', pct: 0.20, turns: 3 },
     dot: { power: 2.0, turns: 3, maxStacks: 2 },
   },
@@ -903,7 +989,10 @@ export const SKILLS = {
     // stackSource:'debuffCount'で汎用化。既存の起爆＝dotStacks消費とは
     // 別カウント方式だが、同じ_resolveTechniqueBurst()を共有する）
     id: 'illusionist_toxic_burst', name: '幻毒爆', type: 'burst', target: 'enemy',
-    power: 3.76, stackPowerMult: 1.37, stackSource: 'debuffCount', mpCost: 14, cooldownTurns: 2,
+    power: 5.2, stackPowerMult: 1.37, stackSource: 'debuffCount', mpCost: 10, cooldownTurns: 2,
+    // バランス再較正：幻術師の主力技（唯一のdamage/burst型技）に幻惑の回避を付与。
+    // 毒霧の中で自らも呼吸を整えるregenAddも束ねる（回復手段を持たないため）
+    selfBuff: { evasionAdd: 0.32, defPct: 0.30, regenAdd: 0.05, turns: 3 },
   },
 
   // ---------------------------------------------------------
@@ -919,12 +1008,15 @@ export const SKILLS = {
     // 自分がかけるweaken/dotの効果量を一時的に底上げする（新フィールド debuffPowerAdd）
     id: 'arcanist_circle', name: '錬成陣', type: 'buff', target: 'self',
     mpCost: 9, cooldownTurns: 2,
-    buff: { debuffPowerAdd: 0.30, turns: 3 },
+    // バランス再較正：術式の陣そのものが結界を兼ねるという設定でDEFも付与
+    buff: { debuffPowerAdd: 0.30, defPct: 0.18, turns: 3 },
   },
   arcanist_catalyst: {
     id: 'arcanist_catalyst', name: '賢者の触媒', type: 'buff', target: 'self',
     mpCost: 14, cooldownTurns: 3,
     buff: { dmgBonusAdd: 0.25, debuffPowerAdd: 0.25, turns: 2 },
+    // バランス再較正：Boss予兆中に触媒を起動すると防御術式も同時展開する
+    telegraphBonus: { buff: { defPct: 0.30, debuffPowerAdd: 0.25, turns: 2 }, guardOverride: { mult: 0.35, turns: 2 } },
   },
 
   // ---------------------------------------------------------
@@ -932,12 +1024,17 @@ export const SKILLS = {
   // ---------------------------------------------------------
   artificer_mana_cannon: {
     id: 'artificer_mana_cannon', name: '魔導砲', type: 'damage', target: 'enemy',
-    magic: true, power: 3, mpCost: 9, cooldownTurns: 0,
+    magic: true, power: 6, mpCost: 5, cooldownTurns: 0,
+    // バランス再較正：魔導技師の主力技（唯一のdamage型技）に反動吸収装甲を付与。
+    // 自己修復ナノマシン的な発想でregenAddも束ねる（回復手段を持たないため）
+    selfBuff: { defPct: 0.32, regenAdd: 0.05, turns: 3 },
   },
   artificer_armor_boost: {
     id: 'artificer_armor_boost', name: '装甲強化', type: 'buff', target: 'self',
     mpCost: 8, cooldownTurns: 1,
     buff: { defPct: 0.25, turns: 3 },
+    // バランス再較正：Boss予兆を検知すると装甲を緊急展開し、さらにDEFが伸びる
+    telegraphBonus: { buff: { defPct: 0.40, turns: 2 }, guardOverride: { mult: 0.35, turns: 2 } },
   },
   artificer_auto_turret: {
     // ラウンド終了時に自動で追撃する「据え置き砲台」を設置する（新フィールド
@@ -967,8 +1064,14 @@ export const SKILLS = {
   merchantlord_investment: {
     id: 'merchantlord_investment', name: '投資', type: 'buff', target: 'self',
     mpCost: 6, cooldownTurns: 1,
-    buff: { atkPct: 0.20, magPct: 0.20, turns: 3 },
+    // バランス再較正：大商人は攻撃技を持たずbuff型技が予兆時以外選ばれない
+    // 構造だったため、regenAddを束ねて既存の継戦AIパス（regen切れ時に
+    // 自動再使用）でも拾われるようにする（「投資の配当が継続的に懐＝体力を
+    // 潤す」という商人モチーフ）
+    buff: { atkPct: 0.25, magPct: 0.25, regenAdd: 0.03, turns: 3 },
     goldCostPct: 0.06, goldCostMin: 15,
+    // バランス再較正：Boss予兆時は「保険」にも投資し、DEFも同時に上がる
+    telegraphBonus: { buff: { atkPct: 0.20, magPct: 0.20, defPct: 0.25, turns: 2 }, guardOverride: { mult: 0.35, turns: 2 } },
   },
   merchantlord_appraising_eye: {
     id: 'merchantlord_appraising_eye', name: '鑑定眼', type: 'buff', target: 'self',
@@ -1017,7 +1120,13 @@ export const SKILLS = {
   healerfolk_vitality: {
     id: 'healerfolk_vitality', name: '生命力', type: 'buff', target: 'self',
     mpCost: 6, cooldownTurns: 1,
-    buff: { regenAdd: 0.025, turns: 4 },
+    // バランス再較正：村の癒し手は生存はできても攻撃技を持たず倒しきれず
+    // 時間切れになっていたため、唯一の継戦手段であるこの技にATKも束ねる
+    // （regenAddが切れるたびに自動更新される既存の継戦AIパスをそのまま
+    // 利用し、あふれる生命力が打撃にも力を与えるという素朴な癒し手らしさ）
+    buff: { regenAdd: 0.025, atkPct: 1.05, turns: 5 },
+    // バランス再較正：Boss予兆中は身を固めて再生に集中し、DEFも上がる
+    telegraphBonus: { buff: { defPct: 0.30, turns: 2 }, guardOverride: { mult: 0.5, turns: 2 } },
   },
 
   // ---------------------------------------------------------

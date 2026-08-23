@@ -146,6 +146,7 @@ function describePlayerAction(result) {
           if (t.inspected) lines.push(`${t.targetName}：HP ${t.inspected.hp}/${t.inspected.maxHp}　ATK ${t.inspected.atk}　DEF ${t.inspected.def}　SPD ${t.inspected.spd}`);
         }
         if ((result.targets || []).length === 0) lines.push('しかし、狙う相手がいなかった！');
+        if (result.telegraphBonusApplied) lines.push('相手の構えを見切り、身のこなしが軽くなった！');
         break;
       case 'steal':
         if (result.alreadyStolen) lines.push('すでに奪えるものは奪った後だった…');

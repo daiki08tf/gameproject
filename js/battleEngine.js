@@ -834,6 +834,24 @@ export class BattleEngine {
     }
     // 幻惑の舞姫「幻惑舞」：敵デバフと同時に自分へバフをかける
     if (tech.selfBuff) this._applyBuffPayload(tech.selfBuff, result);
+    // バランス再較正（低耐久上級職の生存格差是正）：debuff型技のtelegraphBonus。
+    // buff/utility型と違い「弱体化そのものを置き換える」のではなく、敵への
+    // 効果はそのままに、Boss予兆が出ている間だけ自己バフを追加で乗せる
+    // （元指示2・4番：予兆を見る意味を維持しつつ、職の個性に沿った反応技にする）
+    if (tech.telegraphBonus && this._hasActiveTelegraph()) {
+      if (tech.telegraphBonus.selfBuff) this._applyBuffPayload(tech.telegraphBonus.selfBuff, result);
+      // バランス再較正：他のtelegraphBonus実装（buff/utility型）と同じく、
+      // guardOverrideが指定されていればここでguarding=trueを立てる。これが
+      // ないと「ぼうぎょ扱い」にならずGUARD_DAMAGE_MULT(0.6)が一切乗らない
+      // まま、AIがこの技をぼうぎょの代わりに選んでしまい、素のぼうぎょより
+      // 弱い防御になってしまう事故を防ぐ
+      if (tech.telegraphBonus.guardOverride) {
+        this.player.guarding = true;
+        this.player.guardOverrideMult = tech.telegraphBonus.guardOverride.mult;
+        this.player.guardOverrideTurns = tech.telegraphBonus.guardOverride.turns;
+      }
+      result.telegraphBonusApplied = true;
+    }
   }
 
   _resolveTechniqueHeal(tech, result) {

@@ -281,6 +281,8 @@ const ADVANCED_RAW = [
     skills: [],
     spells: [
       { id: 'choirmaster_healing_chorus', learnLevel: 1 },
+      { id: 'choirmaster_guardian_hymn', learnLevel: 10 },
+      { id: 'choirmaster_battle_hymn', learnLevel: 20 },
       { id: 'choirmaster_miracle_chorus', learnLevel: 'master' },
     ] },
   { id: 'phantomthief', name: '怪盗', requires: ['thief', 'ninja'],
