@@ -1,6 +1,7 @@
 /* ============================================================
    Awakening 2.0 — milestone / feature-unlock progression
    覚醒はレベルリセットではなく、到達実績によって上位システムを解放する。
+   Level Roadmap 99,999 に合わせ、本編15章=Lv700前後を基準に再配置する。
    ============================================================ */
 
 export const AWAKENING_V2_RANKS = [
@@ -8,29 +9,29 @@ export const AWAKENING_V2_RANKS = [
     rank: 1,
     name: '第一覚醒・開門',
     description: '中盤の成長システムを束ね、装備の上位育成を解禁する。',
-    requirements: { characterLevel: 50, masteredJobs: 5, clearedStage: '5-5' },
+    requirements: { characterLevel: 90, masteredJobs: 5, clearedStage: '5-5' },
     unlocks: ['秘宝スロット1', '装備の目覚め', '覚醒装備'],
   },
   {
     rank: 2,
     name: '第二覚醒・極意',
-    description: '複数職のMASTERを越え、ビルド拡張を本格解放する。',
-    requirements: { characterLevel: 100, masteredJobs: 15, clearedStage: '10-5' },
+    description: '真・魔王を越え、複数職MASTERとともに上位ビルドへ進む。',
+    requirements: { characterLevel: 300, masteredJobs: 15, clearedStage: '10-5' },
     unlocks: ['秘宝スロット2', '極Affix', '上位ビルド拡張'],
   },
   {
     rank: 3,
     name: '第三覚醒・超越',
-    description: '本編最深部を越え、Relicと最上位育成へ到達する。',
-    requirements: { characterLevel: 200, masteredJobs: 30, clearedStage: '15-5' },
+    description: '本編15章を踏破し、Lv700以降の長期エンドゲームへ到達する。',
+    requirements: { characterLevel: 700, masteredJobs: 30, clearedStage: '15-5' },
     unlocks: ['秘宝スロット3', 'Relic解放', 'Mythic育成帯'],
   },
   {
     rank: 4,
     name: '第四覚醒・深淵',
-    description: '深淵と恒久収集を極めた者向けのエンドゲーム到達証。',
-    requirements: { characterLevel: 300, masteredJobs: 40, abyssDepth: 50, rune2OwnedTotal: 1000 },
-    unlocks: ['深淵上位拡張フラグ', '将来の超越コンテンツ解放枠'],
+    description: '深淵と恒久収集を進め、Lv3000帯へ到達した者のエンドゲーム到達証。',
+    requirements: { characterLevel: 3000, masteredJobs: 40, abyssDepth: 50, rune2OwnedTotal: 1000 },
+    unlocks: ['深淵上位拡張フラグ', '超越コンテンツ解放枠'],
   },
 ];
 
