@@ -80,7 +80,20 @@ function actCompanions(engine,predicate){const events=[];for(const c of livingCo
 const originalRunEnemyPhase=BattleEngine.prototype._runEnemyPhase;
 BattleEngine.prototype._runEnemyPhase=function patchedRunEnemyPhase(){ensureCompanionBattle(this);this._companionsActedThisRound ||= new Set();const events=actCompanions(this,c=>companionActsBeforeEnemyPhase(this,c));if(this.aliveEnemies.length>0&&this.player.hp>0)events.push(...originalRunEnemyPhase.call(this));return events;};
 const originalAdvanceTurn=BattleEngine.prototype.advanceTurn;
-BattleEngine.prototype.advanceTurn=function patchedAdvanceTurn(command){ensureCompanionBattle(this);this._companionsActedThisRound=new Set();const out=originalAdvanceTurn.call(this,command);if(out.events)out.events=out.events.map(convertCompanionHitLog);const blocked=out.events&&out.events.some(ev=>ev.type==='playerAction'&&ev.result&&ev.result.blocked),fled=out.result&&out.result.retreated;if(!blocked&&!fled&&!out.over&&this.player.hp>0&&this.aliveEnemies.length>0)out.events.push(...actCompanions(this));if(!out.over&&this.aliveEnemies.length===0){const end=this.checkBattleEnd();if(end.over){out.over=true;out.result=this.finalResult;}}return out;};
+BattleEngine.prototype.advanceTurn = function patchedAdvanceTurn(command) {
+  ensureCompanionBattle(this);
+  this._companionsActedThisRound = new Set();
+  const out = originalAdvanceTurn.call(this, command);
+  if (out.events) out.events = out.events.map(convertCompanionHitLog);
+  const blocked = out.events && out.events.some(ev => ev.type === 'playerAction' && ev.result && ev.result.blocked);
+  const fled = out.result && out.result.retreated;
+  if (!blocked && !fled && !out.over && this.player.hp > 0 && this.aliveEnemies.length > 0) out.events.push(...actCompanions(this));
+  if (!out.over && this.aliveEnemies.length === 0) {
+    const end = this.checkBattleEnd();
+    if (end.over) { out.over = true; out.result = this.finalResult; }
+  }
+  return out;
+};
 
 const originalGrantKillRewards=BattleEngine.prototype._grantKillRewards;
 BattleEngine.prototype._grantKillRewards=function patchedGrantKillRewards(enemy){const result=originalGrantKillRewards.call(this,enemy);if(result&&(enemy.xp || 0) > 0&&state.gainPartyCompanionExp){const gained=Math.round(enemy.xp*.75);if(gained>0){const awards=state.gainPartyCompanionExp(gained);result.companionExpAwards=awards;result.companionExp=awards[0]?.gained||0;result.companionLeveledUp=awards.some(x=>x.leveledUp);}}return result;};
