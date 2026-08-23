@@ -6,6 +6,7 @@ import './patches/rune2Core.js';
 import './patches/rune2Special.js';
 import './patches/weaponInstanceFoundation.js';
 import './patches/companionFoundation.js';
+import './patches/companionEvolution.js';
 import './patches/companionBattle.js';
 import './patches/companionRecruitment.js';
 import './patches/codexFoundation.js';
