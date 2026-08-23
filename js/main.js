@@ -9,6 +9,7 @@ import './patches/companionFoundation.js';
 import './patches/companionBattle.js';
 import './patches/companionRecruitment.js';
 import './patches/codexFoundation.js';
+import './patches/codexUi.js';
 import './patches/homeNavigation.js';
 import './patches/rune2Ui.js';
 import './patches/rune2ObserveUi.js';
