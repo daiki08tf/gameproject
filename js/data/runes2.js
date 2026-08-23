@@ -22,24 +22,19 @@ export const RUNE2_DEFS = [
   { id:'craft', name:'匠', english:'Craft', kind:'special', starAt:1000, stageIds:['9-5'], dropRate:0.008 },
   { id:'fate', name:'運命', english:'Fate', kind:'special', starAt:1000, stageIds:['10-5'], dropRate:0.0025 },
 ];
-
-const MAP = new Map(RUNE2_DEFS.map((r) => [r.id, r]));
-export function getRune2(id) { return MAP.get(id); }
-export function runesForStage(stageId) { return RUNE2_DEFS.filter((r) => r.stageIds.includes(stageId)); }
-
-export function rune2EffectText(rune, marks = 1) {
-  if (!rune) return '';
-  const n = Math.max(0, Math.floor(Number(marks) || 0));
-  if (rune.kind === 'statMult') return `${rune.stat.toUpperCase()} +${Math.round(rune.perMark * n * 100)}%`;
-  if (rune.id === 'challenge') {
-    const lv = Math.min(20, Math.floor(n / 100));
-    return `Challenge Lv.${lv}：敵HP +${lv*10}% / ATK +${lv*5}% / EXP +${lv*10}% / Gold +${lv*5}% / Rune抽選率 +${lv*2}%`;
-  }
-  if (rune.id === 'greed') return `50刻ごとに通常Dropの最低レア帯を1段除外（現在 ${Math.floor(n/50)}段）`;
-  if (rune.id === 'observe') return `1/50/100/250/500刻で敵のHP・能力・報酬・分類・解析IDを順次表示`;
-  if (rune.id === 'swift') return `先攻判定速度 +${Math.min(50, n*0.1).toFixed(1)}%（効果上限500刻 / ★500）`;
-  if (rune.id === 'fists') return `通常攻撃間隔 -${Math.min(50, n*0.1).toFixed(1)}%（効果上限500刻 / ★500）`;
-  if (rune.id === 'gold') return 'Gold系特殊効果（後続Phaseで拡張）';
-  if (rune.id === 'hawkeye' || rune.id === 'illusion' || rune.id === 'bless' || rune.id === 'bastion') return '戦闘系特殊効果（後続Phaseで接続）';
-  return '特殊効果（仲間・装備・エンドゲーム拡張Phaseで接続）';
+const MAP=new Map(RUNE2_DEFS.map(r=>[r.id,r]));
+export function getRune2(id){return MAP.get(id);}
+export function runesForStage(stageId){return RUNE2_DEFS.filter(r=>r.stageIds.includes(stageId));}
+export function rune2EffectText(rune,marks=1){
+  if(!rune)return'';const n=Math.max(0,Math.floor(Number(marks)||0));
+  if(rune.kind==='statMult')return`${rune.stat.toUpperCase()} +${Math.round(rune.perMark*n*100)}%`;
+  if(rune.id==='challenge'){const lv=Math.min(20,Math.floor(n/100));return`Challenge Lv.${lv}：敵HP +${lv*10}% / ATK +${lv*5}% / EXP +${lv*10}% / Gold +${lv*5}% / Rune抽選率 +${lv*2}%`;}
+  if(rune.id==='greed')return`50刻ごとに通常Dropの最低レア帯を1段除外（現在 ${Math.floor(n/50)}段）`;
+  if(rune.id==='observe')return'1/50/100/250/500刻で敵のHP・能力・報酬・分類・解析IDを順次表示';
+  if(rune.id==='swift')return`先攻判定速度 +${Math.min(50,n*.1).toFixed(1)}%（効果上限500刻 / ★500）`;
+  if(rune.id==='fists')return`通常攻撃間隔 -${Math.min(50,n*.1).toFixed(1)}%（効果上限500刻 / ★500）`;
+  if(rune.id==='bond'){const e=Math.min(1000,n);return`仲間加入率 +${(e*.015).toFixed(1)}pt / 仲間EXP +${(e*.05).toFixed(1)}% / 加入個体Rare化 ${Math.min(20,e*.02).toFixed(1)}%（効果上限1000刻 / ★1000）`;}
+  if(rune.id==='gold')return'Gold系特殊効果（後続Phaseで拡張）';
+  if(rune.id==='hawkeye'||rune.id==='illusion'||rune.id==='bless'||rune.id==='bastion')return'戦闘系特殊効果（後続Phaseで接続）';
+  return'特殊効果（仲間・装備・エンドゲーム拡張Phaseで接続）';
 }
