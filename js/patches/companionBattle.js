@@ -1,10 +1,11 @@
 /* ============================================================
-   Companion System Phase 2.1 - battle participation / survival AI
+   Companion battle participation / survival AI
    ============================================================ */
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
-import { COMPANION_NATURES } from '../data/companions.js';
+import { defMitigationPct } from '../data/combatStats.js';
+import { COMPANION_NATURES, companionTraitEffect } from '../data/companions.js';
 
 function ensureCompanionBattle(engine) {
   if (engine._companionBattleReady) return;
@@ -16,6 +17,7 @@ function ensureCompanionBattle(engine) {
     name: c.instance.nickname || c.species.name,
     speciesId: c.species.id,
     nature: c.instance.nature,
+    traits: [...(c.species.traits || [])],
     level: c.instance.level || 1,
     hp: c.stats.hp,
     maxHp: c.stats.hp,
@@ -29,20 +31,37 @@ function ensureCompanionBattle(engine) {
   };
 }
 
+function traitEffect(companion, kind) {
+  for (const name of companion?.traits || []) {
+    const effect = companionTraitEffect(name);
+    if (effect?.kind === kind) return effect;
+  }
+  return null;
+}
+
+function effectiveCompanionSpd(companion) {
+  const effect = traitEffect(companion, 'initiativeSpd');
+  return companion.spd * (1 + (effect?.power || 0));
+}
+
 function companionDamage(companion, target) {
   const nature = COMPANION_NATURES[companion.nature] || COMPANION_NATURES.balanced;
   let power = companion.atk;
   if (nature.ai === 'support' && companion.mag > companion.atk) power = companion.mag * 0.9;
+  const lowHp = traitEffect(companion, 'lowHpDamage');
+  if (lowHp && target.hp / Math.max(1, target.maxHp) <= (lowHp.threshold ?? 0.5)) power *= 1 + lowHp.power;
   const variance = 0.90 + Math.random() * 0.20;
   const raw = Math.max(1, power * variance);
-  const mitigation = target.def / (target.def + 55);
+  const mitigation = defMitigationPct(target.def || 0);
   return Math.max(1, Math.round(raw * (1 - mitigation)));
 }
 
 function enemyDamageToCompanion(enemy, companion, mult = 1) {
   const variance = 0.92 + Math.random() * 0.16;
-  const raw = Math.max(1, enemy.atk * mult * variance);
-  const mitigation = companion.def / (companion.def + 55);
+  let raw = Math.max(1, enemy.atk * mult * variance);
+  const physicalMitigation = traitEffect(companion, 'physicalMitigation');
+  if (physicalMitigation) raw *= 1 - physicalMitigation.power;
+  const mitigation = defMitigationPct(companion.def || 0);
   return Math.max(1, Math.round(raw * (1 - mitigation)));
 }
 
@@ -138,22 +157,48 @@ function convertCompanionHitLog(event) {
   };
 }
 
+function companionActsBeforeEnemyPhase(engine) {
+  ensureCompanionBattle(engine);
+  const c = engine.companion;
+  const enemies = engine.aliveEnemies;
+  if (!c || c.down || !enemies.length) return false;
+  const fastestEnemy = Math.max(...enemies.map((e) => e.spd || 0));
+  return effectiveCompanionSpd(c) >= fastestEnemy;
+}
+
+const originalRunEnemyPhase = BattleEngine.prototype._runEnemyPhase;
+BattleEngine.prototype._runEnemyPhase = function patchedRunEnemyPhase() {
+  ensureCompanionBattle(this);
+  const events = [];
+  if (!this._companionActedThisRound && companionActsBeforeEnemyPhase(this)) {
+    const result = performCompanionTurn(this);
+    if (result) {
+      this._companionActedThisRound = true;
+      events.push({ type: 'playerAction', result });
+    }
+  }
+  if (this.aliveEnemies.length > 0 && this.player.hp > 0) events.push(...originalRunEnemyPhase.call(this));
+  return events;
+};
+
 const originalAdvanceTurn = BattleEngine.prototype.advanceTurn;
 BattleEngine.prototype.advanceTurn = function patchedAdvanceTurn(command) {
   ensureCompanionBattle(this);
+  this._companionActedThisRound = false;
   const out = originalAdvanceTurn.call(this, command);
   if (out.events) out.events = out.events.map(convertCompanionHitLog);
   const blocked = out.events && out.events.some((ev) => ev.type === 'playerAction' && ev.result && ev.result.blocked);
   const fled = out.result && out.result.retreated;
-  if (!blocked && !fled && !out.over && this.player.hp > 0 && this.aliveEnemies.length > 0) {
+  if (!blocked && !fled && !out.over && !this._companionActedThisRound && this.player.hp > 0 && this.aliveEnemies.length > 0) {
     const result = performCompanionTurn(this);
     if (result) {
+      this._companionActedThisRound = true;
       out.events.push({ type: 'playerAction', result });
-      if (this.aliveEnemies.length === 0) {
-        const end = this.checkBattleEnd();
-        if (end.over) { out.over = true; out.result = this.finalResult; }
-      }
     }
+  }
+  if (!out.over && this.aliveEnemies.length === 0) {
+    const end = this.checkBattleEnd();
+    if (end.over) { out.over = true; out.result = this.finalResult; }
   }
   return out;
 };
@@ -201,4 +246,4 @@ TextBattleScreen.prototype._render = function patchedCompanionRender() {
   el.style.opacity = down ? '0.55' : '1';
 };
 
-export { performCompanionTurn };
+export { performCompanionTurn, effectiveCompanionSpd, companionDamage, enemyDamageToCompanion };
