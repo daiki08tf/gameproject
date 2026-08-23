@@ -1,13 +1,29 @@
+import { state } from '../state.js';
 import { getItem, RARITY, rarityIndex } from '../data/equipment.js';
 import { getRune } from '../data/runes.js';
 import { getRune2 } from '../data/runes2.js';
+import { describeAffix, AFFIX_RARITY_LABEL } from '../data/affixes.js';
 
-// ドロップは装備アイテムだけでなく旧ルーンの場合もあるため、両方から解決する
+// ドロップは装備アイテムだけでなく旧ルーンの場合もあるため、両方から解決する。
+// 武器インスタンスIDが渡された場合は、その個体に付いたAffixも同時に見せる。
 function resolveDrop(itemId) {
   const item = getItem(itemId);
   if (item) {
     const stars = '★'.repeat(rarityIndex(item.rarity));
-    return { name: `${stars ? stars + ' ' : ''}${item.name}`, color: RARITY[item.rarity].color };
+    let name = `${stars ? stars + ' ' : ''}${item.name}`;
+    if (state.isWeaponInstance(itemId)) {
+      const affixes = state.weaponInstanceAffixes(itemId);
+      if (affixes.length) {
+        const affixText = affixes.map(a => {
+          const d = describeAffix(a);
+          return `[${AFFIX_RARITY_LABEL[a.rarity]}] ${d.name}: ${d.desc}`;
+        }).join(' / ');
+        name += `\n⚙ ${affixText}`;
+      } else {
+        name += '\n⚙ オプションなし';
+      }
+    }
+    return { name, color: RARITY[item.rarity].color };
   }
   const rune = getRune(itemId);
   if (rune) return { name: `✨ ${rune.name}`, color: 'var(--accent)' };
@@ -44,6 +60,7 @@ export function renderResult(result) {
       const chip = document.createElement('div');
       chip.className = 'result-item-chip';
       chip.style.color = resolved.color;
+      chip.style.whiteSpace = 'pre-line';
       chip.textContent = resolved.name;
       itemsEl.appendChild(chip);
     }
