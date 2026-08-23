@@ -1,6 +1,9 @@
 import { state } from './state.js';
 import './patches/progressionCore.js';
 import './patches/statusCalculationCore.js';
+import './patches/progression3Core.js';
+import './patches/progression3Combat.js';
+import './patches/progression3Ui.js';
 import './patches/inheritanceCore.js';
 import './patches/rune2Core.js';
 import './patches/rune2Special.js';
