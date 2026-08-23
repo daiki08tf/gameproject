@@ -1,17 +1,15 @@
 /* ============================================================
    Progression 2.0 Phase 4 — Inheritance Core
-   ------------------------------------------------------------
-   Replaces the legacy reincarnation +3% multiplier with an inheritance
-   loop based on Character Lv and the character's intrinsic stats.
-
-   Job levels/mastery, equipment, inventory, codex and runes are retained.
-   Only Character Lv / Character EXP reset to Lv.1 / 0.
    ============================================================ */
 
 import { state } from '../state.js';
 import { computeStats } from '../data/jobs.js';
-
-export const INHERITABLE_STAT_KEYS = ['hp', 'mp', 'atk', 'def', 'mag', 'spd'];
+import {
+  INHERITABLE_STAT_KEYS,
+  inheritanceRatePct,
+  inheritanceBonusPointGain,
+  calculateInheritedStats,
+} from '../data/inheritance.js';
 
 function emptyStats() {
   return Object.fromEntries(INHERITABLE_STAT_KEYS.map((key) => [key, 0]));
@@ -19,9 +17,7 @@ function emptyStats() {
 
 function normalizeStats(value) {
   const out = emptyStats();
-  for (const key of INHERITABLE_STAT_KEYS) {
-    out[key] = Math.max(0, Math.floor(Number(value?.[key]) || 0));
-  }
+  for (const key of INHERITABLE_STAT_KEYS) out[key] = Math.max(0, Math.floor(Number(value?.[key]) || 0));
   return out;
 }
 
@@ -38,25 +34,17 @@ function ensureInheritanceData() {
 function withLegacyRebirthDisabled(fn) {
   const previous = state.data.reincarnations;
   state.data.reincarnations = 0;
-  try {
-    return fn();
-  } finally {
-    state.data.reincarnations = previous;
-  }
+  try { return fn(); }
+  finally { state.data.reincarnations = previous; }
 }
 
 ensureInheritanceData();
 
-state.inheritanceRatePct = function inheritanceRatePct(level = this.characterLevel, count = this.data.reincarnations) {
-  const lv = Math.max(1, Math.floor(Number(level) || 1));
-  const n = Math.max(0, Math.floor(Number(count) || 0));
-  return lv < 2000 ? (lv / 200 + n) : (lv / 100 + n);
+state.inheritanceRatePct = function inheritanceRate(level = this.characterLevel, count = this.data.reincarnations) {
+  return inheritanceRatePct(level, count);
 };
-
-state.inheritanceBonusPointGain = function inheritanceBonusPointGain(level = this.characterLevel, count = this.data.reincarnations) {
-  const lv = Math.max(1, Math.floor(Number(level) || 1));
-  const n = Math.max(0, Math.floor(Number(count) || 0));
-  return lv < 2000 ? n : Math.max(0, lv - 2000) + n;
+state.inheritanceBonusPointGain = function inheritanceBp(level = this.characterLevel, count = this.data.reincarnations) {
+  return inheritanceBonusPointGain(level, count);
 };
 
 state.inheritanceIntrinsicStats = function inheritanceIntrinsicStats() {
@@ -77,26 +65,21 @@ state.inheritancePreview = function inheritancePreview() {
   ensureInheritanceData();
   const level = this.characterLevel;
   const count = this.data.reincarnations;
-  const ratePct = this.inheritanceRatePct(level, count);
-  const bonusPoints = this.inheritanceBonusPointGain(level, count);
+  const ratePct = inheritanceRatePct(level, count);
+  const bonusPoints = inheritanceBonusPointGain(level, count);
   const sourceStats = this.inheritanceIntrinsicStats();
-  const nextInheritedStats = emptyStats();
-  for (const key of INHERITABLE_STAT_KEYS) {
-    nextInheritedStats[key] = Math.max(0, Math.floor(sourceStats[key] * ratePct / 100));
-  }
+  const nextInheritedStats = calculateInheritedStats(sourceStats, level, count);
   return { level, count, ratePct, bonusPoints, sourceStats, nextInheritedStats };
 };
 
 state.performInheritance = function performInheritance() {
   ensureInheritanceData();
   const preview = this.inheritancePreview();
-
   this.data.inheritedStats = normalizeStats(preview.nextInheritedStats);
   this.data.inheritanceBonusPoints += preview.bonusPoints;
   this.data.reincarnations += 1;
   this.data.characterLevel = 1;
   this.data.characterExp = 0;
-
   this.data.inheritanceHistory.push({
     at: Date.now(),
     fromLevel: preview.level,
@@ -105,20 +88,12 @@ state.performInheritance = function performInheritance() {
     inheritedStats: normalizeStats(preview.nextInheritedStats),
   });
   if (this.data.inheritanceHistory.length > 50) this.data.inheritanceHistory.shift();
-
   this.save();
   return preview;
 };
 
-// Compatibility aliases for old UI/callers. The old resource cost and +3% bonus
-// are no longer part of Progression 2.0.
-state.reincarnationCost = function progression2InheritanceCost() {
-  return { gold: 0, manastone: 0 };
-};
-state.reincarnate = function progression2ReincarnateAlias() {
-  this.performInheritance();
-  return true;
-};
+state.reincarnationCost = function progression2InheritanceCost() { return { gold: 0, manastone: 0 }; };
+state.reincarnate = function progression2ReincarnateAlias() { this.performInheritance(); return true; };
 
 state.inheritanceUnspentPoints = function inheritanceUnspentPoints() {
   ensureInheritanceData();
@@ -144,8 +119,8 @@ state.resetInheritanceAllocation = function resetInheritanceAllocation() {
   return true;
 };
 
-// Neutralize legacy reincarnation +3% and add the new inherited/allocated base stats.
-// Future Rune 2.0 is loaded after this layer and can multiply the resulting total.
+// Stop the legacy +3% reincarnation multiplier, then add inherited/BP stats as
+// the new persistent initial-stat layer. Future Rune 2.0 loads after this layer.
 const phase3GetStats = state.getStats.bind(state);
 const phase3GetStatBreakdown = state.getStatBreakdown.bind(state);
 
@@ -179,14 +154,7 @@ state.getStatBreakdown = function getStatBreakdownWithInheritance(stat) {
   };
   const accounted = Object.values(values).reduce((sum, v) => sum + v, 0);
   const special = Math.round((total - accounted) * 10) / 10;
-  return {
-    ...legacy,
-    ...values,
-    base: values.characterJobBase,
-    inheritance,
-    special,
-    total,
-  };
+  return { ...legacy, ...values, base: values.characterJobBase, inheritance, special, total };
 };
 
-export { ensureInheritanceData, withLegacyRebirthDisabled };
+export { INHERITABLE_STAT_KEYS, ensureInheritanceData, withLegacyRebirthDisabled };
