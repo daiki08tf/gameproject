@@ -4,14 +4,13 @@ import { getRune } from '../data/runes.js';
 import { getRune2 } from '../data/runes2.js';
 import { describeAffix, AFFIX_RARITY_LABEL } from '../data/affixes.js';
 
-// ドロップは装備アイテムだけでなく旧ルーンの場合もあるため、両方から解決する。
-// 武器インスタンスIDが渡された場合は、その個体に付いたAffixも同時に見せる。
 function resolveDrop(itemId) {
   const item = getItem(itemId);
   if (item) {
     const stars = '★'.repeat(rarityIndex(item.rarity));
-    let name = `${stars ? stars + ' ' : ''}${item.name}`;
-    if (state.isWeaponInstance(itemId)) {
+    let name = `${item.unique ? '◆ UNIQUE ' : ''}${stars ? stars + ' ' : ''}${item.name}`;
+    // ユニーク武器は固定性能。通常の武器個体Affix表示は行わない。
+    if (!item.unique && state.isWeaponInstance(itemId)) {
       const affixes = state.weaponInstanceAffixes(itemId);
       if (affixes.length) {
         const affixText = affixes.map(a => {
@@ -23,6 +22,7 @@ function resolveDrop(itemId) {
         name += '\n⚙ オプションなし';
       }
     }
+    if (item.unique && item.lore) name += `\n「${item.lore}」`;
     return { name, color: RARITY[item.rarity].color };
   }
   const rune = getRune(itemId);
@@ -38,6 +38,9 @@ export function renderResult(result) {
   if (result.retreated) {
     title.textContent = 'RETREAT';
     title.style.color = '#b9c0cc';
+  } else if (result.bountyUnique) {
+    title.textContent = 'BOUNTY CLEARED — UNIQUE FOUND';
+    title.style.color = '#f2c94c';
   } else if (result.cleared) {
     title.textContent = 'STAGE CLEAR';
     title.style.color = '';

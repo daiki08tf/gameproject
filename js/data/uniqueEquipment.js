@@ -1,0 +1,11 @@
+/* Bounty Unique Equipment — Affix厳選とは別の、戦い方を変える固定効果装備 */
+export const BOUNTY_UNIQUES = [
+  { id:'uq_bloodfang_gram', bountyId:'bounty-redfang-varg', name:'血牙グラム', slot:'weapon', weaponType:'sword', rarity:'legendary', stats:{atk:42,crit:4}, unique:true, effects:[{trigger:'passive',kind:'highHpDoubleAttack',threshold:0.5},{trigger:'passive',kind:'defPenalty',power:0.25}], lore:'赤牙の血を吸い、獲物が弱る前に二度噛みつく魔剣。' },
+  { id:'uq_ash_knight_shield', bountyId:'bounty-ash-knight', name:'灰騎士の大盾', slot:'shield', rarity:'legendary', stats:{def:62,hp:90,spd:-8}, unique:true, effects:[{trigger:'onGuard',kind:'guardNextAtkBuff',power:0.8}], lore:'受け止めた衝撃を灰の中へ蓄え、次の一撃へ返す大盾。' },
+  { id:'uq_star_oracle_staff', bountyId:'bounty-fallen-oracle', name:'星詠みの杖', slot:'weapon', weaponType:'staff', rarity:'legendary', stats:{mag:105,mp:-18}, unique:true, effects:[{trigger:'passive',kind:'spellArmsStarStrike',magRatio:0.8}], lore:'未来を一瞬だけ固定し、詠唱の残光を次の打撃へ宿す杖。' },
+  { id:'uq_regicide', bountyId:'bounty-crownless', name:'王殺し', slot:'weapon', weaponType:'sword', rarity:'mythic', stats:{atk:210,crit:7}, unique:true, effects:[{trigger:'passive',kind:'bossDmg',power:0.5},{trigger:'passive',kind:'normalEnemyDmgPenalty',power:0.3}], lore:'王の首だけを求める処刑剣。名もなき敵には刃が鈍る。' },
+  { id:'uq_omega_core', bountyId:'bounty-omega-zero', name:'零式演算核', slot:'accessory', rarity:'mythic', stats:{atk:70,mag:70,spd:35}, unique:true, effects:[{trigger:'passive',kind:'actionDiversityBuff',power:0.25,turns:3}], lore:'異なる戦闘行動を解析し、戦術の多様性そのものを出力へ変換する禁機の核。' },
+];
+
+export function uniqueForBounty(bountyId){ return BOUNTY_UNIQUES.find(x=>x.bountyId===bountyId)||null; }
+export function bountyUniqueById(id){ return BOUNTY_UNIQUES.find(x=>x.id===id)||null; }

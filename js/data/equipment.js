@@ -10,6 +10,7 @@ import { CHAPTER_SPECS, ACCESSORY_ARCHETYPES, EFFECTS, chapterMult } from './cha
 import { EQUIPMENT_LAYER } from './balance.js';
 import { WEAPON_TYPES } from './weaponTypes.js';
 import { WEAPON_CODEX_ITEMS, BOSS_WEAPON_ITEMS } from './weapons.js';
+import { BOUNTY_UNIQUES, bountyUniqueById } from './uniqueEquipment.js';
 
 export const RARITY = {
   normal:    { label: 'ノーマル',   color: '#b9c0cc', mult: EQUIPMENT_LAYER.RARITY_MULT.normal },
@@ -19,16 +20,10 @@ export const RARITY = {
   mythic:    { label: '神話',       color: '#ff6ec7', mult: EQUIPMENT_LAYER.RARITY_MULT.mythic },
 };
 
-// レアリティの序列（Loot Filterのしきい値判定などで使用）
 export const RARITY_ORDER = Object.keys(RARITY);
 export function rarityIndex(rarity) { return RARITY_ORDER.indexOf(rarity); }
-
-// 武器種のプロファイルは weaponTypes.js へ分離済み（Blade Vale 2.1で
-// weapons.js との循環importを避けるため）。既存コードはこれまで通り
-// ここからimportできるよう re-export する。
 export { WEAPON_TYPES };
 const AFFINITY_BONUS = EQUIPMENT_LAYER.WEAPON_AFFINITY_BONUS;
-// この体数を装備して倒すと、その武器種は全職業で使えるようになる
 export const WEAPON_MASTERY_THRESHOLD = EQUIPMENT_LAYER.WEAPON_MASTERY_KILLS_REQUIRED;
 
 const BASE_POWER = EQUIPMENT_LAYER.BASE_POWER;
@@ -44,9 +39,6 @@ function roundStats(stats) {
   return out;
 }
 
-// ---------------------------------------------------------
-// 第1章：既存装備（手動定義・変更なし）
-// ---------------------------------------------------------
 const RAW_ITEMS = [
   { id: 'wp_sword_n', name: '鉄の剣', slot: 'weapon', weaponType: 'sword', rarity: 'normal', stats: { atk: 4 } },
   { id: 'wp_sword_r', name: '業物の剣', slot: 'weapon', weaponType: 'sword', rarity: 'rare', stats: { atk: 4, crit: 2 } },
@@ -79,9 +71,6 @@ for (const raw of RAW_ITEMS) {
   ITEMS.set(raw.id, { ...raw, stats });
 }
 
-// ---------------------------------------------------------
-// 第2章以降：chapters.js のメタデータから自動生成
-// ---------------------------------------------------------
 function makeWeaponStats(weaponType, rarity, chapterNum) {
   const wt = WEAPON_TYPES[weaponType];
   const power = BASE_POWER.weapon * RARITY[rarity].mult * chapterMult(chapterNum);
@@ -106,106 +95,49 @@ for (const ch of CHAPTER_SPECS) {
   const it = ch.items;
   const rarity = ch.final ? 'mythic' : 'legendary';
   const namedRarity = ch.final ? 'mythic' : 'legendary';
-
-  ITEMS.set(`${ch.id}_weapon`, {
-    id: `${ch.id}_weapon`, name: it.weapon, slot: 'weapon', weaponType: ch.weaponType, rarity: 'rare',
-    stats: makeWeaponStats(ch.weaponType, 'rare', ch.num),
-  });
-  ITEMS.set(`${ch.id}_shield`, {
-    id: `${ch.id}_shield`, name: it.shield, slot: 'shield', rarity: 'rare',
-    stats: makeSlotStats('shield', 'rare', ch.num),
-  });
-  ITEMS.set(`${ch.id}_head`, {
-    id: `${ch.id}_head`, name: it.head, slot: 'head', rarity: 'rare',
-    stats: makeSlotStats('head', 'rare', ch.num),
-  });
-  ITEMS.set(`${ch.id}_body`, {
-    id: `${ch.id}_body`, name: it.body, slot: 'body', rarity: 'rare',
-    stats: makeSlotStats('body', 'rare', ch.num),
-  });
-  ITEMS.set(`${ch.id}_accessory`, {
-    id: `${ch.id}_accessory`, name: it.accessory, slot: 'accessory', rarity: 'rare',
-    stats: makeAccessoryStats(it.accessoryArchetype, 'rare', ch.num),
-  });
-  ITEMS.set(`${ch.id}_weapon_epic`, {
-    id: `${ch.id}_weapon_epic`, name: it.weaponEpic, slot: 'weapon', weaponType: ch.weaponType, rarity: 'epic',
-    stats: makeWeaponStats(ch.weaponType, 'epic', ch.num),
-  });
-
-  // idはMapに格納するキーと必ず一致させる（自己申告のidとキーがズレると、
-  // item.idを起点に再検索するコード＝getItem(item.id)が必ず失敗する）
-  const buildNamed = (spec, id) => {
-    const slot = spec.slot;
-    const baseStats = slot === 'weapon'
-      ? makeWeaponStats(ch.weaponType, namedRarity, ch.num)
-      : slot === 'accessory'
-        ? makeAccessoryStats(it.accessoryArchetype, namedRarity, ch.num)
-        : makeSlotStats(slot, namedRarity, ch.num);
-    return {
-      id, name: spec.name, slot,
-      weaponType: slot === 'weapon' ? ch.weaponType : undefined,
-      rarity: namedRarity, stats: baseStats, effects: [EFFECTS[spec.effect]],
-    };
+  ITEMS.set(`${ch.id}_weapon`, { id:`${ch.id}_weapon`, name:it.weapon, slot:'weapon', weaponType:ch.weaponType, rarity:'rare', stats:makeWeaponStats(ch.weaponType,'rare',ch.num) });
+  ITEMS.set(`${ch.id}_shield`, { id:`${ch.id}_shield`, name:it.shield, slot:'shield', rarity:'rare', stats:makeSlotStats('shield','rare',ch.num) });
+  ITEMS.set(`${ch.id}_head`, { id:`${ch.id}_head`, name:it.head, slot:'head', rarity:'rare', stats:makeSlotStats('head','rare',ch.num) });
+  ITEMS.set(`${ch.id}_body`, { id:`${ch.id}_body`, name:it.body, slot:'body', rarity:'rare', stats:makeSlotStats('body','rare',ch.num) });
+  ITEMS.set(`${ch.id}_accessory`, { id:`${ch.id}_accessory`, name:it.accessory, slot:'accessory', rarity:'rare', stats:makeAccessoryStats(it.accessoryArchetype,'rare',ch.num) });
+  ITEMS.set(`${ch.id}_weapon_epic`, { id:`${ch.id}_weapon_epic`, name:it.weaponEpic, slot:'weapon', weaponType:ch.weaponType, rarity:'epic', stats:makeWeaponStats(ch.weaponType,'epic',ch.num) });
+  const buildNamed = (spec,id) => {
+    const slot=spec.slot;
+    const baseStats=slot==='weapon'?makeWeaponStats(ch.weaponType,namedRarity,ch.num):slot==='accessory'?makeAccessoryStats(it.accessoryArchetype,namedRarity,ch.num):makeSlotStats(slot,namedRarity,ch.num);
+    return { id,name:spec.name,slot,weaponType:slot==='weapon'?ch.weaponType:undefined,rarity:namedRarity,stats:baseStats,effects:[EFFECTS[spec.effect]] };
   };
-  ITEMS.set(`${ch.id}_named_${it.named.slot}`, buildNamed(it.named, `${ch.id}_named_${it.named.slot}`));
-  if (it.named2) ITEMS.set(`${ch.id}_named2_${it.named2.slot}`, buildNamed(it.named2, `${ch.id}_named2_${it.named2.slot}`));
-
-  if (ch.branch) {
-    const branchRarity = ch.final ? 'legendary' : 'epic';
-    ITEMS.set(`${ch.id}_branch`, {
-      id: `${ch.id}_branch`, name: ch.branch.itemName, slot: 'accessory', rarity: branchRarity,
-      stats: makeAccessoryStats(it.accessoryArchetype, branchRarity, ch.num),
-    });
-  }
+  ITEMS.set(`${ch.id}_named_${it.named.slot}`,buildNamed(it.named,`${ch.id}_named_${it.named.slot}`));
+  if(it.named2) ITEMS.set(`${ch.id}_named2_${it.named2.slot}`,buildNamed(it.named2,`${ch.id}_named2_${it.named2.slot}`));
+  if(ch.branch){ const branchRarity=ch.final?'legendary':'epic'; ITEMS.set(`${ch.id}_branch`,{id:`${ch.id}_branch`,name:ch.branch.itemName,slot:'accessory',rarity:branchRarity,stats:makeAccessoryStats(it.accessoryArchetype,branchRarity,ch.num)}); }
 }
 
-// ---------------------------------------------------------
-// Blade Vale 2.1：武器総数拡張（weapons.jsの約200本＋Boss固有武器）を
-// 完全に加算で統合する。既存のRAW_ITEMS・chapters.js由来の武器は
-// 一切変更しない（元指示34番：既存武器の削除禁止）。
-// ---------------------------------------------------------
 for (const w of WEAPON_CODEX_ITEMS) ITEMS.set(w.id, w);
 for (const w of BOSS_WEAPON_ITEMS) ITEMS.set(w.id, w);
 
-// 武器Affix（Part A）：ドロップごとに固有の武器インスタンスIDを
-// `${baseItemId}#${seq}` の形で発行する（state.js側）。getItem()は
-// インスタンスIDを渡されても常に「そのインスタンスの元になった武器定義」を
-// 返すよう、'#'以降を無視して静的定義を引く。これにより既存のgetItem()
-// 呼び出し箇所（33箇所以上）は一切変更せずインスタンスID対応になる。
 export function baseItemId(id) {
   if (typeof id !== 'string') return id;
   const i = id.indexOf('#');
   return i === -1 ? id : id.slice(0, i);
 }
-export function getItem(id) { return ITEMS.get(baseItemId(id)); }
-export function allItems() { return Array.from(ITEMS.values()); }
+export function getItem(id) { const base=baseItemId(id); return ITEMS.get(base) || bountyUniqueById(base); }
+export function allItems() { return [...ITEMS.values(), ...BOUNTY_UNIQUES]; }
 export function itemsBySlot(slot) { return allItems().filter((i) => i.slot === slot); }
 
-// 装備の「戦闘力」スコア（最強装備ボタンの比較に使用）
 export function powerScore(item) {
   if (!item) return 0;
-  const w = { hp: 0.5, mp: 0.5, atk: 2, def: 2, mag: 2, spd: 1.5, crit: 1.5 };
-  let s = 0;
-  for (const k in item.stats) s += (item.stats[k] || 0) * (w[k] || 1);
-  if (item.effects && item.effects.length) s += 15 * item.effects.length; // 特殊効果分のボーナス評価
+  const w = { hp:0.5, mp:0.5, atk:2, def:2, mag:2, spd:1.5, crit:1.5 };
+  let s=0; for(const k in item.stats) s+=(item.stats[k]||0)*(w[k]||1);
+  if(item.effects&&item.effects.length) s+=15*item.effects.length;
   return s;
 }
 
-// 職業の得意武器と装備中の武器タイプが一致する場合の適性ボーナス倍率
 export function weaponAffinityBonus(weaponItem, jobWeaponType) {
-  if (!weaponItem || !weaponItem.weaponType) return null;
-  if (weaponItem.weaponType !== jobWeaponType) return null;
-  const wt = WEAPON_TYPES[weaponItem.weaponType];
-  return { stat: wt.affinityStat, mult: 1 + AFFINITY_BONUS };
+  if (!weaponItem || !weaponItem.weaponType || weaponItem.weaponType !== jobWeaponType) return null;
+  const wt=WEAPON_TYPES[weaponItem.weaponType]; return {stat:wt.affinityStat,mult:1+AFFINITY_BONUS};
 }
 
-export const SLOTS = ['weapon', 'shield', 'head', 'body', 'accessory1', 'accessory2'];
-
-// 武器強化レベルに応じたルーンスロット数
+export const SLOTS=['weapon','shield','head','body','accessory1','accessory2'];
 export function slotsForEnhanceLevel(level) {
-  const [t1, t2, t3] = EQUIPMENT_LAYER.RUNE_SLOT_LEVEL_THRESHOLDS;
-  if (level >= t3) return 4;
-  if (level >= t2) return 3;
-  if (level >= t1) return 2;
-  return 1;
+  const [t1,t2,t3]=EQUIPMENT_LAYER.RUNE_SLOT_LEVEL_THRESHOLDS;
+  if(level>=t3)return 4; if(level>=t2)return 3; if(level>=t1)return 2; return 1;
 }
