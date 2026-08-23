@@ -15,6 +15,7 @@ import './patches/equipment3Foundation.js';
 import './patches/equipment3Greater.js';
 import './patches/equipment3Legendary.js';
 import './patches/equipment3Blacksmith.js';
+import './patches/equipment3SmartLoot.js';
 import './patches/weaponAffixResultVisibility.js';
 import './patches/companionFoundation.js';
 import './patches/companionResetSafety.js';
