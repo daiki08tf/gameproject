@@ -1,27 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { jobExpToNext, cumulativeJobExpToLevel } from '../js/data/jobProgression.js';
-import { characterExpToNext } from '../js/data/progression.js';
+import { JOB_EXP_REWARD_SHARE, splitProgressionExp } from '../js/data/jobProgression.js';
 
-test('Job EXP curve is distinct and faster than Character EXP from the opening', () => {
-  for (const lv of [1, 5, 10, 20, 40, 60]) {
-    assert.ok(jobExpToNext(lv, 'basic') < characterExpToNext(lv), `Lv${lv}`);
-  }
+test('Job receives 10% while Character receives the full EXP reward', () => {
+  assert.equal(JOB_EXP_REWARD_SHARE, 0.10);
+  assert.deepEqual(splitProgressionExp(100), { character: 100, job: 10 });
+  assert.deepEqual(splitProgressionExp(250), { character: 250, job: 25 });
 });
 
-test('higher job tiers are progressively slower without using Character EXP curve', () => {
-  const lv = 20;
-  assert.ok(jobExpToNext(lv, 'basic') < jobExpToNext(lv, 'advanced'));
-  assert.ok(jobExpToNext(lv, 'advanced') < jobExpToNext(lv, 'special'));
-  assert.ok(jobExpToNext(lv, 'special') < jobExpToNext(lv, 'hero'));
+test('common EXP bonuses apply to both tracks but Character-only bonus does not boost Job EXP', () => {
+  assert.deepEqual(splitProgressionExp(100, 1.2, 1), { character: 120, job: 12 });
+  assert.deepEqual(splitProgressionExp(100, 1.2, 1.1), { character: 132, job: 12 });
 });
 
-test('Job MASTER targets remain practical short-form goals', () => {
-  const basic = cumulativeJobExpToLevel(20, 'basic');
-  const advanced = cumulativeJobExpToLevel(40, 'advanced');
-  const special = cumulativeJobExpToLevel(60, 'special');
-  const hero = cumulativeJobExpToLevel(100, 'hero');
-  assert.ok(basic > 0 && advanced > basic && special > advanced && hero > special);
-  assert.ok(basic < 10000);
-  assert.ok(hero < 200000);
+test('invalid or negative rewards cannot reduce either progression track', () => {
+  assert.deepEqual(splitProgressionExp(-100), { character: 0, job: 0 });
+  assert.deepEqual(splitProgressionExp(Number.NaN), { character: 0, job: 0 });
 });
