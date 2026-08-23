@@ -153,6 +153,10 @@ function hitCompanion(engine, enemy) {
 const originalPerformEnemyTurn = BattleEngine.prototype.performEnemyTurn;
 BattleEngine.prototype.performEnemyTurn = function patchedPerformEnemyTurn(enemy) {
   ensureCompanionBattle(this);
+  // Status effects must remain authoritative. Frozen enemies are handed to the
+  // original resolver first so frozenTurns is consumed and no attack (including
+  // a companion-targeted one) can leak through the patch.
+  if (enemy && enemy.frozenTurns > 0) return originalPerformEnemyTurn.call(this, enemy);
   if (!enemy.dead && !enemy.boss && companionCanBeTargeted(this)) {
     const c = this.companion;
     const nature = COMPANION_NATURES[c.nature] || COMPANION_NATURES.balanced;
@@ -189,15 +193,26 @@ BattleEngine.prototype.advanceTurn = function patchedAdvanceTurn(command) {
   ensureCompanionBattle(this);
   const out = originalAdvanceTurn.call(this, command);
 
-  // Rewrite companion-target enemy events into the already-supported technique
-  // log shape: 「ゴブリンの攻撃」！ スライムにXのダメージ！
   if (out.events) out.events = out.events.map(convertCompanionHitLog);
 
   const blocked = out.events && out.events.some((ev) => ev.type === 'playerAction' && ev.result && ev.result.blocked);
   const fled = out.result && out.result.retreated;
   if (!blocked && !fled && !out.over && this.player.hp > 0 && this.aliveEnemies.length > 0) {
     const result = performCompanionTurn(this);
-    if (result) out.events.push({ type: 'playerAction', result });
+    if (result) {
+      out.events.push({ type: 'playerAction', result });
+      // The original engine already ran its round-end victory check before the
+      // companion's appended action. Re-check only after an actual companion
+      // action so a last-hit kill resolves immediately instead of leaving an
+      // empty battlefield waiting for another command.
+      if (this.aliveEnemies.length === 0) {
+        const end = this.checkBattleEnd();
+        if (end.over) {
+          out.over = true;
+          out.result = this.finalResult;
+        }
+      }
+    }
   }
   return out;
 };
@@ -205,18 +220,20 @@ BattleEngine.prototype.advanceTurn = function patchedAdvanceTurn(command) {
 const originalGrantKillRewards = BattleEngine.prototype._grantKillRewards;
 BattleEngine.prototype._grantKillRewards = function patchedGrantKillRewards(enemy) {
   const result = originalGrantKillRewards.call(this, enemy);
-  if (result && state.gainCompanionExp && state.activeCompanionId && state.activeCompanionId()) {
-    const gained = Math.max(1, Math.round((enemy.xp || 0) * 0.75));
-    const exp = state.gainCompanionExp(gained);
-    result.companionExp = exp.gained;
-    result.companionLeveledUp = exp.leveledUp;
-    result.companionLevel = exp.level;
+  // Summoned zero-reward enemies must not become an infinite companion EXP
+  // source. Real enemies keep the existing 75% companion EXP share.
+  if (result && (enemy.xp || 0) > 0 && state.gainCompanionExp && state.activeCompanionId && state.activeCompanionId()) {
+    const gained = Math.round(enemy.xp * 0.75);
+    if (gained > 0) {
+      const exp = state.gainCompanionExp(gained);
+      result.companionExp = exp.gained;
+      result.companionLeveledUp = exp.leveledUp;
+      result.companionLevel = exp.level;
+    }
   }
   return result;
 };
 
-// Lightweight HUD injected without changing index.html. The existing screen
-// renderer remains authoritative; this only mirrors engine.companion state.
 function ensureCompanionHud(screen) {
   if (!screen || !screen.engine) return null;
   ensureCompanionBattle(screen.engine);
