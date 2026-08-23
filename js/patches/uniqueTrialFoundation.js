@@ -11,7 +11,7 @@ function slot(itemId){
   return all[itemId];
 }
 state.recordUniqueTrialEvent=function(event, amount=1){
-  const equipped=Object.values(this.data.equipment||{}).filter(Boolean);
+  const equipped=Object.values(this.data.equipped||{}).filter(Boolean);
   let changed=false;
   for(const itemId of equipped){
     const def=uniqueTrialDef(itemId); if(!def) continue;
