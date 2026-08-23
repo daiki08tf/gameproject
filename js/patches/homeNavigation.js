@@ -5,7 +5,7 @@
 
 const GROUPS = [
   { id: 'adventure', title: '冒険', buttons: ['goStageBtn', 'goAbyssBtn'] },
-  { id: 'growth', title: '育成', buttons: ['goStatusBtn', 'goCompanionBtn', 'goEquipBtn', 'goJobBtn', 'goBlacksmithBtn', 'goRebirthBtn'] },
+  { id: 'growth', title: '育成', buttons: ['goStatusBtn', 'goCompanionBtn', 'goMonsterCodexBtn', 'goEquipBtn', 'goJobBtn', 'goBlacksmithBtn', 'goRebirthBtn'] },
   { id: 'other', title: 'その他', buttons: ['goSpellBtn'] },
 ];
 
