@@ -5,7 +5,7 @@ import { state } from '../js/state.js';
 import { CHARACTER_LEVEL_MAX, JOB_MASTERY_LEVELS } from '../js/patches/progressionCore.js';
 import { TIERS } from '../js/data/jobs.js';
 
-test('Progression 2.0 exposes independent character and job progression', () => {
+test('Progression 2.0 exposes independent character and slower job progression', () => {
   state.resetAll();
 
   assert.equal(state.characterLevel, 1);
@@ -15,7 +15,8 @@ test('Progression 2.0 exposes independent character and job progression', () => 
   const need = state.characterExpToNext(1);
   const result = state.gainExp(need);
   assert.equal(state.characterLevel, 2);
-  assert.equal(state.currentJobLevel, 2);
+  assert.equal(state.currentJobLevel, 1, 'Job Lv must not mirror Character Lv from the same reward');
+  assert.ok(state.currentJobExp > 0, 'Job still receives its smaller EXP share');
   assert.equal(result.characterLeveledUp, true);
 
   state.data.jobs.mage = { level: 1, exp: 0 };
