@@ -3,6 +3,7 @@
    Prevent destructive crafting operations that can silently lose rare data.
    ============================================================ */
 import './loot2Core.js';
+import './loot2Ui.js';
 import { state } from '../state.js';
 import { getLegendaryEffect } from '../data/equipment3Legendary.js';
 
