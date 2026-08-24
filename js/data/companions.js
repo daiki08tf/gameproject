@@ -25,7 +25,9 @@ export const COMPANION_TRAIT_EFFECTS = Object.freeze({
 export function companionTraitEffect(name){return COMPANION_TRAIT_EFFECTS[name]||null;}
 export function companionTraitLabel(name){const effect=companionTraitEffect(name);return effect?`${name}（${effect.desc}）`:name;}
 
-export const COMPANION_SPECIES = Object.freeze({
+// This registry intentionally remains extensible: companionBreeding.js registers
+// hybrid species at runtime. Freeze individual static data elsewhere, not the registry.
+export const COMPANION_SPECIES = {
   slime:{id:'slime',name:'スライム',type:'monster',family:'slime',regionId:'ch1',regionName:'はじまりの平原',icon:'🔵',baseStats:{hp:42,mp:10,atk:8,def:7,mag:4,spd:7},growth:{hp:5.2,mp:1.1,atk:1.7,def:1.5,mag:.9,spd:.7},recruit:{baseChance:.12},traits:['ぷにぷにボディ'],skills:[{level:1,id:'body_attack'},{level:8,id:'slime_heal'}]},
   goblin:{id:'goblin',name:'ゴブリン',type:'monster',family:'beast',regionId:'ch1',regionName:'はじまりの平原',enemyType:'grunt',icon:'👺',baseStats:{hp:48,mp:6,atk:11,def:6,mag:2,spd:8},growth:{hp:5.6,mp:.7,atk:2,def:1.3,mag:.5,spd:.8},recruit:{baseChance:.08},traits:['悪知恵'],skills:[{level:1,id:'club_hit'},{level:10,id:'dirty_trick'}]},
   bat:{id:'bat',name:'コウモリ',type:'monster',family:'beast',regionId:'ch1',regionName:'はじまりの平原',enemyType:'fast',icon:'🦇',baseStats:{hp:30,mp:9,atk:7,def:4,mag:5,spd:13},growth:{hp:4,mp:1,atk:1.3,def:.8,mag:1,spd:1.2},recruit:{baseChance:.10},traits:['夜目'],skills:[{level:1,id:'bite'},{level:9,id:'sonic'}]},
@@ -35,7 +37,7 @@ export const COMPANION_SPECIES = Object.freeze({
   rot_beast:{id:'rot_beast',name:'腐苔獣',type:'monster',family:'beast',regionId:'ch14',regionName:'腐緑の樹海',enemyType:'ch14_normal',icon:'🌿',baseStats:{hp:112,mp:16,atk:23,def:18,mag:10,spd:11},growth:{hp:10,mp:1.2,atk:3,def:2.4,mag:1.4,spd:.8},recruit:{baseChance:.035},traits:['腐食嗅覚'],skills:[{level:1,id:'rot_bite'},{level:30,id:'dirty_trick'}]},
   iron_hound:{id:'iron_hound',name:'鉄歯機兵',type:'monster',family:'construct',regionId:'ch15',regionName:'黒鉄機城',enemyType:'ch15_normal',icon:'⚙️',baseStats:{hp:128,mp:12,atk:26,def:28,mag:7,spd:13},growth:{hp:11,mp:.9,atk:3.3,def:3.4,mag:.8,spd:1},recruit:{baseChance:.03},traits:['機械装甲'],skills:[{level:1,id:'iron_fang'},{level:32,id:'club_hit'}]},
   ...RANCH_REGION_SPECIES,
-});
+};
 
 export function getCompanionSpecies(id){return COMPANION_SPECIES[id]||null;}
 export function companionExpToNext(level){return Math.round(18+level*14+Math.pow(level,1.5)*1.8);}
