@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 async function src(p){return readFile(new URL(`../${p}`,import.meta.url),'utf8');}
-test('enemy roles are not exposed by default in spawn names',async()=>{const s=await src('js/patches/combat3EnemyAI.js');assert.doesNotMatch(s,/e\.name=`\$\{role\.icon\}\$\{e\.name\}`;\}/);assert.match(s,/roleKnown\|\|known\?\.analyzed/);});
+test('enemy roles are hidden until knowledge unlocks them',async()=>{const s=await src('js/patches/combat3EnemyAI.js');assert.match(s,/const known=state\.data\?\.monsterCodex\?\.\[type\]/);assert.match(s,/if\(known\?\.roleKnown\|\|known\?\.analyzed\)e\.name=/);assert.doesNotMatch(s,/combat3Buffs=.*;e\.name=`\$\{role\.icon\}/);});
 test('knowledge progresses by skill observation, kill and analysis',async()=>{const s=await src('js/patches/codexEnemyKnowledge.js');assert.match(s,/markEnemySkillObserved/);assert.match(s,/roleKnown=true/);assert.match(s,/markEnemyAnalyzed/);assert.match(s,/observedSkills/);});
 test('inspect and inspect-debuff paths fully analyze enemies',async()=>{const s=await src('js/patches/codexEnemyKnowledge.js');assert.match(s,/_resolveTechniqueInspect/);assert.match(s,/_resolveTechniqueDebuff/);assert.match(s,/tech\?\.inspect/);});
 test('Codex UI hides unknown role and skill while showing learned knowledge',async()=>{const s=await src('js/patches/codexUi.js');assert.match(s,/役割：/);assert.match(s,/観測技：/);assert.match(s,/撃破・行動観測・解析で情報が増える/);});
