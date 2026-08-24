@@ -3,6 +3,8 @@ import { journeyName } from '../data/worldVeil.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 import { rollBlessingChoices } from '../data/blessings.js';
+import { KEY_DUNGEON_TYPES } from '../data/world2.js';
+import { world2KeyStageDescriptor } from '../data/world2Stages.js';
 
 export function isStageDiscovered(chapter, stage, stageIndex) {
   if (!chapter || !stage) return false;
@@ -12,7 +14,26 @@ export function isStageDiscovered(chapter, stage, stageIndex) {
   return !!previousMainStage && state.isStageCleared(previousMainStage.id);
 }
 
+function renderWorld2StageSelect(onPick){
+  document.getElementById('chapterTitle').textContent='境界鍵路';
+  const list=document.getElementById('stageList');list.innerHTML='';
+  const head=document.createElement('div');head.className='stage-card boss';head.innerHTML=`<div><div class="name">🔑 鍵片 ${state.world2KeyFragments?.()||0}</div><div class="rec">鍵を作り、通常世界の外側へ踏み込む。鍵は出撃時に1本消費。</div></div>`;list.appendChild(head);
+  const progress=state.world2Progress?.()||0,visibility=state.world2RealmVisibility?.()||{};
+  for(const def of Object.values(KEY_DUNGEON_TYPES)){
+    if(progress<def.minProgress)continue;
+    const count=Math.max(0,state.data.world2?.keys?.[def.id]||0),stage=world2KeyStageDescriptor(def.id);if(!stage)continue;
+    const card=document.createElement('div');card.className='stage-card branch';
+    let displayName=stage.name;if(def.id==='celestial'&&visibility.heaven==='hidden')displayName='？？？';if(def.id==='infernal'&&visibility.underworld==='hidden')displayName='？？？';if(def.id==='anomaly'&&visibility.modern!=='hint')displayName='鍵界・？？？？';
+    card.innerHTML=`<div><div class="name">${displayName}</div><div class="rec">推奨Lv ${stage.recLevel} / 所持鍵 ${count} / 作成: 鍵片${def.fragmentCost}</div></div><div class="cleared">${state.isStageCleared(stage.id)?'★':''}</div>`;
+    const actions=document.createElement('div');actions.style.cssText='display:flex;gap:5px;flex-wrap:wrap;margin-top:5px';
+    const forge=document.createElement('button');forge.className='btn-sub';forge.textContent='鍵を作る';forge.disabled=(state.world2KeyFragments?.()||0)<def.fragmentCost;forge.addEventListener('click',ev=>{ev.stopPropagation();Audio_.tap();state.world2ForgeKey(def.id);renderWorld2StageSelect(onPick);});actions.appendChild(forge);
+    const enter=document.createElement('button');enter.className='btn-main';enter.textContent='挑む';enter.disabled=count<=0;enter.addEventListener('click',ev=>{ev.stopPropagation();Audio_.tap();onPick(stage);});actions.appendChild(enter);
+    card.firstElementChild.appendChild(actions);list.appendChild(card);
+  }
+}
+
 export function renderStageSelect(chapterIndex, onPick) {
+  if(chapterIndex==='world2'){renderWorld2StageSelect(onPick);return;}
   const chapter = CHAPTERS[chapterIndex];
   document.getElementById('chapterTitle').textContent = journeyName(chapter);
   const list = document.getElementById('stageList');
@@ -42,7 +63,9 @@ export function renderStageConfirm(stage) {
   document.getElementById('confirmStageRewards').textContent = rewardText;
 
   const modEl = document.getElementById('confirmModifiers');
-  if (stage.bounty) {
+  if(stage.keyDungeon){
+    modEl.textContent=`🔑 境界鍵ダンジョン：出撃時に鍵を1本消費\n${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');
+  } else if (stage.bounty) {
     const hint = stage.bountyRewardHint ? ` ／ 戦利品の噂：${stage.bountyRewardHint}` : '';
     modEl.textContent = `手配書：${stage.rumor || '詳細不明'} ／ 特徴：${stage.bountyGimmick || '未知の強敵'}${hint}`;
     modEl.classList.remove('hidden');
