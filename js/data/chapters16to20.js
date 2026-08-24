@@ -4,11 +4,11 @@
 
 export const CHAPTER_EXPANSION_16_20 = [
   {
-    num:16,id:'ch16',name:'沈みゆく聖海',expanded:true,recLevel:[260,330],weaponType:'spear',
+    num:16,id:'ch16',name:'沈みゆく聖海',expanded:true,recLevel:[260,330],weaponType:'rod',
     stageNames:['潮騒の廃港','沈没街道','青白き海底回廊','忘れられた聖堂','水没した王墓','海神の祭壇','沈都最深部'],
     enemies:{normal:'深海亡者',fast:'泡影の海妖',tank:'珊瑚の守護兵',boss:'溺神ネレイオス'},
     midboss:{enemyName:'深海騎士ヴォルガ'},
-    items:{weapon:'深潮の槍',shield:'珊瑚城壁盾',head:'深海巡礼の冠',body:'海淵の祭衣',accessory:'青潮の聖珠',accessoryArchetype:'def',weaponEpic:'海神槍ネレイオス',named:{name:'溺神の心珠',slot:'accessory',effect:'lifesteal'}},
+    items:{weapon:'深潮の錫杖',shield:'珊瑚城壁盾',head:'深海巡礼の冠',body:'海淵の祭衣',accessory:'青潮の聖珠',accessoryArchetype:'def',weaponEpic:'海神錫ネレイオス',named:{name:'溺神の心珠',slot:'accessory',effect:'lifesteal'}},
     branch:{enemyName:'忘潮の司祭',itemName:'沈都の秘印'},
     lore:'黒鉄機城の停止と同時に海底から浮上した、歴史から抹消された聖都。七つの窪みを持つ石版が眠る。',
   },
