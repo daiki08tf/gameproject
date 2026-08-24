@@ -56,6 +56,10 @@ test('build ecosystem exposes offense, defense, spell, mobility and execute Set 
     abyss:{damage:passiveDamage(EQUIPMENT3_SETS.abyss_walker),armorPen:EQUIPMENT3_SETS.abyss_walker.bonuses[2].statAdd.armorPen,evasion:EQUIPMENT3_SETS.abyss_walker.bonuses[2].statAdd.evasion},
     executioner:{damage:passiveDamage(EQUIPMENT3_SETS.executioner),execute:effects(EQUIPMENT3_SETS.executioner).find(e=>e.kind==='executioner').power},
   };
-  assert.equal(new Set([report.blood.atk,report.dragon.hp,report.star.mag,report.abyss.armorPen,report.executioner.execute].map(String)).size,5);
+  assert.ok(report.blood.atk>1&&report.blood.damage>=.20,'blood king must be the direct offense set');
+  assert.ok(report.dragon.hp>1&&report.dragon.def>1,'ancient dragon must be the durable set');
+  assert.ok(report.star.mag>1&&report.star.spell>=.25,'star weaver must be the spell set');
+  assert.ok(report.abyss.armorPen>=.08&&report.abyss.evasion>=.05,'abyss walker must be the mobility/penetration set');
+  assert.ok(report.executioner.execute>=.35,'executioner must own the execute niche');
   console.log('ENDGAME_SET_BUILD_REPORT',JSON.stringify(report));
 });
