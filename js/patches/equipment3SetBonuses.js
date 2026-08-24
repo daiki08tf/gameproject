@@ -7,14 +7,16 @@ import { EQUIPMENT3_SETS } from '../data/equipment3Sets.js';
 import { CAPS_LAYER } from '../data/balance.js';
 
 state.equipmentSetCounts = function equipmentSetCounts() {
-  const counts = {};
+  const pieces = {};
   for (const slot of SLOTS) {
     const id = this.data.equipped?.[slot];
     const item = id ? getItem(id) : null;
     if (!item?.setId) continue;
-    counts[item.setId] = (counts[item.setId] || 0) + 1;
+    pieces[item.setId] ||= new Set();
+    // Two copies of the same ring must not impersonate two different Set pieces.
+    pieces[item.setId].add(item.id);
   }
-  return counts;
+  return Object.fromEntries(Object.entries(pieces).map(([setId, ids]) => [setId, ids.size]));
 };
 
 state.activeEquipmentSetBonuses = function activeEquipmentSetBonuses() {
