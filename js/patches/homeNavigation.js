@@ -5,7 +5,9 @@
 import './settlementCore.js';
 import './settlementUi.js';
 import './monsterRanchCore.js';
+import './monsterRanch2Facilities.js';
 import './monsterRanchUi.js';
+import './monsterRanch2FacilitiesUi.js';
 import './companionBondUi.js';
 import { applyHomePixelIcons } from '../ui/pixelIcons.js';
 
