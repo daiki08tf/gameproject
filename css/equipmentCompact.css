@@ -1,0 +1,66 @@
+/* Blade Vale 3.0 — Phase 2-A Equipment Compact UI */
+#equipmentScreen .equip-picker-compact{gap:6px}
+#equipmentScreen .equip-compact-card{
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:start;
+  gap:8px 10px;
+  padding:9px 10px;
+}
+#equipmentScreen .equip-compact-main{min-width:0;display:flex;flex-direction:column;gap:5px}
+#equipmentScreen .equip-compact-name{font-size:13px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#equipmentScreen .equip-compact-meta{color:var(--ui-muted);font-size:10px;line-height:1.35}
+#equipmentScreen .equip-compact-primary-action{
+  grid-column:2;
+  grid-row:1;
+  min-width:58px;
+  min-height:38px;
+  align-self:start;
+}
+#equipmentScreen .equip-compact-secondary-actions{
+  grid-column:1 / -1;
+  display:flex;
+  gap:5px;
+  margin-top:1px;
+}
+#equipmentScreen .equip-compact-secondary-actions .inline-btn{
+  min-height:30px;
+  padding:5px 8px;
+  font-size:10px;
+}
+#equipmentScreen .equip-compact-details{margin-top:2px}
+#equipmentScreen .equip-compact-details summary{font-size:10px}
+#equipmentScreen .equip-compact-detail-body{display:flex;flex-direction:column;gap:6px}
+#equipmentScreen .equip-compact-detail-body .item-stats{font-size:10px;line-height:1.55}
+#equipmentScreen .equip-compact-detail-body .affix-line{margin:0;padding:5px 7px;font-size:10px;line-height:1.35}
+#equipmentScreen .equip-compact-detail-body .affix-desc{color:var(--ui-muted)}
+#equipmentScreen .equip-compact-detail-body .eq3-special-line{font-size:10px;line-height:1.4}
+#equipmentScreen .equip-compact-compare{margin-top:1px;font-size:10px;line-height:1.4}
+#equipmentScreen .equip-paperdoll-compact{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+}
+#equipmentScreen .equip-paperdoll-compact .equip-slot{min-width:0;padding:8px}
+#equipmentScreen .equip-paperdoll-compact .slot-label{font-size:9px}
+#equipmentScreen .equip-paperdoll-compact .slot-item{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#equipmentScreen .equip-paperdoll-compact .slot-eq3-meta{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#equipmentScreen .equip-filter-compact{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  margin-bottom:7px;
+}
+#equipmentScreen .equip-filter-compact > .tab-btn{min-height:32px;padding:5px 8px;font-size:10px}
+#equipmentScreen .loot-filter-advanced{
+  border:1px solid var(--ui-line);
+  border-radius:var(--ui-radius-sm);
+  padding:8px!important;
+  background:rgba(10,14,20,.78);
+}
+@media(max-width:390px){
+  #equipmentScreen .equip-paperdoll-compact{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #equipmentScreen .equip-compact-card{grid-template-columns:minmax(0,1fr) 54px;padding:8px}
+  #equipmentScreen .equip-compact-primary-action{min-width:54px;padding:6px}
+}
