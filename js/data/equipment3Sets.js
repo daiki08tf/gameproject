@@ -43,27 +43,31 @@ export const EQUIPMENT3_SETS = Object.freeze({
   },
 });
 
-export const SET_EQUIPMENT = Object.freeze([
+const RAW_SET_EQUIPMENT = [
   { id:'set_blood_head', name:'血王の兜', slot:'head', rarity:'mythic', setId:'blood_king', fixedSet:true, stats:{ def:90, hp:240, crit:5 } },
   { id:'set_blood_body', name:'血王の戦衣', slot:'body', rarity:'mythic', setId:'blood_king', fixedSet:true, stats:{ def:150, hp:620, atk:70 } },
   { id:'set_blood_accessory', name:'血王の印章', slot:'accessory', rarity:'mythic', setId:'blood_king', fixedSet:true, stats:{ atk:120, crit:8, hp:180 } },
-
   { id:'set_dragon_shield', name:'古竜の大盾', slot:'shield', rarity:'mythic', setId:'ancient_dragon', fixedSet:true, stats:{ def:230, hp:760 } },
   { id:'set_dragon_body', name:'古竜鱗の鎧', slot:'body', rarity:'mythic', setId:'ancient_dragon', fixedSet:true, stats:{ def:210, hp:900 } },
   { id:'set_dragon_accessory', name:'古竜の逆鱗', slot:'accessory', rarity:'mythic', setId:'ancient_dragon', fixedSet:true, stats:{ atk:90, def:90, hp:360 } },
-
   { id:'set_star_head', name:'星導の冠', slot:'head', rarity:'mythic', setId:'star_weaver', fixedSet:true, stats:{ mag:190, mp:440, crit:5 } },
   { id:'set_star_body', name:'星導の法衣', slot:'body', rarity:'mythic', setId:'star_weaver', fixedSet:true, stats:{ def:130, mag:110, mp:360 } },
   { id:'set_star_accessory', name:'星環の宝珠', slot:'accessory', rarity:'mythic', setId:'star_weaver', fixedSet:true, stats:{ mag:170, mp:260, crit:7 } },
-
   { id:'set_abyss_head', name:'深淵歩きの仮面', slot:'head', rarity:'mythic', setId:'abyss_walker', fixedSet:true, stats:{ def:100, spd:38, crit:9 } },
   { id:'set_abyss_body', name:'深淵歩きの外套', slot:'body', rarity:'mythic', setId:'abyss_walker', fixedSet:true, stats:{ def:170, hp:560, spd:24 } },
   { id:'set_abyss_accessory', name:'深淵の羅針盤', slot:'accessory', rarity:'mythic', setId:'abyss_walker', fixedSet:true, stats:{ atk:90, mag:90, spd:30, crit:6 } },
-
   { id:'set_executioner_head', name:'処刑者の面頬', slot:'head', rarity:'mythic', setId:'executioner', fixedSet:true, stats:{ atk:160, crit:11, def:70 } },
   { id:'set_executioner_body', name:'処刑者の黒鎧', slot:'body', rarity:'mythic', setId:'executioner', fixedSet:true, stats:{ atk:110, def:160, hp:500 } },
   { id:'set_executioner_accessory', name:'断罪の指輪', slot:'accessory', rarity:'mythic', setId:'executioner', fixedSet:true, stats:{ atk:190, crit:10, spd:18 } },
-]);
+];
+
+export const SET_EQUIPMENT = Object.freeze(RAW_SET_EQUIPMENT.map((item) => {
+  const def = EQUIPMENT3_SETS[item.setId];
+  return Object.freeze({
+    ...item,
+    implicit: { desc: `《${def.name}セット》2部位: ${def.bonuses[2].desc} / 3部位: ${def.bonuses[3].desc}` },
+  });
+}));
 
 export function setDefinition(setId) { return EQUIPMENT3_SETS[setId] || null; }
 export function setPieces(setId) { return SET_EQUIPMENT.filter((item) => item.setId === setId); }
