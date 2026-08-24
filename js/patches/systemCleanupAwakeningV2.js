@@ -165,17 +165,4 @@ state.unlockArtifact = function unlockArtifactV2(id) {
 const legacyRuneTab = document.querySelector('#blacksmithScreen [data-tab="rune"]');
 if (legacyRuneTab) legacyRuneTab.remove();
 
-// blacksmith.jsは旧UIのままなので「💠」表記だけ現行通貨「💎」へ補正する。
-const blacksmithContent = document.getElementById('blacksmithContent');
-if (blacksmithContent && typeof MutationObserver !== 'undefined') {
-  const observer = new MutationObserver(() => {
-    blacksmithContent.querySelectorAll('.forge-card-btn').forEach((btn) => {
-      if (btn.textContent.includes('目覚めさせる') && btn.textContent.includes('💠')) {
-        btn.textContent = btn.textContent.replace('💠', '💎');
-      }
-    });
-  });
-  observer.observe(blacksmithContent, { childList: true, subtree: true });
-}
-
 export { ensureCleanupData };

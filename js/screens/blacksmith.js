@@ -117,7 +117,7 @@ function renderAwakenWeaponCard(id, item) {
     <div class="forge-card-sub">目覚めボーナス +${Math.round(rank * AWAKENED_EQUIP_LAYER.BONUS_PER_RANK * 100)}%（強化ボーナスとは別枠で加算）
       ${needAwakening ? '<br>※覚醒の祭壇で1回以上「覚醒」すると目覚めさせられるようになります' : ''}</div>
     <button class="forge-card-btn" ${maxed || !canDo ? 'disabled' : ''}>
-      ${maxed ? 'MAX' : `目覚めさせる（💠${cost}）`}
+      ${maxed ? 'MAX' : `目覚めさせる（💎${cost}）`}
     </button>
   `;
   card.querySelector('button').addEventListener('click', () => {

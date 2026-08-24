@@ -232,78 +232,6 @@ button { font-family: inherit; }
 .stage-card .cleared { color: var(--xp-color); font-size: 20px; }
 
 /* ---------------------------------------------------------
-   戦闘
---------------------------------------------------------- */
-#battleScreen { padding: 0; }
-#battleCanvas { display: block; width: 100vw; height: 100vh; background: #14141f; touch-action: none; }
-
-.battle-hud {
-  position: fixed;
-  top: max(10px, env(safe-area-inset-top));
-  left: 0; right: 0;
-  padding: 0 14px;
-  z-index: 10;
-  max-width: 340px;
-}
-.battle-topline { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 6px; text-shadow: 0 1px 3px #000; }
-.boss-bar { margin-top: 8px; }
-.boss-bar.hidden { display: none; }
-.boss-hp-bar .fill { background: linear-gradient(90deg, #e0553a, #ff9a4d); }
-
-.joystick-base {
-  position: fixed;
-  left: max(24px, env(safe-area-inset-left));
-  bottom: max(30px, env(safe-area-inset-bottom));
-  width: 110px; height: 110px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.08);
-  border: 2px solid rgba(255,255,255,0.2);
-  touch-action: none;
-  z-index: 10;
-}
-.joystick-knob {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 48px; height: 48px;
-  margin: -24px 0 0 -24px;
-  border-radius: 50%;
-  background: rgba(242,201,76,0.5);
-  border: 2px solid rgba(255,255,255,0.4);
-  pointer-events: none;
-}
-
-.action-buttons {
-  position: fixed;
-  right: max(20px, env(safe-area-inset-right));
-  bottom: max(30px, env(safe-area-inset-bottom));
-  display: flex;
-  gap: 14px;
-  z-index: 10;
-}
-.action-btn {
-  position: relative;
-  width: 68px; height: 68px;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.35);
-  color: #fff;
-  font-size: 13px;
-  font-weight: bold;
-  cursor: pointer;
-  touch-action: none;
-  overflow: hidden;
-}
-.skill-btn { background: rgba(74,194,232,0.35); }
-.ult-btn { background: rgba(242,201,76,0.35); }
-.action-label { position: relative; z-index: 2; }
-.cooldown-veil {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  transform: translateY(0%);
-  z-index: 1;
-}
-
-/* ---------------------------------------------------------
    リザルト
 --------------------------------------------------------- */
 .result-items { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 16px; }
@@ -509,10 +437,7 @@ button { font-family: inherit; }
 
 /* ---------------------------------------------------------
    テキスト戦闘（TextBattleScreen）
-   既存のリアルタイムCanvas戦闘（#battleScreen）はそのまま残し、
-   こちらは独立した新しい画面として追加する（元指示19番）。
-   モバイル縦持ち・大きめタップ領域・読みやすいログを優先する
-   （元指示20・21番）。
+   モバイル縦持ち・大きめタップ領域・読みやすいログを優先する。
 --------------------------------------------------------- */
 #textBattleScreen { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
 
