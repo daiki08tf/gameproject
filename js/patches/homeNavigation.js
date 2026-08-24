@@ -6,6 +6,7 @@ import './settlementCore.js';
 import './settlementUi.js';
 import './monsterRanchCore.js';
 import './monsterRanchUi.js';
+import './companionBondUi.js';
 import { applyHomePixelIcons } from '../ui/pixelIcons.js';
 
 const GROUPS = [
