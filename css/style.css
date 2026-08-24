@@ -55,6 +55,12 @@ button { font-family: inherit; }
   text-align: center;
   max-width: 420px;
   width: 100%;
+  /* リザルト画面はドロップしたアイテム（特にAffix付き装備）が多いほど
+     縦に伸びる。body/html側がoverflow:hiddenのため、上限とスクロールが
+     無いと端末の実効ビューポートが低い時にボタン（拠点へ/もう一度等）へ
+     一切届かず操作不能になる（実機で報告されたフリーズ）。 */
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0,0,0,0.6);
 }
 .panel h1 {
