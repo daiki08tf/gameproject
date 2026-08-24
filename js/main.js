@@ -53,6 +53,7 @@ import './patches/rune2ObserveUi.js';
 import './patches/systemCleanupAwakeningV2.js';
 import './patches/awakening3Imprints.js';
 import './patches/abyss2Pacts.js';
+import './patches/abyssRunBuild.js';
 import './patches/exploration1Core.js';
 import './patches/riftKeyCore.js';
 import './patches/endgameDropContextFix.js';
@@ -67,6 +68,7 @@ import './patches/uniqueBranchEffects.js';
 import './patches/secretJobsPhase1.js';
 import './patches/secretJobCodexBridge.js';
 import './patches/secretJobsPhase2.js';
+import { showAbyssRunChoice } from './patches/abyssRunUi.js';
 import { TextBattleScreen } from './screens/textBattle.js';
 import { renderHome } from './screens/home.js';
 import { renderChapterSelect } from './screens/chapterSelect.js';
@@ -85,15 +87,33 @@ import { Audio_ } from './audio.js';
 
 const battle=new TextBattleScreen();let pendingStage=null,lastStageId=null,currentChapterIndex=0,cameFromAbyss=false,nextResultStage=null,nextResultRouteChoice=false;
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function goHome(){renderHome();showScreen('homeScreen');}
+function goHome(){if(state.abyssRun?.().active)state.abyssRunEnd();renderHome();showScreen('homeScreen');}
 function goChapterSelect(){renderChapterSelect(chapterIndex=>goStageSelect(chapterIndex));showScreen('chapterSelectScreen');}
 function goStageSelect(chapterIndex){currentChapterIndex=chapterIndex;renderStageSelect(chapterIndex,stage=>{cameFromAbyss=false;pendingStage=stage;renderStageConfirm(stage);showScreen('stageConfirmScreen');});showScreen('stageSelectScreen');}
 function goAbyssList(){renderAbyssList(stage=>{cameFromAbyss=true;pendingStage=stage;renderStageConfirm(stage);showScreen('stageConfirmScreen');});showScreen('abyssScreen');}
 function ensureNextStageButton(){let btn=document.getElementById('resultNextBtn');if(btn)return btn;const actions=document.querySelector('#resultScreen .confirm-actions');if(!actions)return null;btn=document.createElement('button');btn.id='resultNextBtn';btn.className='btn-main hidden';btn.textContent='次のステージへ';actions.appendChild(btn);btn.addEventListener('click',()=>{Audio_.tap();if(nextResultRouteChoice){goAbyssList();return;}if(!nextResultStage)return;pendingStage=nextResultStage;cameFromAbyss=!!nextResultStage.isAbyss;startBattle(nextResultStage,getSelectedBlessingId());});return btn;}
 function updateNextStageButton(result,stage){nextResultRouteChoice=!!(result?.cleared&&stage?.isAbyss);if(nextResultRouteChoice)nextResultStage=null;else{const pacts=stage?.isAbyss&&state.activeAbyssPacts?state.activeAbyssPacts((stage.abyssDepth||0)+1):[];nextResultStage=result?.cleared?nextStageAfter(stage,pacts):null;}const btn=ensureNextStageButton();if(!btn)return;const visible=nextResultRouteChoice||!!nextResultStage;btn.classList.toggle('hidden',!visible);if(nextResultRouteChoice)btn.textContent='次の道を選ぶ';else if(nextResultStage)btn.textContent=nextResultStage.isAbyss?`次の階へ (${nextResultStage.abyssDepth}F)`:'次のステージへ';}
-function startBattle(stage,blessingId){lastStageId=stage.id;showScreen('textBattleScreen');battle.start(stage.id,result=>{result.rune2Drops=result.cleared&&state.rollRune2DropForStage?state.rollRune2DropForStage(stage.id):[];renderResult(result);updateNextStageButton(result,stage);showScreen('resultScreen');},blessingId);}
+function startBattle(stage,blessingId){
+  lastStageId=stage.id;
+  if(stage.isAbyss)state.abyssRunStart(stage.abyssDepth||1);
+  showScreen('textBattleScreen');
+  battle.start(stage.id,result=>{
+    result.rune2Drops=result.cleared&&state.rollRune2DropForStage?state.rollRune2DropForStage(stage.id):[];
+    const newAbyssClear=!!(stage.isAbyss&&result.cleared&&state.abyssRunRecordClear(stage.abyssDepth||1));
+    if(stage.isAbyss&&!result.cleared)state.abyssRunEnd();
+    renderResult(result);updateNextStageButton(result,stage);showScreen('resultScreen');
+    if(newAbyssClear){
+      showAbyssRunChoice(stage.abyssDepth||1,choice=>{
+        if(choice?.unlocked?.length){
+          const names=choice.unlocked.map(s=>s.name).join(' / ');
+          const toast=document.getElementById('toast');if(toast){toast.textContent=`SYNERGY UNLOCKED — ${names}`;toast.classList.remove('hidden');setTimeout(()=>toast.classList.add('hidden'),2200);}
+        }
+      });
+    }
+  },blessingId);
+}
 document.getElementById('titleStartBtn').addEventListener('click',()=>{Audio_.tap();goHome();});document.getElementById('goStageBtn').addEventListener('click',()=>{Audio_.tap();goChapterSelect();});document.getElementById('goEquipBtn').addEventListener('click',()=>{Audio_.tap();renderEquipment();showScreen('equipmentScreen');});document.getElementById('goStatusBtn').addEventListener('click',()=>{Audio_.tap();renderStatus();showScreen('statusScreen');});document.getElementById('statusBackBtn').addEventListener('click',()=>{Audio_.tap();goHome();});document.getElementById('goJobBtn').addEventListener('click',()=>{Audio_.tap();renderJobs();showScreen('jobsScreen');});document.getElementById('goBlacksmithBtn').addEventListener('click',()=>{Audio_.tap();renderBlacksmith();showScreen('blacksmithScreen');});document.getElementById('goRebirthBtn').addEventListener('click',()=>{Audio_.tap();renderRebirth();showScreen('rebirthScreen');});document.getElementById('goSpellBtn').addEventListener('click',()=>{Audio_.tap();renderSpellScreen();showScreen('spellScreen');});document.getElementById('goAbyssBtn').addEventListener('click',()=>{if(!state.isAbyssUnlocked())return;Audio_.tap();goAbyssList();});
 document.getElementById('chapterBackBtn').addEventListener('click',()=>{Audio_.tap();goHome();});document.getElementById('stageBackBtn').addEventListener('click',()=>{Audio_.tap();goChapterSelect();});document.getElementById('confirmBackBtn').addEventListener('click',()=>{Audio_.tap();cameFromAbyss?goAbyssList():goStageSelect(currentChapterIndex);});document.getElementById('confirmStartBtn').addEventListener('click',()=>{Audio_.tap();startBattle(pendingStage,getSelectedBlessingId());});document.getElementById('abyssBackBtn').addEventListener('click',()=>{Audio_.tap();goHome();});initAbyssTabs();
 document.getElementById('equipBackBtn').addEventListener('click',()=>{Audio_.tap();goHome();});document.getElementById('autoEquipBtn').addEventListener('click',()=>autoEquipBest());document.getElementById('weaponCodexBtn').addEventListener('click',()=>{Audio_.tap();renderWeaponCodex();showScreen('weaponCodexScreen');});document.getElementById('weaponCodexBackBtn').addEventListener('click',()=>{Audio_.tap();renderEquipment();showScreen('equipmentScreen');});initWeaponCodexTabs();
 document.getElementById('jobsBackBtn').addEventListener('click',()=>{Audio_.tap();goHome();});document.getElementById('blacksmithBackBtn').addEventListener('click',()=>{Audio_.tap();goHome();});initBlacksmithTabs();document.getElementById('rebirthBackBtn').addEventListener('click',()=>{Audio_.tap();goHome();});initRebirthTabs();document.getElementById('spellBackBtn').addEventListener('click',()=>{Audio_.tap();goHome();});initSpellScreen();
-document.getElementById('resultHomeBtn').addEventListener('click',()=>{Audio_.tap();goHome();});document.getElementById('resultEquipBtn').addEventListener('click',()=>{Audio_.tap();renderEquipment();showScreen('equipmentScreen');});document.getElementById('resultRetryBtn').addEventListener('click',()=>{Audio_.tap();if(lastStageId)startBattle(pendingStage,getSelectedBlessingId());});ensureNextStageButton();showScreen('titleScreen');
+document.getElementById('resultHomeBtn').addEventListener('click',()=>{Audio_.tap();goHome();});document.getElementById('resultEquipBtn').addEventListener('click',()=>{Audio_.tap();if(state.abyssRun?.().active)state.abyssRunEnd();renderEquipment();showScreen('equipmentScreen');});document.getElementById('resultRetryBtn').addEventListener('click',()=>{Audio_.tap();if(lastStageId)startBattle(pendingStage,getSelectedBlessingId());});ensureNextStageButton();showScreen('titleScreen');
