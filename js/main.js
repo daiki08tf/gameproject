@@ -48,6 +48,7 @@ import './patches/rune2ObserveUi.js';
 import './patches/systemCleanupAwakeningV2.js';
 import './patches/awakening3Imprints.js';
 import './patches/abyss2Pacts.js';
+import './patches/exploration1Core.js';
 import './patches/legacyRuneRetirement.js';
 import './patches/bountyFoundation.js';
 import './patches/bountyUniqueFoundation.js';
