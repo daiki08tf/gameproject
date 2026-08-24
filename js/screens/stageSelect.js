@@ -46,9 +46,14 @@ export function renderStageConfirm(stage) {
     const hint = stage.bountyRewardHint ? ` ／ 戦利品の噂：${stage.bountyRewardHint}` : '';
     modEl.textContent = `手配書：${stage.rumor || '詳細不明'} ／ 特徴：${stage.bountyGimmick || '未知の強敵'}${hint}`;
     modEl.classList.remove('hidden');
-  } else if (stage.isAbyss && stage.modifiers && stage.modifiers.length > 0) {
-    modEl.textContent = `このフロアのモディファイア: ${stage.modifiers.map(m => `${m.name}（${m.desc}）`).join(' ／ ')}`;
-    modEl.classList.remove('hidden');
+  } else if (stage.isAbyss) {
+    const lines = [];
+    if (stage.abyssRoute) lines.push(`${stage.abyssRoute.icon} ${stage.abyssRoute.name}：☠ ${stage.abyssRoute.risk} ／ ◆ ${stage.abyssRoute.reward}`);
+    if (stage.modifiers?.length) lines.push(`環境：${stage.modifiers.map(m => `${m.name}（${m.desc}）`).join(' ／ ')}`);
+    if (stage.abyssPacts?.length) lines.push(`盟約：${stage.abyssPacts.map(p => p.name).join(' ／ ')}　危険度${stage.abyssPactDanger}`);
+    modEl.textContent = lines.join('\n');
+    modEl.style.whiteSpace = 'pre-line';
+    modEl.classList.toggle('hidden', lines.length === 0);
   } else {
     modEl.textContent = '';
     modEl.classList.add('hidden');
