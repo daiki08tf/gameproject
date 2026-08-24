@@ -51,8 +51,12 @@ function buildExpandedRealm(cfg){
 export function buildSecretRealmStage(stageId){
   if(stageId==='secret-blood-castle'){
     const base=buildAbyssStage(800);
+    // The old UI claimed Lv12,500/IP5,600 while the actual depth-800 enemy
+    // templates are roughly Lv22k/IP6.2k. Keep the encounter unchanged, but make
+    // recommendation and loot target truthful and slightly rewarding versus its
+    // source depth.
     return {
-      ...base,id:'secret-blood-castle',name:'異界・血王城',recLevel:12500,itemPowerTarget:5600,
+      ...base,id:'secret-blood-castle',name:'異界・血王城',recLevel:base.recLevel,itemPowerTarget:Math.min(10000,base.itemPowerTarget+200),
       isAbyss:false,secretRealm:true,secretRealmId:'blood_gate',abyssDepth:null,abyssEra:'異界：血王城',
       healMult:Math.min(base.healMult||1,0.5),dropMult:(base.dropMult||1)*1.35,
       rewards:{gold:Math.round(base.rewards.gold*1.35),exp:Math.round(base.rewards.exp*1.25)},
