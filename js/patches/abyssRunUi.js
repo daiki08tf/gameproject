@@ -17,6 +17,10 @@ export function showAbyssRunChoice(depth,onDone){
     btn.addEventListener('click',()=>{const picked=state.abyssRunPick(boon.id);if(!picked)return;const unlocked=(picked.synergies||[]).filter(s=>!currentSyn.has(s.id));remove();onDone?.({picked,unlocked});});list.appendChild(btn);
   }
   overlay.appendChild(panel);document.body.appendChild(overlay);
+  // .panelは共通CSSでmax-height/overflow-y:autoを持つためスクロールは可能だが、
+  // モバイルは常時スクロールバーが出ないため、選択肢が画面に収まらない時に
+  // 気づかれず選べないと誤解されやすい（他のpanel系オーバーレイと同じ対策）。
+  requestAnimationFrame(()=>{if(panel.scrollHeight>panel.clientHeight+2){const hint=document.createElement('div');hint.className='scroll-hint';hint.textContent='▼ 下にスクロールできます';panel.querySelector('h2')?.after(hint);}});
 }
 
 export function abyssRunSummaryText(){
