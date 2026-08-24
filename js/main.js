@@ -37,6 +37,7 @@ import './patches/companionFoundation.js';
 import './patches/companionResetSafety.js';
 import './patches/companionEvolution.js';
 import './patches/companionSynergy.js';
+import './patches/companion3Breeding.js';
 import './patches/companionBattle.js';
 import './patches/companionRecruitment.js';
 import './patches/codexFoundation.js';
