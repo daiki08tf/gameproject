@@ -1,5 +1,9 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {generateRiftKey,riftDanger,riftReward,riftKeySummary} from '../js/data/riftKeys.js';
+import test from 'node:test';import assert from 'node:assert/strict';import {generateRiftKey,riftDanger,riftReward,riftKeySummary} from '../js/data/riftKeys.js';import {buildRiftStage} from '../js/data/riftStages.js';
 test('rift key generation is deterministic for depth and seed',()=>{const a=generateRiftKey(1000,'abc'),b=generateRiftKey(1000,'abc');assert.equal(a.name,b.name);assert.deepEqual(a.dangers,b.dangers);assert.equal(a.reward,b.reward);assert.equal(a.recLevel,b.recLevel);});
 test('deeper keys gain more danger slots',()=>{assert.equal(generateRiftKey(100,'a').dangers.length,1);assert.equal(generateRiftKey(800,'a').dangers.length,2);assert.equal(generateRiftKey(2000,'a').dangers.length,3);});
 test('key level and item power stay within endgame caps',()=>{const k=generateRiftKey(99999,'cap');assert.ok(k.recLevel<=99999);assert.ok(k.itemPowerTarget<=10000);});
 test('generated modifier ids resolve',()=>{const k=generateRiftKey(2000,'resolve');for(const id of k.dangers)assert.ok(riftDanger(id));assert.ok(riftReward(k.reward));assert.match(riftKeySummary(k),/Danger/);});
+test('invalid depths are normalized without NaN',()=>{for(const d of [undefined,null,NaN,Infinity,-10,'oops']){const k=generateRiftKey(d,'bad');assert.ok(Number.isFinite(k.recLevel));assert.ok(Number.isFinite(k.itemPowerTarget));assert.ok(k.sourceDepth>=1);}});
+test('summary tolerates missing key',()=>{assert.equal(riftKeySummary(null),'無効な虚無鍵');});
+test('rift stage rejects malformed keys',()=>{assert.equal(buildRiftStage(null),null);assert.equal(buildRiftStage({}),null);assert.equal(buildRiftStage({id:'x',recLevel:NaN}),null);});
+test('rift stage survives unknown modifiers and clamps caps',()=>{const s=buildRiftStage({id:'debug',name:'test',recLevel:999999,itemPowerTarget:999999,dangers:['missing'],reward:'missing',element:null});assert.equal(s.recLevel,99999);assert.equal(s.itemPowerTarget,10000);assert.equal(s.healMult,1);assert.deepEqual(s.dropRegionTags,[]);assert.ok(s.waves.length===3);});
