@@ -1,6 +1,7 @@
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { SETTLEMENT_BUILDINGS,settlementBuilding,settlementCost,settlementMaterialYield } from '../data/settlement.js';
+import { chainMethod } from './patchUtils.js';
 function ensure(){let changed=false;if(!state.data.settlementMaterials){state.data.settlementMaterials={wood:0,ore:0,hide:0,veilstone:0};changed=true;}for(const k of ['wood','ore','hide','veilstone'])if(!Number.isFinite(state.data.settlementMaterials[k])){state.data.settlementMaterials[k]=0;changed=true;}if(!state.data.settlementBuildings){state.data.settlementBuildings={hall:0,inn:0,market:0,watch:0,ranch:0};changed=true;}for(const b of SETTLEMENT_BUILDINGS)if(!Number.isFinite(state.data.settlementBuildings[b.id])){state.data.settlementBuildings[b.id]=0;changed=true;}if(changed)state.save();}
 ensure();
 state.settlementBuildings=SETTLEMENT_BUILDINGS;
@@ -11,6 +12,6 @@ state.upgradeSettlement=function(id){const check=this.canUpgradeSettlement(id);i
 state.addSettlementMaterials=function(bundle){ensure();const mult=this.settlementEffect('materialMult');const gained={};for(const k of ['wood','ore','hide','veilstone']){const n=Math.max(0,Math.round((Number(bundle?.[k])||0)*mult));if(n){this.data.settlementMaterials[k]+=n;gained[k]=n;}}if(Object.keys(gained).length)this.save();return gained;};
 const originalGold=state.gainGold.bind(state);state.gainGold=function(amount){return originalGold(amount*this.settlementEffect('goldMult'));};
 const originalDrop=state.dropRateMult.bind(state);state.dropRateMult=function(){return originalDrop()*this.settlementEffect('dropMult');};
-const originalStats=state.getStats.bind(state);state.getStats=function(){const s=originalStats();s.hp=Math.round(s.hp*this.settlementEffect('hpMult'));s.mp=Math.round(s.mp*this.settlementEffect('mpMult'));return s;};
+chainMethod(state, 'getStats', (originalStats) => function settlementStats(){const s=originalStats();s.hp=Math.round(s.hp*this.settlementEffect('hpMult'));s.mp=Math.round(s.mp*this.settlementEffect('mpMult'));return s;});
 if(state.gainPartyCompanionExp){const originalPartyExp=state.gainPartyCompanionExp.bind(state);state.gainPartyCompanionExp=function(amount){return originalPartyExp(amount*this.settlementEffect('companionExpMult'));};}
 const originalFinish=BattleEngine.prototype._finishBattle;BattleEngine.prototype._finishBattle=function settlementFinish(cleared,retreated){originalFinish.call(this,cleared,retreated);if(!cleared||retreated||!this.stage||!this.finalResult)return;const gained=state.addSettlementMaterials(settlementMaterialYield(this.stage));if(Object.keys(gained).length)this.finalResult.settlementMaterials=gained;};

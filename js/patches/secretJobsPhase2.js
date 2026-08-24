@@ -1,6 +1,7 @@
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { secretJobPhase2 } from '../data/secretJobPhase2.js';
+import { chainMethod } from './patchUtils.js';
 
 function active(){ const id=state.data.activeSecretJobId; return id?{id,def:secretJobPhase2(id)}:null; }
 function mastered(id){ return !!id && state.isMastered?.(id); }
@@ -14,14 +15,13 @@ state.getGrowthPerCharacterLevel=function secretGrowth(jobId=this.currentJobId){
 };
 
 // Current-job identity: small active modifiers layered on top of permanent growth.
-const baseStats=state.getStats.bind(state);
-state.getStats=function secretStats(){
+chainMethod(state, 'getStats', (baseStats) => function secretStats(){
   const out=baseStats(); const a=active(); if(!a?.def)return out;
   const mods={...a.def.statMods};
   if(a.id==='secret_beastlord'&&partyCount()>0){ mods.atk=(mods.atk||0)+a.def.rules.partyBonus; mods.spd=(mods.spd||0)+a.def.rules.partyBonus*0.5; }
   for(const [k,p] of Object.entries(mods)) if(Number.isFinite(out[k])) out[k]=Math.max(1,Math.round(out[k]*(1+p)*10)/10);
   return out;
-};
+});
 
 // Battle snapshot.
 const baseStart=BattleEngine.prototype.start;

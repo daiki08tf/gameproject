@@ -5,6 +5,7 @@ import { state } from '../state.js';
 import { getJob } from '../data/jobs.js';
 import { specializationRoutesForJob, activeSpecializationNodes } from '../data/job3Specializations.js';
 import { CAPS_LAYER } from '../data/balance.js';
+import { chainMethod } from './patchUtils.js';
 
 function ensureJob3Data(target = state) {
   target.data.job3Specializations ||= {};
@@ -52,8 +53,7 @@ state.job3SpecializationStatus = function job3SpecializationStatus(jobId) {
   }));
 };
 
-const previousGetStats = state.getStats.bind(state);
-state.getStats = function job3SpecializationStats() {
+chainMethod(state, 'getStats', (previousGetStats) => function job3SpecializationStats() {
   const stats = previousGetStats();
   const mult = {};
   const add = {};
@@ -67,7 +67,7 @@ state.getStats = function job3SpecializationStats() {
   if (add.armorPen) stats.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, Math.max(0, (stats.armorPen || 0) + add.armorPen));
   if (add.evasion) stats.evasion = Math.min(CAPS_LAYER.EVASION_MAX, Math.max(0, (stats.evasion || 0) + add.evasion));
   return stats;
-};
+});
 
 const previousGetEquippedEffects = state.getEquippedEffects.bind(state);
 state.getEquippedEffects = function job3SpecializationEffects() {

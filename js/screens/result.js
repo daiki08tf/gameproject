@@ -132,4 +132,25 @@ export function renderResult(result) {
 
   const equipBtn = document.getElementById('resultEquipBtn');
   equipBtn.classList.toggle('hidden', normalItems.length === 0);
+
+  attachScrollHint(stats);
+}
+
+// ドロップが多い戦闘だとリザルトのpanelがoverflow-y:autoでスクロール
+// 可能になるだけで、モバイルでは常時スクロールバーが出ないため
+// 気づかれず「拠点へ」等に届けないと誤解されやすい。実際にoverflowして
+// いる時だけ、タイトル直下（＝スクロールしなくても必ず見える最初の画面）
+// に「続きがある」ヒントを出す（レイアウト確定後に判定するためrAFで測る）。
+function attachScrollHint(afterEl) {
+  const panel = afterEl.closest('.panel');
+  if (!panel) return;
+  requestAnimationFrame(() => {
+    panel.querySelector('.scroll-hint')?.remove();
+    if (panel.scrollHeight > panel.clientHeight + 2) {
+      const hint = document.createElement('div');
+      hint.className = 'scroll-hint';
+      hint.textContent = '▼ 下にスクロールできます';
+      afterEl.after(hint);
+    }
+  });
 }
