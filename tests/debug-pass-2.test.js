@@ -23,7 +23,9 @@ test('Abyss dynamic drops cannot resurrect retired equipment Runes', async () =>
 test('Abyss venom modifier has a real text-battle downside', async () => {
   const text = await src('js/data/abyss.js');
   assert.match(text, /id: 'mod_venom'[\s\S]*healMult: 0\.7/);
-  assert.doesNotMatch(text, /contactDmgMult/);
+  // Historical comments may mention the retired field name; the executable
+  // property itself must not remain in the stage/modifier data.
+  assert.doesNotMatch(text, /contactDmgMult\s*:/);
 });
 
 test('auto equip applies canEquipItem to accessories too', async () => {
