@@ -11,6 +11,7 @@ import { EQUIPMENT_LAYER } from './balance.js';
 import { WEAPON_TYPES } from './weaponTypes.js';
 import { WEAPON_CODEX_ITEMS, BOSS_WEAPON_ITEMS } from './weapons.js';
 import { BOUNTY_UNIQUES, bountyUniqueById } from './uniqueEquipment.js';
+import { SET_EQUIPMENT } from './equipment3Sets.js';
 
 export const RARITY = {
   normal:    { label: 'ノーマル',   color: '#b9c0cc', mult: EQUIPMENT_LAYER.RARITY_MULT.normal },
@@ -113,6 +114,7 @@ for (const ch of CHAPTER_SPECS) {
 
 for (const w of WEAPON_CODEX_ITEMS) ITEMS.set(w.id, w);
 for (const w of BOSS_WEAPON_ITEMS) ITEMS.set(w.id, w);
+for (const item of SET_EQUIPMENT) ITEMS.set(item.id, item);
 
 export function baseItemId(id) {
   if (typeof id !== 'string') return id;
