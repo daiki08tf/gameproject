@@ -16,8 +16,8 @@ const expected = [
   [15,'黒鉄機城','機皇アーク・ゼロ'],
 ];
 
-test('chapters 11-15 are original playable chapters with generated enemies and equipment', () => {
-  assert.equal(CHAPTERS.length, 15);
+test('chapters 11-15 remain original playable chapters with generated enemies and equipment', () => {
+  assert.ok(CHAPTERS.length >= 15);
   for (const [num,name,boss] of expected) {
     const spec = CHAPTER_SPECS.find(c => c.num === num);
     assert.ok(spec); assert.equal(spec.name, name); assert.equal(spec.enemies.boss, boss);
