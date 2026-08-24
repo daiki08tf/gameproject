@@ -45,8 +45,10 @@ function showRecruitPrompt(candidate,onDone){
   requestAnimationFrame(()=>{if(panel.scrollHeight>panel.clientHeight+2){const hint=document.createElement('div');hint.className='scroll-hint';hint.textContent='▼ 下にスクロールできます';panel.querySelector('h2')?.after(hint);}});
   let resolved=false;const finish=accepted=>{if(resolved)return;resolved=true;let recruitResult=null;if(accepted&&state.createCompanion&&state.ranchHasSpace?.()){
     const bondRare=!candidate.elite&&candidate.bondRareChance>0&&Math.random()<candidate.bondRareChance,routeRare=!!(candidate.target?.minRarity&&Math.random()<(candidate.target.rareFloorChance||0));
-    const minRarity=(candidate.elite||bondRare||routeRare)?'rare':null,origin=candidate.elite?'eliteRecruit':bondRare?'bondRecruit':routeRare?'abyssBeastDen':'recruit';
-    const opts=minRarity?{minRarity,origin,enemyType:candidate.enemyType}:{origin,enemyType:candidate.enemyType};
+    let opts={origin:'recruit',enemyType:candidate.enemyType};
+    if(candidate.elite)opts={minRarity:'rare',origin:'eliteRecruit',enemyType:candidate.enemyType};
+    else if(bondRare)opts={minRarity:'rare',origin:'bondRecruit',enemyType:candidate.enemyType};
+    else if(routeRare)opts={minRarity:'rare',origin:'abyssBeastDen',enemyType:candidate.enemyType};
     const instanceId=state.createCompanion(candidate.speciesId,opts),companion=instanceId&&state.getCompanion?.(instanceId);if(instanceId&&companion){const highTalent=applyTalentFloor(companion,candidate.speciesId,candidate.target);state.recordRanchRecruit?.(candidate.speciesId);recruitResult={accepted:true,instanceId,speciesId:candidate.speciesId,name:companion.instance.nickname||companion.species.name,rarity:companion.instance.rarity,nature:companion.instance.nature,level:companion.instance.level,eliteOrigin:!!candidate.elite,bondRare,routeRare,highTalent};}}
     removeRecruitOverlay();onDone(recruitResult||{accepted:false});};
   panel.querySelector('#recruitAcceptBtn').addEventListener('click',()=>finish(true));panel.querySelector('#recruitDeclineBtn').addEventListener('click',()=>finish(false));
