@@ -32,6 +32,7 @@ import './patches/combat2SkillModifiers.js';
 import './patches/combat2SkillModifierUi.js';
 import './patches/combat2DebugSafety.js';
 import './patches/job3SpecializationCore.js';
+import './patches/job3LegacyPassives.js';
 import './patches/companionFoundation.js';
 import './patches/companionResetSafety.js';
 import './patches/companionEvolution.js';
