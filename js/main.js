@@ -16,6 +16,7 @@ import './patches/equipment3Foundation.js';
 import './patches/equipment3Greater.js';
 import './patches/equipment3Legendary.js';
 import './patches/equipment3Blacksmith.js';
+import './patches/equipment3GearFoundation.js';
 import './patches/equipment3SmartLoot.js';
 import './patches/equipment3AbyssEndgame.js';
 import './patches/equipment3DebugSafety.js';
