@@ -1,4 +1,5 @@
 import { CHAPTERS } from '../data/stages.js';
+import { journeyName } from '../data/worldVeil.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 import { rollBlessingChoices } from '../data/blessings.js';
@@ -13,7 +14,7 @@ export function isStageDiscovered(chapter, stage, stageIndex) {
 
 export function renderStageSelect(chapterIndex, onPick) {
   const chapter = CHAPTERS[chapterIndex];
-  document.getElementById('chapterTitle').textContent = chapter.name;
+  document.getElementById('chapterTitle').textContent = journeyName(chapter);
   const list = document.getElementById('stageList');
   list.innerHTML = '';
   chapter.stages.forEach((stage, stageIndex) => {
