@@ -33,9 +33,16 @@ export function renderChapterSelect(onPick) {
       </div>
       <div class="cleared">${allCleared ? '★' : ''}</div>
     `;
-    if (unlocked) {
-      card.addEventListener('click', () => { Audio_.tap(); onPick(idx); });
-    }
+    if (unlocked) card.addEventListener('click', () => { Audio_.tap(); onPick(idx); });
     list.appendChild(card);
   });
+
+  if ((state.world2Progress?.()||0) >= 5) {
+    const fragments=state.world2KeyFragments?.()||0,keys=Object.values(state.data.world2?.keys||{}).reduce((a,b)=>a+(Number(b)||0),0);
+    const card=document.createElement('div');
+    card.className='stage-card branch';
+    card.innerHTML=`<div><div class="name">🔑 境界鍵路</div><div class="rec">鍵片 ${fragments} / 完成した鍵 ${keys}　—　通常の旅路から外れた場所</div></div><div class="cleared">?</div>`;
+    card.addEventListener('click',()=>{Audio_.tap();onPick('world2');});
+    list.appendChild(card);
+  }
 }
