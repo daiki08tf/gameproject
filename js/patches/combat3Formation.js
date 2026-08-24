@@ -1,4 +1,5 @@
 import './combat3DifficultyRebalance.js';
+import './combat3BossEncounter.js';
 import { BattleEngine } from '../battleEngine.js';
 
 export const COMBAT3_FORMATION = Object.freeze({
