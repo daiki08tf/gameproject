@@ -1,0 +1,7 @@
+const ICON_POS=Object.freeze({wood:[0,0],ore:[1,0],hide:[2,0],veilstone:[3,0],riftKey:[4,0],gold:[5,0],potion:[6,0],mana:[7,0],weapon:[0,1],shield:[1,1],helm:[2,1],armor:[3,1],boots:[4,1],gloves:[5,1],accessory:[6,1],jewelry:[7,1],normal:[0,2],rare:[1,2],epic:[2,2],legendary:[3,2],cursed:[4,2],set:[5,2],greater:[6,2],named:[7,2],adventure:[0,3],abyss:[1,3],rift:[2,3],settlement:[3,3],ranch:[4,3],companion:[5,3],blacksmith:[6,3],market:[7,3],fire:[0,4],water:[1,4],wind:[2,4],lightning:[3,4],earth:[4,4],light:[5,4],dark:[6,4],heal:[7,4]});
+function sizePx(cls=''){if(cls.includes('xl'))return 48;if(cls.includes('lg'))return 40;if(cls.includes('sm'))return 24;return 32;}
+export function pixelIconHtml(key,cls=''){const p=ICON_POS[key];if(!p)return'';const s=sizePx(cls),x=-p[0]*s,y=-p[1]*s;return `<span class="pixel-icon ${cls}" data-pixel-icon="${key}" aria-hidden="true" style="background-position:${x}px ${y}px"></span>`;}
+export function pixelIconNode(key,cls=''){const wrap=document.createElement('span');wrap.innerHTML=pixelIconHtml(key,cls);return wrap.firstElementChild;}
+const HOME_ICONS={goStageBtn:'adventure',goAbyssBtn:'abyss',goSettlementBtn:'settlement',goCompanionBtn:'companion',goEquipBtn:'armor',goBlacksmithBtn:'blacksmith',goStatusBtn:'normal',goJobBtn:'weapon',goRebirthBtn:'greater'};
+export function applyHomePixelIcons(){for(const[id,key]of Object.entries(HOME_ICONS)){const btn=document.getElementById(id);if(!btn)continue;const old=btn.querySelector('.menu-icon');if(old)old.replaceWith(pixelIconNode(key,'lg'));}}
+export {ICON_POS};
