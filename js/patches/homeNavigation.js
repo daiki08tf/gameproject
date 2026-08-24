@@ -2,10 +2,13 @@
    Home navigation organizer
    Groups the growing hub menu without changing existing button IDs.
    ============================================================ */
+import './settlementCore.js';
+import './settlementUi.js';
 
 const GROUPS = [
   { id: 'adventure', title: '冒険', buttons: ['goStageBtn', 'goAbyssBtn'] },
-  { id: 'growth', title: '育成', buttons: ['goStatusBtn', 'goCompanionBtn', 'goMonsterCodexBtn', 'goEquipBtn', 'goJobBtn', 'goBlacksmithBtn', 'goRebirthBtn'] },
+  { id: 'settlement', title: '拠点', buttons: ['goSettlementBtn', 'goCompanionBtn', 'goBlacksmithBtn'] },
+  { id: 'growth', title: '育成', buttons: ['goStatusBtn', 'goMonsterCodexBtn', 'goEquipBtn', 'goJobBtn', 'goRebirthBtn'] },
   { id: 'other', title: 'その他', buttons: ['goSpellBtn'] },
 ];
 
