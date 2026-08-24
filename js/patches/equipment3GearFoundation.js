@@ -6,6 +6,7 @@ import { getItem, baseItemId, powerScore, SLOTS } from '../data/equipment.js';
 import { splitAffixesForApplication } from '../data/affixes.js';
 import { itemPowerBand, affixTierForItemPower } from '../data/equipment3.js';
 import { buildGearInstance, EQUIPMENT3_GEAR_SLOTS } from '../data/equipment3Gear.js';
+import { CAPS_LAYER } from '../data/balance.js';
 
 function ensureGearData(target = state) {
   target.data.gearInstances ||= {};
@@ -133,9 +134,9 @@ state.getStats = function equipment3GearStats() {
     if (combined[key]) stats[key] = Math.max(1, Math.round(stats[key] * (1 + combined[key])));
   }
   if (combined.spd) stats.spd = Math.max(0.1, Math.round(stats.spd * (1 + combined.spd) * 10) / 10);
-  if (combined.critPct) stats.critPct = Math.min(100, stats.critPct + combined.critPct * 100);
-  if (combined.armorPen) stats.armorPen = Math.max(0, (stats.armorPen || 0) + combined.armorPen);
-  if (combined.evasion) stats.evasion = Math.max(0, (stats.evasion || 0) + combined.evasion);
+  if (combined.critPct) stats.critPct = Math.min(CAPS_LAYER.CRIT_PCT_MAX, stats.critPct + combined.critPct * 100);
+  if (combined.armorPen) stats.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, Math.max(0, (stats.armorPen || 0) + combined.armorPen));
+  if (combined.evasion) stats.evasion = Math.min(CAPS_LAYER.EVASION_MAX, Math.max(0, (stats.evasion || 0) + combined.evasion));
   return stats;
 };
 
