@@ -73,6 +73,20 @@ button { font-family: inherit; }
 .panel h1.over { font-size: 28px; }
 .panel .sub { opacity: 0.85; margin-bottom: 18px; line-height: 1.6; }
 
+/* パネル内スクロールが必要な時（結果画面のドロップが多い/仲間勧誘の文章が
+   長い等）に「まだ下に続きがある」ことを視覚的に示す。overflow-y:autoは
+   ついていても、モバイルではスクロールバーが常時表示されないため、この
+   案内が無いと気づかれずボタンに届けないと誤解されやすい。 */
+.scroll-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--accent);
+  opacity: 0.75;
+  margin-top: 4px;
+  animation: scrollHintPulse 1.6s ease-in-out infinite;
+}
+@keyframes scrollHintPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+
 .btn-main, .btn-sub {
   font-size: 16px;
   padding: 12px 26px;
