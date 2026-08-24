@@ -20,11 +20,39 @@ function specializationHtml(job) {
   </div>`;
 }
 
-function bindSpecializationButtons(card) {
+function legacySummaryHtml() {
+  if (!state.job3LegacySlots || !state.job3LegacyStatus) return '';
+  const slots = state.job3LegacySlots();
+  const status = state.job3LegacyStatus().filter((row) => row.equipped);
+  return `<div class="job-card" style="margin-bottom:12px;border-color:rgba(242,201,76,.45);">
+    <div class="job-card-top"><div class="job-card-name">🧬 継承パッシブ</div><div class="job-card-lv">${slots.length}/3</div></div>
+    <div class="job-card-req">MASTERした職の専門化MASTERノードを50%の強さで最大3つ継承。現在使用中の職自身の継承効果は一時停止します。</div>
+    <div class="job-card-req" style="margin-top:5px;">${status.length ? status.map((row) => `${row.suppressed ? '⏸' : '✓'} ${row.jobName}［${row.routeName}］${row.nodeName}: ${row.nodeDesc}`).join('<br>') : '継承中の職業はありません。★マスター済み職の「継承」から選択できます。'}</div>
+  </div>`;
+}
+
+function legacyControlHtml(jobId, mastered) {
+  if (!mastered || !state.job3LegacyStatus) return '';
+  const row = state.job3LegacyStatus().find((entry) => entry.jobId === jobId);
+  if (!row || !row.nodeName) return '';
+  const full = !row.equipped && state.job3LegacySlots().length >= 3;
+  return `<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin:6px 0;">
+    <span class="job-card-req">🧬 継承候補: ${row.routeName}「${row.nodeName}」${row.suppressed ? '（現在職のため効果停止中）' : ''}</span>
+    <button class="inline-btn job3-legacy-btn" data-job="${jobId}" ${full ? 'disabled' : ''}>${row.equipped ? '継承解除' : full ? '3枠使用中' : '継承する'}</button>
+  </div>`;
+}
+
+function bindJob3Buttons(card) {
   for (const btn of card.querySelectorAll('.job3-route-btn:not([disabled])')) {
     btn.addEventListener('click', () => {
       Audio_.tap();
       if (state.setJob3Specialization(btn.dataset.job, btn.dataset.route)) renderJobs();
+    });
+  }
+  for (const btn of card.querySelectorAll('.job3-legacy-btn:not([disabled])')) {
+    btn.addEventListener('click', () => {
+      Audio_.tap();
+      if (state.toggleJob3Legacy(btn.dataset.job)) renderJobs();
     });
   }
 }
@@ -33,6 +61,8 @@ export function renderJobs() {
   const container = document.getElementById('jobTiers');
   container.innerHTML = '';
   const masteredSet = state.masteredSet();
+  const summary = legacySummaryHtml();
+  if (summary) container.insertAdjacentHTML('beforeend', summary);
 
   for (const tier of ['basic', 'advanced', 'special', 'hero']) {
     const heading = document.createElement('div');
@@ -69,6 +99,7 @@ export function renderJobs() {
         ${!unlocked ? `<div class="job-card-req">解放条件: ${unlockRequirementText(job.id)}</div>` : ''}
         ${tierInfo.masteryLv ? `<div class="job-card-req">マスター基準 Lv.${tierInfo.masteryLv}</div>` : ''}
         ${unlocked ? specializationHtml(job) : ''}
+        ${legacyControlHtml(job.id, mastered)}
         <button class="job-card-btn" ${isCurrent || !unlocked || blockedByCurrent ? 'disabled' : ''}>${btnLabel}</button>
       `;
       const btn = card.querySelector('.job-card-btn');
@@ -78,7 +109,7 @@ export function renderJobs() {
           if (res.ok) { Audio_.jobMastered(); renderJobs(); }
         });
       }
-      bindSpecializationButtons(card);
+      bindJob3Buttons(card);
       container.appendChild(card);
     }
   }
