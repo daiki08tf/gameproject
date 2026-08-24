@@ -40,7 +40,7 @@ export const COMPANION_SPECIES = Object.freeze({
 export function getCompanionSpecies(id){return COMPANION_SPECIES[id]||null;}
 export function companionExpToNext(level){return Math.round(18+level*14+Math.pow(level,1.5)*1.8);}
 export function companionStats(species,instance){
-  const lv=Math.max(1,instance.level||1),nature=COMPANION_NATURES[instance.nature]||COMPANION_NATURES.balanced,talent=instance.talent||{},out={};
-  for(const stat of ['hp','mp','atk','def','mag','spd']){const raw=species.baseStats[stat]+species.growth[stat]*(lv-1),talentMult=talent[stat]||1,natureMult=(nature.statMult&&nature.statMult[stat])||1;out[stat]=Math.max(1,Math.round(raw*talentMult*natureMult));}
+  const lv=Math.max(1,instance.level||1),nature=COMPANION_NATURES[instance.nature]||COMPANION_NATURES.balanced,talent=instance.talent||{},board=instance.ranchBoardMult||{},out={};
+  for(const stat of ['hp','mp','atk','def','mag','spd']){const raw=species.baseStats[stat]+species.growth[stat]*(lv-1),talentMult=talent[stat]||1,natureMult=(nature.statMult&&nature.statMult[stat])||1,boardMult=board[stat]||1;out[stat]=Math.max(1,Math.round(raw*talentMult*natureMult*boardMult));}
   return out;
 }
