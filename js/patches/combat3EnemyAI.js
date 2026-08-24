@@ -5,7 +5,7 @@ const proto=BattleEngine.prototype;
 const originalSpawn=proto._spawnEnemy;
 proto._spawnEnemy=function(type){
   const e=originalSpawn.call(this,type); const profile=enemyCombatProfile(type),role=enemyRole(type);
-  if(!e.boss){e.combat3Role=role;e.combat3Skill=profile.skill;e.combat3SkillCd=0;e.combat3Buffs={def:{mult:1,turns:0},spd:{mult:1,turns:0}};e.name=`${role.icon}${e.name}`;}
+  if(!e.boss){e.combat3Role=role;e.combat3Skill=profile.skill;e.combat3SkillCd=0;e.combat3Buffs={def:{mult:1,turns:0},spd:{mult:1,turns:0}};}
   return e;
 };
 
