@@ -36,6 +36,15 @@ const HOME_HUBS = [
   },
 ];
 
+function ensureHomeStyles() {
+  if (document.querySelector('link[data-ui-foundation-home]')) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'css/home3.css';
+  link.dataset.uiFoundationHome = 'true';
+  document.head.appendChild(link);
+}
+
 function makeHubToggle(hub, hasMembers) {
   const button = document.createElement('button');
   button.type = 'button';
@@ -65,6 +74,7 @@ function closeAllHubs(menu, exceptId = null) {
 }
 
 function organizeHomeMenu() {
+  ensureHomeStyles();
   const menu = document.querySelector('#homeScreen .home-menu');
   if (!menu || menu.dataset.uiFoundation3 === 'true') return;
 
