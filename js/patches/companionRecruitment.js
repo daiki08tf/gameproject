@@ -4,7 +4,7 @@
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
-import { getCompanionSpecies } from '../data/companions.js';
+import { COMPANION_RARITY, getCompanionSpecies } from '../data/companions.js';
 import { RANCH_RECRUIT_BY_ENEMY_TYPE } from '../data/monsterRanchSpecies.js';
 import { abyssTargetFarmProfile } from '../data/abyssTargetFarm.js';
 
@@ -26,29 +26,33 @@ function rollRecruitCandidate(engine){
   const routeMult=Math.max(1,Number(target?.recruitChanceMult)||1);
   for(const entry of shuffledCopy(engine._recruitDefeats)){
     const species=getCompanionSpecies(entry.speciesId);if(!species||!species.recruit)continue;
-    const eliteBonus=entry.elite?.05:0,researchBonus=state.ranchResearch?.(species.id)?.recruited>=10?.01:0;
-    const base=(species.recruit.baseChance||0)+eliteBonus+bond.recruitChanceBonus+ranchBonus+researchBonus;
+    const eliteBonus=entry.elite?.05:0,researchBonus=state.ranchResearch?.(species.id)?.recruited>=10?.01:0,boardBonus=Math.max(0,Number(state.ranchBoardEffects?.(species.id)?.recruitChanceBonus)||0);
+    const base=(species.recruit.baseChance||0)+eliteBonus+bond.recruitChanceBonus+ranchBonus+researchBonus+boardBonus;
     const chance=Math.min(.75,base*routeMult);
-    if(Math.random()<chance)return{speciesId:species.id,enemyType:entry.enemyType,name:species.name,icon:species.icon||'🐾',chance,elite:entry.elite,bondRareChance:bond.rareRecruitChance,targetFarmBonus:routeMult>1,ranchBonus,researchBonus};
+    if(Math.random()<chance)return{speciesId:species.id,enemyType:entry.enemyType,name:species.name,icon:species.icon||'🐾',chance,elite:entry.elite,bondRareChance:bond.rareRecruitChance,targetFarmBonus:routeMult>1,ranchBonus,researchBonus,boardBonus,target};
   }
   return null;
 }
 const originalFinishBattle=BattleEngine.prototype._finishBattle;
 BattleEngine.prototype._finishBattle=function patchedRecruitFinishBattle(cleared,retreated){originalFinishBattle.call(this,cleared,retreated);if(!cleared||retreated||!this.finalResult)return;const candidate=rollRecruitCandidate(this);if(candidate)this.finalResult.recruitCandidate=candidate;};
 function removeRecruitOverlay(){document.getElementById('companionRecruitOverlay')?.remove();}
+function applyTalentFloor(companion,speciesId,target){if(!companion?.instance?.talent)return false;const rarityIdx=Math.max(0,COMPANION_RARITY.indexOf(companion.instance.rarity)),board=Math.max(0,Number(state.ranchBoardEffects?.(speciesId)?.talentFloorBonus)||0),route=Math.max(0,Number(target?.talentFloorBonus)||0),high=target?.highTalentChance>0&&Math.random()<target.highTalentChance?Math.max(0,Number(target.highTalentFloorBonus)||0):0,floor=Math.min(1.18,.94+rarityIdx*.018+board+route+high);let changed=false;for(const k of ['hp','mp','atk','def','mag','spd']){if((Number(companion.instance.talent[k])||0)<floor){companion.instance.talent[k]=Math.round(floor*1000)/1000;changed=true;}}if(changed)state.save();return high>0;}
 function showRecruitPrompt(candidate,onDone){
   removeRecruitOverlay();const overlay=document.createElement('div');overlay.id='companionRecruitOverlay';Object.assign(overlay.style,{position:'fixed',inset:'0',zIndex:'9999',background:'rgba(0,0,0,.72)',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'});
   const panel=document.createElement('div');panel.className='panel';Object.assign(panel.style,{width:'min(420px, 92vw)',maxHeight:'86vh',overflowY:'auto'});
   const full=!state.ranchHasSpace?.();
-  panel.innerHTML=`<div style="font-size:46px;text-align:center;margin-bottom:8px;">${candidate.icon||'🐾'}</div><h2 style="text-align:center;">${candidate.name}がこちらを見ている……</h2><p class="sub" style="text-align:center;">仲間になりたそうだ！${candidate.targetFarmBonus?'<br>魔獣の巣：加入しやすくなっている。':''}${candidate.ranchBonus>0?`<br>牧舎：加入率 +${Math.round(candidate.ranchBonus*100)}pt`:''}${candidate.researchBonus?'<br>種族研究：加入率 +1pt':''}${candidate.elite?'<br>エリート出身：レア以上の個体になる。':''}${candidate.bondRareChance>0?`<br>縁Rune：Rare化 ${Math.round(candidate.bondRareChance*100)}%`:''}${full?`<br><strong>牧場が満員です (${state.ranchCount?.()||0}/${state.ranchCapacity?.()||0})</strong>`:''}</p><div class="confirm-actions" style="margin-top:16px;"><button class="btn-sub" id="recruitDeclineBtn">帰す</button><button class="btn-main" id="recruitAcceptBtn" ${full?'disabled':''}>仲間にする</button></div>`;overlay.appendChild(panel);document.body.appendChild(overlay);
+  panel.innerHTML=`<div style="font-size:46px;text-align:center;margin-bottom:8px;">${candidate.icon||'🐾'}</div><h2 style="text-align:center;">${candidate.name}がこちらを見ている……</h2><p class="sub" style="text-align:center;">仲間になりたそうだ！${candidate.targetFarmBonus?'<br>魔獣の巣：加入・個体品質が上昇中。':''}${candidate.ranchBonus>0?`<br>牧舎：加入率 +${Math.round(candidate.ranchBonus*100)}pt`:''}${candidate.researchBonus?'<br>種族研究：加入率 +1pt':''}${candidate.boardBonus>0?`<br>Species Board：加入率 +${(candidate.boardBonus*100).toFixed(1)}pt`:''}${candidate.elite?'<br>エリート出身：レア以上の個体になる。':''}${candidate.bondRareChance>0?`<br>縁Rune：Rare化 ${Math.round(candidate.bondRareChance*100)}%`:''}${full?`<br><strong>牧場が満員です (${state.ranchCount?.()||0}/${state.ranchCapacity?.()||0})</strong>`:''}</p><div class="confirm-actions" style="margin-top:16px;"><button class="btn-sub" id="recruitDeclineBtn">帰す</button><button class="btn-main" id="recruitAcceptBtn" ${full?'disabled':''}>仲間にする</button></div>`;overlay.appendChild(panel);document.body.appendChild(overlay);
   requestAnimationFrame(()=>{if(panel.scrollHeight>panel.clientHeight+2){const hint=document.createElement('div');hint.className='scroll-hint';hint.textContent='▼ 下にスクロールできます';panel.querySelector('h2')?.after(hint);}});
   let resolved=false;const finish=accepted=>{if(resolved)return;resolved=true;let recruitResult=null;if(accepted&&state.createCompanion&&state.ranchHasSpace?.()){
-    const bondRare=!candidate.elite&&candidate.bondRareChance>0&&Math.random()<candidate.bondRareChance;
-    const opts=(candidate.elite||bondRare)?{minRarity:'rare',origin:candidate.elite?'eliteRecruit':'bondRecruit',enemyType:candidate.enemyType}:{origin:'recruit',enemyType:candidate.enemyType};
-    const instanceId=state.createCompanion(candidate.speciesId,opts),companion=instanceId&&state.getCompanion?.(instanceId);if(instanceId&&companion){state.recordRanchRecruit?.(candidate.speciesId);recruitResult={accepted:true,instanceId,speciesId:candidate.speciesId,name:companion.instance.nickname||companion.species.name,rarity:companion.instance.rarity,nature:companion.instance.nature,level:companion.instance.level,eliteOrigin:!!candidate.elite,bondRare};}}
+    const bondRare=!candidate.elite&&candidate.bondRareChance>0&&Math.random()<candidate.bondRareChance,routeRare=!!(candidate.target?.minRarity&&Math.random()<(candidate.target.rareFloorChance||0));
+    let opts={origin:'recruit',enemyType:candidate.enemyType};
+    if(candidate.elite)opts={minRarity:'rare',origin:'eliteRecruit',enemyType:candidate.enemyType};
+    else if(bondRare)opts={minRarity:'rare',origin:'bondRecruit',enemyType:candidate.enemyType};
+    else if(routeRare)opts={minRarity:'rare',origin:'abyssBeastDen',enemyType:candidate.enemyType};
+    const instanceId=state.createCompanion(candidate.speciesId,opts),companion=instanceId&&state.getCompanion?.(instanceId);if(instanceId&&companion){const highTalent=applyTalentFloor(companion,candidate.speciesId,candidate.target);state.recordRanchRecruit?.(candidate.speciesId);recruitResult={accepted:true,instanceId,speciesId:candidate.speciesId,name:companion.instance.nickname||companion.species.name,rarity:companion.instance.rarity,nature:companion.instance.nature,level:companion.instance.level,eliteOrigin:!!candidate.elite,bondRare,routeRare,highTalent};}}
     removeRecruitOverlay();onDone(recruitResult||{accepted:false});};
   panel.querySelector('#recruitAcceptBtn').addEventListener('click',()=>finish(true));panel.querySelector('#recruitDeclineBtn').addEventListener('click',()=>finish(false));
 }
 const originalStart=TextBattleScreen.prototype.start;
 TextBattleScreen.prototype.start=function patchedRecruitStart(stageId,onEnd,blessingId){const wrappedOnEnd=result=>{if(!result||!result.cleared||!result.recruitCandidate){onEnd(result);return;}showRecruitPrompt(result.recruitCandidate,recruitResult=>{result.recruitResult=recruitResult;onEnd(result);});};return originalStart.call(this,stageId,wrappedOnEnd,blessingId);};
-export { rollRecruitCandidate, RECRUIT_SPECIES_BY_ENEMY_TYPE };
+export { rollRecruitCandidate, RECRUIT_SPECIES_BY_ENEMY_TYPE, applyTalentFloor };

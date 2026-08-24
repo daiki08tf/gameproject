@@ -12,7 +12,12 @@ export const ABYSS_TARGET_FARM = Object.freeze({
   }),
   beast_den: Object.freeze({
     recruitChanceMult: 1.75,
-    label: '仲間モンスター',
+    minRarity: 'rare',
+    rareFloorChance: 0.28,
+    talentFloorBonus: 0.018,
+    highTalentChance: 0.22,
+    highTalentFloorBonus: 0.032,
+    label: '仲間モンスター / 高Talent個体',
   }),
   blood_mist: Object.freeze({
     weaponDropMult: 1.25,
