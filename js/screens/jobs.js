@@ -5,6 +5,30 @@ import { Audio_ } from '../audio.js';
 
 const TIER_LABELS = { basic: '基本職', advanced: '上級職', special: '特級職', hero: '勇者' };
 
+function specializationHtml(job) {
+  const routes = state.job3SpecializationStatus ? state.job3SpecializationStatus(job.id) : [];
+  if (!routes.length) return '';
+  return `<div class="job3-tree" style="margin:8px 0;padding:8px;border:1px solid rgba(255,255,255,.12);border-radius:8px;">
+    <div class="job-card-req" style="margin-bottom:6px;"><strong>専門化</strong> — Job Lv5 / 10 / MASTERで段階解放</div>
+    ${routes.map((route) => `<div class="job3-route${route.selected ? ' selected' : ''}" style="margin:5px 0;padding:6px;border-radius:6px;${route.selected ? 'background:rgba(242,201,76,.10);' : ''}">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
+        <span><strong>${route.selected ? '◆ ' : ''}${route.name}</strong> <span class="hint">${route.desc}</span></span>
+        <button class="inline-btn job3-route-btn" data-job="${job.id}" data-route="${route.id}" ${route.selected ? 'disabled' : ''}>${route.selected ? '選択中' : '選ぶ'}</button>
+      </div>
+      <div class="job-card-req" style="margin-top:4px;">${route.nodes.map((node) => `${node.active ? '✓' : '□'} ${node.level === 'master' ? 'MASTER' : `Lv.${node.level}`} ${node.name}: ${node.desc}`).join('<br>')}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function bindSpecializationButtons(card) {
+  for (const btn of card.querySelectorAll('.job3-route-btn:not([disabled])')) {
+    btn.addEventListener('click', () => {
+      Audio_.tap();
+      if (state.setJob3Specialization(btn.dataset.job, btn.dataset.route)) renderJobs();
+    });
+  }
+}
+
 export function renderJobs() {
   const container = document.getElementById('jobTiers');
   container.innerHTML = '';
@@ -44,15 +68,17 @@ export function renderJobs() {
         ${unlocked ? `<div class="bar xp-bar small"><div class="fill" style="width:${pct}%"></div></div>` : ''}
         ${!unlocked ? `<div class="job-card-req">解放条件: ${unlockRequirementText(job.id)}</div>` : ''}
         ${tierInfo.masteryLv ? `<div class="job-card-req">マスター基準 Lv.${tierInfo.masteryLv}</div>` : ''}
+        ${unlocked ? specializationHtml(job) : ''}
         <button class="job-card-btn" ${isCurrent || !unlocked || blockedByCurrent ? 'disabled' : ''}>${btnLabel}</button>
       `;
-      const btn = card.querySelector('button');
+      const btn = card.querySelector('.job-card-btn');
       if (!isCurrent && unlocked && !blockedByCurrent) {
         btn.addEventListener('click', () => {
           const res = state.changeJob(job.id);
           if (res.ok) { Audio_.jobMastered(); renderJobs(); }
         });
       }
+      bindSpecializationButtons(card);
       container.appendChild(card);
     }
   }
@@ -65,7 +91,7 @@ export function renderJobs() {
       const prog=state.jobProgress(job.id), mastered=state.isMastered(job.id), cond=state.secretJobConditions(job.id);
       const card=document.createElement('div'); card.className='job-card'+(active?' current':'')+(!discovered?' locked':'');
       const conditionHtml=discovered ? cond.map(c=>`${c.done?'✓':'□'} ${c.label}`).join('<br>') : `<span class="hint">${job.hint}</span>`;
-      card.innerHTML=`<div class="job-card-top"><div class="job-card-name">${discovered?job.name:'？？？？？'}${mastered?'<span class="mastered-badge">★マスター</span>':''}</div><div class="job-card-lv">${discovered?`Lv.${prog.level}`:'???'}</div></div><div class="job-card-req">${discovered?job.desc:'未知の職業。その存在はまだ明らかになっていない。'}</div><div class="job-card-req">${conditionHtml}</div>${discovered?`<div class="job-card-req">MASTER Lv.${job.masteryLv} / Phase 1では既存戦闘スタイルを継承</div>`:''}<button class="job-card-btn" ${!discovered||active?'disabled':''}>${active?'使用中':discovered?'転職する':'未発見'}</button>`;
+      card.innerHTML=`<div class="job-card-top"><div class="job-card-name">${discovered?job.name:'？？？？？'}${mastered?'<span class="mastered-badge">★マスター</span>':''}</div><div class="job-card-lv">${discovered?`Lv.${prog.level}`:'???'}</div></div><div class="job-card-req">${discovered?job.desc:'未知の職業。その存在はまだ明らかになっていない。'}</div><div class="job-card-req">${conditionHtml}</div>${discovered?`<div class="job-card-req">MASTER Lv.${job.masteryLv} / 秘密職固有の成長ルート</div>`:''}<button class="job-card-btn" ${!discovered||active?'disabled':''}>${active?'使用中':discovered?'転職する':'未発見'}</button>`;
       if(discovered&&!active) card.querySelector('button').addEventListener('click',()=>{ const r=state.changeToSecretJob(job.id); if(r.ok){Audio_.jobMastered();renderJobs();} });
       container.appendChild(card);
     }
