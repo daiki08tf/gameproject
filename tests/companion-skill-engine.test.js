@@ -15,9 +15,7 @@ async function source(path) {
 
 test('all companion species skill references resolve', () => {
   for (const species of Object.values(COMPANION_SPECIES)) {
-    for (const entry of species.skills || []) {
-      assert.ok(getCompanionSkill(entry.id), `${species.id}.${entry.id} must resolve`);
-    }
+    for (const entry of species.skills || []) assert.ok(getCompanionSkill(entry.id), `${species.id}.${entry.id} must resolve`);
   }
 });
 
@@ -42,20 +40,18 @@ test('skills respect MP availability', () => {
 
 test('skill definitions cover damage, heal, and debuff roles', () => {
   const types = new Set(Object.values(COMPANION_SKILLS).map((s) => s.type));
-  assert.ok(types.has('damage'));
-  assert.ok(types.has('heal'));
-  assert.ok(types.has('debuff'));
+  assert.ok(types.has('damage'));assert.ok(types.has('heal'));assert.ok(types.has('debuff'));
 });
 
 test('battle patch executes skills through the shared skill engine', async () => {
   const text = await source('js/patches/companionBattle.js');
-  assert.match(text, /chooseCompanionSkill\(species, c, engine\.aliveEnemies\)/,
+  assert.match(text, /chooseCompanionSkill\(species\s*,\s*c\s*,\s*engine\.aliveEnemies\)/,
     'battle AI must ask the shared engine for an action');
-  assert.match(text, /skill\.type === 'heal'/,
+  assert.match(text, /skill\.type\s*===\s*'heal'/,
     'healing should be dispatched by skill type');
-  assert.match(text, /executeOffensiveSkill\(engine, c, skill\)/,
+  assert.match(text, /executeOffensiveSkill\(engine\s*,\s*c\s*,\s*skill\)/,
     'damage and debuff skills should use the generic offensive dispatcher');
-  assert.doesNotMatch(text, /speciesId === 'slime'/,
+  assert.doesNotMatch(text, /speciesId\s*===\s*'slime'/,
     'battle code must not special-case slime behavior');
   assert.doesNotMatch(text, /canCompanionHeal/,
     'legacy species-specific healing branch should be removed');
@@ -64,9 +60,9 @@ test('battle patch executes skills through the shared skill engine', async () =>
 test('sonic debuff has a finite duration and no permanent ATK mutation', async () => {
   const text = await source('js/patches/companionBattle.js');
   assert.match(text, /_companionAtkDebuffTurns/);
-  assert.match(text, /const originalAtk = enemy\.atk/);
-  assert.match(text, /enemy\.atk = originalAtk/,
+  assert.match(text, /const\s+originalAtk\s*=\s*enemy\.atk/);
+  assert.match(text, /enemy\.atk\s*=\s*originalAtk/,
     'enemy base ATK must be restored after its action');
-  assert.match(text, /delete enemy\._companionAtkDebuffMult/,
+  assert.match(text, /delete\s+enemy\._companionAtkDebuffMult/,
     'temporary companion debuff must clean itself up');
 });
