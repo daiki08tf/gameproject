@@ -1,0 +1,30 @@
+/* Blade Vale UI 3.0 — modern dark-fantasy text RPG skin */
+:root{
+  --ui-bg:#080b10;--ui-surface:#0f141c;--ui-surface-2:#151c26;--ui-line:#293241;
+  --ui-text:#edf0f4;--ui-muted:#929cab;--ui-gold:#d6b76a;--ui-gold-soft:#f0d995;
+  --ui-danger:#d85c67;--ui-magic:#7798e8;--ui-success:#76b58b;
+  --ui-radius:8px;--ui-radius-sm:5px;
+  --font-body:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+  --font-display:"Hiragino Mincho ProN","Yu Mincho",YuMincho,serif;
+  --font-number:"SFMono-Regular","Roboto Mono","Consolas",monospace;
+}
+html,body{background:radial-gradient(circle at 50% -20%,#18202b 0,#0b0f15 38%,var(--ui-bg) 75%);font-family:var(--font-body);color:var(--ui-text);font-feature-settings:"palt" 1;letter-spacing:.015em}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px);background-size:100% 4px;z-index:-1}
+button,input,select,textarea{font:inherit}.screen{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+.panel{background:linear-gradient(180deg,rgba(21,28,38,.98),rgba(10,14,20,.98));border:1px solid var(--ui-line);border-radius:var(--ui-radius);box-shadow:0 24px 70px rgba(0,0,0,.55);padding:30px 24px}
+.panel h1{font-family:var(--font-display);font-weight:700;font-size:31px;letter-spacing:.16em;color:var(--ui-gold-soft);text-shadow:0 2px 18px rgba(214,183,106,.18)}
+.panel .sub,.hint{color:var(--ui-muted);font-size:13px;line-height:1.75}
+.subbar{min-height:46px;border-bottom:1px solid var(--ui-line);padding-bottom:10px}.subbar h2{font-family:var(--font-display);font-size:19px;letter-spacing:.06em;font-weight:700}
+.btn-main,.btn-highlight{background:linear-gradient(180deg,#e2c77d,#b99445);color:#11151a;border:1px solid #efd993;border-radius:var(--ui-radius-sm);box-shadow:0 5px 18px rgba(0,0,0,.28);font-weight:800;letter-spacing:.04em}
+.btn-sub,.btn-back,.btn-icon,.tab-btn{background:var(--ui-surface-2);color:var(--ui-text);border:1px solid var(--ui-line);border-radius:var(--ui-radius-sm);box-shadow:none}
+.btn-main:active,.btn-sub:active,.btn-back:active,.menu-card:active{transform:translateY(1px);filter:brightness(.92)}
+.player-summary{max-width:none;background:linear-gradient(90deg,rgba(21,28,38,.86),rgba(15,20,28,.35));border-left:2px solid var(--ui-gold);padding:10px 12px}.job-badge{background:transparent;padding:0;color:var(--ui-gold-soft);font-family:var(--font-display);font-size:14px;letter-spacing:.08em}.lv-line,.bar-text,.item-power,.stat-value,[id*="Level"],[id*="Gold"]{font-family:var(--font-number);font-variant-numeric:tabular-nums}
+.home-hero{font-size:64px;opacity:.72;filter:grayscale(.35) drop-shadow(0 10px 25px rgba(0,0,0,.55))}.home-menu{gap:7px}.menu-card{min-height:52px;background:linear-gradient(90deg,var(--ui-surface-2),rgba(15,20,28,.82));border:1px solid var(--ui-line);border-radius:var(--ui-radius-sm);padding:12px 14px;color:var(--ui-text);box-shadow:0 5px 16px rgba(0,0,0,.18);font-weight:650;letter-spacing:.025em}.menu-card .menu-icon{width:28px;opacity:.78;filter:saturate(.7)}
+.stage-card,.equip-card,.item-card,.job-card,.blacksmith-card,.codex-card,.companion-card{background:linear-gradient(180deg,rgba(21,28,38,.96),rgba(13,18,25,.96))!important;border:1px solid var(--ui-line)!important;border-radius:var(--ui-radius)!important;box-shadow:0 7px 20px rgba(0,0,0,.18)!important}
+.bar{height:12px;background:#070a0e;border:1px solid #27303c;border-radius:2px}.bar.small{height:6px}.hp-bar .fill{background:linear-gradient(90deg,#9f3443,#d85c67)}.mp-bar .fill{background:linear-gradient(90deg,#4868b8,#7798e8)}.xp-bar .fill{background:linear-gradient(90deg,#8f763d,#d6b76a)}.bar-text{font-size:10px;line-height:12px}
+.toast{font-family:var(--font-display);font-size:18px;color:var(--ui-gold-soft);background:rgba(8,11,16,.94);border:1px solid var(--ui-line);border-radius:var(--ui-radius-sm);text-shadow:none;box-shadow:0 10px 36px rgba(0,0,0,.5)}
+/* Battle: information first, decoration second. */
+#battleScreen .subbar,#textBattleScreen .subbar{border-bottom-color:#3a3324}#battleScreen .enemy-card,#textBattleScreen .enemy-card{background:linear-gradient(90deg,#141a22,#10151c)!important;border:1px solid #2b3542!important;border-radius:6px!important}#battleScreen .enemy-name,#textBattleScreen .enemy-name{font-family:var(--font-display);letter-spacing:.04em}#battleScreen button,#textBattleScreen button{border-radius:5px!important}
+/* Rarity stays meaningful; everything else remains restrained. */
+.rarity-legendary,.legendary{color:#e4b95f!important}.rarity-epic,.epic{color:#a990dc!important}.rarity-rare,.rare{color:#75a9dc!important}.greater{color:#f2dd9b!important;text-shadow:0 0 8px rgba(242,221,155,.18)}
+@media(max-width:430px){.panel h1{font-size:28px}.panel{padding:26px 20px}.home-hero{font-size:54px}.menu-card{min-height:48px}.screen{padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom))}}
