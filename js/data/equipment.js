@@ -3,10 +3,11 @@
    スロット: weapon / shield / head / body / accessory
    レアリティ: normal < rare < epic < legendary < mythic
    武器種: sword/axe/staff/bow/dagger/knuckle/instrument/rod
-   第1章の装備は既存のまま手動定義、第2章以降は chapters.js のメタ
-   データから自動生成する。
+   第1章の装備は既存のまま手動定義、第2章以降は chapter metadata から
+   自動生成する。16〜20章も同じ装備パイプラインを共有する。
    ============================================================ */
 import { CHAPTER_SPECS, ACCESSORY_ARCHETYPES, EFFECTS, chapterMult } from './chapters.js';
+import { CHAPTER_EXPANSION_16_20 } from './chapters16to20.js';
 import { EQUIPMENT_LAYER } from './balance.js';
 import { WEAPON_TYPES } from './weaponTypes.js';
 import { WEAPON_CODEX_ITEMS, BOSS_WEAPON_ITEMS } from './weapons.js';
@@ -92,7 +93,8 @@ function makeAccessoryStats(archetype, rarity, chapterNum) {
   return roundStats(stats);
 }
 
-for (const ch of CHAPTER_SPECS) {
+const EQUIPMENT_CHAPTER_SPECS=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20];
+for (const ch of EQUIPMENT_CHAPTER_SPECS) {
   const it = ch.items;
   const rarity = ch.final ? 'mythic' : 'legendary';
   const namedRarity = ch.final ? 'mythic' : 'legendary';
