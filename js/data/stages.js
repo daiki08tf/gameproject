@@ -31,17 +31,18 @@ function buildChapter(ch) { const mult=chapterMult(ch.num),normalId=`${ch.id}_no
 
 function buildExpandedChapter(ch){
   const mult=chapterMult(ch.num),normal=`${ch.id}_normal`,fast=`${ch.id}_fast`,tank=`${ch.id}_tank`,mid=`${ch.id}_midboss`,boss=`${ch.id}_boss`,n=ch.stageNames;
+  const namedDrops=[{itemId:`${ch.id}_named_${ch.items.named.slot}`,weight:1}].concat(ch.items.named2?[{itemId:`${ch.id}_named2_${ch.items.named2.slot}`,weight:1}]:[]);
   const stages=[
-    {id:`${ch.num}-1`,name:n[0],recLevel:ch.recLevel[0],waves:[{type:normal,count:6,interval:1}],rewards:scaleReward({gold:110,exp:90},mult),dropTable:[]},
-    {id:`${ch.num}-2`,name:n[1],recLevel:levelAt(ch,.12),waves:[{type:normal,count:4,interval:1},{type:fast,count:3,interval:.8}],rewards:scaleReward({gold:125,exp:105},mult),dropTable:[]},
-    {id:`${ch.num}-3`,name:n[2],recLevel:levelAt(ch,.25),waves:[{type:normal,count:3,interval:1},{type:fast,count:4,interval:.8},{type:tank,count:2,interval:1.5}],rewards:scaleReward({gold:140,exp:120},mult),dropTable:[]},
-    {id:`${ch.num}-4`,name:`${n[3]}：${ch.midboss.enemyName}`,recLevel:levelAt(ch,.40),midBoss:true,waves:[{type:normal,count:3,interval:1},{type:mid,count:1,interval:0}],rewards:scaleReward({gold:190,exp:165},mult),dropTable:[]},
-    {id:`${ch.num}-5`,name:n[4],recLevel:levelAt(ch,.52),waves:[{type:normal,count:4,interval:1},{type:tank,count:3,interval:1.4}],rewards:scaleReward({gold:155,exp:135},mult),dropTable:[]},
-    {id:`${ch.num}-6`,name:n[5],recLevel:levelAt(ch,.66),waves:[{type:fast,count:4,interval:.8},{type:normal,count:3,interval:1},{type:tank,count:2,interval:1.4}],rewards:scaleReward({gold:170,exp:150},mult),dropTable:[]},
-    {id:`${ch.num}-7`,name:n[6],recLevel:levelAt(ch,.82),waves:[{type:normal,count:4,interval:1},{type:fast,count:3,interval:.8},{type:tank,count:3,interval:1.4}],rewards:scaleReward({gold:190,exp:170},mult),dropTable:[]},
-    {id:`${ch.num}-8`,name:`${ch.name}：${ch.enemies.boss}`,recLevel:ch.recLevel[1],boss:true,waves:[{type:normal,count:3,interval:1},{type:tank,count:1,interval:1.4},{type:boss,count:1,interval:0}],rewards:scaleReward({gold:280,exp:240},mult),dropTable:[]},
+    {id:`${ch.num}-1`,name:n[0],recLevel:ch.recLevel[0],waves:[{type:normal,count:6,interval:1}],rewards:scaleReward({gold:110,exp:90},mult),dropTable:[{itemId:`${ch.id}_accessory`,weight:1}]},
+    {id:`${ch.num}-2`,name:n[1],recLevel:levelAt(ch,.12),waves:[{type:normal,count:4,interval:1},{type:fast,count:3,interval:.8}],rewards:scaleReward({gold:125,exp:105},mult),dropTable:[{itemId:`${ch.id}_shield`,weight:1}]},
+    {id:`${ch.num}-3`,name:n[2],recLevel:levelAt(ch,.25),waves:[{type:normal,count:3,interval:1},{type:fast,count:4,interval:.8},{type:tank,count:2,interval:1.5}],rewards:scaleReward({gold:140,exp:120},mult),dropTable:[{itemId:`${ch.id}_weapon`,weight:1},{itemId:`${ch.id}_head`,weight:1}]},
+    {id:`${ch.num}-4`,name:`${n[3]}：${ch.midboss.enemyName}`,recLevel:levelAt(ch,.40),midBoss:true,waves:[{type:normal,count:3,interval:1},{type:mid,count:1,interval:0}],rewards:scaleReward({gold:190,exp:165},mult),firstClear:{itemId:`${ch.id}_weapon_epic`},dropTable:[{itemId:`${ch.id}_head`,weight:1},{itemId:`${ch.id}_body`,weight:1}]},
+    {id:`${ch.num}-5`,name:n[4],recLevel:levelAt(ch,.52),waves:[{type:normal,count:4,interval:1},{type:tank,count:3,interval:1.4}],rewards:scaleReward({gold:155,exp:135},mult),dropTable:[{itemId:`${ch.id}_body`,weight:1},{itemId:`${ch.id}_accessory`,weight:1}]},
+    {id:`${ch.num}-6`,name:n[5],recLevel:levelAt(ch,.66),waves:[{type:fast,count:4,interval:.8},{type:normal,count:3,interval:1},{type:tank,count:2,interval:1.4}],rewards:scaleReward({gold:170,exp:150},mult),dropTable:[{itemId:`${ch.id}_weapon`,weight:1},{itemId:`${ch.id}_shield`,weight:1}]},
+    {id:`${ch.num}-7`,name:n[6],recLevel:levelAt(ch,.82),waves:[{type:normal,count:4,interval:1},{type:fast,count:3,interval:.8},{type:tank,count:3,interval:1.4}],rewards:scaleReward({gold:190,exp:170},mult),dropTable:[{itemId:`${ch.id}_head`,weight:1},{itemId:`${ch.id}_body`,weight:1},{itemId:`${ch.id}_accessory`,weight:1}]},
+    {id:`${ch.num}-8`,name:`${ch.name}：${ch.enemies.boss}`,recLevel:ch.recLevel[1],boss:true,waves:[{type:normal,count:3,interval:1},{type:tank,count:1,interval:1.4},{type:boss,count:1,interval:0}],rewards:scaleReward({gold:280,exp:240},mult),dropTable:namedDrops},
   ];
-  if(ch.branch)stages.push({id:`${ch.num}-B`,name:`${ch.name}：？？？（${ch.branch.enemyName}）`,recLevel:levelAt(ch,.58),branch:true,requires:`${ch.num}-5`,waves:[{type:fast,count:2,interval:.8},{type:`${ch.id}_branchboss`,count:1,interval:0}],rewards:scaleReward({gold:210,exp:180},mult),dropTable:[],secretHint:true});
+  if(ch.branch)stages.push({id:`${ch.num}-B`,name:`${ch.name}：？？？（${ch.branch.enemyName}）`,recLevel:levelAt(ch,.58),branch:true,requires:`${ch.num}-5`,waves:[{type:fast,count:2,interval:.8},{type:`${ch.id}_branchboss`,count:1,interval:0}],rewards:scaleReward({gold:210,exp:180},mult),firstClear:{itemId:`${ch.id}_branch`},dropTable:[],secretHint:true});
   return{id:ch.id,num:ch.num,name:`第${ch.num}章 ${ch.name}`,lore:ch.lore,expanded:true,stages};
 }
 
