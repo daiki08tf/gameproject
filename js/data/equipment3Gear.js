@@ -1,16 +1,14 @@
 /* ============================================================
    Equipment 3.0 — Armor / Accessory foundation
    ------------------------------------------------------------
-   Non-weapon equipment now gets per-drop instances with Item Power,
-   Affix Tier, slot-biased Affixes and Greater rolls.
-
-   This deliberately reuses the existing Affix definitions and combat effect
-   kinds. No second stat/effect system is introduced.
+   Non-weapon equipment gets per-drop instances with Item Power, Affix Tier,
+   slot-biased Affixes, Greater rolls and the shared Legendary/Curse packages.
    ============================================================ */
 import { AFFIXES, describeAffix } from './affixes.js';
 import { EQUIPMENT3_AFFIX_SLOTS, itemPowerForDrop, affixTierForItemPower, generatedEquipmentName } from './equipment3.js';
 import { applyItemPowerAffixQuality } from './equipment3AffixQuality.js';
 import { applyGreaterAffixes } from './equipment3Greater.js';
+import { rollLegendaryPackage, getLegendaryEffect, getCursedAffix } from './equipment3Legendary.js';
 
 export const EQUIPMENT3_GEAR_SLOTS = Object.freeze(['shield', 'head', 'body', 'accessory']);
 
@@ -42,9 +40,6 @@ function affixWeight(slot, def) {
 }
 
 function isEligibleAffix(def, itemPower) {
-  // Build-changing Affixes should not leak into the early story just because an
-  // identity was selected before rarity remapping. They join the generic pool in
-  // the long-term Equipment 3.0 bands where Legendary+ rolls are meaningful.
   if (def.minRarity && itemPower < 3000) return false;
   return true;
 }
@@ -69,10 +64,20 @@ function chooseAffixIdentities(item, count, itemPower, instanceId) {
     }
     usedIds.add(picked.id);
     if (picked.def.exclusiveGroup) usedGroups.add(picked.def.exclusiveGroup);
-    // rarity/roll are placeholders; Item Power remapping below is authoritative.
     out.push({ id: picked.id, rarity: 'common', roll: 0 });
   }
   return out;
+}
+
+function canonicalGearName(item, inst) {
+  const descriptions = (inst.affixes || []).map(describeAffix);
+  const generated = generatedEquipmentName(item.name, descriptions);
+  const tags = [];
+  const legendary = getLegendaryEffect(inst.legendaryEffectId);
+  const curse = getCursedAffix(inst.curseId);
+  if (legendary) tags.push(`《${legendary.name}》`);
+  if (curse) tags.push(`【呪:${curse.name}】`);
+  return `${inst.greaterAffixCount ? `${'★'.repeat(inst.greaterAffixCount)} ` : ''}${generated}${tags.length ? ` ${tags.join(' ')}` : ''}`;
 }
 
 export function buildGearInstance(item, ctx = {}, instanceId = '') {
@@ -84,7 +89,7 @@ export function buildGearInstance(item, ctx = {}, instanceId = '') {
     itemPower,
     affixTier: affixTierForItemPower(itemPower),
     affixes: [],
-    equipment3GearVersion: 1,
+    equipment3GearVersion: 2,
   };
 
   inst.affixes = chooseAffixIdentities(item, affixCount(item, instanceId), itemPower, instanceId);
@@ -92,11 +97,16 @@ export function buildGearInstance(item, ctx = {}, instanceId = '') {
   const greater = applyGreaterAffixes(inst.affixes, itemPower, ctx, instanceId);
   inst.affixes = greater.affixes;
   inst.greaterAffixCount = greater.greaterCount;
-  const descriptions = inst.affixes.map(describeAffix);
-  inst.displayName = `${greater.greaterCount ? `${'★'.repeat(greater.greaterCount)} ` : ''}${generatedEquipmentName(item.name, descriptions)}`;
+
+  const special = rollLegendaryPackage(item, itemPower, ctx, instanceId);
+  inst.legendaryEffectId = special.legendaryEffectId;
+  inst.curseId = special.curseId;
+  inst.displayName = canonicalGearName(item, inst);
   return inst;
 }
 
 export function gearSlotLabel(slot) {
   return ({ shield: '盾', head: '頭', body: '胴', accessory: 'アクセサリ' })[slot] || slot;
 }
+
+export { canonicalGearName };
