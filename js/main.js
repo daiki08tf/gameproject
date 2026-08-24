@@ -26,6 +26,8 @@ import './patches/weaponAffixResultVisibility.js';
 import './patches/equipment3GearResultVisibility.js';
 import './patches/combat2ElementCore.js';
 import './patches/combat2WeaponTechniques.js';
+import './patches/combat2SkillModifiers.js';
+import './patches/combat2SkillModifierUi.js';
 import './patches/companionFoundation.js';
 import './patches/companionResetSafety.js';
 import './patches/companionEvolution.js';
