@@ -18,7 +18,7 @@ export const COMBAT2_WEAPON_TECHNIQUES = Object.freeze([
 
   T('wtech_axe_crush', '破砕斧', 'axe', 1, { power: 3.2, mpCost: 6, armorPenBonus: 0.12 }),
   T('wtech_axe_armor', '鎧砕き', 'axe', 100, { power: 3.9, mpCost: 10, cooldownTurns: 1, armorPenBonus: 0.24, weaken: { stat: 'def', pct: 0.22, turns: 3 } }),
-  T('wtech_axe_execution', '断頭撃', 'axe', 350, { power: 5.7, mpCost: 18, cooldownTurns: 2, targetLowHpBonus: { threshold: 0.35, power: 1.4 } }),
+  T('wtech_axe_execution', '断頭撃', 'axe', 350, { power: 5.7, mpCost: 18, cooldownTurns: 2, targetBonus: { when: 'lowHp', hpThreshold: 0.35, power: 1.4 } }),
 
   T('wtech_staff_arcane', '魔力打', 'staff', 1, { magic: true, power: 3.0, mpCost: 5 }),
   T('wtech_staff_flame', '炎杖陣', 'staff', 100, { magic: true, element: 'fire', target: 'allEnemies', power: 3.1, mpCost: 12, cooldownTurns: 1 }),
@@ -30,7 +30,7 @@ export const COMBAT2_WEAPON_TECHNIQUES = Object.freeze([
 
   T('wtech_dagger_twinstab', '双牙', 'dagger', 1, { hits: 2, power: 1.35, mpCost: 4 }),
   T('wtech_dagger_poison', '毒牙連刃', 'dagger', 100, { hits: 2, power: 1.6, mpCost: 9, cooldownTurns: 1, element: 'poison', dot: { power: 0.11, turns: 3, maxStacks: 3 } }),
-  T('wtech_dagger_assassinate', '絶影', 'dagger', 350, { power: 5.0, mpCost: 14, cooldownTurns: 2, critBonus: 30, targetLowHpBonus: { threshold: 0.30, power: 1.5 } }),
+  T('wtech_dagger_assassinate', '絶影', 'dagger', 350, { power: 5.0, mpCost: 14, cooldownTurns: 2, critBonus: 30, targetBonus: { when: 'lowHp', hpThreshold: 0.30, power: 1.5 } }),
 
   T('wtech_knuckle_combo', '三連拳', 'knuckle', 1, { hits: 3, power: 0.95, mpCost: 5 }),
   T('wtech_knuckle_breaker', '震脚', 'knuckle', 100, { target: 'allEnemies', power: 3.0, mpCost: 10, cooldownTurns: 1, weaken: { stat: 'spd', pct: 0.18, turns: 2 } }),
