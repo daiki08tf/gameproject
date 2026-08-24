@@ -6,6 +6,7 @@
 import { CHAPTER_SPECS, chapterMult } from './chapters.js';
 import { ENEMY_TYPES } from './enemies.js';
 import { ABYSS_LAYER } from './balance.js';
+import { setDropsForDepth } from './equipment3Sets.js';
 import {
   abyssRecommendedLevel,
   abyssTargetItemPower,
@@ -17,15 +18,10 @@ import {
 const CH15 = CHAPTER_SPECS.find((c) => c.num === 15);
 
 export const ABYSS_MODIFIERS = [
-  // Text battle has no world-space movement/contact damage. SPD is the real
-  // initiative axis, so modifier copy must describe and modify the active rule.
   { id: 'mod_frenzy', name: '狂乱の霧', desc: '敵SPD+25% ／ 獲得ゴールド+40%', enemySpeedMult: 1.25, goldMult: 1.4 },
   { id: 'mod_fortress', name: '鉄壁の守り', desc: '敵の防御力+30% ／ ドロップ率+50%', enemyDefMult: 1.3, dropMult: 1.5 },
   { id: 'mod_swarm', name: '群れの巣窟', desc: '出現数+30% ／ 獲得経験値+30%', enemyCountMult: 1.3, expMult: 1.3 },
   { id: 'mod_glass', name: '脆き猛威', desc: '敵HP-20% ／ 敵攻撃力+35%', enemyHpMult: 0.8, enemyAtkMult: 1.35 },
-  // Legacy real-time combat used contactDmgMult here. Text battle has no contact
-  // damage, which turned this into a free EXP bonus. Healing reduction preserves
-  // the intended "miasma = sustain risk" identity using a rule the engine applies.
   { id: 'mod_venom', name: '瘴気だまり', desc: '回復量-30% ／ 獲得経験値+25%', healMult: 0.7, expMult: 1.25 },
   { id: 'mod_blessed', name: '静穏の加護', desc: '回復量+50% ／ 獲得ゴールド-15%', healMult: 1.5, goldMult: 0.85 },
 ];
@@ -44,10 +40,7 @@ function modifiersForDepth(depth) {
 }
 
 const ABYSS_NAMES = {
-  normal: '深淵の徘徊者',
-  fast: '深淵の疾影',
-  tank: '深淵の巨影',
-  boss: '深淵の支配者',
+  normal: '深淵の徘徊者', fast: '深淵の疾影', tank: '深淵の巨影', boss: '深淵の支配者',
 };
 
 function chapter15Anchor(kind) {
@@ -55,9 +48,6 @@ function chapter15Anchor(kind) {
   return ENEMY_TYPES[key] || ENEMY_TYPES[kind] || { hp: 1, atk: 1, def: 0, speed: 80, xp: 1, gold: 1 };
 }
 
-// 深淵1階は15章クリア直後と連続する。levelRoadmap99999.jsが15章敵をLv700帯へ
-// 補正した後にbuildAbyssStage()が呼ばれるため、ここでは現在のch15_*を基準値として
-// 読む。旧10章固定倍率/無限指数は使わず、Lv700→99,999のロードマップ比で伸ばす。
 function scaleArchetype(kind, depth, goldMult, expMult) {
   const anchor = chapter15Anchor(kind);
   const scale = abyssCombatScale(depth);
@@ -79,17 +69,15 @@ export function isAbyssBossFloor(depth) {
   return depth % ABYSS_LAYER.BOSS_FLOOR_INTERVAL === 0;
 }
 
-// 15章到達後の周回先なので、固定ドロップも15章の最高帯へ接続する。
-// Legacy equipment Runes were retired in favor of Rune 2.0. Chapter stages are
-// filtered by the migration patch, but Abyss stages are built dynamically after
-// that filter runs, so never put rune_* entries into this dynamic table.
-function ch15DropTable() {
+function ch15DropTable(depth, bossFloor) {
   const dt = [
     { itemId: `${CH15.id}_named_${CH15.items.named.slot}`, weight: 1 },
   ];
-  if (CH15.items.named2) {
-    dt.push({ itemId: `${CH15.id}_named2_${CH15.items.named2.slot}`, weight: 1 });
-  }
+  if (CH15.items.named2) dt.push({ itemId: `${CH15.id}_named2_${CH15.items.named2.slot}`, weight: 1 });
+  // Equipment 3.0 Phase 1: fixed Set gear starts appearing at milestone depths.
+  // The newest unlocked set is intentionally more target-farmable; older sets
+  // remain obtainable at lower weight so progression never permanently locks them out.
+  dt.push(...setDropsForDepth(depth, bossFloor));
   return dt;
 }
 
@@ -124,8 +112,6 @@ export function buildAbyssStage(rawDepth) {
         { type: bossId, count: 1, interval: 0 },
       ]
     : [
-        // テキスト戦闘では一遭遇の表示数に上限があるため、総数は緩やかに増やし
-        // 500階付近で頭打ち。以降の難度はLv軸・Elite・modifier・Bossで作る。
         { type: normalId, count: Math.round((3 + Math.min(12, Math.floor(depth / 40))) * enemyCountMult), interval: 1.1 },
         { type: fastId, count: Math.round((2 + Math.min(9, Math.floor(depth / 55))) * enemyCountMult), interval: 0.9 },
         { type: tankId, count: Math.round((1 + Math.min(7, Math.floor(depth / 70))) * enemyCountMult), interval: 1.8 },
@@ -149,7 +135,7 @@ export function buildAbyssStage(rawDepth) {
     itemPowerTarget: itemPower,
     waves,
     rewards: { gold: Math.max(1, Math.round(goldReward)), exp: Math.max(1, Math.round(expBudget)) },
-    dropTable: ch15DropTable(),
+    dropTable: ch15DropTable(depth, bossFloor),
     modifiers: modifiers.map((m) => ({ id: m.id, name: m.name, desc: m.desc })),
     dropMult, healMult,
     enemyAtkMult, enemyDefMult, enemySpeedMult, enemyHpMult,
