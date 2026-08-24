@@ -18,5 +18,5 @@ export function refreshBondUi(){
   });
 }
 
-document.addEventListener('click',event=>{if(event.target?.closest?.('#goCompanionBtn,.ranch-fav,.ranch-slot,.ranch-board,.ranch-board-buy,.ranch-release,.companionBreedBtn'))queueMicrotask(refreshBondUi);});
+document.addEventListener('click',event=>{if(event.target?.closest?.('#goCompanionBtn,.ranch-fav,.ranch-slot,.ranch-board,.ranch-board-buy,.ranch-release,#companionBreedBtn'))queueMicrotask(refreshBondUi);});
 queueMicrotask(refreshBondUi);
