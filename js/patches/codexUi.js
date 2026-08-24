@@ -1,77 +1,14 @@
 /* ============================================================
-   Codex 2.0 UI
+   Codex 2.1 UI — staged enemy knowledge
    ============================================================ */
 import { state } from '../state.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
 import { CODEX_MILESTONES } from '../data/codex.js';
 
-function escapeHtml(v) {
-  return String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
-}
-
-function ensureUi() {
-  const menu = document.querySelector('#homeScreen .home-menu');
-  if (menu && !document.getElementById('goMonsterCodexBtn')) {
-    const btn = document.createElement('button');
-    btn.id = 'goMonsterCodexBtn'; btn.className = 'menu-card';
-    btn.innerHTML = '<span class="menu-icon">📚</span><span>魔物図鑑</span>';
-    menu.appendChild(btn);
-  }
-  if (!document.getElementById('monsterCodexScreen')) {
-    const section = document.createElement('section');
-    section.id = 'monsterCodexScreen'; section.className = 'screen';
-    section.innerHTML = `
-      <header class="subbar"><button class="btn-back" id="monsterCodexBackBtn">←</button><h2>魔物図鑑</h2></header>
-      <div id="monsterCodexContent" class="blacksmith-content"></div>`;
-    document.body.appendChild(section);
-  }
-}
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id)?.classList.add('active');
-}
-
-function bonusRows(summary) {
-  const pct = summary.pct;
-  const rows = [
-    [25, '全基礎ステータス +1%'],
-    [50, 'ドロップ率 +5%'],
-    [75, '全基礎ステータス +1% / Character EXP +10%'],
-    [90, 'Rare Encounter +5%'],
-    [100, 'COMPLETE'],
-  ];
-  return rows.map(([need, label]) => `<div class="forge-card" style="opacity:${pct >= need ? 1 : .55}"><b>${pct >= need ? '✓' : '□'} ${need}%</b><span class="sub"> ${escapeHtml(label)}</span></div>`).join('');
-}
-
-export function renderMonsterCodex() {
-  ensureUi();
-  const root = document.getElementById('monsterCodexContent'); if (!root) return;
-  const summary = state.codexSummary?.() || { points:0, maxPoints:0, pct:0, bonuses:{} };
-  const entries = state.data.monsterCodex || {};
-  const ids = Object.keys(ENEMY_TYPES).filter(id => !id.startsWith('__'));
-  const discovered = ids.filter(id => entries[id]?.seen).length;
-
-  const cards = ids.map(id => {
-    const def = ENEMY_TYPES[id]; const e = entries[id] || {};
-    const seen = !!e.seen;
-    const completed = CODEX_MILESTONES.filter(m => m.test(e)).length;
-    const checks = CODEX_MILESTONES.map(m => `<span style="display:inline-block;margin:2px 8px 2px 0;opacity:${m.test(e) ? 1 : .45}">${m.test(e) ? '✓' : '□'} ${escapeHtml(m.label)}</span>`).join('');
-    const next = CODEX_MILESTONES.find(m => !m.test(e));
-    return `<div class="forge-card">
-      <div class="forge-card-name">${seen ? escapeHtml(e.name || def.name) : '？？？？'}</div>
-      <div class="sub">達成 ${completed}/${CODEX_MILESTONES.length}${seen ? ` ・ 撃破 ${e.kills || 0}` : ''}</div>
-      <div style="font-size:12px;margin-top:8px;line-height:1.8">${seen ? checks : 'まだ遭遇していない魔物。'}</div>
-      ${seen && next ? `<div class="hint" style="margin-top:6px">次の目標：${escapeHtml(next.label)}</div>` : seen ? '<div class="hint" style="margin-top:6px">★ COMPLETE</div>' : ''}
-    </div>`;
-  }).join('');
-
-  root.innerHTML = `
-    <div class="forge-card"><div class="forge-card-name">図鑑完成度 ${summary.pct.toFixed(1)}%</div><div class="sub">${summary.points}/${summary.maxPoints} pt ・ 発見 ${discovered}/${ids.length}種</div><div class="bar xp-bar" style="margin-top:8px"><div class="fill" style="width:${Math.min(100,summary.pct)}%"></div></div></div>
-    <h3>永続ボーナス</h3>${bonusRows(summary)}
-    <h3>魔物一覧</h3>${cards}`;
-}
-
-ensureUi();
-document.getElementById('goMonsterCodexBtn')?.addEventListener('click', () => { renderMonsterCodex(); showScreen('monsterCodexScreen'); });
-document.getElementById('monsterCodexBackBtn')?.addEventListener('click', () => showScreen('homeScreen'));
+function escapeHtml(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
+function ensureUi(){const menu=document.querySelector('#homeScreen .home-menu');if(menu&&!document.getElementById('goMonsterCodexBtn')){const btn=document.createElement('button');btn.id='goMonsterCodexBtn';btn.className='menu-card';btn.innerHTML='<span class="menu-icon">📚</span><span>魔物図鑑</span>';menu.appendChild(btn);}if(!document.getElementById('monsterCodexScreen')){const section=document.createElement('section');section.id='monsterCodexScreen';section.className='screen';section.innerHTML='<header class="subbar"><button class="btn-back" id="monsterCodexBackBtn">←</button><h2>魔物図鑑</h2></header><div id="monsterCodexContent" class="blacksmith-content"></div>';document.body.appendChild(section);}}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id)?.classList.add('active');}
+function bonusRows(summary){const pct=summary.pct,rows=[[25,'全基礎ステータス +1%'],[50,'ドロップ率 +5%'],[75,'全基礎ステータス +1% / Character EXP +10%'],[90,'Rare Encounter +5%'],[100,'COMPLETE']];return rows.map(([need,label])=>`<div class="forge-card" style="opacity:${pct>=need?1:.55}"><b>${pct>=need?'✓':'□'} ${need}%</b><span class="sub"> ${escapeHtml(label)}</span></div>`).join('');}
+function knowledgeRows(id,e){const k=state.enemyKnowledge?.(id);if(!k)return'';const role=k.roleKnown?`${k.role.icon} ${k.role.name}`:'？？？';const skills=k.observedSkills?.length?k.observedSkills.map(escapeHtml).join(' / '):'？？？';const hint=k.analyzed?'完全解析済み':k.roleKnown?'役割判明：固有技は実戦で観測できる':'撃破・行動観測・解析で情報が増える';return `<div style="font-size:12px;margin-top:8px;line-height:1.8"><b>役割：</b>${role}<br><b>観測技：</b>${skills}</div><div class="hint" style="margin-top:4px">${hint}</div>`;}
+export function renderMonsterCodex(){ensureUi();const root=document.getElementById('monsterCodexContent');if(!root)return;const summary=state.codexSummary?.()||{points:0,maxPoints:0,pct:0,bonuses:{}},entries=state.data.monsterCodex||{},ids=Object.keys(ENEMY_TYPES).filter(id=>!id.startsWith('__')),discovered=ids.filter(id=>entries[id]?.seen).length;const cards=ids.map(id=>{const def=ENEMY_TYPES[id],e=entries[id]||{},seen=!!e.seen,completed=CODEX_MILESTONES.filter(m=>m.test(e)).length,checks=CODEX_MILESTONES.map(m=>`<span style="display:inline-block;margin:2px 8px 2px 0;opacity:${m.test(e)?1:.45}">${m.test(e)?'✓':'□'} ${escapeHtml(m.label)}</span>`).join(''),next=CODEX_MILESTONES.find(m=>!m.test(e));return `<div class="forge-card"><div class="forge-card-name">${seen?escapeHtml(e.name||def.name):'？？？？'}</div><div class="sub">達成 ${completed}/${CODEX_MILESTONES.length}${seen?` ・ 撃破 ${e.kills||0}`:''}</div><div style="font-size:12px;margin-top:8px;line-height:1.8">${seen?checks:'まだ遭遇していない魔物。'}</div>${seen?knowledgeRows(id,e):''}${seen&&next?`<div class="hint" style="margin-top:6px">次の目標：${escapeHtml(next.label)}</div>`:seen?'<div class="hint" style="margin-top:6px">★ COMPLETE</div>':''}</div>`;}).join('');root.innerHTML=`<div class="forge-card"><div class="forge-card-name">図鑑完成度 ${summary.pct.toFixed(1)}%</div><div class="sub">${summary.points}/${summary.maxPoints} pt ・ 発見 ${discovered}/${ids.length}種</div><div class="bar xp-bar" style="margin-top:8px"><div class="fill" style="width:${Math.min(100,summary.pct)}%"></div></div></div><h3>永続ボーナス</h3>${bonusRows(summary)}<h3>魔物一覧</h3>${cards}`;}
+ensureUi();document.getElementById('goMonsterCodexBtn')?.addEventListener('click',()=>{renderMonsterCodex();showScreen('monsterCodexScreen');});document.getElementById('monsterCodexBackBtn')?.addEventListener('click',()=>showScreen('homeScreen'));
