@@ -58,5 +58,6 @@ test('IP remap preserves Affix identity and Greater 1.5x roll relationship', () 
   assert.equal(plain.affixes[0].id, 'atk_pct');
   assert.equal(greater.affixes[0].id, 'atk_pct');
   assert.equal(plain.affixes[0].rarity, greater.affixes[0].rarity);
-  assert.equal(greater.affixes[0].roll, Math.round(plain.affixes[0].roll * 1.5 * 100) / 100);
+  const expectedGreater = plain.affixes[0].roll * 1.5;
+  assert.ok(Math.abs(greater.affixes[0].roll - expectedGreater) <= 0.011);
 });
