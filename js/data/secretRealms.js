@@ -1,6 +1,7 @@
 import { buildAbyssStage } from './abyss.js';
 import { ENEMY_TYPES } from './enemies.js';
 import { expandedRealmByStageId } from './secretRealmExpansion.js';
+import { buildWorld2KeyStage } from './world2Stages.js';
 
 function scaleRealmEnemies(stage, cfg){
   const seen=new Set();
@@ -49,6 +50,7 @@ function buildExpandedRealm(cfg){
 }
 
 export function buildSecretRealmStage(stageId){
+  if(stageId.startsWith('secret-worldkey-')) return buildWorld2KeyStage(stageId.slice('secret-worldkey-'.length));
   if(stageId==='secret-blood-castle'){
     const base=buildAbyssStage(800,[],{suppressModifiers:true});
     return {
