@@ -6,6 +6,7 @@ import { getItem, baseItemId, powerScore, SLOTS } from '../data/equipment.js';
 import { splitAffixesForApplication } from '../data/affixes.js';
 import { itemPowerBand, affixTierForItemPower } from '../data/equipment3.js';
 import { buildGearInstance, EQUIPMENT3_GEAR_SLOTS } from '../data/equipment3Gear.js';
+import { getLegendaryEffect, getCursedAffix } from '../data/equipment3Legendary.js';
 import { CAPS_LAYER } from '../data/balance.js';
 
 function ensureGearData(target = state) {
@@ -56,6 +57,8 @@ state.equipmentRollMeta = function equipmentRollMeta(id) {
     affixTier: inst.affixTier || affixTierForItemPower(inst.itemPower || 1),
     displayName: inst.displayName || item?.name || id,
     greaterAffixCount: inst.greaterAffixCount || 0,
+    legendaryEffectId: inst.legendaryEffectId || null,
+    curseId: inst.curseId || null,
     bandId: band.id,
     bandLabel: band.label,
   };
@@ -76,9 +79,6 @@ function clearGearInstanceData(id) {
   return true;
 }
 
-// This patch is loaded before Smart Loot and the Abyss IP bridge. Therefore the
-// outer wrappers still see the completed instance, while Abyss can enrich ctx
-// with itemPowerTarget before control reaches here.
 const previousAddItem = state.addItem.bind(state);
 state.addItem = function equipment3GearAddItem(itemId, qty = 1, dropCtx = null) {
   ensureGearData(this);
@@ -117,23 +117,36 @@ state.consumeLastGearInstanceId = function consumeLastGearInstanceId() {
   return id;
 };
 
-// Apply non-weapon Affix stats after the existing canonical stat pipeline.
-// Weapon Affixes remain owned by state.js and are not touched here.
+function equippedGearInstances(target) {
+  const out = [];
+  for (const slot of ['shield', 'head', 'body', 'accessory1', 'accessory2']) {
+    const id = target.data.equipped?.[slot];
+    const inst = id ? target.data.gearInstances?.[id] : null;
+    if (inst) out.push({ id, inst });
+  }
+  return out;
+}
+
 const previousGetStats = state.getStats.bind(state);
 state.getStats = function equipment3GearStats() {
   const stats = previousGetStats();
   const combined = {};
-  for (const slot of ['shield', 'head', 'body', 'accessory1', 'accessory2']) {
-    const id = this.data.equipped?.[slot];
-    if (!id || !this.data.gearInstances?.[id]) continue;
+  const curseMult = {};
+  for (const { id, inst } of equippedGearInstances(this)) {
     const { statBonus } = splitAffixesForApplication(this.gearInstanceAffixes(id));
     for (const [key, value] of Object.entries(statBonus)) combined[key] = (combined[key] || 0) + value;
+    const curse = getCursedAffix(inst.curseId);
+    for (const [key, mult] of Object.entries(curse?.statMult || {})) {
+      curseMult[key] = (curseMult[key] || 1) * mult;
+    }
   }
 
   for (const key of ['hp', 'mp', 'atk', 'def', 'mag']) {
-    if (combined[key]) stats[key] = Math.max(1, Math.round(stats[key] * (1 + combined[key])));
+    const affixMult = 1 + (combined[key] || 0);
+    const cursed = curseMult[key] || 1;
+    if (affixMult !== 1 || cursed !== 1) stats[key] = Math.max(1, Math.round(stats[key] * affixMult * cursed));
   }
-  if (combined.spd) stats.spd = Math.max(0.1, Math.round(stats.spd * (1 + combined.spd) * 10) / 10);
+  if (combined.spd || curseMult.spd) stats.spd = Math.max(0.1, Math.round(stats.spd * (1 + (combined.spd || 0)) * (curseMult.spd || 1) * 10) / 10);
   if (combined.critPct) stats.critPct = Math.min(CAPS_LAYER.CRIT_PCT_MAX, stats.critPct + combined.critPct * 100);
   if (combined.armorPen) stats.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, Math.max(0, (stats.armorPen || 0) + combined.armorPen));
   if (combined.evasion) stats.evasion = Math.min(CAPS_LAYER.EVASION_MAX, Math.max(0, (stats.evasion || 0) + combined.evasion));
@@ -143,11 +156,13 @@ state.getStats = function equipment3GearStats() {
 const previousGetEquippedEffects = state.getEquippedEffects.bind(state);
 state.getEquippedEffects = function equipment3GearEffects() {
   const effects = previousGetEquippedEffects();
-  for (const slot of ['shield', 'head', 'body', 'accessory1', 'accessory2']) {
-    const id = this.data.equipped?.[slot];
-    if (!id || !this.data.gearInstances?.[id]) continue;
+  for (const { id, inst } of equippedGearInstances(this)) {
     const split = splitAffixesForApplication(this.gearInstanceAffixes(id));
     effects.push(...split.effects);
+    const legendary = getLegendaryEffect(inst.legendaryEffectId);
+    const curse = getCursedAffix(inst.curseId);
+    if (legendary?.effects) effects.push(...legendary.effects.map((e) => ({ ...e, __equipment3GearSpecial: inst.legendaryEffectId })));
+    if (curse?.effects) effects.push(...curse.effects.map((e) => ({ ...e, __equipment3GearCurse: inst.curseId })));
   }
   return effects;
 };
@@ -175,6 +190,11 @@ state.gearItemPower = function gearItemPower(id) {
   if (!inst) return score;
   const split = splitAffixesForApplication(inst.affixes || []);
   score += statAffixScore(split.statBonus) + effectPowerScore(split.effects);
+  const legendary = getLegendaryEffect(inst.legendaryEffectId);
+  const curse = getCursedAffix(inst.curseId);
+  score += effectPowerScore(legendary?.effects || []);
+  score += effectPowerScore(curse?.effects || []);
+  for (const mult of Object.values(curse?.statMult || {})) score -= Math.max(0, 1 - mult) * 80;
   return Math.round(score * 10) / 10;
 };
 
@@ -186,7 +206,6 @@ state.equipmentPowerScore = function equipmentPowerScore(id) {
   return powerScore(item);
 };
 
-// Upgrade auto-equip so new armor/accessory Affixes are not ignored.
 state.autoEquipBest = function equipment3AutoEquipBest() {
   const pool = { ...this.data.inventory };
   for (const slot of SLOTS) {
