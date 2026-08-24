@@ -30,7 +30,7 @@ test('Loot Filter 3.0 receives instance ids instead of base-item-only data', asy
 test('Abyss E9 is anchored to chapter 15 and exposes IP roadmap metadata', async () => {
   const abyss = await src('js/data/abyss.js');
   assert.match(abyss, /CH15/);
-  assert.match(abyss, /itemPowerTarget: itemPower/);
+  assert.match(abyss, /itemPowerTarget\s*:\s*itemPower/);
   assert.doesNotMatch(abyss, /hpMult\(10\)/);
   assert.doesNotMatch(abyss, /atkMult\(10\)/);
 });
