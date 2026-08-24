@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {generateRiftKey,riftDanger,riftReward,riftKeySummary} from '../js/data/riftKeys.js';
+test('rift key generation is deterministic for depth and seed',()=>{const a=generateRiftKey(1000,'abc'),b=generateRiftKey(1000,'abc');assert.equal(a.name,b.name);assert.deepEqual(a.dangers,b.dangers);assert.equal(a.reward,b.reward);assert.equal(a.recLevel,b.recLevel);});
+test('deeper keys gain more danger slots',()=>{assert.equal(generateRiftKey(100,'a').dangers.length,1);assert.equal(generateRiftKey(800,'a').dangers.length,2);assert.equal(generateRiftKey(2000,'a').dangers.length,3);});
+test('key level and item power stay within endgame caps',()=>{const k=generateRiftKey(99999,'cap');assert.ok(k.recLevel<=99999);assert.ok(k.itemPowerTarget<=10000);});
+test('generated modifier ids resolve',()=>{const k=generateRiftKey(2000,'resolve');for(const id of k.dangers)assert.ok(riftDanger(id));assert.ok(riftReward(k.reward));assert.match(riftKeySummary(k),/Danger/);});
