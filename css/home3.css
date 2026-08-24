@@ -1,0 +1,185 @@
+/* Blade Vale UI Foundation 3.0 — Home */
+#homeScreen{
+  gap:10px;
+  overflow:hidden;
+}
+
+#homeScreen .topbar{
+  margin-bottom:0;
+  flex:0 0 auto;
+}
+
+#homeScreen .player-summary{
+  padding:9px 11px;
+}
+
+#homeScreen .home-hero{
+  flex:0 1 22vh;
+  min-height:72px;
+  max-height:150px;
+  font-size:46px;
+  margin:2px 0;
+}
+
+#homeScreen .home-menu-v3{
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding-bottom:0;
+  min-height:0;
+}
+
+.home-primary-action{
+  width:100%;
+}
+
+#homeScreen .home-adventure-primary{
+  width:100%;
+  min-height:58px;
+  justify-content:center;
+  background:linear-gradient(180deg,#e2c77d,#b99445);
+  color:#11151a;
+  border:1px solid #efd993;
+  font-size:17px;
+  letter-spacing:.08em;
+  box-shadow:0 8px 22px rgba(0,0,0,.28);
+}
+
+#homeScreen .home-adventure-primary .menu-icon{
+  width:auto;
+  opacity:.9;
+}
+
+.home-hub-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+}
+
+.home-hub-toggle{
+  position:relative;
+  min-width:0;
+  min-height:64px;
+  padding:10px 22px 9px 10px;
+  border:1px solid var(--ui-line);
+  border-radius:var(--ui-radius-sm);
+  background:linear-gradient(180deg,var(--ui-surface-2),rgba(15,20,28,.9));
+  color:var(--ui-text);
+  text-align:left;
+  cursor:pointer;
+}
+
+.home-hub-toggle.active{
+  border-color:rgba(214,183,106,.72);
+  background:linear-gradient(180deg,rgba(45,39,27,.92),rgba(21,24,29,.96));
+}
+
+.home-hub-toggle:disabled{
+  opacity:.35;
+  cursor:default;
+}
+
+.home-hub-title{
+  display:block;
+  font-size:13px;
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.home-hub-subtitle{
+  display:block;
+  margin-top:3px;
+  color:var(--ui-muted);
+  font-size:10px;
+  line-height:1.25;
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+}
+
+.home-hub-chevron{
+  position:absolute;
+  top:50%;
+  right:8px;
+  transform:translateY(-50%);
+  color:var(--ui-gold);
+  font-size:19px;
+  transition:transform .15s ease;
+}
+
+.home-hub-toggle.active .home-hub-chevron{
+  transform:translateY(-50%) rotate(90deg);
+}
+
+.home-hub-panels{
+  min-height:0;
+}
+
+.home-hub-panel{
+  border:1px solid var(--ui-line);
+  border-radius:var(--ui-radius);
+  background:rgba(10,14,20,.94);
+  padding:8px;
+  max-height:31vh;
+  overflow-y:auto;
+}
+
+.home-hub-panel-heading{
+  margin:0 2px 7px;
+  color:var(--ui-gold-soft);
+  font-family:var(--font-display);
+  font-size:13px;
+  letter-spacing:.06em;
+}
+
+.home-hub-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px;
+}
+
+#homeScreen .home-secondary-action{
+  min-width:0;
+  min-height:44px;
+  padding:9px 10px;
+  gap:7px;
+  font-size:12px;
+  line-height:1.25;
+  box-shadow:none;
+}
+
+#homeScreen .home-secondary-action .menu-icon{
+  width:20px;
+  font-size:17px;
+  flex:0 0 20px;
+}
+
+#homeScreen .home-secondary-action span:last-child{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+@media(max-width:390px){
+  #homeScreen{gap:7px}
+  #homeScreen .home-hero{flex-basis:16vh;min-height:54px;font-size:38px}
+  #homeScreen .home-adventure-primary{min-height:52px;font-size:16px}
+  .home-hub-grid{gap:5px}
+  .home-hub-toggle{min-height:58px;padding:8px 18px 8px 8px}
+  .home-hub-title{font-size:12px}
+  .home-hub-subtitle{font-size:9px}
+  .home-hub-panel{max-height:28vh}
+}
+
+@media(max-height:700px){
+  #homeScreen .home-hero{display:none}
+  #homeScreen .player-summary{padding:7px 10px}
+  #homeScreen .home-adventure-primary{min-height:50px}
+  .home-hub-toggle{min-height:56px}
+  .home-hub-panel{max-height:30vh}
+}

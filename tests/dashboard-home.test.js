@@ -21,13 +21,14 @@ test('character dashboard exposes the growth tab and saved progression', async (
 
 test('home navigation groups existing buttons without replacing their IDs', async () => {
   const text = await source('js/patches/homeNavigation.js');
-  assert.match(text, /title: '冒険'/);
+  assert.match(text, /adventureLabel\.textContent = '冒険する'/);
   assert.match(text, /title: '育成'/);
-  assert.match(text, /title: 'その他'/);
+  assert.match(text, /title: '仲間・拠点'/);
+  assert.match(text, /title: '記録・その他'/);
   for (const id of ['goStageBtn','goAbyssBtn','goStatusBtn','goCompanionBtn','goEquipBtn','goJobBtn','goBlacksmithBtn','goRebirthBtn','goSpellBtn']) {
     assert.match(text, new RegExp(id));
   }
-  assert.match(text, /menu\.dataset\.grouped === 'true'/, 'grouping must be idempotent');
+  assert.match(text, /menu\.dataset\.uiFoundation3 === 'true'/, 'grouping must be idempotent');
 });
 
 test('home navigation loads after companion UI has installed its button', async () => {
