@@ -1,3 +1,4 @@
+import './companionBond.js';
 import { state } from '../state.js';
 import { getCompanionSpecies } from '../data/companions.js';
 import { godRollProfile,memoryValue,ranchCapacity,researchLevel,researchUnlocked } from '../data/monsterRanch.js';
