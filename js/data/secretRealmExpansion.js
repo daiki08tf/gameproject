@@ -19,7 +19,7 @@ export const SECRET_REALM_EXPANSION = Object.freeze({
     baseDepth:2250, atkMult:1.35, healMult:0.65, dropMult:1.45, goldMult:1.35, expMult:1.30,setPrefix:'set_executioner_',tags:['dark','light'],modifier:{id:'realm_divine_grave',name:'神骸の呪い',desc:'回復-35% ／ 敵ATK+35% ／ 処刑者装備率UP'},
   },
   void_corridor: {
-    site:{id:'void_corridor',hiddenName:'？？？？？',discoveredName:'音のない亀裂',realmName:'虚無回廊',discoverDepth:1880,clueDepth:2100,fragmentSources:[2300,2600,2900],fragmentsRequired:3,inspectText:['空間そのものが裂けたような、黒い亀裂が浮いている。','近づいても風も音もない。代わりに、自分の足音だけが一拍遅れて返ってくる。','亀裂の縁には、三つの方位を示す羅針盤の刻印がある。'],unlockedText:'三つの虚無座標が重なった瞬間、亀裂が一本の通路へと変わった。',realm:{id:'secret-void-corridor',recLevel:90000,itemPowerTarget:9800,rule:'敵SPD+35% / Drop+60% / 深淵歩き向け',rewardHint:'深淵歩きSet・回避/貫通/速度系装備を狙える。'}},
+    site:{id:'void_corridor',hiddenName:'？？？？？',discoveredName:'音のない亀裂',realmName:'虚無回廊',discoverDepth:1880,clueDepth:2100,fragmentSources:[2300,2600,2900],fragmentsRequired:3,inspectText:['空間そのものが裂けたような、黒い亀裂が浮いている。','近づいても風も音もない。代わりに、自分の足音だけが一拍遅れて返ってくる。','亀裂の縁には、三つの方位を示す羅針盤の刻印がある。'],unlockedText:'三つの虚無座標が重なった瞬間、亀裂が一本の通路へと変わった。',realm:{id:'secret-void-corridor',recLevel:99999,itemPowerTarget:10000,rule:'敵SPD+35% / Drop+60% / 深淵歩き向け',rewardHint:'深淵歩きSet・回避/貫通/速度系装備を狙える。'}},
     baseDepth:2950, speedMult:1.35, dropMult:1.60, goldMult:1.45, expMult:1.40,setPrefix:'set_abyss_',tags:['dark','wind','lightning'],modifier:{id:'realm_void_shift',name:'虚無転位',desc:'敵SPD+35% ／ Drop+60% ／ 深淵歩き装備率UP'},
   },
 });
