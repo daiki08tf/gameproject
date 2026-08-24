@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { INHERITANCE_MIN_LEVEL, INHERITANCE_RATE_CAP_PCT, inheritanceRatePct, inheritanceBonusPointGain } from '../js/data/inheritance.js';
 import { abyssRecommendedLevel, abyssTargetItemPower } from '../js/data/abyssEndgame.js';
+import { buildAbyssStage } from '../js/data/abyss.js';
 import { generateRiftKey } from '../js/data/riftKeys.js';
 import { buildSecretRealmStage } from '../js/data/secretRealms.js';
 
@@ -25,11 +26,22 @@ test('Rift keys stay economically ahead of their source floor',()=>{
   }
 });
 
-test('Blood Castle recommendation matches the enemies it actually builds from',()=>{
+test('Blood Castle recommendation matches its source and exposes only its own rules',()=>{
   const realm=buildSecretRealmStage('secret-blood-castle');
   assert.equal(realm.recLevel,abyssRecommendedLevel(800));
   assert.ok(realm.itemPowerTarget>abyssTargetItemPower(800));
-  assert.ok(realm.dropMult>1);
+  assert.equal(realm.dropMult,1.35);
+  assert.equal(realm.healMult,0.5);
+  assert.equal(realm.modifiers.length,1);
+});
+
+test('Abyss template can suppress floor modifiers for fixed Secret Realms',()=>{
+  const normal=buildAbyssStage(800);
+  const clean=buildAbyssStage(800,[],{suppressModifiers:true});
+  assert.ok(normal.modifiers.length>0);
+  assert.equal(clean.modifiers.length,0);
+  assert.equal(clean.dropMult,1);
+  assert.equal(clean.healMult,1);
 });
 
 test('endgame drop patch carries target IP and pact shard multiplier',()=>{
