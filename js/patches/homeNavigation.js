@@ -4,6 +4,7 @@
    ============================================================ */
 import './settlementCore.js';
 import './settlementUi.js';
+import { applyHomePixelIcons } from '../ui/pixelIcons.js';
 
 const GROUPS = [
   { id: 'adventure', title: '冒険', buttons: ['goStageBtn', 'goAbyssBtn'] },
@@ -32,6 +33,7 @@ function organizeHomeMenu() {
     menu.appendChild(section);
   }
   menu.dataset.grouped = 'true';
+  applyHomePixelIcons();
 }
 
 organizeHomeMenu();
