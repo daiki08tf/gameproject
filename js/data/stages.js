@@ -50,6 +50,16 @@ export const CHAPTERS=[CHAPTER_1,...CHAPTER_SPECS.map(buildChapter),...CHAPTER_E
 const ALL_REGION_TAGS={...CHAPTER_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS};
 for(const ch of CHAPTERS){const tags=ALL_REGION_TAGS[ch.id]||[];for(const st of ch.stages)st.dropRegionTags=tags;}
 export function finalStageOf(chapter){return chapter.stages.find(s=>s.boss)||chapter.stages[chapter.stages.length-1];}
-export function findStage(stageId){if(stageId.startsWith('abyss-')){const depth=parseInt(stageId.slice('abyss-'.length),10);if(Number.isFinite(depth)&&depth>=1)return{chapter:null,stage:buildAbyssStage(depth)};return null;}if(stageId.startsWith('secret-')){const stage=buildSecretRealmStage(stageId);return stage?{chapter:null,stage}:null;}for(const ch of CHAPTERS){const st=ch.stages.find(s=>s.id===stageId);if(st)return{chapter:ch,stage:st};}return null;}
+export function findStage(stageId){
+ if(stageId.startsWith('abyss-')){
+  const raw=stageId.slice('abyss-'.length),[depthText,routeId]=raw.split('~');
+  const depth=parseInt(depthText,10);
+  if(Number.isFinite(depth)&&depth>=1)return{chapter:null,stage:buildAbyssStage(depth,[],routeId?{routeId}: {})};
+  return null;
+ }
+ if(stageId.startsWith('secret-')){const stage=buildSecretRealmStage(stageId);return stage?{chapter:null,stage}:null;}
+ for(const ch of CHAPTERS){const st=ch.stages.find(s=>s.id===stageId);if(st)return{chapter:ch,stage:st};}
+ return null;
+}
 export function isChapterUnlocked(chapterIndex,isStageCleared){if(chapterIndex===0)return true;const prevChapter=CHAPTERS[chapterIndex-1];return isStageCleared(finalStageOf(prevChapter).id);} 
 export function isAbyssUnlocked(isStageCleared){return CHAPTERS.every(ch=>isStageCleared(finalStageOf(ch).id));}
