@@ -25,6 +25,7 @@ import './patches/equipment3DebugSafety.js';
 import './patches/weaponAffixResultVisibility.js';
 import './patches/equipment3GearResultVisibility.js';
 import './patches/combat2ElementCore.js';
+import './patches/combat2WeaponTechniques.js';
 import './patches/companionFoundation.js';
 import './patches/companionResetSafety.js';
 import './patches/companionEvolution.js';
