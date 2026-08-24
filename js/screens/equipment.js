@@ -24,7 +24,11 @@ let lootFilterAdvancedOpen = false;
 let lootFilterMessage = '';
 
 function presentationFor(id, item = getItem(id)) {
-  return equipment3Presentation(item, state.data.weaponInstances?.[id] || null);
+  const inst = state.equipmentInstance?.(id)
+    || state.data.weaponInstances?.[id]
+    || state.data.gearInstances?.[id]
+    || null;
+  return equipment3Presentation(item, inst);
 }
 function displayName(id, item = getItem(id)) {
   return presentationFor(id, item)?.name || item?.name || id;
@@ -210,7 +214,7 @@ function renderLootFilterRow() {
   if (lootFilterAdvancedOpen) renderAdvancedLootFilter(row, filter);
 }
 
-function compareLine(candidate, current) {
+function compareLine(candidate, current, candidateId = null, currentId = null) {
   if (!current) return '';
   const keys = new Set([...Object.keys(candidate.stats), ...Object.keys(current.stats)]);
   const parts = [];
@@ -224,7 +228,9 @@ function compareLine(candidate, current) {
   const effectDiff = [];
   for (const n of candidateEffects) if (!currentEffects.includes(n)) effectDiff.push(`<span class="stat-up">+固有:${n}</span>`);
   for (const n of currentEffects) if (!candidateEffects.includes(n)) effectDiff.push(`<span class="stat-down">-固有:${n}</span>`);
-  const scoreDiff = Math.round(powerScore(candidate) - powerScore(current));
+  const candidateScore = candidateId && state.equipmentPowerScore ? state.equipmentPowerScore(candidateId) : powerScore(candidate);
+  const currentScore = currentId && state.equipmentPowerScore ? state.equipmentPowerScore(currentId) : powerScore(current);
+  const scoreDiff = Math.round(candidateScore - currentScore);
   return (parts.length ? `<div class="compare-line">${parts.join(' ')}</div>` : '')
     + (effectDiff.length ? `<div class="compare-line">${effectDiff.join(' ')}</div>` : '')
     + (scoreDiff ? `<div class="compare-line compare-score ${scoreDiff > 0 ? 'stat-up' : 'stat-down'}">総合戦力(参考値) ${scoreDiff > 0 ? '↑' : '↓'}${Math.abs(scoreDiff)}</div>` : '');
@@ -322,7 +328,10 @@ export function renderEquipment() {
     const item = getItem(id);
     if (item && item.slot === baseType) candidates.push({ id, equipped: false });
   }
-  candidates.sort((a, b) => powerScore(getItem(b.id)) - powerScore(getItem(a.id)));
+  candidates.sort((a, b) => {
+    const score = (id) => state.equipmentPowerScore ? state.equipmentPowerScore(id) : powerScore(getItem(id));
+    return score(b.id) - score(a.id);
+  });
   const unequippedCandidates = candidates.filter((c) => !c.equipped);
   const visibleCandidates = unequippedCandidates.filter((c) => state.passesLootFilter(c.id, getItem(c.id)));
 
@@ -352,7 +361,7 @@ export function renderEquipment() {
     const row = document.createElement('div');
     row.className = `pick-row${p?.quality ? ` eq3-${p.quality}` : ''}`;
     row.innerHTML = `<div class="pick-main"><div class="item-name" style="color:${RARITY[item.rarity].color}">${displayName(c.id, item)} ×${state.data.inventory[c.id]}${favoriteLockBadges(c.id)}</div>`
-      + `<div class="item-stats">${statLine(item, c.id)}${lockReason ? `<br>${lockReason}` : ''}</div>${equipment3Block(c.id, item)}${compareLine(item, currentItemForCompare)}</div>`
+      + `<div class="item-stats">${statLine(item, c.id)}${lockReason ? `<br>${lockReason}` : ''}</div>${equipment3Block(c.id, item)}${compareLine(item, currentItemForCompare, c.id, currentId)}</div>`
       + `<button data-action="equip" ${locked ? 'disabled' : ''}>装備</button>`;
     if (!locked) row.querySelector('[data-action="equip"]').addEventListener('click', () => { state.equipItem(selectedSlot, c.id); Audio_.tap(); renderEquipment(); });
     appendFavLockButtons(row, c.id);

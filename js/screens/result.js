@@ -8,11 +8,15 @@ import { equipment3Presentation, equipment3MetaText, equipment3SpecialLines, equ
 function resolveDrop(itemId) {
   const item = getItem(itemId);
   if (item) {
-    const isInstance = state.isWeaponInstance(itemId);
-    const legacyAffixes = isInstance ? state.weaponInstanceAffixes(itemId) : [];
-    const inst = isInstance ? state.data.weaponInstances?.[itemId] || null : null;
+    const isWeaponInstance = state.isWeaponInstance(itemId);
+    const isGearInstance = state.isGearInstance?.(itemId) || false;
+    const isInstance = isWeaponInstance || isGearInstance;
+    const legacyAffixes = isWeaponInstance ? state.weaponInstanceAffixes(itemId) : [];
+    const inst = isInstance
+      ? (state.equipmentInstance?.(itemId) || state.data.weaponInstances?.[itemId] || state.data.gearInstances?.[itemId] || null)
+      : null;
     const p = equipment3Presentation(item, inst);
-    if (p && inst && p.affixes.length === 0 && legacyAffixes.length > 0) {
+    if (p && isWeaponInstance && inst && p.affixes.length === 0 && legacyAffixes.length > 0) {
       // weaponInstanceAffixes + describeAffix は従来のリザルト表示契約として維持する。
       p.affixes = legacyAffixes.map((a) => {
         const d = describeAffix(a);
