@@ -2,6 +2,7 @@
    Equipment 3.0 — debug safety guards
    Prevent destructive crafting operations that can silently lose rare data.
    ============================================================ */
+import './loot2Core.js';
 import { state } from '../state.js';
 import { getLegendaryEffect } from '../data/equipment3Legendary.js';
 
