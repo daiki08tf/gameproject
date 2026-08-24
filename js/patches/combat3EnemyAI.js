@@ -1,11 +1,12 @@
 import { BattleEngine } from '../battleEngine.js';
+import { state } from '../state.js';
 import { enemyCombatProfile, enemyRole } from '../data/enemyCombat3.js';
 
 const proto=BattleEngine.prototype;
 const originalSpawn=proto._spawnEnemy;
 proto._spawnEnemy=function(type){
   const e=originalSpawn.call(this,type); const profile=enemyCombatProfile(type),role=enemyRole(type);
-  if(!e.boss){e.combat3Role=role;e.combat3Skill=profile.skill;e.combat3SkillCd=0;e.combat3Buffs={def:{mult:1,turns:0},spd:{mult:1,turns:0}};}
+  if(!e.boss){e.combat3Role=role;e.combat3Skill=profile.skill;e.combat3SkillCd=0;e.combat3Buffs={def:{mult:1,turns:0},spd:{mult:1,turns:0}};const known=state.data?.monsterCodex?.[type];if(known?.roleKnown||known?.analyzed)e.name=`${role.icon}${e.name}`;}
   return e;
 };
 
