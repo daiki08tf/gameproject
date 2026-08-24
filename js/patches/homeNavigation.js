@@ -1,6 +1,7 @@
 /* ============================================================
-   Home navigation organizer
-   Groups the growing hub menu without changing existing button IDs.
+   Home navigation organizer — UI Foundation 3.0
+   Keeps existing button IDs/listeners while replacing the growing vertical
+   menu with one primary Adventure CTA plus compact category drawers.
    ============================================================ */
 import './settlementCore.js';
 import './settlementUi.js';
@@ -14,35 +15,114 @@ import './monsterRanch2CompleteUi.js';
 import './companionBondUi.js';
 import { applyHomePixelIcons } from '../ui/pixelIcons.js';
 
-const GROUPS = [
-  { id: 'adventure', title: '冒険', buttons: ['goStageBtn', 'goAbyssBtn'] },
-  { id: 'settlement', title: '拠点', buttons: ['goSettlementBtn', 'goCompanionBtn', 'goBlacksmithBtn'] },
-  { id: 'growth', title: '育成', buttons: ['goStatusBtn', 'goMonsterCodexBtn', 'goEquipBtn', 'goJobBtn', 'goRebirthBtn'] },
-  { id: 'other', title: 'その他', buttons: ['goSpellBtn'] },
+const HOME_HUBS = [
+  {
+    id: 'growth',
+    title: '育成',
+    subtitle: '装備・職業・覚醒',
+    buttons: ['goEquipBtn', 'goJobBtn', 'goRebirthBtn', 'goStatusBtn'],
+  },
+  {
+    id: 'base',
+    title: '仲間・拠点',
+    subtitle: '牧場・施設・鍛冶',
+    buttons: ['goCompanionBtn', 'goSettlementBtn', 'goBlacksmithBtn'],
+  },
+  {
+    id: 'records',
+    title: '記録・その他',
+    subtitle: '図鑑・深淵・セーブ',
+    buttons: ['goMonsterCodexBtn', 'goAbyssBtn', 'goSpellBtn'],
+  },
 ];
+
+function makeHubToggle(hub, hasMembers) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'home-hub-toggle';
+  button.dataset.homeHubToggle = hub.id;
+  button.disabled = !hasMembers;
+  button.setAttribute('aria-expanded', 'false');
+  button.innerHTML = `
+    <span class="home-hub-title">${hub.title}</span>
+    <span class="home-hub-subtitle">${hub.subtitle}</span>
+    <span class="home-hub-chevron" aria-hidden="true">›</span>
+  `;
+  return button;
+}
+
+function closeAllHubs(menu, exceptId = null) {
+  menu.querySelectorAll('[data-home-hub-panel]').forEach((panel) => {
+    const open = panel.dataset.homeHubPanel === exceptId;
+    panel.classList.toggle('open', open);
+    panel.hidden = !open;
+  });
+  menu.querySelectorAll('[data-home-hub-toggle]').forEach((toggle) => {
+    const open = toggle.dataset.homeHubToggle === exceptId;
+    toggle.classList.toggle('active', open);
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+}
 
 function organizeHomeMenu() {
   const menu = document.querySelector('#homeScreen .home-menu');
-  if (!menu || menu.dataset.grouped === 'true') return;
-  const buttons = new Map([...menu.querySelectorAll(':scope > .menu-card')].map((btn) => [btn.id, btn]));
-  for (const group of GROUPS) {
-    const members = group.buttons.map((id) => buttons.get(id)).filter(Boolean);
-    if (!members.length) continue;
-    const section = document.createElement('section');
-    section.className = 'home-menu-section';
-    section.dataset.homeGroup = group.id;
-    const heading = document.createElement('h2');
-    heading.className = 'home-menu-heading';
-    heading.textContent = group.title;
+  if (!menu || menu.dataset.uiFoundation3 === 'true') return;
+
+  const allCards = [...menu.querySelectorAll('.menu-card')];
+  const buttons = new Map(allCards.map((btn) => [btn.id, btn]));
+  const adventure = buttons.get('goStageBtn');
+  if (!adventure) return;
+
+  menu.replaceChildren();
+  menu.classList.add('home-menu-v3');
+
+  const primary = document.createElement('div');
+  primary.className = 'home-primary-action';
+  adventure.classList.add('home-adventure-primary');
+  const adventureLabel = adventure.querySelector('span:last-child');
+  if (adventureLabel) adventureLabel.textContent = '冒険する';
+  primary.appendChild(adventure);
+  menu.appendChild(primary);
+
+  const hubGrid = document.createElement('div');
+  hubGrid.className = 'home-hub-grid';
+  const panels = document.createElement('div');
+  panels.className = 'home-hub-panels';
+
+  for (const hub of HOME_HUBS) {
+    const members = hub.buttons.map((id) => buttons.get(id)).filter(Boolean);
+    const toggle = makeHubToggle(hub, members.length > 0);
+    hubGrid.appendChild(toggle);
+
+    const panel = document.createElement('section');
+    panel.className = 'home-hub-panel';
+    panel.dataset.homeHubPanel = hub.id;
+    panel.hidden = true;
+
+    const heading = document.createElement('div');
+    heading.className = 'home-hub-panel-heading';
+    heading.textContent = hub.title;
+    panel.appendChild(heading);
+
     const grid = document.createElement('div');
-    grid.className = 'home-menu-grid';
-    members.forEach((button) => grid.appendChild(button));
-    section.append(heading, grid);
-    menu.appendChild(section);
+    grid.className = 'home-hub-actions';
+    members.forEach((button) => {
+      button.classList.add('home-secondary-action');
+      grid.appendChild(button);
+    });
+    panel.appendChild(grid);
+    panels.appendChild(panel);
+
+    toggle.addEventListener('click', () => {
+      const alreadyOpen = toggle.getAttribute('aria-expanded') === 'true';
+      closeAllHubs(menu, alreadyOpen ? null : hub.id);
+    });
   }
-  menu.dataset.grouped = 'true';
+
+  menu.append(hubGrid, panels);
+  menu.dataset.uiFoundation3 = 'true';
   applyHomePixelIcons();
 }
 
 organizeHomeMenu();
-export { organizeHomeMenu, GROUPS };
+export { organizeHomeMenu, HOME_HUBS };
