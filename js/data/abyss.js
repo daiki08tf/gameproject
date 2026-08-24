@@ -1,5 +1,5 @@
 /* ============================================================
-   深淵（Abyss）ステージ生成 — Abyss 2.0
+   深淵（Abyss）ステージ生成 — Abyss 3.0
    ============================================================ */
 import { CHAPTER_SPECS, chapterMult } from './chapters.js';
 import { ENEMY_TYPES } from './enemies.js';
@@ -7,6 +7,7 @@ import { ABYSS_LAYER } from './balance.js';
 import { setDropsForDepth } from './equipment3Sets.js';
 import { abyssRecommendedLevel, abyssTargetItemPower, abyssEraForDepth, abyssCombatScale, abyssStageExpBudget } from './abyssEndgame.js';
 import { abyssPact, abyssPactMultiplier, abyssPactDanger, maxAbyssPactsForDepth } from './abyssPacts.js';
+import { abyssRoute, abyssRouteMultiplier } from './abyssRoutes.js';
 const CH15=CHAPTER_SPECS.find(c=>c.num===15);
 export const ABYSS_MODIFIERS=[
  { id: 'mod_frenzy', name: '狂乱の霧', desc: '敵SPD+25% ／ 獲得ゴールド+40%', enemySpeedMult: 1.25, goldMult: 1.4 },
@@ -28,12 +29,14 @@ export function buildAbyssStage(rawDepth,pactIds=[],options={}){
  // rules. suppressModifiers prevents invisible floor modifiers from being baked
  // into those enemies/rewards while normal Abyss behavior remains unchanged.
  const modifiers=options?.suppressModifiers?[]:modifiersForDepth(depth);
+ const route=options?.suppressModifiers?null:abyssRoute(options?.routeId);
  const valid=[...new Set(pactIds)].slice(0,maxAbyssPactsForDepth(depth)).filter(id=>abyssPact(id));
- const mm=k=>modifiers.reduce((m,x)=>m*(x[k]||1),1),pm=k=>abyssPactMultiplier(valid,k);
- const goldMult=mm('goldMult')*pm('goldMult'),expMult=mm('expMult')*pm('expMult'),enemyCountMult=mm('enemyCountMult'),dropMult=mm('dropMult')*pm('dropMult'),healMult=mm('healMult')*pm('healMult');
- const enemyAtkMult=mm('enemyAtkMult')*pm('enemyAtkMult'),enemyDefMult=mm('enemyDefMult')*pm('enemyDefMult'),enemySpeedMult=mm('enemySpeedMult')*pm('enemySpeedMult'),enemyHpMult=mm('enemyHpMult')*pm('enemyHpMult');
+ const mm=k=>modifiers.reduce((m,x)=>m*(x[k]||1),1),pm=k=>abyssPactMultiplier(valid,k),rm=k=>abyssRouteMultiplier(route,k);
+ const goldMult=mm('goldMult')*pm('goldMult')*rm('goldMult'),expMult=mm('expMult')*pm('expMult')*rm('expMult'),enemyCountMult=mm('enemyCountMult')*rm('enemyCountMult'),dropMult=mm('dropMult')*pm('dropMult')*rm('dropMult'),healMult=mm('healMult')*pm('healMult')*rm('healMult');
+ const enemyAtkMult=mm('enemyAtkMult')*pm('enemyAtkMult')*rm('enemyAtkMult'),enemyDefMult=mm('enemyDefMult')*pm('enemyDefMult')*rm('enemyDefMult'),enemySpeedMult=mm('enemySpeedMult')*pm('enemySpeedMult')*rm('enemySpeedMult'),enemyHpMult=mm('enemyHpMult')*pm('enemyHpMult')*rm('enemyHpMult');
  const ids={normal:`abyss_${depth}_normal`,fast:`abyss_${depth}_fast`,tank:`abyss_${depth}_tank`,boss:`abyss_${depth}_boss`};for(const k of Object.keys(ids))ENEMY_TYPES[ids[k]]=scaled(k,depth,goldMult,expMult,enemyHpMult,enemyAtkMult,enemyDefMult,enemySpeedMult);
- const bossFloor=isAbyssBossFloor(depth); const waves=bossFloor?[{type:ids.normal,count:3,interval:1},{type:ids.boss,count:1,interval:0}]:[{type:ids.normal,count:Math.round((3+Math.min(12,Math.floor(depth/40)))*enemyCountMult),interval:1.1},{type:ids.fast,count:Math.round((2+Math.min(9,Math.floor(depth/55)))*enemyCountMult),interval:.9},{type:ids.tank,count:Math.round((1+Math.min(7,Math.floor(depth/70)))*enemyCountMult),interval:1.8}];
+ const bossFloor=isAbyssBossFloor(depth); const waves=bossFloor?[{type:ids.normal,count:3,interval:1},{type:ids.boss,count:1,interval:0}]:[{type:ids.normal,count:Math.max(1,Math.round((3+Math.min(12,Math.floor(depth/40)))*enemyCountMult)),interval:1.1},{type:ids.fast,count:Math.max(1,Math.round((2+Math.min(9,Math.floor(depth/55)))*enemyCountMult)),interval:.9},{type:ids.tank,count:Math.max(1,Math.round((1+Math.min(7,Math.floor(depth/70)))*enemyCountMult)),interval:1.8}];
  const level=abyssRecommendedLevel(depth); const itemPower=abyssTargetItemPower(depth); const expBudget=abyssStageExpBudget(depth)*expMult*(bossFloor?1.35:1); const goldReward=200*chapterMult(15)*Math.pow(Math.max(1,level/700),.72)*goldMult*(bossFloor?ABYSS_LAYER.BOSS_REWARD_MULT:1);
- return {id:`abyss-${depth}`,name:`深淵 ${depth}階${bossFloor?'（ボスフロア）':''}`,recLevel:level,boss:bossFloor,isAbyss:true,abyssDepth:depth,abyssEra:abyssEraForDepth(depth),itemPowerTarget:itemPower,waves,rewards:{gold:Math.max(1,Math.round(goldReward)),exp:Math.max(1,Math.round(expBudget))},dropTable:drops(depth,bossFloor),modifiers:modifiers.map(m=>({id:m.id,name:m.name,desc:m.desc})),abyssPacts:valid.map(id=>abyssPact(id)),abyssPactDanger:abyssPactDanger(valid),abyssShardMult:pm('shardMult'),dropMult,healMult,enemyAtkMult,enemyDefMult,enemySpeedMult,enemyHpMult,dropRegionTags:['fire','ice','lightning','wind','light','dark','poison']};
+ const routePrefix=route?`${route.icon} ${route.name} — `:'';
+ return {id:`abyss-${depth}`,name:`${routePrefix}深淵 ${depth}階${bossFloor?'（ボスフロア）':''}`,recLevel:level,boss:bossFloor,isAbyss:true,abyssDepth:depth,abyssEra:abyssEraForDepth(depth),abyssRoute:route?{id:route.id,name:route.name,icon:route.icon,desc:route.desc,risk:route.risk,reward:route.reward,target:route.target,targetLabel:route.targetLabel,cursedBias:route.cursedBias||1,riftKeyBias:route.riftKeyBias||1}:null,itemPowerTarget:itemPower,waves,rewards:{gold:Math.max(1,Math.round(goldReward)),exp:Math.max(1,Math.round(expBudget))},dropTable:drops(depth,bossFloor),modifiers:modifiers.map(m=>({id:m.id,name:m.name,desc:m.desc})),abyssPacts:valid.map(id=>abyssPact(id)),abyssPactDanger:abyssPactDanger(valid),abyssShardMult:pm('shardMult'),dropMult,healMult,enemyAtkMult,enemyDefMult,enemySpeedMult,enemyHpMult,dropRegionTags:['fire','ice','lightning','wind','light','dark','poison']};
 }
