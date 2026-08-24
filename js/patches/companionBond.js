@@ -3,6 +3,8 @@
    Individual long-term progression for companions.
    ============================================================ */
 import { state } from '../state.js';
+import { TextBattleScreen } from '../screens/textBattle.js';
+import { setBondLevelResolver } from '../data/companionBondSkills.js';
 
 export const BOND_MAX_LEVEL = 10;
 export const BOND_BATTLE_EXP = 3;
@@ -18,3 +20,14 @@ state.gainPartyBond=function gainPartyBond(amount,opts={}){return(this.activeCom
 state.companionBondStatMult=function companionBondStatMult(id){const b=this.companionBond(id);return b?1+Math.max(0,b.level-1)*.008:1;};
 state.awardCompanionBattleBond=function awardCompanionBattleBond({boss=false,cleared=true}={}){if(!cleared)return[];return this.gainPartyBond(BOND_BATTLE_EXP+(boss?BOND_BOSS_BONUS:0),{battle:true});};
 export function bondLabel(level){if(level>=10)return'魂の契り';if(level>=8)return'盟友';if(level>=6)return'阿吽';if(level>=4)return'共鳴';if(level>=2)return'信頼';return'出会い';}
+
+setBondLevelResolver(id=>state.companionBond?.(id)?.level||1);
+
+// Apply the small long-term Bond stat bonus at the companion model boundary.
+// getCompanion() returns a fresh model, so this never compounds on saved stats.
+const previousGetCompanion=state.getCompanion?.bind(state);
+if(previousGetCompanion){state.getCompanion=function bondGetCompanion(instanceId){const c=previousGetCompanion(instanceId);if(!c)return c;const bond=this.companionBond(instanceId),mult=this.companionBondStatMult(instanceId);if(!bond||mult===1)return{...c,bond};const stats={...c.stats};for(const k of ['hp','mp','atk','def','mag','spd'])stats[k]=Math.max(1,Math.round((Number(stats[k])||1)*mult));return{...c,stats,bond};};}
+
+// Award Bond once per cleared battle, not once per enemy kill.
+const previousStart=TextBattleScreen.prototype.start;
+TextBattleScreen.prototype.start=function bondBattleStart(stageId,onEnd,blessingId){const wrapped=result=>{if(result?.cleared){const boss=!!this.engine?.enemies?.some(e=>e?.boss);result.companionBondAwards=state.awardCompanionBattleBond({boss,cleared:true});}onEnd(result);};return previousStart.call(this,stageId,wrapped,blessingId);};
