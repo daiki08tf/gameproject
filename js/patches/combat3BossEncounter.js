@@ -35,10 +35,10 @@ function applyPhase(engine,boss,phase){
   if(phase.defMult)boss.def=Math.max(0,Math.round(boss.def*phase.defMult));
   if(phase.spdMult)boss.spd=Math.max(1,Math.round(boss.spd*phase.spdMult));
   accelerateBossAI(boss,phase.accelerateBossAI);
-  const added=spawnAdds(engine,boss,phase.spawn);
   return {
-    enemyId:boss.id,name:boss.name,kind:'encounterPhase',phaseName:phase.name,
-    added,guardActive:guardAlive(engine,boss),
+    phaseName:phase.name,
+    added:spawnAdds(engine,boss,phase.spawn),
+    guardActive:guardAlive(engine,boss),
     atkMult:phase.atkMult||1,defMult:phase.defMult||1,spdMult:phase.spdMult||1,
     aiAccelerated:!!phase.accelerateBossAI,
   };
@@ -86,19 +86,27 @@ proto._grantKillRewards=function combat3BossEncounterGrant(enemy){
   return {xp:0,gold:0,leveledUp:false,drops:[],manastone:0,onKillEvents,bossSlayerBuff:false,encounterMinion:true};
 };
 
-// Bossの手番開始時にHP閾値を確認。大ダメージで複数閾値を跨いでも、1手番で
-// 複数形態が同時発動しないようnextPhaseを1段ずつ進める。
+// HP閾値を跨いだBossは、その手番から新形態へ移行する。既存BattleLogの
+// phased表示を再利用しつつ、phaseNameを一時的にnameへ添えることで専用名も
+// ログへ出す。変身だけで丸々1手番休まないため、難易度も落ちない。
 const originalEnemyTurn=proto.performEnemyTurn;
 proto.performEnemyTurn=function combat3BossEncounterTurn(enemy){
+  let phaseResult=null;
   if(enemy?.boss&&!enemy.dead){
     const enc=encounterOf(enemy);
     const phase=enc?.profile?.phases?.[enc.nextPhase];
     if(phase&&enemy.maxHp>0&&enemy.hp/enemy.maxHp<=phase.ratio){
       enc.nextPhase++;
-      return applyPhase(this,enemy,phase);
+      phaseResult=applyPhase(this,enemy,phase);
     }
   }
-  return originalEnemyTurn.call(this,enemy);
+  const result=originalEnemyTurn.call(this,enemy);
+  if(result&&phaseResult){
+    result.phased=true;
+    result.encounterPhase=phaseResult;
+    result.name=`${result.name}「${phaseResult.phaseName}」`;
+  }
+  return result;
 };
 
 export function combat3BossGuardActive(engine,boss){ return guardAlive(engine,boss); }
