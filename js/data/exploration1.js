@@ -1,5 +1,7 @@
 /* Exploration 1.0 — discoveries are revealed in stages instead of a flat unlock list. */
-export const EXPLORATION_SITES = Object.freeze([
+import { expandedExplorationSites } from './secretRealmExpansion.js';
+
+const BASE_SITES = [
   {
     id: 'blood_gate',
     hiddenName: '？？？',
@@ -38,10 +40,10 @@ export const EXPLORATION_SITES = Object.freeze([
     ],
     finalGoal: true,
   },
-]);
+];
 
+export const EXPLORATION_SITES = Object.freeze([...BASE_SITES, ...expandedExplorationSites()]);
 export function explorationSite(id){ return EXPLORATION_SITES.find(x=>x.id===id)||null; }
-
 export function explorationProgressFor(site, bestDepth, saved={}){
   const best=Math.max(0,Math.floor(Number(bestDepth)||0));
   if(best<site.discoverDepth) return { state:'hidden', fragments:0, inspected:false, unlocked:false };

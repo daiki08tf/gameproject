@@ -4,9 +4,9 @@ import { EXPLORATION_SITES, explorationProgressFor } from '../js/data/exploratio
 import { buildSecretRealmStage } from '../js/data/secretRealms.js';
 import { findStage } from '../js/data/stages.js';
 
-test('Exploration 1.0 starts with a blood gate and the seven-key final mystery',()=>{
-  assert.equal(EXPLORATION_SITES.length,2);
-  assert.ok(EXPLORATION_SITES.some(x=>x.id==='blood_gate'));
+test('Exploration includes four Secret Realms plus blood gate and seven-key mystery',()=>{
+  assert.equal(EXPLORATION_SITES.length,6);
+  for(const id of ['blood_gate','ancient_dragon_gate','sealed_library','god_grave','void_corridor','seven_seal_gate']) assert.ok(EXPLORATION_SITES.some(x=>x.id===id));
   assert.ok(EXPLORATION_SITES.some(x=>x.id==='seven_seal_gate'&&x.fragmentsRequired===7));
 });
 
@@ -27,19 +27,46 @@ test('manual inspection reveals clues without handing out missing fragments',()=
   assert.equal(p.unlocked,false);
 });
 
-test('Blood Castle is a playable non-Abyss secret stage with targeted Blood King loot',()=>{
-  const stage=buildSecretRealmStage('secret-blood-castle');
-  assert.equal(stage.secretRealm,true);
-  assert.equal(stage.isAbyss,false);
-  assert.equal(stage.name,'異界・血王城');
-  assert.ok(stage.dropTable.some(x=>x.itemId==='set_blood_head'));
-  assert.ok(stage.dropTable.some(x=>x.itemId==='set_blood_body'));
-  assert.ok(stage.dropTable.some(x=>x.itemId==='set_blood_accessory'));
+test('expanded sites each require three clues and unlock at their final source depth',()=>{
+  for(const id of ['ancient_dragon_gate','sealed_library','god_grave','void_corridor']){
+    const site=EXPLORATION_SITES.find(x=>x.id===id);
+    assert.equal(site.fragmentsRequired,3);
+    assert.equal(explorationProgressFor(site,site.discoverDepth-1,{}).state,'hidden');
+    assert.equal(explorationProgressFor(site,site.discoverDepth,{}).state,'discovered');
+    const final=site.fragmentSources.at(-1);
+    const p=explorationProgressFor(site,final,{});
+    assert.equal(p.state,'unlocked');
+    assert.equal(p.fragments,3);
+  }
 });
 
-test('findStage resolves Secret Realm ids through the canonical battle route',()=>{
-  const found=findStage('secret-blood-castle');
-  assert.ok(found);
-  assert.equal(found.chapter,null);
-  assert.equal(found.stage.secretRealmId,'blood_gate');
+test('all Secret Realms are playable and have targeted set loot',()=>{
+  const expected={
+    'secret-blood-castle':'set_blood_',
+    'secret-ancient-dragon-nest':'set_dragon_',
+    'secret-sealed-library':'set_star_',
+    'secret-gods-graveyard':'set_executioner_',
+    'secret-void-corridor':'set_abyss_',
+  };
+  for(const [id,prefix] of Object.entries(expected)){
+    const stage=buildSecretRealmStage(id);
+    assert.ok(stage,id);
+    assert.equal(stage.secretRealm,true);
+    assert.equal(stage.isAbyss,false);
+    assert.ok(stage.dropTable.some(x=>String(x.itemId).startsWith(prefix)),`${id} targeted loot`);
+    const found=findStage(id);
+    assert.ok(found);
+    assert.equal(found.chapter,null);
+    assert.equal(found.stage.id,id);
+  }
+});
+
+test('late Secret Realms form a clear power ladder',()=>{
+  const ids=['secret-blood-castle','secret-ancient-dragon-nest','secret-sealed-library','secret-gods-graveyard','secret-void-corridor'];
+  const stages=ids.map(buildSecretRealmStage);
+  for(let i=1;i<stages.length;i++){
+    assert.ok(stages[i].recLevel>stages[i-1].recLevel);
+    assert.ok(stages[i].itemPowerTarget>stages[i-1].itemPowerTarget);
+  }
+  assert.equal(stages.at(-1).itemPowerTarget,9800);
 });
