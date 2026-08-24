@@ -11,12 +11,12 @@ import { abyssRoute, abyssRouteMultiplier } from './abyssRoutes.js';
 import { abyssChallenge, abyssChallengeMultiplier, abyssChallengeDanger, abyssChallengeFlags } from './abyssChallenges.js';
 const CH15=CHAPTER_SPECS.find(c=>c.num===15);
 export const ABYSS_MODIFIERS=[
- { id:'mod_frenzy',name:'狂乱の霧',desc:'敵SPD+25% ／ 獲得ゴールド+40%',enemySpeedMult:1.25,goldMult:1.4 },
- { id:'mod_fortress',name:'鉄壁の守り',desc:'敵の防御力+30% ／ ドロップ率+50%',enemyDefMult:1.3,dropMult:1.5 },
- { id:'mod_swarm',name:'群れの巣窟',desc:'出現数+30% ／ 獲得経験値+30%',enemyCountMult:1.3,expMult:1.3 },
- { id:'mod_glass',name:'脆き猛威',desc:'敵HP-20% ／ 敵攻撃力+35%',enemyHpMult:.8,enemyAtkMult:1.35 },
- { id:'mod_venom',name:'瘴気だまり',desc:'回復量-30% ／ 獲得経験値+25%',healMult:.7,expMult:1.25 },
- { id:'mod_blessed',name:'静穏の加護',desc:'回復量+50% ／ 獲得ゴールド-15%',healMult:1.5,goldMult:.85 },
+ { id: 'mod_frenzy', name: '狂乱の霧', desc: '敵SPD+25% ／ 獲得ゴールド+40%', enemySpeedMult: 1.25, goldMult: 1.4 },
+ { id: 'mod_fortress', name: '鉄壁の守り', desc: '敵の防御力+30% ／ ドロップ率+50%', enemyDefMult: 1.3, dropMult: 1.5 },
+ { id: 'mod_swarm', name: '群れの巣窟', desc: '出現数+30% ／ 獲得経験値+30%', enemyCountMult: 1.3, expMult: 1.3 },
+ { id: 'mod_glass', name: '脆き猛威', desc: '敵HP-20% ／ 敵攻撃力+35%', enemyHpMult: 0.8, enemyAtkMult: 1.35 },
+ { id: 'mod_venom', name: '瘴気だまり', desc: '回復量-30% ／ 獲得経験値+25%', healMult: 0.7, expMult: 1.25 },
+ { id: 'mod_blessed', name: '静穏の加護', desc: '回復量+50% ／ 獲得ゴールド-15%', healMult: 1.5, goldMult: 0.85 },
 ];
 function modifiersForDepth(depth){const count=isAbyssBossFloor(depth)?2:1,pool=[...ABYSS_MODIFIERS],picks=[];let seed=(depth*2654435761)%2147483647;for(let i=0;i<count&&pool.length;i++){seed=(seed*48271)%2147483647;const idx=seed%pool.length;picks.push(pool.splice(idx,1)[0]);}return picks;}
 const N={normal:'深淵の徘徊者',fast:'深淵の疾影',tank:'深淵の巨影',boss:'深淵の支配者'};
