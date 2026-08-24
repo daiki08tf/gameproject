@@ -65,13 +65,18 @@ state.weaponItemPower = function weaponItemPower(itemId) {
 state.enhanceMaterialCandidates = function enhanceMaterialCandidates(targetId) {
   const targetBase = baseItemId(targetId);
   const out = [];
+  const targetEquipped = Object.values(this.data.equipped || {}).includes(targetId);
 
   for (const [id, qty] of Object.entries(this.data.inventory)) {
     if (qty <= 0) continue;
     if (baseItemId(id) !== targetBase) continue;
     if (this.isItemLocked(id) || this.isItemFavorite(id)) continue;
 
-    const reserve = this.isWeaponInstance(targetId) && id === targetId ? 1 : 0;
+    // If the weapon being enhanced itself lives in the bag, keep one physical
+    // copy as the target. The old compatibility code only reserved unique
+    // instance ids, so a legacy stacked weapon could consume its final copy as
+    // its own Lv0->1 material and leave behind enhancement data for no weapon.
+    const reserve = id === targetId && !targetEquipped ? 1 : 0;
     for (let i = reserve; i < qty; i++) out.push(id);
   }
 
@@ -166,6 +171,8 @@ state.autoEquipBest = function autoEquipBest() {
       if (remaining <= 0) continue;
       const item = getItem(id);
       if (!item || item.slot !== slotType) continue;
+      // Keep auto-equip subject to exactly the same level/weapon restrictions as
+      // manual equip. The old accessory-specific path skipped this guard.
       if (!this.canEquipItem(item)) continue;
       const score = slotType === 'weapon' ? this.weaponItemPower(id) : powerScore(item);
       if (score > bestScore) {
@@ -182,18 +189,15 @@ state.autoEquipBest = function autoEquipBest() {
     if (chosen) used[chosen] = (used[chosen] || 0) + 1;
   }
 
-  const accCandidates = [];
-  for (const id in pool) {
-    const item = getItem(id);
-    if (!item || item.slot !== 'accessory') continue;
-    const remaining = pool[id] - (used[id] || 0);
-    for (let i = 0; i < remaining; i++) accCandidates.push(id);
-  }
-  accCandidates.sort((a, b) => powerScore(getItem(b)) - powerScore(getItem(a)));
-  newEquipped.accessory1 = accCandidates[0] || null;
-  if (accCandidates[0]) used[accCandidates[0]] = (used[accCandidates[0]] || 0) + 1;
-  newEquipped.accessory2 = accCandidates[1] || null;
-  if (accCandidates[1]) used[accCandidates[1]] = (used[accCandidates[1]] || 0) + 1;
+  // Reuse the same guarded picker for accessories instead of maintaining a
+  // second ranking path that can drift from canEquipItem(). Calling it twice is
+  // quantity-safe because `used` is updated between picks.
+  const accessory1 = takeBest('accessory');
+  newEquipped.accessory1 = accessory1;
+  if (accessory1) used[accessory1] = (used[accessory1] || 0) + 1;
+  const accessory2 = takeBest('accessory');
+  newEquipped.accessory2 = accessory2;
+  if (accessory2) used[accessory2] = (used[accessory2] || 0) + 1;
 
   const newBag = {};
   for (const id in pool) {

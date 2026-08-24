@@ -17,11 +17,16 @@ import {
 const CH15 = CHAPTER_SPECS.find((c) => c.num === 15);
 
 export const ABYSS_MODIFIERS = [
-  { id: 'mod_frenzy', name: '狂乱の霧', desc: '敵の移動速度+25% ／ 獲得ゴールド+40%', enemySpeedMult: 1.25, goldMult: 1.4 },
+  // Text battle has no world-space movement/contact damage. SPD is the real
+  // initiative axis, so modifier copy must describe and modify the active rule.
+  { id: 'mod_frenzy', name: '狂乱の霧', desc: '敵SPD+25% ／ 獲得ゴールド+40%', enemySpeedMult: 1.25, goldMult: 1.4 },
   { id: 'mod_fortress', name: '鉄壁の守り', desc: '敵の防御力+30% ／ ドロップ率+50%', enemyDefMult: 1.3, dropMult: 1.5 },
   { id: 'mod_swarm', name: '群れの巣窟', desc: '出現数+30% ／ 獲得経験値+30%', enemyCountMult: 1.3, expMult: 1.3 },
   { id: 'mod_glass', name: '脆き猛威', desc: '敵HP-20% ／ 敵攻撃力+35%', enemyHpMult: 0.8, enemyAtkMult: 1.35 },
-  { id: 'mod_venom', name: '瘴気だまり', desc: '敵との接触ダメージ+25% ／ 獲得経験値+25%', contactDmgMult: 1.25, expMult: 1.25 },
+  // Legacy real-time combat used contactDmgMult here. Text battle has no contact
+  // damage, which turned this into a free EXP bonus. Healing reduction preserves
+  // the intended "miasma = sustain risk" identity using a rule the engine applies.
+  { id: 'mod_venom', name: '瘴気だまり', desc: '回復量-30% ／ 獲得経験値+25%', healMult: 0.7, expMult: 1.25 },
   { id: 'mod_blessed', name: '静穏の加護', desc: '回復量+50% ／ 獲得ゴールド-15%', healMult: 1.5, goldMult: 0.85 },
 ];
 
@@ -75,16 +80,15 @@ export function isAbyssBossFloor(depth) {
 }
 
 // 15章到達後の周回先なので、固定ドロップも15章の最高帯へ接続する。
+// Legacy equipment Runes were retired in favor of Rune 2.0. Chapter stages are
+// filtered by the migration patch, but Abyss stages are built dynamically after
+// that filter runs, so never put rune_* entries into this dynamic table.
 function ch15DropTable() {
   const dt = [
     { itemId: `${CH15.id}_named_${CH15.items.named.slot}`, weight: 1 },
-    { itemId: `rune_effect_${CH15.items.named.effect}`, weight: 1 },
   ];
   if (CH15.items.named2) {
-    dt.push(
-      { itemId: `${CH15.id}_named2_${CH15.items.named2.slot}`, weight: 1 },
-      { itemId: `rune_effect_${CH15.items.named2.effect}`, weight: 1 },
-    );
+    dt.push({ itemId: `${CH15.id}_named2_${CH15.items.named2.slot}`, weight: 1 });
   }
   return dt;
 }
@@ -103,7 +107,6 @@ export function buildAbyssStage(rawDepth) {
   const enemyCountMult = modMult('enemyCountMult');
   const dropMult = modMult('dropMult');
   const healMult = modMult('healMult');
-  const contactDmgMult = modMult('contactDmgMult');
   const enemyAtkMult = modMult('enemyAtkMult');
   const enemyDefMult = modMult('enemyDefMult');
   const enemySpeedMult = modMult('enemySpeedMult');
@@ -148,7 +151,7 @@ export function buildAbyssStage(rawDepth) {
     rewards: { gold: Math.max(1, Math.round(goldReward)), exp: Math.max(1, Math.round(expBudget)) },
     dropTable: ch15DropTable(),
     modifiers: modifiers.map((m) => ({ id: m.id, name: m.name, desc: m.desc })),
-    dropMult, healMult, contactDmgMult,
+    dropMult, healMult,
     enemyAtkMult, enemyDefMult, enemySpeedMult, enemyHpMult,
     dropRegionTags: ['fire', 'ice', 'lightning', 'wind', 'light', 'dark', 'poison'],
   };

@@ -4,7 +4,8 @@
    BattleEngine creates a unique weapon instance (baseId#seq) with Affixes,
    but legacy runItems stored only the base weapon id. That made the result
    screen look as if no options had dropped. Keep the exact instance id in
-   runItems for weapon drops while leaving non-weapon drops untouched.
+   runItems for every weapon-producing drop path while leaving non-weapon
+   drops untouched.
    ============================================================ */
 import { BattleEngine } from '../battleEngine.js';
 
@@ -23,5 +24,10 @@ function wrapDropMethod(name) {
   };
 }
 
+// _rollDrop() can also select a weapon from a stage dropTable (named weapons,
+// Abyss fixed drops, etc.). It needs the same instance-id handoff as the two
+// weapon-specific routes below, otherwise the result screen loses Equipment 3.0
+// metadata for exactly those drops.
+wrapDropMethod('_rollDrop');
 wrapDropMethod('_rollWeaponDrop');
 wrapDropMethod('_rollBossWeaponDrop');
