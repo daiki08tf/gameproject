@@ -3,6 +3,7 @@
    ============================================================ */
 import { state } from '../state.js';
 import { RUNE2_DEFS, getRune2, runesForStage } from '../data/runes2.js';
+import { chainMethod } from './patchUtils.js';
 
 function ensureRune2Data(){
   if(!state.data.rune2Owned||typeof state.data.rune2Owned!=='object')state.data.rune2Owned={};
@@ -21,7 +22,6 @@ state.rune2Starred=function rune2Starred(id){const rune=getRune2(id);return!!(ru
 state.rollRune2DropForStage=function rollRune2DropForStage(stageId,random=Math.random){ensureRune2Data();const results=[];for(const rune of runesForStage(stageId)){if(random()<rune.dropRate){this.addRune2Marks(rune.id,1);results.push({id:rune.id,amount:1,owned:this.rune2OwnedMarks(rune.id)});}}return results;};
 state.getRuneSockets=function rune2LegacySocketsDisabled(){return[];};
 
-const inheritanceGetStats=state.getStats.bind(state);
 const inheritanceBreakdown=state.getStatBreakdown.bind(state);
 function applyCodex(stats,stateRef){
   const out={...stats},m=Math.max(0,Number(stateRef.codexStatMult?.()??1)||1);
@@ -33,7 +33,14 @@ function applyRunes(stats,stateRef){
   for(const rune of RUNE2_DEFS){if(rune.kind!=='statMult')continue;const marks=stateRef.rune2ActiveMarks(rune.id);if(!marks)continue;const mult=1+rune.perMark*marks;if(rune.stat==='spd')out[rune.stat]=Math.round((Number(out[rune.stat]||0)*mult)*10)/10;else out[rune.stat]=Math.round(Number(out[rune.stat]||0)*mult);}
   return out;
 }
-state.getStats=function getStatsWithRune2(){ensureRune2Data();return applyRunes(applyCodex(inheritanceGetStats(),this),this);};
+// inheritanceGetStats is also reused below by getStatBreakdownWithRune2 (as the
+// pre-Codex/pre-Rune baseline), so chainMethod's captured `previous` is stashed
+// into this outer binding rather than only living inside the getStats closure.
+let inheritanceGetStats;
+chainMethod(state, 'getStats', (previous) => {
+  inheritanceGetStats = previous;
+  return function getStatsWithRune2(){ensureRune2Data();return applyRunes(applyCodex(inheritanceGetStats(),this),this);};
+});
 state.getStatBreakdown=function getStatBreakdownWithRune2(stat){
   ensureRune2Data();
   const lower=inheritanceBreakdown(stat);

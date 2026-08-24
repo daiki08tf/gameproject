@@ -1,6 +1,7 @@
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { uniqueBranchEffect } from '../data/uniqueBranchEffects.js';
+import { chainMethod } from './patchUtils.js';
 
 function equippedBranch(itemId){
   const p=state.getUniqueTrialProgress?.(itemId);
@@ -19,8 +20,7 @@ function activeBranches(){
 function effects(engine,kind){ return (engine._uniqueBranchEffects||[]).flatMap(b=>b.effects||[]).filter(e=>e.kind===kind); }
 
 // ---------- Stats ----------
-const originalGetStats=state.getStats.bind(state);
-state.getStats=function getStatsWithUniqueBranches(){
+chainMethod(state, 'getStats', (originalGetStats) => function getStatsWithUniqueBranches(){
   const s=originalGetStats();
   for(const b of activeBranches()){
     const x=b.stats||{};
@@ -33,7 +33,7 @@ state.getStats=function getStatsWithUniqueBranches(){
     if(x.crit) s.critPct=Math.min(100,(s.critPct||0)+x.crit);
   }
   return s;
-};
+});
 
 // BattleEngine構築後に現在の分岐を固定。戦闘中の装備変更はないため毎hit再探索しない。
 const originalInit=BattleEngine.prototype.init;

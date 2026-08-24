@@ -8,6 +8,7 @@ import { itemPowerBand, affixTierForItemPower } from '../data/equipment3.js';
 import { buildGearInstance, EQUIPMENT3_GEAR_SLOTS } from '../data/equipment3Gear.js';
 import { getLegendaryEffect, getCursedAffix } from '../data/equipment3Legendary.js';
 import { CAPS_LAYER } from '../data/balance.js';
+import { chainMethod } from './patchUtils.js';
 
 function ensureGearData(target = state) {
   target.data.gearInstances ||= {};
@@ -127,8 +128,7 @@ function equippedGearInstances(target) {
   return out;
 }
 
-const previousGetStats = state.getStats.bind(state);
-state.getStats = function equipment3GearStats() {
+chainMethod(state, 'getStats', (previousGetStats) => function equipment3GearStats() {
   const stats = previousGetStats();
   const combined = {};
   const curseMult = {};
@@ -151,7 +151,7 @@ state.getStats = function equipment3GearStats() {
   if (combined.armorPen) stats.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, Math.max(0, (stats.armorPen || 0) + combined.armorPen));
   if (combined.evasion) stats.evasion = Math.min(CAPS_LAYER.EVASION_MAX, Math.max(0, (stats.evasion || 0) + combined.evasion));
   return stats;
-};
+});
 
 const previousGetEquippedEffects = state.getEquippedEffects.bind(state);
 state.getEquippedEffects = function equipment3GearEffects() {

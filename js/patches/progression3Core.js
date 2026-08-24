@@ -1,6 +1,7 @@
 import { state } from '../state.js';
 import { computeStats, getJob, TIERS } from '../data/jobs.js';
 import { PROGRESSION3_BASE, JOB_EXP_SHARE_BY_TIER, growthForJob, activeJobModifier } from '../data/progression3.js';
+import { chainMethod } from './patchUtils.js';
 
 const GROWTH_STATS=['hp','mp','atk','def','mag','mdef','spd'];
 
@@ -68,8 +69,7 @@ state.gainExp=function progression3GainExp(amount){
   return {...result,extraJobExp,jobLevelBefore:beforeJobLevel,jobLevel:this.currentJobLevel};
 };
 
-const previousGetStats=state.getStats.bind(state);
-state.getStats=function progression3Stats(){
+chainMethod(state, 'getStats', (previousGetStats) => function progression3Stats(){
   const old=previousGetStats();
   const cg=ensureProgression3();
   const legacyBase=computeStats(this.currentJobId,this.characterLevel);
@@ -82,7 +82,7 @@ state.getStats=function progression3Stats(){
   }
   out.mdef=Math.max(1,Math.round((cg.totals.mdef||PROGRESSION3_BASE.mdef)*activeJobModifier(this.currentJobId,'mdef')));
   return out;
-};
+});
 
 const previousBreakdown=state.getStatBreakdown?.bind(state);
 state.getStatBreakdown=function progression3Breakdown(stat){

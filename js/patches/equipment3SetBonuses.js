@@ -5,6 +5,7 @@ import { state } from '../state.js';
 import { getItem, SLOTS } from '../data/equipment.js';
 import { EQUIPMENT3_SETS } from '../data/equipment3Sets.js';
 import { CAPS_LAYER } from '../data/balance.js';
+import { chainMethod } from './patchUtils.js';
 
 state.equipmentSetCounts = function equipmentSetCounts() {
   const pieces = {};
@@ -33,8 +34,7 @@ state.activeEquipmentSetBonuses = function activeEquipmentSetBonuses() {
   return active;
 };
 
-const previousGetStats = state.getStats.bind(state);
-state.getStats = function equipment3SetStats() {
+chainMethod(state, 'getStats', (previousGetStats) => function equipment3SetStats() {
   const stats = previousGetStats();
   const mult = {};
   const add = {};
@@ -51,7 +51,7 @@ state.getStats = function equipment3SetStats() {
   if (add.armorPen) stats.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, Math.max(0, (stats.armorPen || 0) + add.armorPen));
   if (add.evasion) stats.evasion = Math.min(CAPS_LAYER.EVASION_MAX, Math.max(0, (stats.evasion || 0) + add.evasion));
   return stats;
-};
+});
 
 const previousGetEquippedEffects = state.getEquippedEffects.bind(state);
 state.getEquippedEffects = function equipment3SetEffects() {

@@ -7,6 +7,7 @@
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { bountyUniqueById, uniqueForBounty } from '../data/uniqueEquipment.js';
+import { chainMethod } from './patchUtils.js';
 
 function passive(engine, kind) {
   return engine.effects.find(e => e && e.trigger === 'passive' && e.kind === kind) || null;
@@ -30,8 +31,7 @@ state.canSellOrDismantle = function uniqueCannotBeDestroyed(itemId, qty = 1) {
   return originalCanSell(itemId, qty);
 };
 
-const originalGetStats = state.getStats.bind(state);
-state.getStats = function getStatsWithUniqueRules() {
+chainMethod(state, 'getStats', (originalGetStats) => function getStatsWithUniqueRules() {
   const stats = originalGetStats();
   const weapon = bountyUniqueById(this.data.equipped.weapon);
   if (weapon) {
@@ -39,7 +39,7 @@ state.getStats = function getStatsWithUniqueRules() {
     if (penalty) stats.def = Math.max(1, Math.round(stats.def * (1 - penalty.power)));
   }
   return stats;
-};
+});
 
 // ---------- Bounty base scaling ----------
 const BOUNTY_SCALE = {

@@ -8,6 +8,7 @@ import {
   getLegendaryEffect,
   getCursedAffix,
 } from '../data/equipment3Legendary.js';
+import { chainMethod } from './patchUtils.js';
 
 function applyLegendaryPackage(instanceId, ctx = {}) {
   const inst = state.data.weaponInstances?.[instanceId];
@@ -65,8 +66,7 @@ state.getEquippedEffects = function equipment3EquippedEffects() {
   return effects;
 };
 
-const previousGetStats = state.getStats.bind(state);
-state.getStats = function equipment3CursedStats() {
+chainMethod(state, 'getStats', (previousGetStats) => function equipment3CursedStats() {
   const stats = previousGetStats();
   const weaponId = this.data.equipped.weapon;
   const inst = this.data.weaponInstances?.[weaponId];
@@ -78,7 +78,7 @@ state.getStats = function equipment3CursedStats() {
     if (Number.isFinite(out[stat])) out[stat] = Math.max(1, Math.round(out[stat] * mult * 10) / 10);
   }
   return out;
-};
+});
 
 state.weaponLegendaryPackage = function weaponLegendaryPackage(itemId) {
   const inst = this.data.weaponInstances?.[itemId];

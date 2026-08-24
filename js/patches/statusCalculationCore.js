@@ -13,6 +13,7 @@
    ============================================================ */
 
 import { state } from '../state.js';
+import { chainMethod } from './patchUtils.js';
 
 export const STATUS_LAYER_ORDER = [
   'characterJobBase',
@@ -42,12 +43,11 @@ function withCharacterLevelAsLegacyLevel(fn) {
   }
 }
 
-const legacyGetStats = state.getStats.bind(state);
 const legacyGetStatBreakdown = state.getStatBreakdown.bind(state);
 
-state.getStats = function getStatsProgression2() {
+chainMethod(state, 'getStats', (legacyGetStats) => function getStatsProgression2() {
   return withCharacterLevelAsLegacyLevel(() => legacyGetStats());
-};
+});
 
 state.getStatBreakdown = function getStatBreakdownProgression2(stat) {
   const legacy = withCharacterLevelAsLegacyLevel(() => legacyGetStatBreakdown(stat));
