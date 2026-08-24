@@ -44,6 +44,7 @@ import './patches/companionEvolution.js';
 import './patches/companionSynergy.js';
 import './patches/companion3Breeding.js';
 import './patches/companionBattle.js';
+import './patches/battle2RoadmapComplete.js';
 import './patches/companionRecruitment.js';
 import './patches/codexFoundation.js';
 import './patches/codexUi.js';
