@@ -80,7 +80,11 @@ button { font-family: inherit; }
 .btn-sub { background: rgba(255,255,255,0.12); color: #f0f0f5; }
 .btn-main:active, .btn-sub:active { transform: scale(0.96); }
 
-.confirm-actions { display: flex; gap: 10px; justify-content: center; margin-top: 6px; }
+/* flex-wrapなしだと項目数の多いアクション行（仲間の枠選択/進化/帰す等）が
+   画面幅を超えて右端が見切れたり、ボタン内の文字が縦積みに潰れる崩れが
+   発生していたため修正（UI改善時） */
+.confirm-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 6px; }
+.confirm-actions .btn-main, .confirm-actions .btn-sub { flex: 1 1 auto; min-width: max-content; white-space: nowrap; }
 
 .btn-back, .btn-icon {
   background: rgba(255,255,255,0.1);
@@ -307,13 +311,18 @@ button { font-family: inherit; }
 .equip-picker .hint { opacity: 0.6; font-size: 13px; text-align: center; }
 .pick-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   background: var(--card-bg);
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 8px;
   padding: 10px 12px;
 }
+/* 情報ブロックが十分な幅を持てるよう最小幅を確保し、収まらない時は
+   お気に入り/ロック等のアクションボタン群を次行へ折り返す（崩れ修正） */
+.pick-row .pick-main { flex: 1 1 200px; min-width: 0; }
 .pick-row .item-name { font-weight: bold; font-size: 14px; }
 .pick-row .item-stats { font-size: 11px; opacity: 0.7; }
 .pick-row button {
@@ -324,7 +333,10 @@ button { font-family: inherit; }
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
+.equip-inline-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .pick-row.equipped button { background: rgba(230,66,90,0.4); }
 .pick-row button[disabled] { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); cursor: default; }
 .compare-line { font-size: 11px; margin-top: 2px; }
@@ -345,6 +357,8 @@ button { font-family: inherit; }
   border-radius: 6px;
   font-size: 11px;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* ---------------------------------------------------------
@@ -385,18 +399,30 @@ button { font-family: inherit; }
 --------------------------------------------------------- */
 .manastone-badge { background: var(--card-bg); padding: 4px 10px; border-radius: 6px; font-size: 13px; }
 
-.tab-row { display: flex; gap: 8px; margin-bottom: 12px; }
+/* flex-wrap:wrapとmin-width:max-contentの組み合わせにより、タブ項目が
+   多い/長いケース（装備のレアリティフィルター等）でもボタン単位で次行へ
+   折り返す。以前はnowrap+flex:1のみでボタン自体が文字単位で縦積みに
+   潰れる崩れが発生していた（UI改善時に修正）。 */
+.tab-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .tab-btn {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: max-content;
+  white-space: nowrap;
   background: var(--card-bg);
   border: 1px solid rgba(255,255,255,0.12);
   color: rgba(255,255,255,0.7);
-  padding: 10px;
+  padding: 8px 12px;
   border-radius: 8px;
+  font-size: 12.5px;
   font-weight: bold;
   cursor: pointer;
 }
 .tab-btn.active { background: rgba(242,201,76,0.15); border-color: var(--accent); color: var(--accent); }
+
+/* 装備画面のレアリティフィルター行：タブより項目数が多く長いラベルも
+   あるため、さらに一段コンパクトにする */
+#lootFilterRow { row-gap: 6px; align-items: center; }
+#lootFilterRow .tab-btn { padding: 6px 10px; font-size: 11.5px; }
 
 .blacksmith-content { overflow-y: auto; flex: 1; padding-bottom: 12px; }
 
