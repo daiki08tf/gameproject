@@ -1,150 +1,17 @@
 import { jobsByTier, getJob } from '../data/jobs.js';
 import { FUSION_JOBS, getFusionJobByParents } from '../data/jobFusionRegistry.js';
+import { constellationTreeFor } from '../data/jobConstellationTrees.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 
 let selectedBasicId = 'warrior';
-
-const CENTER = 500;
-const RADIUS = 360;
-
-function posFor(index, total) {
-  const angle = (-Math.PI / 2) + (Math.PI * 2 * index / total);
-  return {
-    x: CENTER + Math.cos(angle) * RADIUS,
-    y: CENTER + Math.sin(angle) * RADIUS,
-  };
-}
-
-function basicJobs() {
-  return jobsByTier('basic');
-}
-
-function discoveryState(fusion, masteredSet) {
-  const masteredCount = fusion.parents.filter((id) => masteredSet.has(id)).length;
-  if (masteredCount === 2) return 'discovered';
-  if (masteredCount === 1) return 'hinted';
-  return 'hidden';
-}
-
-function fusionSummary(selectedId, masteredSet) {
-  return FUSION_JOBS
-    .filter((fusion) => fusion.parents.includes(selectedId))
-    .map((fusion) => ({ ...fusion, discovery: discoveryState(fusion, masteredSet) }))
-    .sort((a, b) => {
-      const rank = { discovered: 0, hinted: 1, hidden: 2 };
-      return rank[a.discovery] - rank[b.discovery] || a.name.localeCompare(b.name, 'ja');
-    });
-}
-
-function buildLines(jobs, selectedId, masteredSet) {
-  const selectedIndex = jobs.findIndex((j) => j.id === selectedId);
-  if (selectedIndex < 0) return '';
-  const from = posFor(selectedIndex, jobs.length);
-  return jobs.map((job, index) => {
-    if (job.id === selectedId) return '';
-    const fusion = getFusionJobByParents(selectedId, job.id);
-    if (!fusion) return '';
-    const to = posFor(index, jobs.length);
-    const bothMastered = masteredSet.has(selectedId) && masteredSet.has(job.id);
-    const oneMastered = masteredSet.has(selectedId) || masteredSet.has(job.id);
-    const cls = bothMastered ? 'active' : oneMastered ? 'hinted' : 'locked';
-    return `<line class="constellation-link ${cls}" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"></line>`;
-  }).join('');
-}
-
-function starButtons(jobs, masteredSet) {
-  return jobs.map((job, index) => {
-    const p = posFor(index, jobs.length);
-    const mastered = masteredSet.has(job.id);
-    const selected = job.id === selectedBasicId;
-    const progress = state.jobProgress(job.id);
-    return `<button class="constellation-star ${mastered ? 'mastered' : ''} ${selected ? 'selected' : ''}" data-basic-job="${job.id}" style="left:${(p.x / 10)}%;top:${(p.y / 10)}%;" aria-label="${job.name}">
-      <span class="constellation-star-core">${mastered ? '★' : '◇'}</span>
-      <span class="constellation-star-label">${job.name}</span>
-      <span class="constellation-star-level">Lv.${progress.level}</span>
-    </button>`;
-  }).join('');
-}
-
-function fusionList(selectedJob, masteredSet) {
-  const rows = fusionSummary(selectedJob.id, masteredSet);
-  return rows.map((fusion) => {
-    const partnerId = fusion.parents.find((id) => id !== selectedJob.id);
-    const partner = getJob(partnerId);
-    if (fusion.discovery === 'discovered') {
-      return `<button class="constellation-fusion-row discovered" data-partner-job="${partnerId}">
-        <span class="fusion-status">✦</span>
-        <span class="fusion-main"><strong>${fusion.name}</strong><small>${selectedJob.name} × ${partner.name}</small></span>
-        <span class="fusion-state">発見</span>
-      </button>`;
-    }
-    if (fusion.discovery === 'hinted') {
-      const missingId = fusion.parents.find((id) => !masteredSet.has(id));
-      const missingJob = getJob(missingId);
-      return `<button class="constellation-fusion-row hinted" data-partner-job="${partnerId}">
-        <span class="fusion-status">◇</span>
-        <span class="fusion-main"><strong>？？？？？</strong><small>${missingJob?.name || 'もう一つの基本職'}をMASTERすると共鳴</small></span>
-        <span class="fusion-state">未完成</span>
-      </button>`;
-    }
-    return `<div class="constellation-fusion-row locked">
-      <span class="fusion-status">·</span>
-      <span class="fusion-main"><strong>？？？？？</strong><small>星はまだ眠っている</small></span>
-      <span class="fusion-state">未発見</span>
-    </div>`;
-  }).join('');
-}
-
-export function renderJobConstellation(container) {
-  const jobs = basicJobs();
-  if (!jobs.some((j) => j.id === selectedBasicId)) selectedBasicId = jobs[0]?.id || 'warrior';
-  const masteredSet = state.masteredSet();
-  const selectedJob = getJob(selectedBasicId) || jobs[0];
-  const selectedMastered = masteredSet.has(selectedJob.id);
-  const discoveredCount = FUSION_JOBS.filter((fusion) => fusion.parents.every((id) => masteredSet.has(id))).length;
-  const masteredBasics = jobs.filter((job) => masteredSet.has(job.id)).length;
-
-  container.innerHTML = `
-    <div class="constellation-shell">
-      <div class="constellation-summary">
-        <div><span class="constellation-kicker">SKILL CONSTELLATION</span><strong>職業星盤</strong></div>
-        <div class="constellation-count">基本星 ${masteredBasics}/15<br><span>共鳴 ${discoveredCount}/105</span></div>
-      </div>
-      <p class="constellation-hint">基本職をMASTERすると星が点灯。MASTERした2つの星を選ぶと、その間に新しい上級職が生まれます。</p>
-      <div class="constellation-board-wrap">
-        <div class="constellation-board">
-          <svg class="constellation-svg" viewBox="0 0 1000 1000" aria-hidden="true">
-            <circle class="constellation-orbit" cx="500" cy="500" r="360"></circle>
-            ${buildLines(jobs, selectedJob.id, masteredSet)}
-          </svg>
-          ${starButtons(jobs, masteredSet)}
-          <div class="constellation-center ${selectedMastered ? 'mastered' : ''}">
-            <span>${selectedMastered ? 'MASTER STAR' : 'JOB STAR'}</span>
-            <strong>${selectedJob.name}</strong>
-            <small>${selectedMastered ? '共鳴可能' : 'MASTERで外周星が点灯'}</small>
-          </div>
-        </div>
-      </div>
-      <div class="constellation-panel">
-        <div class="constellation-panel-head"><strong>${selectedJob.name}から伸びる星路</strong><span>${selectedMastered ? '★ MASTER' : '未MASTER'}</span></div>
-        <div class="constellation-fusion-list">${fusionList(selectedJob, masteredSet)}</div>
-      </div>
-      <div class="constellation-note">※ Phase 8基盤段階では、新規75職は「発見」まで。転職・固有Fusion Trait・Keystone・Ultimateは星盤エンジンの次段階で接続します。</div>
-    </div>`;
-
-  for (const btn of container.querySelectorAll('[data-basic-job]')) {
-    btn.addEventListener('click', () => {
-      Audio_.tap();
-      selectedBasicId = btn.dataset.basicJob;
-      renderJobConstellation(container);
-    });
-  }
-  for (const btn of container.querySelectorAll('[data-partner-job]')) {
-    btn.addEventListener('click', () => {
-      Audio_.tap();
-      selectedBasicId = btn.dataset.partnerJob;
-      renderJobConstellation(container);
-    });
-  }
-}
+const CENTER=500,RADIUS=360;
+function posFor(i,total){const a=-Math.PI/2+Math.PI*2*i/total;return{x:CENTER+Math.cos(a)*RADIUS,y:CENTER+Math.sin(a)*RADIUS};}
+function basicJobs(){return jobsByTier('basic');}
+function discoveryState(f,m){const masteredCount=f.parents.filter(id=>m.has(id)).length;return masteredCount === 2?'discovered':masteredCount===1?'hinted':'hidden';}
+function fusionSummary(id,m){const rank={discovered:0,hinted:1,hidden:2};return FUSION_JOBS.filter(f=>f.parents.includes(id)).map(f=>({...f,discovery:discoveryState(f,m)})).sort((a,b)=>rank[a.discovery]-rank[b.discovery]||a.name.localeCompare(b.name,'ja'));}
+function buildLines(jobs,id,m){const si=jobs.findIndex(j=>j.id===id);if(si<0)return'';const from=posFor(si,jobs.length);return jobs.map((j,i)=>{if(j.id===id)return'';const f=getFusionJobByParents(id,j.id);if(!f)return'';const to=posFor(i,jobs.length),both=m.has(id)&&m.has(j.id),one=m.has(id)||m.has(j.id);return`<line class="constellation-link ${both?'active':one?'hinted':'locked'}" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"></line>`}).join('');}
+function starButtons(jobs,m){return jobs.map((j,i)=>{const p=posFor(i,jobs.length),mastered=m.has(j.id),selected=j.id===selectedBasicId,prog=state.jobProgress(j.id);return`<button class="constellation-star ${mastered?'mastered':''} ${selected?'selected':''}" data-basic-job="${j.id}" style="left:${p.x/10}%;top:${p.y/10}%"><span class="constellation-star-core">${mastered?'★':'◇'}</span><span class="constellation-star-label">${j.name}</span><span class="constellation-star-level">Lv.${prog.level}</span></button>`}).join('');}
+function fusionList(job,m){return fusionSummary(job.id,m).map(f=>{const partnerId=f.parents.find(id=>id!==job.id),partner=getJob(partnerId);if(f.discovery==='discovered')return`<button class="constellation-fusion-row discovered" data-partner-job="${partnerId}"><span class="fusion-status">✦</span><span class="fusion-main"><strong>${f.name}</strong><small>${job.name} × ${partner.name}</small></span><span class="fusion-state">発見</span></button>`;if(f.discovery==='hinted'){const missing=getJob(f.parents.find(id=>!m.has(id)));return`<button class="constellation-fusion-row hinted" data-partner-job="${partnerId}"><span class="fusion-status">◇</span><span class="fusion-main"><strong>？？？？？</strong><small>${missing?.name||'もう一つの基本職'}をMASTERすると共鳴</small></span><span class="fusion-state">未完成</span></button>`;}return`<div class="constellation-fusion-row locked"><span class="fusion-status">·</span><span class="fusion-main"><strong>？？？？？</strong><small>星はまだ眠っている</small></span><span class="fusion-state">未発見</span></div>`}).join('');}
+function skillTree(job){const tree=constellationTreeFor(job.id);if(!tree.length)return`<div class="constellation-skill-empty">この職業の詳細星盤は順次解放予定。</div>`;const available=state.constellationPointsAvailable(job.id),earned=state.constellationPointsEarned(job.id);return`<div class="constellation-skill-head"><div><strong>${job.name} Skill Tree</strong><small>Job LvでSP獲得。接続済みノードから順に取得。</small></div><span>SP ${available}/${earned}</span></div><div class="constellation-skill-tree">${tree.map(n=>{const s=state.constellationNodeStatus(job.id,n.id);const cls=s.bought?'bought':s.canBuy?'available':'locked';const label=s.bought?'取得済':n.kind==='master'&&!s.masteryOk?'MASTER必要':s.canBuy?`${n.cost} SP`:'前提未達';return`<button class="constellation-skill-node ${cls} ${n.kind}" data-skill-node="${n.id}" ${s.canBuy?'':'disabled'}><span class="skill-node-kind">${n.kind==='keystone'?'KEYSTONE':n.kind==='major'?'MAJOR':n.kind==='master'?'MASTER':n.kind==='core'?'CORE':'NODE'}</span><strong>${n.name}</strong><small>${n.desc}</small><em>${label}</em></button>`}).join('')}</div>`;}
+export function renderJobConstellation(container){const jobs=basicJobs();if(!jobs.some(j=>j.id===selectedBasicId))selectedBasicId=jobs[0]?.id||'warrior';const m=state.masteredSet(),job=getJob(selectedBasicId)||jobs[0],mastered=m.has(job.id),discovered=FUSION_JOBS.filter(f=>f.parents.every(id=>m.has(id))).length,masteredBasics=jobs.filter(j=>m.has(j.id)).length;container.innerHTML=`<div class="constellation-shell"><div class="constellation-summary"><div><span class="constellation-kicker">SKILL CONSTELLATION</span><strong>職業星盤</strong></div><div class="constellation-count">基本星 ${masteredBasics}/15<br><span>共鳴 ${discovered}/105</span></div></div><p class="constellation-hint">職業を育ててSPを獲得し、星盤ノードを接続。MASTERした2つの基本星はFusion Jobとして共鳴します。</p><div class="constellation-board-wrap"><div class="constellation-board"><svg class="constellation-svg" viewBox="0 0 1000 1000"><circle class="constellation-orbit" cx="500" cy="500" r="360"></circle>${buildLines(jobs,job.id,m)}</svg>${starButtons(jobs,m)}<div class="constellation-center ${mastered?'mastered':''}"><span>${mastered?'MASTER STAR':'JOB STAR'}</span><strong>${job.name}</strong><small>${mastered?'共鳴可能':'育成中'}</small></div></div></div><div class="constellation-panel constellation-skill-panel">${skillTree(job)}</div><div class="constellation-panel"><div class="constellation-panel-head"><strong>${job.name}から伸びる星路</strong><span>${mastered?'★ MASTER':'未MASTER'}</span></div><div class="constellation-fusion-list">${fusionList(job,m)}</div></div></div>`;for(const b of container.querySelectorAll('[data-basic-job]'))b.addEventListener('click',()=>{Audio_.tap();selectedBasicId=b.dataset.basicJob;renderJobConstellation(container)});for(const b of container.querySelectorAll('[data-partner-job]'))b.addEventListener('click',()=>{Audio_.tap();selectedBasicId=b.dataset.partnerJob;renderJobConstellation(container)});for(const b of container.querySelectorAll('[data-skill-node]:not([disabled])'))b.addEventListener('click',()=>{Audio_.tap();if(state.buyConstellationNode(job.id,b.dataset.skillNode))renderJobConstellation(container)});}
