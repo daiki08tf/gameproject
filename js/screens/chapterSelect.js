@@ -2,6 +2,7 @@ import { CHAPTERS, isChapterUnlocked, finalStageOf } from '../data/stages.js';
 import { journeyName, latestVeilFragment } from '../data/worldVeil.js';
 import { WORLD3_REGIONS, world3RegionState } from '../data/world3Regions.js';
 import { world3BranchLabel } from '../data/world3Branches.js';
+import { visibleWorld3RealmNodes } from '../data/world3Realms.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 
@@ -17,15 +18,32 @@ function renderChapterCard(ch,idx,onPick){
   return card;
 }
 
+function renderRealmNodes(list,onPick){
+  const visibility=state.world2RealmVisibility?.()||{};
+  const flags=state.data.world2?.flags||{};
+  const nodes=visibleWorld3RealmNodes(visibility,flags);
+  const head=document.createElement('div');
+  head.className='stage-card branch';
+  head.innerHTML='<div><div class="name">🌐 世界層</div><div class="rec">旅の進行と境界探索によって、別世界の存在そのものが地図に刻まれていく。</div></div>';
+  list.appendChild(head);
+  for(const node of nodes){
+    const card=document.createElement('div');
+    card.className='stage-card branch'+(node.state==='hint'||node.state==='unknown'?' locked':'');
+    const badge=node.badge?`<span style="color:var(--accent)">${node.badge}</span>`:'';
+    card.innerHTML=`<div><div class="name">${node.icon} ${node.name} ${badge}</div><div class="rec">${node.detail||node.subtitle}</div></div><div class="cleared">${node.selectable?'→':node.state==='open'?'●':'?'}</div>`;
+    if(node.selectable&&node.route)card.addEventListener('click',()=>{Audio_.tap();onPick(node.route);});
+    list.appendChild(card);
+  }
+}
+
 export function renderChapterSelect(onPick) {
   const list=document.getElementById('chapterList');
   list.innerHTML='';
   const latestLore=latestVeilFragment((id)=>state.isStageCleared(id));
   if(latestLore){const record=document.createElement('div');record.className='stage-card boss';record.innerHTML=`<div><div class="name">📖 ${latestLore.title}</div><div class="rec">${latestLore.text}</div></div>`;list.appendChild(record);}
-  const realm=state.world2RealmVisibility?.()||{};
-  const realmLine=document.createElement('div');realmLine.className='stage-card branch';
-  const labels=[['mortal','人界'],['heaven','天界'],['underworld','冥界'],['modern','？？？']].filter(([id])=>realm[id]&&realm[id]!=='hidden').map(([id,name])=>`${name}:${realm[id]==='open'?'OPEN':realm[id]==='hint'?'兆候':'???'}`);
-  realmLine.innerHTML=`<div><div class="name">WORLD 3.0</div><div class="rec">${labels.join(' / ')||'人界を探索中'}</div></div>`;list.appendChild(realmLine);
+
+  renderRealmNodes(list,onPick);
+
   WORLD3_REGIONS.forEach(region=>{
     const progress=world3RegionState(region,CHAPTERS,(id)=>state.isStageCleared(id),(idx)=>isChapterUnlocked(idx,(id)=>state.isStageCleared(id)));
     if(!progress.unlocked&&progress.clearedCount===0)return;
@@ -37,6 +55,7 @@ export function renderChapterSelect(onPick) {
     for(const num of region.chapters){const idx=num-1,ch=CHAPTERS[idx];if(ch)body.appendChild(renderChapterCard(ch,idx,onPick));}
     header.addEventListener('click',()=>{body.hidden=!body.hidden;});wrap.append(header,body);list.appendChild(wrap);
   });
+
   if((state.world2Progress?.()||0)>=5){
     const secretSites=(state.explorationSites||[]).map(site=>state.explorationProgress?.(site.id)).filter(Boolean);
     const summary={keyFragments:state.world2KeyFragments?.()||0,keyCount:Object.values(state.data.world2?.keys||{}).reduce((a,b)=>a+(Number(b)||0),0),secretSites,riftKeys:state.riftKeys?.()||[]};
