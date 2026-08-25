@@ -38,9 +38,9 @@ Loot 3.0 extends the existing equipment, weapon-instance, Affix, Unique, Set, Co
 - [x] Keep the unknown anomaly route primarily informational until Story resolves it.
 
 ### 7.4 Inventory decisions
-- [ ] Make compare / keep / lock / favorite / dismantle decisions readable.
-- [ ] Preserve weapon instance Affixes when moving equipment in/out of inventory.
-- [ ] Ensure auto-equip and power-score logic do not silently destroy build-specialized value.
+- [x] Make compare / keep / lock / favorite / dismantle decisions readable. Existing compare/lock/favorite/Smart Loot UI is retained; jackpot/build/target pieces now show an explicit `KEEP候補` reason instead of relying on raw stats alone.
+- [x] Preserve weapon instance Affixes when moving equipment in/out of inventory. Loot 3.0 continues using the canonical weapon/gear instance IDs and does not add a second inventory path.
+- [x] Ensure auto-equip and power-score logic do not silently destroy build-specialized value. Raw power remains visible, while auto-equip uses a bounded strategic score that values Unique/Set/Build/Ancient/Greater/Legendary/target-farm identity up to +35%.
 
 ### 7.5 Endgame chase
 - [ ] Define chase tiers without adding an unnecessary new base rarity above Mythic.
