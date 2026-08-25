@@ -10,10 +10,12 @@ function renderChapterCard(ch,idx,onPick){
   const unlocked=isChapterUnlocked(idx,(id)=>state.isStageCleared(id));
   const bossStage=finalStageOf(ch);
   const allCleared=ch.stages.every((s)=>state.isStageCleared(s.id));
+  const mastery=state.phase9RegionMastery?.(ch.id);
+  const masteryLine=mastery&&unlocked?mastery.mastered?`<br><span style="color:var(--accent)">◆ REGION MASTER — ${mastery.facility.name}</span><br><small>${mastery.facility.desc}</small>`:`<br><span>探索 ${mastery.explored}/${mastery.total} / 隠し強敵 ${mastery.hiddenBossCleared?'討伐済':'未討伐'}</span>`:'';
   const card=document.createElement('div');
   card.className='stage-card'+(!unlocked?' locked':'')+(allCleared?' boss':'');
   card.style.margin='6px 0 0';
-  card.innerHTML=`<div><div class="name">${unlocked?journeyName(ch):'🔒 ???'}</div><div class="rec">${unlocked?`推奨Lv ${ch.stages[0].recLevel}〜${bossStage.recLevel}`:'ひとつ前の土地の主を倒すと道が開く'}</div></div><div class="cleared">${allCleared?'★':''}</div>`;
+  card.innerHTML=`<div><div class="name">${unlocked?journeyName(ch):'🔒 ???'}</div><div class="rec">${unlocked?`推奨Lv ${ch.stages[0].recLevel}〜${bossStage.recLevel}${masteryLine}`:'ひとつ前の土地の主を倒すと道が開く'}</div></div><div class="cleared">${mastery?.mastered?'◆':allCleared?'★':''}</div>`;
   if(unlocked)card.addEventListener('click',()=>{Audio_.tap();onPick(idx);});
   return card;
 }
@@ -36,6 +38,18 @@ function renderRealmNodes(list,onPick){
   }
 }
 
+function renderRegionalMasterySummary(list){
+  const masteries=state.phase9RegionalMasteries?.()||[];
+  if(!masteries.length)return;
+  const visible=masteries.filter(m=>CHAPTERS.find(ch=>ch.id===m.chapterId)&&isChapterUnlocked(m.chapter-1,(id)=>state.isStageCleared(id)));
+  if(!visible.length)return;
+  const mastered=masteries.filter(m=>m.mastered).length,bonus=state.phase9RegionalBonuses?.()||{};
+  const card=document.createElement('div');card.className='stage-card boss';
+  const stats=[bonus.atk?`ATK +${Math.round(bonus.atk*100)}%`:null,bonus.mag?`MAG +${Math.round(bonus.mag*100)}%`:null,bonus.spd?`SPD +${Math.round(bonus.spd*100)}%`:null,bonus.hp?`HP +${Math.round(bonus.hp*100)}%`:null,bonus.def?`DEF +${Math.round(bonus.def*100)}%`:null].filter(Boolean).join(' / ');
+  card.innerHTML=`<div><div class="name">◆ 外縁地域踏破 ${mastered}/5</div><div class="rec">探索3地点＋隠し強敵の討伐で地域施設が恒久解禁。${stats?`<br>${stats}`:''}${state.phase9NextWorldUnlocked?.()?'<br><span style="color:var(--accent)">第八鍵観測：境界のさらに外側から応答を検出。</span>':''}</div></div><div class="cleared">${mastered===5?'★':mastered}</div>`;
+  list.appendChild(card);
+}
+
 export function renderChapterSelect(onPick) {
   const list=document.getElementById('chapterList');
   list.innerHTML='';
@@ -43,6 +57,7 @@ export function renderChapterSelect(onPick) {
   if(latestLore){const record=document.createElement('div');record.className='stage-card boss';record.innerHTML=`<div><div class="name">📖 ${latestLore.title}</div><div class="rec">${latestLore.text}</div></div>`;list.appendChild(record);}
 
   renderRealmNodes(list,onPick);
+  renderRegionalMasterySummary(list);
 
   WORLD3_REGIONS.forEach(region=>{
     const progress=world3RegionState(region,CHAPTERS,(id)=>state.isStageCleared(id),(idx)=>isChapterUnlocked(idx,(id)=>state.isStageCleared(id)));
