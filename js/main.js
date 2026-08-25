@@ -49,6 +49,7 @@ import './patches/battle2RoadmapComplete.js';
 import './patches/companionRecruitment.js';
 import './patches/codexFoundation.js';
 import './patches/battleIntegration3.js';
+import './patches/battleIntegration3Final.js';
 import './patches/codexUi.js';
 import './patches/homeNavigation.js';
 import './patches/rune2Ui.js';
