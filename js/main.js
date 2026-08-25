@@ -41,6 +41,8 @@ import './patches/job3SpecializationCore.js';
 import './patches/job3LegacyPassives.js';
 import './patches/jobConstellationRuntime.js';
 import './patches/fusionCombatRuntime.js';
+import './patches/fusionBattleIntegration.js';
+import './patches/fusionBattleUi.js';
 import './patches/companionFoundation.js';
 import './patches/companionLevelCap.js';
 import './patches/companionResetSafety.js';
