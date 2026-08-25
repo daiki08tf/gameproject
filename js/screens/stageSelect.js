@@ -19,7 +19,7 @@ function renderWorld2StageSelect(onPick){
   document.getElementById('chapterTitle').textContent='発見された分岐';
   const list=document.getElementById('stageList');list.innerHTML='';
   const refresh=()=>renderWorld2StageSelect(onPick);
-  const head=document.createElement('div');head.className='stage-card boss';head.innerHTML=`<div><div class="name">🧭 世界の外側へ続く道</div><div class="rec">鍵穴、深淵で発見した異界、境界異常をまとめて確認する。</div></div>`;list.appendChild(head);
+  const head=document.createElement('div');head.className='stage-card boss';head.innerHTML=`<div><div class="name">🧭 世界の外側へ続く道</div><div class="rec">鍵穴、探索で得た縁と手掛かり、深淵で発見した異界、境界異常をまとめて確認する。</div></div>`;list.appendChild(head);
   const keyHeading=document.createElement('div');keyHeading.className='section-heading';keyHeading.textContent=`境界鍵路　—　鍵片 ${state.world2KeyFragments?.()||0}`;list.appendChild(keyHeading);
   const progress=state.world2Progress?.()||0,visibility=state.world2RealmVisibility?.()||{};
   for(const def of Object.values(KEY_DUNGEON_TYPES)){
@@ -33,6 +33,8 @@ function renderWorld2StageSelect(onPick){
     const enter=document.createElement('button');enter.className='btn-main';enter.textContent='挑む';enter.disabled=count<=0;enter.addEventListener('click',ev=>{ev.stopPropagation();Audio_.tap();onPick(stage);});actions.appendChild(enter);
     card.firstElementChild.appendChild(actions);list.appendChild(card);
   }
+  const discoveries=state.world2Discoveries?.()||[];
+  if(discoveries.length){const h=document.createElement('div');h.className='section-heading';h.textContent='旅で得た縁と手掛かり';list.appendChild(h);for(const d of discoveries){const card=document.createElement('div');card.className='stage-card branch';card.innerHTML=`<div><div class="name">✦ ${d.name}</div><div class="rec">${d.hint||'探索中に得た手掛かり。'}</div></div>`;list.appendChild(card);}}
   const visibleSites=(state.explorationSites||[]).map(site=>({site,p:state.explorationProgress?.(site.id)})).filter(x=>x.p&&x.p.state!=='hidden');
   if(visibleSites.length){const h=document.createElement('div');h.className='section-heading';h.textContent='深淵で発見した異界';list.appendChild(h);}
   for(const {site,p} of visibleSites){
