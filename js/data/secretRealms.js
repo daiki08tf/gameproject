@@ -3,6 +3,7 @@ import { ENEMY_TYPES } from './enemies.js';
 import { expandedRealmByStageId } from './secretRealmExpansion.js';
 import { buildWorld2KeyStage } from './world2Stages.js';
 import { world3EventStageById } from './world3EventStages.js';
+import { eighthKeyStageDef } from './phase9EighthKey.js';
 
 function scaleRealmEnemies(stage, cfg){
   const seen=new Set();
@@ -34,9 +35,6 @@ function buildExpandedRealm(cfg){
     ...base,
     id:site.realm.id,
     name:`異界・${site.realmName}`,
-    // Secret Realms are unlocked from a specific Abyss source depth and then add
-    // extra danger modifiers. Never allow legacy static recommendations/IP to
-    // fall below the newly remapped source floor.
     recLevel:Math.max(Number(site.realm.recLevel)||0,base.recLevel),
     itemPowerTarget:Math.max(Number(site.realm.itemPowerTarget)||0,base.itemPowerTarget),
     isAbyss:false,
@@ -53,7 +51,35 @@ function buildExpandedRealm(cfg){
   };
 }
 
+function buildEighthKeyStage(def){
+  const base=buildAbyssStage(def.depth,[],{suppressModifiers:true});
+  const healMult=def.final?.5:def.id.endsWith('-2')?.65:.8;
+  const dangerMult=def.final?1.28:def.id.endsWith('-2')?1.20:1.15;
+  scaleRealmEnemies(base,{hpMult:dangerMult,atkMult:dangerMult,defMult:def.final?1.25:1.12,speedMult:def.id.endsWith('-1')?1.15:1.08});
+  return{
+    ...base,
+    id:def.id,
+    name:def.name,
+    isAbyss:false,
+    secretRealm:true,
+    secretRealmId:'eighth_key',
+    phase9EighthKey:true,
+    phase9EighthKeyFinal:!!def.final,
+    abyssDepth:null,
+    abyssEra:`第八鍵：${def.recLabel}`,
+    healMult:Math.min(base.healMult||1,healMult),
+    dropMult:(base.dropMult||1)*(def.final?1.5:1.25),
+    itemPowerTarget:Math.min(10000,(base.itemPowerTarget||0)+(def.final?350:180)),
+    rewards:{gold:Math.round(base.rewards.gold*(def.final?1.6:1.3)),exp:Math.round(base.rewards.exp*(def.final?1.45:1.25))},
+    dropTable:[...(base.dropTable||[])],
+    modifiers:[def.modifier],
+    dropRegionTags:def.tags,
+  };
+}
+
 export function buildSecretRealmStage(stageId){
+  const eighth=eighthKeyStageDef(stageId);
+  if(eighth)return buildEighthKeyStage(eighth);
   if(stageId.startsWith('secret-worldkey-')) return buildWorld2KeyStage(stageId.slice('secret-worldkey-'.length));
   if(stageId.startsWith('secret-worldevent-')){
     const eventStage=world3EventStageById(stageId);
