@@ -80,9 +80,11 @@ function fusionList(selectedJob, masteredSet) {
       </button>`;
     }
     if (fusion.discovery === 'hinted') {
+      const missingId = fusion.parents.find((id) => !masteredSet.has(id));
+      const missingJob = getJob(missingId);
       return `<button class="constellation-fusion-row hinted" data-partner-job="${partnerId}">
         <span class="fusion-status">◇</span>
-        <span class="fusion-main"><strong>？？？？？</strong><small>${partner.name}をMASTERすると共鳴</small></span>
+        <span class="fusion-main"><strong>？？？？？</strong><small>${missingJob?.name || 'もう一つの基本職'}をMASTERすると共鳴</small></span>
         <span class="fusion-state">未完成</span>
       </button>`;
     }
@@ -120,7 +122,7 @@ export function renderJobConstellation(container) {
           <div class="constellation-center ${selectedMastered ? 'mastered' : ''}">
             <span>${selectedMastered ? 'MASTER STAR' : 'JOB STAR'}</span>
             <strong>${selectedJob.name}</strong>
-            <small>${selectedMastered ? '共鳴可能' : `MASTERで外周星が点灯`}</small>
+            <small>${selectedMastered ? '共鳴可能' : 'MASTERで外周星が点灯'}</small>
           </div>
         </div>
       </div>
