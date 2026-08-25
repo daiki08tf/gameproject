@@ -62,6 +62,7 @@ import './patches/abyssRunBuild.js';
 import './patches/exploration1Core.js';
 import './patches/riftKeyCore.js';
 import './patches/endgameDropContextFix.js';
+import './patches/loot3RealmTargetFarm.js';
 import './patches/legacyRuneRetirement.js';
 import './patches/bountyFoundation.js';
 import './patches/bountyUniqueFoundation.js';

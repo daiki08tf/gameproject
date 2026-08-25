@@ -20,22 +20,22 @@ Loot 3.0 extends the existing equipment, weapon-instance, Affix, Unique, Set, Co
 
 ## Phase 7 roadmap
 ### 7.1 Loot identity and quality model
-- [ ] Add one canonical loot-quality summary for a dropped/equipped item.
-- [ ] Distinguish base item rarity from Affix quality instead of conflating them.
-- [ ] Surface notable rolls: high Affix tier, Build Affix, Unique/Set identity, target-farm relevance.
-- [ ] Keep old saves and non-instance equipment compatible.
+- [x] Add one canonical loot-quality summary for a dropped/equipped item.
+- [x] Distinguish base item rarity from Affix quality instead of conflating them.
+- [x] Surface notable rolls: high Affix tier, Build Affix, Unique/Set identity, target-farm relevance.
+- [x] Keep old saves and non-instance equipment compatible.
 
 ### 7.2 Drop excitement
-- [ ] Improve battle-result loot presentation for genuinely notable drops.
-- [ ] Add concise reasons such as `ANCIENT AFFIX`, `BUILD`, `UNIQUE`, `SET`, `NEW CODEX`.
-- [ ] Avoid making every legendary-looking item feel equally special.
+- [x] Improve battle-result loot presentation for genuinely notable drops.
+- [x] Add concise reasons such as `ANCIENT AFFIX`, `BUILD`, `UNIQUE`, `SET`, `CODEX` and `TARGET HIT`.
+- [x] Avoid making every legendary-looking item feel equally special.
 
 ### 7.3 Target farming
-- [ ] Connect World 3.0 destinations to explicit loot families.
-- [ ] Heaven: Relic / light-build / high-tier material identity.
-- [ ] Underworld: Unique / dark-fire / high-risk identity.
-- [ ] Abyss routes and bosses: depth/build/boss-oriented quality pressure.
-- [ ] Keep the unknown anomaly route primarily informational until Story resolves it.
+- [x] Connect World 3.0 destinations to explicit loot families.
+- [ ] Heaven: Relic / light-build / high-tier material identity. (Light/Wind Affix + quality steering wired; direct Relic/material chase still pending.)
+- [ ] Underworld: Unique / dark-fire / high-risk identity. (Dark/Fire Affix + Cursed/Legendary steering wired; direct Unique chase still pending.)
+- [x] Abyss routes and bosses: depth/build/boss-oriented quality pressure.
+- [x] Keep the unknown anomaly route primarily informational until Story resolves it.
 
 ### 7.4 Inventory decisions
 - [ ] Make compare / keep / lock / favorite / dismantle decisions readable.
