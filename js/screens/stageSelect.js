@@ -1,6 +1,7 @@
 import { CHAPTERS } from '../data/stages.js';
 import { journeyName } from '../data/worldVeil.js';
 import { buildSecretRealmStage } from '../data/secretRealms.js';
+import { world3EventStageByFlag } from '../data/world3EventStages.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 import { rollBlessingChoices } from '../data/blessings.js';
@@ -34,7 +35,17 @@ function renderWorld2StageSelect(onPick){
     card.firstElementChild.appendChild(actions);list.appendChild(card);
   }
   const discoveries=state.world2Discoveries?.()||[];
-  if(discoveries.length){const h=document.createElement('div');h.className='section-heading';h.textContent='旅で得た縁と手掛かり';list.appendChild(h);for(const d of discoveries){const card=document.createElement('div');card.className='stage-card branch';card.innerHTML=`<div><div class="name">✦ ${d.name}</div><div class="rec">${d.hint||'探索中に得た手掛かり。'}</div></div>`;list.appendChild(card);}}
+  if(discoveries.length){
+    const h=document.createElement('div');h.className='section-heading';h.textContent='旅で得た縁と手掛かり';list.appendChild(h);
+    for(const d of discoveries){
+      const stage=world3EventStageByFlag(d.id);
+      const card=document.createElement('div');card.className='stage-card branch';
+      const playable=!!stage;
+      card.innerHTML=`<div><div class="name">✦ ${d.name}</div><div class="rec">${d.hint||'探索中に得た手掛かり。'}${playable?` / 推奨Lv ${stage.recLevel}`:''}</div></div><div class="cleared">${playable&&state.isStageCleared(stage.id)?'★':playable?'→':''}</div>`;
+      if(playable){const actions=document.createElement('div');actions.style.cssText='display:flex;gap:5px;flex-wrap:wrap;margin-top:5px';const enter=document.createElement('button');enter.className='btn-main';enter.textContent=state.isStageCleared(stage.id)?'もう一度調べる':'手掛かりを追う';enter.addEventListener('click',ev=>{ev.stopPropagation();Audio_.tap();onPick(buildSecretRealmStage(stage.id));});actions.appendChild(enter);card.firstElementChild.appendChild(actions);}
+      list.appendChild(card);
+    }
+  }
   const visibleSites=(state.explorationSites||[]).map(site=>({site,p:state.explorationProgress?.(site.id)})).filter(x=>x.p&&x.p.state!=='hidden');
   if(visibleSites.length){const h=document.createElement('div');h.className='section-heading';h.textContent='深淵で発見した異界';list.appendChild(h);}
   for(const {site,p} of visibleSites){
@@ -77,6 +88,7 @@ export function renderStageConfirm(stage) {
   document.getElementById('confirmStageRewards').textContent = rewardText;
   const modEl = document.getElementById('confirmModifiers');
   if(stage.keyDungeon){modEl.textContent=`🔑 境界鍵ダンジョン：出撃時に鍵を1本消費\n${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
+  else if(stage.worldEventStage){modEl.textContent=`探索分岐：${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||stage.name}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if(stage.secretRealm){modEl.textContent=`異界：${stage.abyssEra||stage.name}\n${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if (stage.bounty) {const hint = stage.bountyRewardHint ? ` ／ 戦利品の噂：${stage.bountyRewardHint}` : '';modEl.textContent = `手配書：${stage.rumor || '詳細不明'} ／ 特徴：${stage.bountyGimmick || '未知の強敵'}${hint}`;modEl.classList.remove('hidden');}
   else if (stage.isAbyss) {const lines = [];if (stage.abyssRoute) lines.push(`${stage.abyssRoute.icon} ${stage.abyssRoute.name}：☠ ${stage.abyssRoute.risk} ／ ◆ ${stage.abyssRoute.reward}`);if (stage.modifiers?.length) lines.push(`環境：${stage.modifiers.map(m => `${m.name}（${m.desc}）`).join(' ／ ')}`);if (stage.abyssPacts?.length) lines.push(`盟約：${stage.abyssPacts.map(p => p.name).join(' ／ ')}　危険度${stage.abyssPactDanger}`);modEl.textContent = lines.join('\n');modEl.style.whiteSpace = 'pre-line';modEl.classList.toggle('hidden', lines.length === 0);}
