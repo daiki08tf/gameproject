@@ -17,6 +17,7 @@ const HEAVEN_COST_SHARE = 0.15;
 const UNDERWORLD_ECHO_CHANCE = 0.45;
 const UNIQUE_ECHO_MAX = 5;
 const UNIQUE_ECHO_TRIAL_SHARE = 0.05;
+let installed = false;
 
 function ensureChaseData(target = state) {
   target.data.loot3RealmChase ||= {};
@@ -63,36 +64,43 @@ export function grantUnderworldUniqueEcho(target = state, rng = Math.random) {
   return { type: 'uniqueEcho', id: unique.id, name: unique.name, echoes: data.uniqueEchoes[unique.id], maxEchoes: UNIQUE_ECHO_MAX };
 }
 
-state.uniqueRealmEchoes = function uniqueRealmEchoes(itemId) {
-  return Math.max(0, Math.min(UNIQUE_ECHO_MAX, Number(ensureChaseData(this).uniqueEchoes[itemId]) || 0));
-};
+export function installLoot3RealmChase(target = state) {
+  if (installed) return false;
+  installed = true;
+  ensureChaseData(target);
 
-const previousUniqueProgress = state.getUniqueTrialProgress?.bind(state);
-if (previousUniqueProgress) {
-  state.getUniqueTrialProgress = function loot3UniqueTrialProgress(itemId) {
-    const progress = previousUniqueProgress(itemId);
-    if (!progress) return progress;
-    const echoes = this.uniqueRealmEchoes(itemId);
-    if (!echoes) return { ...progress, realmEchoes: 0, echoBonusPct: 0 };
-    const trials = progress.trials.map((trial) => {
-      const raw = Math.max(0, Number(progress.counts?.[trial.event]) || 0);
-      const bonus = Math.floor(trial.target * UNIQUE_ECHO_TRIAL_SHARE * echoes);
-      const count = Math.min(trial.target, raw + bonus);
-      return { ...trial, count, done: count >= trial.target, realmEchoBonus: Math.min(bonus, Math.max(0, trial.target - raw)) };
-    });
-    return { ...progress, trials, ready: trials.every((trial) => trial.done), realmEchoes: echoes, echoBonusPct: echoes * UNIQUE_ECHO_TRIAL_SHARE * 100 };
+  target.uniqueRealmEchoes = function uniqueRealmEchoes(itemId) {
+    return Math.max(0, Math.min(UNIQUE_ECHO_MAX, Number(ensureChaseData(this).uniqueEchoes[itemId]) || 0));
   };
-}
 
-const previousFinishBattle = BattleEngine.prototype._finishBattle;
-BattleEngine.prototype._finishBattle = function loot3RealmChaseFinish(cleared, retreated) {
-  const output = previousFinishBattle.call(this, cleared, retreated);
-  if (!cleared || retreated || !this.stage?.keyDungeon) return output;
-  let chase = null;
-  if (this.stage.world2KeyType === 'celestial') chase = grantHeavenRelicChase(state);
-  else if (this.stage.world2KeyType === 'infernal') chase = grantUnderworldUniqueEcho(state);
-  if (chase && this.finalResult) this.finalResult.loot3Chase = chase;
-  return output;
-};
+  const previousUniqueProgress = target.getUniqueTrialProgress?.bind(target);
+  if (previousUniqueProgress) {
+    target.getUniqueTrialProgress = function loot3UniqueTrialProgress(itemId) {
+      const progress = previousUniqueProgress(itemId);
+      if (!progress) return progress;
+      const echoes = this.uniqueRealmEchoes(itemId);
+      if (!echoes) return { ...progress, realmEchoes: 0, echoBonusPct: 0 };
+      const trials = progress.trials.map((trial) => {
+        const raw = Math.max(0, Number(progress.counts?.[trial.event]) || 0);
+        const bonus = Math.floor(trial.target * UNIQUE_ECHO_TRIAL_SHARE * echoes);
+        const count = Math.min(trial.target, raw + bonus);
+        return { ...trial, count, done: count >= trial.target, realmEchoBonus: Math.min(bonus, Math.max(0, trial.target - raw)) };
+      });
+      return { ...progress, trials, ready: trials.every((trial) => trial.done), realmEchoes: echoes, echoBonusPct: echoes * UNIQUE_ECHO_TRIAL_SHARE * 100 };
+    };
+  }
+
+  const previousFinishBattle = BattleEngine.prototype._finishBattle;
+  BattleEngine.prototype._finishBattle = function loot3RealmChaseFinish(cleared, retreated) {
+    const output = previousFinishBattle.call(this, cleared, retreated);
+    if (!cleared || retreated || !this.stage?.keyDungeon) return output;
+    let chase = null;
+    if (this.stage.world2KeyType === 'celestial') chase = grantHeavenRelicChase(target);
+    else if (this.stage.world2KeyType === 'infernal') chase = grantUnderworldUniqueEcho(target);
+    if (chase && this.finalResult) this.finalResult.loot3Chase = chase;
+    return output;
+  };
+  return true;
+}
 
 export { HEAVEN_RELIC_CHANCE, HEAVEN_COST_SHARE, UNDERWORLD_ECHO_CHANCE, UNIQUE_ECHO_MAX, UNIQUE_ECHO_TRIAL_SHARE, relicCandidates, uniqueCandidates };
