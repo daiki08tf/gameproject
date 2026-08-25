@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { ALL_FUSION_JOBS, FUSION_VALIDATION, getFusionJob, generatedFusionId } from '../js/data/jobFusion.js';
 import { fusionConstellationFor } from '../js/data/fusionConstellation.js';
 
-test('Phase 8 registry contains exactly 105 unique pairs',()=>{assert.equal(ALL_FUSION_JOBS.length,105);assert.equal(FUSION_VALIDATION.ok,true,FUSION_VALIDATION.errors.join('\n'));assert.deepEqual(FUSION_VALIDATION.counts,{ids:105,pairs:105,names:105,legacy:30,fusion:75});});
+test('Phase 8 registry contains exactly 105 unique pairs',()=>{assert.equal(ALL_FUSION_JOBS.length,105);assert.equal(FUSION_VALIDATION.ok,true,FUSION_VALIDATION.errors.join('\n'));assert.deepEqual(FUSION_VALIDATION.counts,{total:105,ids:105,pairs:105,names:105,legacy:30,fusion:75});});
 test('legacy ids survive while display names can evolve',()=>{assert.equal(getFusionJob('warrior','fighter').id,'battlemaster');assert.equal(getFusionJob('fighter','warrior').name,'羅刹');assert.equal(getFusionJob('thief','merchant').id,'treasurehunter');});
 test('new pair ids are deterministic and order independent',()=>{assert.equal(generatedFusionId('warrior','merchant'),'fusion_warrior_merchant');assert.equal(generatedFusionId('merchant','warrior'),'fusion_warrior_merchant');assert.equal(getFusionJob('thief','scholar').name,'遺物探究家');assert.equal(getFusionJob('priest','dancer').name,'神楽巫女');});
 test('every fusion job has identity, resource, constellation and loot metadata',()=>{for(const job of ALL_FUSION_JOBS){assert.ok(job.fusionTrait?.id,job.id);assert.ok(job.resourceInteraction?.id,job.id);assert.ok(job.constellation?.ultimate,job.id);assert.ok(job.lootTags.length>=4,job.id);}});
