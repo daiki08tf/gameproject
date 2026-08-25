@@ -25,14 +25,17 @@ test('constellation UI hides undiscovered fusion names and reveals mastered pair
   assert.match(src, /共鳴 \$\{discovered\}\/105/);
 });
 
-test('starter constellation trees contain core, major, keystone and master progression', () => {
-  for (const id of ['warrior','mage','priest']) {
+test('all 15 basic jobs have complete playable constellation progression', () => {
+  assert.equal(Object.keys(JOB_CONSTELLATION_TREES).length, 15);
+  for (const id of BASIC_FUSION_JOB_IDS) {
     const tree = JOB_CONSTELLATION_TREES[id];
-    assert.ok(tree.length >= 6);
+    assert.ok(tree, `missing constellation tree: ${id}`);
+    assert.equal(tree.length, 6);
     assert.ok(tree.some(n => n.kind === 'core'));
     assert.ok(tree.some(n => n.kind === 'major'));
     assert.ok(tree.some(n => n.kind === 'keystone'));
     assert.ok(tree.some(n => n.kind === 'master'));
+    assert.ok(tree.some(n => n.kind === 'keystone' && (n.statMult || n.statAdd || n.effects)));
     for (const node of tree) for (const req of node.requires) assert.ok(tree.some(n => n.id === req));
   }
 });
