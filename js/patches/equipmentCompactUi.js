@@ -82,13 +82,19 @@ function compactEquipmentScreen() {
   ensureEquipmentCompactStyles();
   const picker = document.getElementById('equipPicker');
   if (!picker) return;
-  picker.classList.add('ui-list-compact', 'equip-picker-compact');
+  // classList.add() re-queues an "attributes" mutation record even when the
+  // class is already present, and this function is itself invoked from the
+  // MutationObserver watching this same subtree (attributes:true) below — so
+  // applying it unconditionally on every call retriggers the observer forever
+  // and hangs the tab before the page even finishes loading. Only touch the
+  // attribute when it would actually change.
+  if (!picker.classList.contains('ui-list-compact')) picker.classList.add('ui-list-compact', 'equip-picker-compact');
   picker.querySelectorAll(':scope > .pick-row').forEach(compactEquipmentRow);
 
   const filters = document.getElementById('lootFilterRow');
-  if (filters) filters.classList.add('equip-filter-compact');
+  if (filters && !filters.classList.contains('equip-filter-compact')) filters.classList.add('equip-filter-compact');
   const doll = document.getElementById('paperdoll');
-  if (doll) doll.classList.add('equip-paperdoll-compact');
+  if (doll && !doll.classList.contains('equip-paperdoll-compact')) doll.classList.add('equip-paperdoll-compact');
 }
 
 function installEquipmentCompactUi() {

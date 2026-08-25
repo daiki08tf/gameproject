@@ -116,7 +116,12 @@ function compactCompanionCard(card){
 function foldBondIntoDetails(card){
   const bond=card.querySelector(':scope > .ranch-bond-info');
   const body=card.querySelector('.ranch-detail-body');
-  if(bond&&body) body.appendChild(bond);
+  // appendChild() re-queues a childList mutation (remove+insert) even when the
+  // node is already body's last child, and this function runs from the
+  // MutationObserver watching this same subtree (childList:true) below — so
+  // calling it unconditionally retriggers the observer forever. Only move the
+  // node when it isn't already where it belongs.
+  if(bond&&body&&bond.parentElement!==body) body.appendChild(bond);
 }
 
 function filterCompanions(root){
