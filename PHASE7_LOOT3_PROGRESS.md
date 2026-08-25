@@ -43,9 +43,9 @@ Loot 3.0 extends the existing equipment, weapon-instance, Affix, Unique, Set, Co
 - [x] Ensure auto-equip and power-score logic do not silently destroy build-specialized value. Raw power remains visible, while auto-equip uses a bounded strategic score that values Unique/Set/Build/Ancient/Greater/Legendary/target-farm identity up to +35%.
 
 ### 7.5 Endgame chase
-- [ ] Define chase tiers without adding an unnecessary new base rarity above Mythic.
-- [ ] Ancient remains an Affix tier, not a duplicate equipment rarity.
-- [ ] Use combinations of item identity + Affix quality + build synergy for jackpot drops.
+- [x] Define chase tiers without adding an unnecessary new base rarity above Mythic. `ENDGAME PIECE` / `APEX DROP` / `GOD ROLL` are completion labels, not item rarities.
+- [x] Ancient remains an Affix tier, not a duplicate equipment rarity.
+- [x] Use combinations of item identity + Affix quality + build synergy for jackpot drops. GOD ROLL requires IP9500+, Ancient Affix, a build-defining axis (Build Affix or Legendary Power), and Greater; raw IP alone cannot qualify.
 
 ### 7.6 Integration audit and COMPLETE marker
 - [ ] Regression tests for instance persistence, quality classification and old-save compatibility.
