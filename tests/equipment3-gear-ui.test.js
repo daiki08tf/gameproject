@@ -22,8 +22,9 @@ test('shared presentation renders armor IP, Greater, Legendary and Curse metadat
   assert.equal(p.curse.name, '血の契約');
   assert.match(equipment3MetaText(p), /IP 8123/);
   const special=equipment3SpecialLines(p);
-  assert.equal(special.length, 3);
+  assert.equal(special.length, 4);
   assert.match(special[0], /LOOT/);
+  assert.ok(special.some(line=>line.includes('KEEP候補')));
   assert.ok(special.some(line=>line.includes('雷神の心臓')));
   assert.ok(special.some(line=>line.includes('血の契約')));
 });
