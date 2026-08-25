@@ -1,73 +1,36 @@
-/* Phase 8 — Skill Constellation allocation runtime. */
+/* Phase 8 — Skill + Fusion Constellation runtime. */
 import { state } from '../state.js';
 import { constellationTreeFor, constellationNode } from '../data/jobConstellationTrees.js';
+import { fusionConstellationFor } from '../data/fusionConstellation.js';
+import { getFusionJobById } from '../data/jobFusionRegistry.js';
+import { TIER_INFO } from '../data/jobs.js';
 import { CAPS_LAYER } from '../data/balance.js';
 import { chainMethod } from './patchUtils.js';
 
-function ensure(target = state) {
-  target.data.jobConstellation ||= {};
-  return target.data.jobConstellation;
-}
+function ensure(target=state){target.data.jobConstellation||={};target.data.fusionConstellation||={};target.data.activeFusionId||=null;return target.data;}
+const BASIC_MASTER=TIER_INFO.basic.masteryLv||15;
 
-// One SP per Job level after Lv1. MASTER node itself is free but requires
-// both the normal MASTER flag and its prerequisite path.
-state.constellationPointsEarned = function(jobId) {
-  return Math.max(0, this.jobProgress(jobId).level - 1);
-};
-state.constellationPurchased = function(jobId) {
-  return new Set(ensure(this)[jobId] || []);
-};
-state.constellationPointsSpent = function(jobId) {
-  const bought = this.constellationPurchased(jobId);
-  return constellationTreeFor(jobId).reduce((sum, n) => sum + (bought.has(n.id) ? n.cost : 0), 0);
-};
-state.constellationPointsAvailable = function(jobId) {
-  return Math.max(0, this.constellationPointsEarned(jobId) - this.constellationPointsSpent(jobId));
-};
-state.constellationNodeStatus = function(jobId, nodeId) {
-  const n = constellationNode(jobId, nodeId);
-  if (!n) return { exists:false, bought:false, canBuy:false };
-  const bought = this.constellationPurchased(jobId);
-  const prereq = n.requires.every((id) => bought.has(id));
-  const masteryOk = n.kind !== 'master' || this.isMastered(jobId);
-  const canBuy = !bought.has(n.id) && prereq && masteryOk && this.constellationPointsAvailable(jobId) >= n.cost;
-  return { exists:true, bought:bought.has(n.id), prereq, masteryOk, canBuy, node:n };
-};
-state.buyConstellationNode = function(jobId, nodeId) {
-  const status = this.constellationNodeStatus(jobId, nodeId);
-  if (!status.canBuy) return false;
-  const data = ensure(this);
-  data[jobId] ||= [];
-  data[jobId].push(nodeId);
-  this.save();
-  return true;
-};
-state.activeConstellationNodes = function(jobId = this.currentJobId) {
-  const bought = this.constellationPurchased(jobId);
-  return constellationTreeFor(jobId).filter((n) => bought.has(n.id));
-};
+state.constellationPointsEarned=function(jobId){return Math.max(0,this.jobProgress(jobId).level-1);};
+state.constellationPurchased=function(jobId){return new Set(ensure(this).jobConstellation[jobId]||[]);};
+state.constellationPointsSpent=function(jobId){const b=this.constellationPurchased(jobId);return constellationTreeFor(jobId).reduce((s,n)=>s+(b.has(n.id)?n.cost:0),0);};
+state.constellationPointsAvailable=function(jobId){return Math.max(0,this.constellationPointsEarned(jobId)-this.constellationPointsSpent(jobId));};
+state.constellationNodeStatus=function(jobId,nodeId){const n=constellationNode(jobId,nodeId);if(!n)return{exists:false,bought:false,canBuy:false};const b=this.constellationPurchased(jobId),prereq=n.requires.every(id=>b.has(id)),masteryOk=n.kind!=='master'||this.isMastered(jobId),canBuy=!b.has(n.id)&&prereq&&masteryOk&&this.constellationPointsAvailable(jobId)>=n.cost;return{exists:true,bought:b.has(n.id),prereq,masteryOk,canBuy,node:n};};
+state.buyConstellationNode=function(jobId,nodeId){const s=this.constellationNodeStatus(jobId,nodeId);if(!s.canBuy)return false;const d=ensure(this).jobConstellation;d[jobId]||=[];d[jobId].push(nodeId);this.save();return true;};
+state.activeConstellationNodes=function(jobId=this.currentJobId){const b=this.constellationPurchased(jobId);return constellationTreeFor(jobId).filter(n=>b.has(n.id));};
 
-chainMethod(state, 'getStats', (previous) => function constellationStats() {
-  const stats = previous();
-  for (const n of this.activeConstellationNodes()) {
-    for (const [key, mult] of Object.entries(n.statMult || {})) {
-      if (key === 'spd') stats.spd = Math.max(0.1, Math.round(stats.spd * mult * 10) / 10);
-      else if (stats[key] != null) stats[key] = Math.max(1, Math.round(stats[key] * mult));
-    }
-    for (const [key, add] of Object.entries(n.statAdd || {})) {
-      if (key === 'critPct') stats.critPct = Math.min(CAPS_LAYER.CRIT_PCT_MAX, stats.critPct + add);
-      else if (key === 'armorPen') stats.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, (stats.armorPen || 0) + add);
-      else if (key === 'evasion') stats.evasion = Math.min(CAPS_LAYER.EVASION_MAX, (stats.evasion || 0) + add);
-    }
-  }
-  return stats;
-});
+state.isFusionDiscovered=function(fusionId){const f=getFusionJobById(fusionId);return !!(f&&f.parents.every(id=>this.isMastered(id)));};
+state.fusionPointsEarned=function(fusionId){const f=getFusionJobById(fusionId);if(!f||!this.isFusionDiscovered(fusionId))return 0;return 1+f.parents.reduce((s,id)=>s+Math.floor(Math.max(0,this.jobProgress(id).level-BASIC_MASTER)/5),0);};
+state.fusionPurchased=function(fusionId){return new Set(ensure(this).fusionConstellation[fusionId]||[]);};
+state.fusionPointsSpent=function(fusionId){const b=this.fusionPurchased(fusionId);return fusionConstellationFor(fusionId).reduce((s,n)=>s+(b.has(n.id)?n.cost:0),0);};
+state.fusionPointsAvailable=function(fusionId){return Math.max(0,this.fusionPointsEarned(fusionId)-this.fusionPointsSpent(fusionId));};
+state.fusionNodeStatus=function(fusionId,nodeId){const n=fusionConstellationFor(fusionId).find(x=>x.id===nodeId);if(!n)return{exists:false,bought:false,canBuy:false};const b=this.fusionPurchased(fusionId),prereq=n.requires.every(id=>b.has(id)),discovered=this.isFusionDiscovered(fusionId),canBuy=discovered&&!b.has(n.id)&&prereq&&this.fusionPointsAvailable(fusionId)>=n.cost;return{exists:true,bought:b.has(n.id),prereq,discovered,canBuy,node:n};};
+state.buyFusionNode=function(fusionId,nodeId){const s=this.fusionNodeStatus(fusionId,nodeId);if(!s.canBuy)return false;const d=ensure(this).fusionConstellation;d[fusionId]||=[];d[fusionId].push(nodeId);this.save();return true;};
+state.setActiveFusion=function(fusionId){if(fusionId!==null&&!this.isFusionDiscovered(fusionId))return false;ensure(this).activeFusionId=fusionId;this.save();return true;};
+state.activeFusionId=function(){const id=ensure(this).activeFusionId;return id&&this.isFusionDiscovered(id)?id:null;};
+state.activeFusionNodes=function(){const id=this.activeFusionId();if(!id)return[];const b=this.fusionPurchased(id);return fusionConstellationFor(id).filter(n=>b.has(n.id));};
 
-const previousEffects = state.getEquippedEffects.bind(state);
-state.getEquippedEffects = function constellationEffects() {
-  const effects = previousEffects();
-  for (const n of this.activeConstellationNodes()) for (const effect of n.effects || []) effects.push({ ...effect, __constellation:n.id });
-  return effects;
-};
-
+function applyStats(stats,n){for(const[key,m]of Object.entries(n.statMult||{})){if(key==='spd')stats.spd=Math.max(.1,Math.round(stats.spd*m*10)/10);else if(stats[key]!=null)stats[key]=Math.max(1,Math.round(stats[key]*m));}for(const[key,a]of Object.entries(n.statAdd||{})){if(key==='critPct')stats.critPct=Math.min(CAPS_LAYER.CRIT_PCT_MAX,stats.critPct+a);else if(key==='armorPen')stats.armorPen=Math.min(CAPS_LAYER.ARMOR_PEN_MAX,(stats.armorPen||0)+a);else if(key==='evasion')stats.evasion=Math.min(CAPS_LAYER.EVASION_MAX,(stats.evasion||0)+a);}}
+chainMethod(state,'getStats',(previous)=>function constellationStats(){const stats=previous();for(const n of [...this.activeConstellationNodes(),...this.activeFusionNodes()])applyStats(stats,n);return stats;});
+const previousEffects=state.getEquippedEffects.bind(state);
+state.getEquippedEffects=function constellationEffects(){const effects=previousEffects();for(const n of [...this.activeConstellationNodes(),...this.activeFusionNodes()])for(const effect of n.effects||[])effects.push({...effect,__constellation:n.id});return effects;};
 ensure();
