@@ -2,16 +2,17 @@ export const WORLD3_REALM_NODES=Object.freeze([
   {id:'mortal',icon:'🌍',name:'人界',subtitle:'旅の起点となる世界',route:null},
   {id:'heaven',icon:'☀️',name:'天界',subtitle:'光・Relic・高位素材を狙う聖域',route:'world3-branches'},
   {id:'underworld',icon:'🌑',name:'冥界',subtitle:'高危険・Unique探索を狙う奈落領域',route:'world3-branches'},
-  {id:'modern',icon:'📡',name:'？？？',subtitle:'境界の向こうから機械音が響く',route:null},
+  {id:'modern',icon:'📡',name:'？？？',subtitle:'境界の向こうから機械音が響く',route:'world3-branches'},
 ]);
 
 export function world3RealmNodeState(node,visibility={},flags={}){
   const raw=visibility?.[node.id]||'hidden';
   if(node.id==='mortal')return{...node,state:'open',selectable:false,badge:'CURRENT',detail:'現在いる世界。地上の旅路はここから広がっている。'};
   if(node.id==='modern'){
-    if(raw==='hidden')return{...node,state:'hidden',selectable:false,badge:'',detail:''};
+    if(flags.phase9MachineWorldOpen)return{...node,name:'機界',state:'open',selectable:true,badge:'NEW WORLD',detail:'第八鍵・零号門の先に人工世界層を確認。直線都市、周期光、機械生命反応――次の世界「機界」への座標が確立された。'};
+    if(raw==='hidden'&&!flags.phase9EighthKeyObserved)return{...node,state:'hidden',selectable:false,badge:'',detail:''};
     if(flags.modernTrace)return{...node,state:'trace',selectable:false,badge:'TRACE',detail:'同じ間隔で並ぶ光点、直線的な構造物、周期的な低い振動。自然物では説明できない痕跡が重なっている。まだ世界名は特定できない。'};
-    if(flags.modernSignal)return{...node,state:'signal',selectable:false,badge:'SIGNAL',detail:'機械音だけではない。規則的な光、硬質な反響、人工物らしき気配が返ってくる。'};
+    if(flags.modernSignal||flags.phase9EighthKeyObserved)return{...node,state:'signal',selectable:false,badge:'SIGNAL',detail:'機械音だけではない。規則的な光、硬質な反響、人工物らしき気配が返ってくる。第八鍵観測室が同じ座標を指している。'};
     if(flags.modernContact)return{...node,state:'hint',selectable:false,badge:'CONTACT',detail:'鍵穴の向こうから、聞いたことのない機械音がする。こちら側とは違う文明の気配がある。'};
     return{...node,state:'unknown',selectable:false,badge:'???',detail:'境界異常点の向こうに、既知の天界・冥界とは異なる何かがある。'};
   }
