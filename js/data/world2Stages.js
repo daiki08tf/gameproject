@@ -8,7 +8,18 @@ const PRESENTATION=Object.freeze({
  infernal:{name:'鍵界・奈落回廊',tags:['dark','fire'],identity:'高危険探索',goal:'Unique・闇/炎系装備を狙う冥界側ルート',mod:{id:'world2_infernal',name:'奈落圧',desc:'回復しづらい危険領域。短期決戦とUnique探索向け'}},
  anomaly:{name:'鍵界・境界異常点',tags:['light','dark'],identity:'境界観測',goal:'報酬よりも未知世界の情報更新が主目的',mod:{id:'world2_anomaly',name:'未知の雑音',desc:'遠くで機械のような音が聞こえる。繰り返し踏破で信号の正体に近づく'}},
 });
+
+// Loot 3.0: descriptions above now have a real reward identity. The anomaly route
+// intentionally has no Affix steering/quality bonus until its Story destination resolves.
+export const WORLD2_LOOT_PROFILES=Object.freeze({
+ verdant:Object.freeze({label:'自然系 / 風Build',preferredAffixIds:['element_wind_dmg'],targetAffixChance:.24}),
+ celestial:Object.freeze({label:'天界：光・風Build / 高品質装備',preferredAffixIds:['element_light_dmg','element_wind_dmg'],targetAffixChance:.38,legendaryChanceAdd:.03,cursedChanceMult:.85}),
+ infernal:Object.freeze({label:'冥界：闇・炎Build / Cursed・Legendary',preferredAffixIds:['element_dark_dmg','element_fire_dmg'],targetAffixChance:.44,legendaryChanceAdd:.04,cursedChanceMult:1.65}),
+ anomaly:Object.freeze({label:'境界観測',preferredAffixIds:[],targetAffixChance:0,informationalOnly:true}),
+});
+
+export function world2LootProfile(typeId){return WORLD2_LOOT_PROFILES[typeId]||null;}
 export function world2KeyStageId(typeId){return `secret-worldkey-${typeId}`;}
-export function world2KeyStageDescriptor(typeId){const def=KEY_DUNGEON_TYPES[typeId],p=PRESENTATION[typeId];if(!def||!p)return null;const depth=DEPTH_BY_KEY[typeId];const base=buildAbyssStage(depth,[],{suppressModifiers:true});return{id:world2KeyStageId(typeId),name:p.name,recLevel:base.recLevel,rewards:{gold:Math.round(base.rewards.gold*1.15),exp:Math.round(base.rewards.exp*1.12)},world2KeyType:typeId,world2Realm:def.realm,world3Identity:p.identity,world3Goal:p.goal,branch:true,keyDungeon:true,dropRegionTags:p.tags,modifiers:[p.mod]};}
-export function buildWorld2KeyStage(typeId){const d=world2KeyStageDescriptor(typeId);if(!d)return null;const base=buildAbyssStage(DEPTH_BY_KEY[typeId],[],{suppressModifiers:true});return{...base,...d,isAbyss:false,abyssDepth:null,secretRealm:false,keyDungeon:true,dropMult:(base.dropMult||1)*(typeId==='celestial'?1.22:typeId==='infernal'?1.28:1.18),healMult:typeId==='infernal'?Math.min(base.healMult||1,.65):(base.healMult||1),rewards:d.rewards,modifiers:d.modifiers,dropRegionTags:d.dropRegionTags};}
+export function world2KeyStageDescriptor(typeId){const def=KEY_DUNGEON_TYPES[typeId],p=PRESENTATION[typeId],loot=world2LootProfile(typeId);if(!def||!p)return null;const depth=DEPTH_BY_KEY[typeId];const base=buildAbyssStage(depth,[],{suppressModifiers:true});return{id:world2KeyStageId(typeId),name:p.name,recLevel:base.recLevel,rewards:{gold:Math.round(base.rewards.gold*1.15),exp:Math.round(base.rewards.exp*1.12)},world2KeyType:typeId,world2Realm:def.realm,world3Identity:p.identity,world3Goal:p.goal,loot3Profile:loot,branch:true,keyDungeon:true,dropRegionTags:p.tags,modifiers:[p.mod]};}
+export function buildWorld2KeyStage(typeId){const d=world2KeyStageDescriptor(typeId);if(!d)return null;const base=buildAbyssStage(DEPTH_BY_KEY[typeId],[],{suppressModifiers:true});return{...base,...d,isAbyss:false,abyssDepth:null,secretRealm:false,keyDungeon:true,dropMult:(base.dropMult||1)*(typeId==='celestial'?1.22:typeId==='infernal'?1.28:1.18),healMult:typeId==='infernal'?Math.min(base.healMult||1,.65):(base.healMult||1),rewards:d.rewards,modifiers:d.modifiers,dropRegionTags:d.dropRegionTags,loot3Profile:d.loot3Profile};}
 export function world2KeyStageDescriptors(){return Object.keys(KEY_DUNGEON_TYPES).map(world2KeyStageDescriptor).filter(Boolean);}
