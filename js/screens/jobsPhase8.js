@@ -1,3 +1,4 @@
+import '../patches/phase8JobUiStyles.js';
 import { jobsByTier, isUnlocked, unlockRequirementText, TIERS } from '../data/jobsPhase8.js';
 import { WEAPON_TYPES } from '../data/equipment.js';
 import { state } from '../state.js';
