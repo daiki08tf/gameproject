@@ -21,7 +21,7 @@ function lootQuality(item, inst, affixes, { legendary, curse, greaterCount, item
   let quality = 'standard';
   if (item.unique || legendary || greaterCount >= 2 || highest === 'ancient' || (buildCount && highest && affixRarityIndex(highest) >= affixRarityIndex('mythic'))) quality = 'jackpot';
   else if (item.setId || item.setName || curse || greaterCount === 1 || (highest && affixRarityIndex(highest) >= affixRarityIndex('legendary')) || buildCount || itemPower >= 3000) quality = 'special';
-  return { quality, reasons, highestAffixRarity: highest, buildCount };
+  return { quality, reasons, highestAffixRarity: highest, buildCount, targetFarm: inst?.targetFarm || null, targetFarmHit: !!inst?.targetFarmHit };
 }
 
 export function equipment3Presentation(item, inst = null) {
@@ -53,6 +53,7 @@ export function equipment3MetaText(p) {
 export function equipment3SpecialLines(p) {
   if (!p) return [];
   const lines=[];
+  if(p.targetFarmHit&&p.targetFarm)lines.push(`【TARGET HIT】${p.targetFarm}`);
   if(p.reasons?.length)lines.push(`【LOOT】${p.reasons.join(' / ')}`);
   if (p.legendary) lines.push(`《${p.legendary.name}》 ${p.legendary.desc}`);
   if (p.curse) lines.push(`【呪：${p.curse.name}】 ${p.curse.desc}`);
@@ -63,5 +64,6 @@ export function equipment3DropHeadline(p) {
   if (!p) return null;
   if (p.quality === 'jackpot') return `――JACKPOT${p.reasons?.length ? `：${p.reasons.slice(0,2).join(' / ')}` : ''}――`;
   if (p.quality === 'special') return `――SPECIAL DROP${p.reasons?.length ? `：${p.reasons.slice(0,2).join(' / ')}` : ''}――`;
+  if (p.targetFarmHit) return '――TARGET DROP――';
   return null;
 }
