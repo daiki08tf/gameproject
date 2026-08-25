@@ -11,14 +11,20 @@ function stageDropContext(engine, ctx = null) {
   const stage = engine?.stage || {};
   const base = ctx && typeof ctx === 'object' ? ctx : {};
   const target = targetProfile(engine);
+  const realm = stage.loot3Profile || null;
   return {
     ...base,
     depth: stage.isAbyss ? Math.max(0, Math.floor(Number(stage.abyssDepth) || 0)) : Math.max(0, Math.floor(Number(base.depth) || 0)),
     itemPowerTarget: Math.max(0, Math.floor(Number(base.itemPowerTarget || stage.itemPowerTarget) || 0)),
     abyssRouteId: stage.abyssRoute?.id || null,
-    targetFarm: target?.label || null,
-    cursedChanceMult: target?.cursedChanceMult || 1,
-    legendaryChanceAdd: target?.legendaryChanceAdd || 0,
+    world2KeyType: stage.world2KeyType || null,
+    dropRegionTags: Array.isArray(stage.dropRegionTags) ? [...stage.dropRegionTags] : [],
+    targetFarm: realm?.label || target?.label || null,
+    preferredAffixIds: Array.isArray(realm?.preferredAffixIds) ? [...realm.preferredAffixIds] : [],
+    targetAffixChance: Math.max(0, Math.min(1, Number(realm?.targetAffixChance) || 0)),
+    informationalOnly: !!realm?.informationalOnly,
+    cursedChanceMult: (Number(base.cursedChanceMult) || 1) * (Number(target?.cursedChanceMult) || 1) * (Number(realm?.cursedChanceMult) || 1),
+    legendaryChanceAdd: (Number(base.legendaryChanceAdd) || 0) + (Number(target?.legendaryChanceAdd) || 0) + (Number(realm?.legendaryChanceAdd) || 0),
   };
 }
 
@@ -32,7 +38,7 @@ function withDropRateMult(mult, fn) {
 
 function withNonAbyssStageDropMult(engine, fn) {
   const stage = engine?.stage || {};
-  if (stage.isAbyss || (!stage.secretRealm && !stage.isRift)) return fn();
+  if (stage.isAbyss || (!stage.secretRealm && !stage.isRift && !stage.keyDungeon)) return fn();
   return withDropRateMult(Math.max(0, Number(stage.dropMult) || 1), fn);
 }
 
