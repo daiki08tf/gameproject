@@ -1,4 +1,5 @@
 /* Phase 8 — Skill + Fusion Constellation runtime. */
+import './phase8JobSwitchRuntime.js';
 import { state } from '../state.js';
 import { constellationTreeFor, constellationNode } from '../data/jobConstellationTrees.js';
 import { fusionConstellationFor } from '../data/fusionConstellation.js';
