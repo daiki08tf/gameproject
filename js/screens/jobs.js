@@ -2,8 +2,29 @@ import { jobsByTier, isUnlocked, unlockRequirementText, TIERS } from '../data/jo
 import { WEAPON_TYPES } from '../data/equipment.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
+import { renderJobConstellation } from './jobConstellation.js';
 
 const TIER_LABELS = { basic: '基本職', advanced: '上級職', special: '特級職', hero: '勇者' };
+let jobView = 'constellation';
+
+function viewTabsHtml() {
+  return `<div class="job-view-tabs">
+    <button class="job-view-tab ${jobView === 'constellation' ? 'active' : ''}" data-job-view="constellation">✦ 星盤</button>
+    <button class="job-view-tab ${jobView === 'list' ? 'active' : ''}" data-job-view="list">一覧</button>
+  </div>`;
+}
+
+function bindViewTabs(container) {
+  for (const btn of container.querySelectorAll('[data-job-view]')) {
+    btn.addEventListener('click', () => {
+      const next = btn.dataset.jobView;
+      if (!next || next === jobView) return;
+      Audio_.tap();
+      jobView = next;
+      renderJobs();
+    });
+  }
+}
 
 function specializationHtml(job) {
   const routes = state.job3SpecializationStatus ? state.job3SpecializationStatus(job.id) : [];
@@ -59,7 +80,17 @@ function bindJob3Buttons(card) {
 
 export function renderJobs() {
   const container = document.getElementById('jobTiers');
-  container.innerHTML = '';
+  container.innerHTML = viewTabsHtml();
+  bindViewTabs(container);
+
+  if (jobView === 'constellation') {
+    const constellation = document.createElement('div');
+    constellation.className = 'job-constellation-host';
+    container.appendChild(constellation);
+    renderJobConstellation(constellation);
+    return;
+  }
+
   const masteredSet = state.masteredSet();
   const summary = legacySummaryHtml();
   if (summary) container.insertAdjacentHTML('beforeend', summary);
