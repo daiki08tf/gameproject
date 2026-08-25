@@ -10,9 +10,10 @@ export const COMBAT3_FORMATION = Object.freeze({
 
 function roleId(enemy){ return enemy?.combat3Role?.id || null; }
 function isBackline(enemy){ return COMBAT3_FORMATION.BACKLINE_ROLES.includes(roleId(enemy)); }
+function canProtect(enemy){return !!enemy&&!enemy.dead&&(enemy.combat2BrokenTurns||0)<=0&&(enemy.frozenTurns||0)<=0;}
 function pickProtector(engine,target){
   if(!target || !isBackline(target)) return null;
-  const alive=engine.aliveEnemies.filter(e=>e.id!==target.id&&!e.dead);
+  const alive=engine.aliveEnemies.filter(e=>e.id!==target.id&&canProtect(e));
   const guardians=alive.filter(e=>roleId(e)==='guardian');
   if(guardians.length && Math.random()<COMBAT3_FORMATION.GUARDIAN_INTERCEPT_CHANCE){
     return { enemy:guardians[Math.floor(Math.random()*guardians.length)], kind:'guardian' };
