@@ -7,7 +7,7 @@ export const MACHINE_WORLD_ENEMIES=Object.freeze({
   machine_scout:{name:'索敵機・アイリス',base:'ch25_fast',mult:{hp:1.18,atk:1.12,def:1.05,speed:1.22},role:'skirmisher'},
   machine_drone:{name:'演算ドローン・ラムダ',base:'ch25_normal',mult:{hp:1.12,atk:1.18,def:1.04,speed:1.10},role:'caster'},
   machine_guard:{name:'城塞機兵・バルク',base:'ch25_tank',mult:{hp:1.35,atk:1.08,def:1.28,speed:.92},role:'guardian'},
-  machine_repair:{name:'修復端末・ミュウ',base:'ch24_midboss',mult:{hp:1.05,atk:.94,def:1.12,speed:1.05},role:'support'},
+  machine_repair:{name:'修復端末・ミュウ',base:'ch24_fast',mult:{hp:1.25,atk:.94,def:1.22,speed:1.05},role:'support'},
   machine_boss:{name:'中央演算核・MOTHER-0',base:'ch25_boss',mult:{hp:1.75,atk:1.32,def:1.35,speed:1.15},role:'boss'},
 });
 
