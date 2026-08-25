@@ -28,7 +28,9 @@ function renderWorld2StageSelect(onPick){
     const count=Math.max(0,state.data.world2?.keys?.[def.id]||0),stage=world2KeyStageDescriptor(def.id);if(!stage)continue;
     const card=document.createElement('div');card.className='stage-card branch';
     let displayName=stage.name;if(def.id==='celestial'&&visibility.heaven==='hidden')displayName='？？？';if(def.id==='infernal'&&visibility.underworld==='hidden')displayName='？？？';if(def.id==='anomaly'&&visibility.modern!=='hint')displayName='鍵界・？？？？';
-    card.innerHTML=`<div><div class="name">${displayName}</div><div class="rec">推奨Lv ${stage.recLevel} / 所持鍵 ${count} / 作成: 鍵片${def.fragmentCost}</div></div><div class="cleared">${state.isStageCleared(stage.id)?'★':''}</div>`;
+    const identity=stage.world3Identity?` / ${stage.world3Identity}`:'';
+    const goal=stage.world3Goal?`<br><span style="opacity:.8">${stage.world3Goal}</span>`:'';
+    card.innerHTML=`<div><div class="name">${displayName}${identity}</div><div class="rec">推奨Lv ${stage.recLevel} / 所持鍵 ${count} / 作成: 鍵片${def.fragmentCost}${goal}</div></div><div class="cleared">${state.isStageCleared(stage.id)?'★':''}</div>`;
     const actions=document.createElement('div');actions.style.cssText='display:flex;gap:5px;flex-wrap:wrap;margin-top:5px';
     const forge=document.createElement('button');forge.className='btn-sub';forge.textContent='鍵を作る';forge.disabled=(state.world2KeyFragments?.()||0)<def.fragmentCost;forge.addEventListener('click',ev=>{ev.stopPropagation();Audio_.tap();state.world2ForgeKey(def.id);refresh();});actions.appendChild(forge);
     const enter=document.createElement('button');enter.className='btn-main';enter.textContent='挑む';enter.disabled=count<=0;enter.addEventListener('click',ev=>{ev.stopPropagation();Audio_.tap();onPick(stage);});actions.appendChild(enter);
@@ -87,7 +89,7 @@ export function renderStageConfirm(stage) {
   const rewardText = stage.bounty ? `討伐報酬: 経験値 ${stage.rewards.exp} / ゴールド ${stage.rewards.gold} / 初回討伐で固有の戦利品` : `クリア報酬: 経験値 ${stage.rewards.exp} / ゴールド ${stage.rewards.gold}${stage.firstClear ? '（初回クリアで装備入手）' : ''}`;
   document.getElementById('confirmStageRewards').textContent = rewardText;
   const modEl = document.getElementById('confirmModifiers');
-  if(stage.keyDungeon){modEl.textContent=`🔑 境界鍵ダンジョン：出撃時に鍵を1本消費\n${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
+  if(stage.keyDungeon){modEl.textContent=`🔑 ${stage.world3Identity||'境界鍵ダンジョン'}：出撃時に鍵を1本消費\n${stage.world3Goal||''}${stage.world3Goal?'\n':''}${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if(stage.worldEventStage){modEl.textContent=`探索分岐：${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||stage.name}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if(stage.secretRealm){modEl.textContent=`異界：${stage.abyssEra||stage.name}\n${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if (stage.bounty) {const hint = stage.bountyRewardHint ? ` ／ 戦利品の噂：${stage.bountyRewardHint}` : '';modEl.textContent = `手配書：${stage.rumor || '詳細不明'} ／ 特徴：${stage.bountyGimmick || '未知の強敵'}${hint}`;modEl.classList.remove('hidden');}
