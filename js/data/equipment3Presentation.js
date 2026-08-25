@@ -55,6 +55,10 @@ export function equipment3SpecialLines(p) {
   const lines=[];
   if(p.targetFarmHit&&p.targetFarm)lines.push(`【TARGET HIT】${p.targetFarm}`);
   if(p.reasons?.length)lines.push(`【LOOT】${p.reasons.join(' / ')}`);
+  if(p.quality==='jackpot'||p.buildCount>0||p.targetFarmHit) {
+    const keepReasons=(p.reasons||[]).filter(r=>/UNIQUE|SET|BUILD|ANCIENT|GREATER|LEGENDARY/.test(r)).slice(0,3);
+    lines.push(`【KEEP候補】${keepReasons.length?keepReasons.join(' / '):'狙い撃ちドロップ'}`);
+  }
   if (p.legendary) lines.push(`《${p.legendary.name}》 ${p.legendary.desc}`);
   if (p.curse) lines.push(`【呪：${p.curse.name}】 ${p.curse.desc}`);
   return lines;
