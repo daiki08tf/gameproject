@@ -1,35 +1,30 @@
-/* Phase 8 — playable Skill Constellation tree definitions.
-   The first slice covers the three starter archetypes. More jobs can be
-   added without changing the runtime or save format. */
-const node = (id, name, desc, cost, requires = [], payload = {}, kind = 'minor') =>
-  Object.freeze({ id, name, desc, cost, requires: Object.freeze(requires), kind, ...payload });
-
-export const JOB_CONSTELLATION_TREES = Object.freeze({
-  warrior: Object.freeze([
-    node('war_core', '戦士の核', 'ATK+4%', 1, [], { statMult:{ atk:1.04 } }, 'core'),
-    node('war_edge', '研ぎ澄ます刃', 'Crit+3pt', 1, ['war_core'], { statAdd:{ critPct:3 } }),
-    node('war_guard', '鋼の構え', 'DEF+6%', 1, ['war_core'], { statMult:{ def:1.06 } }),
-    node('war_major', '歴戦の剣気', 'Damage+8%', 2, ['war_edge'], { effects:[{ trigger:'passive', kind:'dmgBonusAdd', power:0.08 }] }, 'major'),
-    node('war_keystone', '背水の剣', 'ATK+15% / DEF-8%。攻撃へ大きく傾ける。', 3, ['war_major','war_guard'], { statMult:{ atk:1.15, def:0.92 } }, 'keystone'),
-    node('war_master', '剣星', 'MASTER到達。Boss Damage+15%', 0, ['war_keystone'], { effects:[{ trigger:'passive', kind:'bossDmg', power:0.15 }] }, 'master'),
-  ]),
-  mage: Object.freeze([
-    node('mag_core', '魔導の核', 'MAG+5%', 1, [], { statMult:{ mag:1.05 } }, 'core'),
-    node('mag_mana', '魔力循環', 'MP+8%', 1, ['mag_core'], { statMult:{ mp:1.08 } }),
-    node('mag_focus', '集中詠唱', 'じゅもんDamage+7%', 1, ['mag_core'], { effects:[{ trigger:'passive', kind:'spellDmgAdd', power:0.07 }] }),
-    node('mag_major', '大魔導回路', 'MAG+10%', 2, ['mag_mana'], { statMult:{ mag:1.10 } }, 'major'),
-    node('mag_keystone', '過剰魔力', 'MAG+18% / HP-10%。火力へ大きく傾ける。', 3, ['mag_major','mag_focus'], { statMult:{ mag:1.18, hp:0.90 } }, 'keystone'),
-    node('mag_master', '魔星', 'MASTER到達。MP消費-10%', 0, ['mag_keystone'], { effects:[{ trigger:'passive', kind:'mpCostReduce', power:0.10 }] }, 'master'),
-  ]),
-  priest: Object.freeze([
-    node('pri_core', '祈りの核', 'HP+5%', 1, [], { statMult:{ hp:1.05 } }, 'core'),
-    node('pri_grace', '恩寵', 'MAG+5%', 1, ['pri_core'], { statMult:{ mag:1.05 } }),
-    node('pri_ward', '守護祈祷', 'DEF+6%', 1, ['pri_core'], { statMult:{ def:1.06 } }),
-    node('pri_major', '生命賛歌', 'Regen+1.5%', 2, ['pri_grace'], { effects:[{ trigger:'passive', kind:'regen', power:0.015 }] }, 'major'),
-    node('pri_keystone', '献身', 'HP+15% / Damage-6%。生存へ大きく傾ける。', 3, ['pri_major','pri_ward'], { statMult:{ hp:1.15 }, effects:[{ trigger:'passive', kind:'dmgBonusAdd', power:-0.06 }] }, 'keystone'),
-    node('pri_master', '聖星', 'MASTER到達。MP消費-8%', 0, ['pri_keystone'], { effects:[{ trigger:'passive', kind:'mpCostReduce', power:0.08 }] }, 'master'),
-  ]),
+/* Phase 8 — playable Skill Constellation trees for all 15 basic jobs. */
+const node=(id,name,desc,cost,requires=[],payload={},kind='minor')=>Object.freeze({id,name,desc,cost,requires:Object.freeze(requires),kind,...payload});
+const tree=(p,names,core,branchA,branchB,major,key,master)=>Object.freeze([
+  node(`${p}_core`,names[0],core.desc,1,[],core.payload,'core'),
+  node(`${p}_a`,names[1],branchA.desc,1,[`${p}_core`],branchA.payload),
+  node(`${p}_b`,names[2],branchB.desc,1,[`${p}_core`],branchB.payload),
+  node(`${p}_major`,names[3],major.desc,2,[`${p}_a`],major.payload,'major'),
+  node(`${p}_keystone`,names[4],key.desc,3,[`${p}_major`,`${p}_b`],key.payload,'keystone'),
+  node(`${p}_master`,names[5],master.desc,0,[`${p}_keystone`],master.payload,'master'),
+]);
+const S=(stat,mult)=>({statMult:{[stat]:mult}}), A=(stat,value)=>({statAdd:{[stat]:value}}), E=(kind,power)=>({effects:[{trigger:'passive',kind,power}]});
+export const JOB_CONSTELLATION_TREES=Object.freeze({
+warrior:tree('war',['戦士の核','研ぎ澄ます刃','鋼の構え','歴戦の剣気','背水の剣','剣星'],{desc:'ATK+4%',payload:S('atk',1.04)},{desc:'Crit+3pt',payload:A('critPct',3)},{desc:'DEF+6%',payload:S('def',1.06)},{desc:'Damage+8%',payload:E('dmgBonusAdd',.08)},{desc:'ATK+15% / DEF-8%。攻撃へ大きく傾ける。',payload:{statMult:{atk:1.15,def:.92}}},{desc:'MASTER到達。Boss Damage+15%',payload:E('bossDmg',.15)}),
+fighter:tree('fig',['闘気の核','疾風拳','肉体鍛錬','連撃の極意','修羅の型','拳星'],{desc:'ATK+5%',payload:S('atk',1.05)},{desc:'SPD+6%',payload:S('spd',1.06)},{desc:'HP+5%',payload:S('hp',1.05)},{desc:'Crit+5pt',payload:A('critPct',5)},{desc:'ATK+12% / DEF-10%。回避より先に倒す型。',payload:{statMult:{atk:1.12,def:.90}}},{desc:'MASTER到達。Damage+10%',payload:E('dmgBonusAdd',.10)}),
+mage:tree('mag',['魔導の核','魔力循環','集中詠唱','大魔導回路','過剰魔力','魔星'],{desc:'MAG+5%',payload:S('mag',1.05)},{desc:'MP+8%',payload:S('mp',1.08)},{desc:'じゅもんDamage+7%',payload:E('spellDmgAdd',.07)},{desc:'MAG+10%',payload:S('mag',1.10)},{desc:'MAG+18% / HP-10%。火力へ大きく傾ける。',payload:{statMult:{mag:1.18,hp:.90}}},{desc:'MASTER到達。MP消費-10%',payload:E('mpCostReduce',.10)}),
+priest:tree('pri',['祈りの核','恩寵','守護祈祷','生命賛歌','献身','聖星'],{desc:'HP+5%',payload:S('hp',1.05)},{desc:'MAG+5%',payload:S('mag',1.05)},{desc:'DEF+6%',payload:S('def',1.06)},{desc:'Regen+1.5%',payload:E('regen',.015)},{desc:'HP+15% / Damage-6%。生存へ大きく傾ける。',payload:{statMult:{hp:1.15},effects:[{trigger:'passive',kind:'dmgBonusAdd',power:-.06}]}},{desc:'MASTER到達。MP消費-8%',payload:E('mpCostReduce',.08)}),
+thief:tree('thi',['影の核','急所観察','軽業','闇討ち','紙一重','盗星'],{desc:'SPD+5%',payload:S('spd',1.05)},{desc:'Crit+4pt',payload:A('critPct',4)},{desc:'ATK+4%',payload:S('atk',1.04)},{desc:'Damage+9%',payload:E('dmgBonusAdd',.09)},{desc:'Crit+8pt / HP-10%。一撃の価値を高める。',payload:{statAdd:{critPct:8},statMult:{hp:.90}}},{desc:'MASTER到達。Damage+8%',payload:E('dmgBonusAdd',.08)}),
+merchant:tree('mer',['商魂の核','護身術','目利き','黄金律','大勝負','商星'],{desc:'HP+4%',payload:S('hp',1.04)},{desc:'DEF+5%',payload:S('def',1.05)},{desc:'Crit+3pt',payload:A('critPct',3)},{desc:'ATK+7%',payload:S('atk',1.07)},{desc:'ATK+12% / HP-8%。利益のため危険を取る。',payload:{statMult:{atk:1.12,hp:.92}}},{desc:'MASTER到達。Damage+8%',payload:E('dmgBonusAdd',.08)}),
+hunter:tree('hun',['狩猟の核','鷹の眼','身かわし','狙撃姿勢','一点突破','狩星'],{desc:'ATK+5%',payload:S('atk',1.05)},{desc:'Crit+4pt',payload:A('critPct',4)},{desc:'SPD+5%',payload:S('spd',1.05)},{desc:'Boss Damage+10%',payload:E('bossDmg',.10)},{desc:'ATK+14% / DEF-8%。狙撃に全てを賭ける。',payload:{statMult:{atk:1.14,def:.92}}},{desc:'MASTER到達。Boss Damage+12%',payload:E('bossDmg',.12)}),
+ninja:tree('nin',['忍道の核','瞬歩','暗刃','影分身','捨身忍法','忍星'],{desc:'SPD+6%',payload:S('spd',1.06)},{desc:'Crit+4pt',payload:A('critPct',4)},{desc:'ATK+5%',payload:S('atk',1.05)},{desc:'Damage+8%',payload:E('dmgBonusAdd',.08)},{desc:'SPD+15% / HP-10%。速度を極限まで高める。',payload:{statMult:{spd:1.15,hp:.90}}},{desc:'MASTER到達。Crit+6pt',payload:A('critPct',6)}),
+bard:tree('bar',['旋律の核','高揚の音','安らぎの音','英雄楽章','魂の独奏','楽星'],{desc:'MAG+5%',payload:S('mag',1.05)},{desc:'MP+6%',payload:S('mp',1.06)},{desc:'HP+5%',payload:S('hp',1.05)},{desc:'Regen+1.2%',payload:E('regen',.012)},{desc:'MAG+14% / DEF-8%。支援力へ特化する。',payload:{statMult:{mag:1.14,def:.92}}},{desc:'MASTER到達。MP消費-8%',payload:E('mpCostReduce',.08)}),
+dancer:tree('dan',['舞踏の核','疾風舞','刃の舞','幻惑舞踏','狂舞','舞星'],{desc:'SPD+5%',payload:S('spd',1.05)},{desc:'Crit+4pt',payload:A('critPct',4)},{desc:'ATK+5%',payload:S('atk',1.05)},{desc:'Damage+7%',payload:E('dmgBonusAdd',.07)},{desc:'SPD+14% / DEF-10%。止まらない舞へ。',payload:{statMult:{spd:1.14,def:.90}}},{desc:'MASTER到達。Crit+5pt',payload:A('critPct',5)}),
+alchemist:tree('alc',['錬成の核','魔薬調合','爆薬調合','連鎖反応','危険錬成','錬星'],{desc:'MAG+5%',payload:S('mag',1.05)},{desc:'MP+6%',payload:S('mp',1.06)},{desc:'ATK+4%',payload:S('atk',1.04)},{desc:'Damage+8%',payload:E('dmgBonusAdd',.08)},{desc:'MAG+15% / HP-9%。爆発力を優先する。',payload:{statMult:{mag:1.15,hp:.91}}},{desc:'MASTER到達。Damage+9%',payload:E('dmgBonusAdd',.09)}),
+scholar:tree('sch',['知識の核','魔導解析','生存解析','完全解析','禁断知識','賢星'],{desc:'MAG+5%',payload:S('mag',1.05)},{desc:'MP+7%',payload:S('mp',1.07)},{desc:'DEF+5%',payload:S('def',1.05)},{desc:'じゅもんDamage+8%',payload:E('spellDmgAdd',.08)},{desc:'MAG+16% / HP-10%。知識の代償を払う。',payload:{statMult:{mag:1.16,hp:.90}}},{desc:'MASTER到達。MP消費-9%',payload:E('mpCostReduce',.09)}),
+farmer:tree('far',['大地の核','鍬さばき','農夫の体幹','豊穣の力','不退転','耕星'],{desc:'HP+6%',payload:S('hp',1.06)},{desc:'ATK+4%',payload:S('atk',1.04)},{desc:'DEF+6%',payload:S('def',1.06)},{desc:'Regen+1.5%',payload:E('regen',.015)},{desc:'HP+16% / SPD-10%。倒れないことを選ぶ。',payload:{statMult:{hp:1.16,spd:.90}}},{desc:'MASTER到達。DEF+10%',payload:S('def',1.10)}),
+craftsman:tree('cra',['職人の核','受け流し','強固な骨組み','鉄壁施工','要塞化','匠星'],{desc:'DEF+6%',payload:S('def',1.06)},{desc:'HP+5%',payload:S('hp',1.05)},{desc:'ATK+4%',payload:S('atk',1.04)},{desc:'DEF+10%',payload:S('def',1.10)},{desc:'DEF+18% / SPD-12%。自らを要塞に変える。',payload:{statMult:{def:1.18,spd:.88}}},{desc:'MASTER到達。HP+10%',payload:S('hp',1.10)}),
+fortune:tree('for',['運命の核','吉兆','星読み','運命転換','凶星契約','命星'],{desc:'Crit+4pt',payload:A('critPct',4)},{desc:'MAG+5%',payload:S('mag',1.05)},{desc:'MP+6%',payload:S('mp',1.06)},{desc:'Crit+6pt',payload:A('critPct',6)},{desc:'Crit+10pt / DEF-10%。幸運に防御を委ねる。',payload:{statAdd:{critPct:10},statMult:{def:.90}}},{desc:'MASTER到達。Damage+10%',payload:E('dmgBonusAdd',.10)}),
 });
-
-export function constellationTreeFor(jobId) { return JOB_CONSTELLATION_TREES[jobId] || []; }
-export function constellationNode(jobId, nodeId) { return constellationTreeFor(jobId).find((n) => n.id === nodeId) || null; }
+export function constellationTreeFor(jobId){return JOB_CONSTELLATION_TREES[jobId]||[];}
+export function constellationNode(jobId,nodeId){return constellationTreeFor(jobId).find(n=>n.id===nodeId)||null;}
