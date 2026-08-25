@@ -15,9 +15,9 @@ const ARCH=Object.freeze({
 });
 function effect(e,scale=1){return {trigger:'passive',kind:e.kind,power:e.power*scale};}
 function build(job){const [a,b]=job.parents,A=ARCH[a],B=ARCH[b];return Object.freeze([
- Object.freeze({id:`${job.id}_trait`,kind:'fusionTrait',name:`${A.label}と${B.label}`,desc:`${A.stat.toUpperCase()}+${Math.round((A.mult-1)*100)}% / ${B.stat.toUpperCase()}+${Math.round((B.mult-1)*100)}%`,requires:[],statMult:{[A.stat]:A.mult,[B.stat]:(A.stat===B.stat?A.mult*B.mult:B.mult)}}),
- Object.freeze({id:`${job.id}_keystone`,kind:'fusionKeystone',name:`${job.name}の極意`,desc:'両親職の戦闘特性が同時に発現する。',requires:[`${job.id}_trait`],effects:[effect(A.effect),effect(B.effect)]}),
- Object.freeze({id:`${job.id}_ultimate`,kind:'fusionUltimate',name:`奥義・${job.name}`,desc:'Fusion Jobを極めた者だけが得る究極特性。',requires:[`${job.id}_keystone`],effects:[effect(A.effect,1.5),effect(B.effect,1.5)]}),
+ Object.freeze({id:`${job.id}_trait`,kind:'fusionTrait',cost:1,name:`${A.label}と${B.label}`,desc:`${A.stat.toUpperCase()}+${Math.round((A.mult-1)*100)}% / ${B.stat.toUpperCase()}+${Math.round((B.mult-1)*100)}%`,requires:[],statMult:{[A.stat]:A.mult,[B.stat]:(A.stat===B.stat?A.mult*B.mult:B.mult)}}),
+ Object.freeze({id:`${job.id}_keystone`,kind:'fusionKeystone',cost:2,name:`${job.name}の極意`,desc:'両親職の戦闘特性が同時に発現する。',requires:[`${job.id}_trait`],effects:[effect(A.effect),effect(B.effect)]}),
+ Object.freeze({id:`${job.id}_ultimate`,kind:'fusionUltimate',cost:3,name:`奥義・${job.name}`,desc:'Fusion Jobを極めた者だけが得る究極特性。',requires:[`${job.id}_keystone`],effects:[effect(A.effect,1.5),effect(B.effect,1.5)]}),
 ]);}
 export const FUSION_CONSTELLATIONS=Object.freeze(Object.fromEntries(FUSION_JOBS.map(j=>[j.id,build(j)])));
 export function fusionConstellationFor(id){return FUSION_CONSTELLATIONS[id]||[];}
