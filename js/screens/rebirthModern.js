@@ -53,7 +53,7 @@ function renderAwakening(content) {
   const rank = state.awakeningV2Rank();
   const next = state.awakeningV2Progress(rank + 1);
   const panel = document.createElement('div'); panel.className = 'rebirth-panel';
-  panel.innerHTML = `<div class="rebirth-count">覚醒Rank ${rank}</div><div class="rebirth-bonus">Awakening 2.0</div><p class="sub">覚醒はもうレベルリセットではありません。ゲーム内で積み上げた到達実績によって、上位の遊び方を解放するシステムです。</p><p class="sub">Character / Job / 継承 / Rune / Codex / 仲間などの成長は一切失いません。</p>`;
+  panel.innerHTML = `<div class="rebirth-count">覚醒Rank ${rank} / 4</div><div class="rebirth-bonus">Awakening 3.0</div><p class="sub">覚醒はLv90 / 300 / 700 / 3,000の到達節目。レベルをリセットせず、上位機能とRankごとの永久刻印を解放します。</p><p class="sub">Character / Job / 継承 / Rune / Codex / 仲間などの成長は失いません。覚醒後は下の「覚醒の刻印」から、そのRankのビルド方向を1つ選びます。</p>`;
   content.appendChild(panel);
   for (const def of state.awakeningV2Ranks) {
     const progress = state.awakeningV2Progress(def.rank); const unlocked = rank >= def.rank; const current = def.rank === rank + 1;
@@ -62,7 +62,7 @@ function renderAwakening(content) {
     content.appendChild(card);
     card.querySelector('#claimAwakeningBtn')?.addEventListener('click', () => { if (state.claimAwakeningV2()) { Audio_.jobMastered(); renderRebirth(); } });
   }
-  if (!next.def) { const done = document.createElement('p'); done.className = 'hint'; done.textContent = '現在実装されている覚醒Rankはすべて解放済みです。'; content.appendChild(done); }
+  if (!next.def) { const done = document.createElement('p'); done.className = 'hint'; done.textContent = '第四覚醒まで解放済みです。以後のLv3,000〜99,999は深淵Era・Relic・装備・横コンテンツで成長します。'; content.appendChild(done); }
 }
 
 function renderArtifacts(content) {
