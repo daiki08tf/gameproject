@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import { FUSION_JOBS } from '../js/data/jobFusionRegistry.js';import { jobsByTier } from '../js/data/jobs.js';
+test('Fusion Galaxy remains complete',()=>{assert.equal(jobsByTier('basic').length,15);assert.equal(FUSION_JOBS.length,105);const pairs=new Set(FUSION_JOBS.map(f=>[...f.parents].sort().join('|')));assert.equal(pairs.size,105);});
+test('every Fusion belongs to exactly two valid basic star systems',()=>{const ids=new Set(jobsByTier('basic').map(j=>j.id));for(const f of FUSION_JOBS){assert.equal(f.parents.length,2);assert.ok(f.parents.every(id=>ids.has(id)),f.id);}});
