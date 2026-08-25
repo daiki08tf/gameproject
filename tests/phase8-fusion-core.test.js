@@ -33,7 +33,7 @@ test('legacy IDs survive while canonical Phase 8 names are exposed', () => {
 test('new audited pairs have deterministic IDs and no name collision', () => {
   const ruins = getFusionJobByParents('thief', 'scholar');
   assert.equal(ruins.id, 'fusion_thief_scholar');
-  assert.equal(ruins.name, '遺跡探究家');
+  assert.equal(ruins.name, '遺物探究家');
   assert.equal(getFusionJobByParents('warrior', 'merchant').name, '傭兵団長');
   assert.equal(getFusionJobByParents('merchant', 'ninja').name, '影商人');
   assert.equal(getFusionJobByParents('priest', 'merchant').name, '聖務官');
