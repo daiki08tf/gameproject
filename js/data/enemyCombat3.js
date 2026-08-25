@@ -1,3 +1,5 @@
+import { phase9EnemyCombatProfile } from './enemyCombatPhase9.js';
+
 export const ENEMY_ROLES=Object.freeze({frontline:{id:'frontline',name:'前衛',icon:'⚔️'},skirmisher:{id:'skirmisher',name:'遊撃',icon:'💨'},guardian:{id:'guardian',name:'守護',icon:'🛡️'},caster:{id:'caster',name:'術師',icon:'🔮'},support:{id:'support',name:'支援',icon:'✨'}});
 const SIG={
  grunt:{role:'frontline',skill:{name:'こん棒叩き',kind:'power',power:1.45,chance:.28}},fast:{role:'skirmisher',skill:{name:'音速かみつき',kind:'multi',power:.68,hits:2,chance:.30}},tank:{role:'guardian',skill:{name:'仁王立ち',kind:'guardAll',defPct:.25,turns:2,chance:.30}},
@@ -21,5 +23,5 @@ const SIG={
  ch19_normal:{role:'caster',skill:{name:'境界侵蝕',kind:'mpDrain',mpPct:.18,chance:.40}},ch19_fast:{role:'skirmisher',skill:{name:'時喰い連刃',kind:'multi',power:.84,hits:3,chance:.40}},ch19_tank:{role:'guardian',skill:{name:'鏡界障壁',kind:'guardAll',defPct:.54,turns:2,chance:.41}},
  ch20_normal:{role:'frontline',skill:{name:'始原崩し',kind:'power',power:1.86,chance:.41}},ch20_fast:{role:'caster',skill:{name:'深淵喰らい',kind:'mpDrain',mpPct:.20,chance:.42}},ch20_tank:{role:'guardian',skill:{name:'七柱封陣',kind:'guardAll',defPct:.56,turns:2,chance:.42}}
 };
-export function enemyCombatProfile(type){if(SIG[type])return SIG[type];if(String(type).endsWith('_fast'))return{role:'skirmisher',skill:{name:'連続攻撃',kind:'multi',power:.68,hits:2,chance:.28}};if(String(type).endsWith('_tank'))return{role:'guardian',skill:{name:'盾陣',kind:'guardAll',defPct:.25,turns:2,chance:.28}};if(String(type).endsWith('_normal'))return{role:'frontline',skill:{name:'強打',kind:'power',power:1.45,chance:.28}};return{role:'frontline',skill:null};}
+export function enemyCombatProfile(type){const phase9=phase9EnemyCombatProfile(type);if(phase9)return phase9;if(SIG[type])return SIG[type];if(String(type).endsWith('_fast'))return{role:'skirmisher',skill:{name:'連続攻撃',kind:'multi',power:.68,hits:2,chance:.28}};if(String(type).endsWith('_tank'))return{role:'guardian',skill:{name:'盾陣',kind:'guardAll',defPct:.25,turns:2,chance:.28}};if(String(type).endsWith('_normal'))return{role:'frontline',skill:{name:'強打',kind:'power',power:1.45,chance:.28}};return{role:'frontline',skill:null};}
 export function enemyRole(type){const p=enemyCombatProfile(type);return ENEMY_ROLES[p.role]||ENEMY_ROLES.frontline;}
