@@ -21,7 +21,11 @@ test('shared presentation renders armor IP, Greater, Legendary and Curse metadat
   assert.equal(p.legendary.name, '雷神の心臓');
   assert.equal(p.curse.name, '血の契約');
   assert.match(equipment3MetaText(p), /IP 8123/);
-  assert.equal(equipment3SpecialLines(p).length, 2);
+  const special=equipment3SpecialLines(p);
+  assert.equal(special.length, 3);
+  assert.match(special[0], /LOOT/);
+  assert.ok(special.some(line=>line.includes('雷神の心臓')));
+  assert.ok(special.some(line=>line.includes('血の契約')));
 });
 
 test('equipment screen resolves generic equipment instances and sorts by instance-aware score', () => {
