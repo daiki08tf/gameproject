@@ -31,10 +31,10 @@ test('Eighth Key progress only opens after all three clears',()=>{
   assert.equal(p.open,true);assert.equal(p.cleared,3);assert.equal(p.next,null);
 });
 
-test('Machine World becomes a selectable world layer after Zero Gate',()=>{
+test('Machine World becomes a selectable playable world layer after Zero Gate',()=>{
   const modern=WORLD3_REALM_NODES.find(n=>n.id==='modern');
   const signal=world3RealmNodeState(modern,{modern:'hidden'},{phase9EighthKeyObserved:true});
   assert.equal(signal.state,'signal');
   const open=world3RealmNodeState(modern,{modern:'hidden'},{phase9MachineWorldOpen:true});
-  assert.equal(open.name,'機界');assert.equal(open.state,'open');assert.equal(open.selectable,true);assert.equal(open.route,'world3-branches');
+  assert.equal(open.name,'機界');assert.equal(open.state,'open');assert.equal(open.selectable,true);assert.equal(open.route,25);
 });
