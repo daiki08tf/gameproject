@@ -33,8 +33,11 @@ function buildExpandedRealm(cfg){
     ...base,
     id:site.realm.id,
     name:`異界・${site.realmName}`,
-    recLevel:site.realm.recLevel,
-    itemPowerTarget:site.realm.itemPowerTarget,
+    // Secret Realms are unlocked from a specific Abyss source depth and then add
+    // extra danger modifiers. Never allow legacy static recommendations/IP to
+    // fall below the newly remapped source floor.
+    recLevel:Math.max(Number(site.realm.recLevel)||0,base.recLevel),
+    itemPowerTarget:Math.max(Number(site.realm.itemPowerTarget)||0,base.itemPowerTarget),
     isAbyss:false,
     secretRealm:true,
     secretRealmId:site.id,
