@@ -1,32 +1,52 @@
-# Phase 6 — World 3.0 Progress
+# Phase 6 — World 3.0 COMPLETE
+
+World 3.0 is complete. Future world content should expand this hierarchy instead of adding parallel world/menu systems.
 
 ## Completed
 - Region hierarchy for chapters 1–20.
-- Existing Key Dungeons moved under a unified **Discovered Branches** route.
-- Existing Exploration / Secret Realm discoveries surfaced in the same route.
-- Unlocked Secret Realms can be entered directly from the World branch screen.
-- Rift Keys are surfaced as discovered branch inventory without replacing their existing runtime logic.
-- Heaven / Underworld now appear as explicit World nodes: hidden -> omen -> OPEN, with opened nodes selectable from the World screen.
-- The unknown modern/anomaly realm now escalates from unknown -> contact -> signal while remaining intentionally non-selectable.
-- Random World Events now surface on the battle result screen with real choices.
-- Event choices create persistent World discoveries/flags such as rescued traveler, hidden trail, shrine map, merchant contact, border rumor, rift attunement and ancient keyhole records.
-- Persistent event discoveries are visible under **Discovered Branches -> 旅で得た縁と手掛かり**.
-- Three event discoveries now become concrete playable branches through the existing secret-stage resolver:
+- World layer nodes for Mortal / Heaven / Underworld / unknown anomaly realm.
+- Heaven / Underworld lifecycle: hidden -> omen -> OPEN -> selectable route.
+- Heaven identity: **聖域探索** — Relic, light-element gear and high-tier material hunting.
+- Underworld identity: **高危険探索** — recovery pressure, Unique gear and dark/fire build hunting.
+- Unknown realm breadcrumb lifecycle: unknown -> CONTACT -> SIGNAL -> TRACE while keeping the destination name unrevealed and non-selectable.
+- Existing Key Dungeons unified under **Discovered Branches**.
+- Existing Exploration / Secret Realm discoveries unified under the same route.
+- Rift Keys surfaced as World discoveries without replacing their runtime logic.
+- Random World Events surface on battle results with real choices.
+- Event outcomes persist as canonical World discovery flags.
+- Persistent discoveries are visible under **Discovered Branches -> 旅で得た縁と手掛かり**.
+- Three event discoveries are already playable hidden routes:
   - `travelerBond` -> **旅人の依頼：忘れられた荷車** (Lv110)
   - `oldMap` -> **古地図の地下礼拝堂** (Lv165)
   - `beastTrail` -> **獣王の隠れ巣** (Lv240)
-- These branches use existing enemy/equipment/stage-clear systems and can be replayed after first clear; no parallel quest framework was added.
+
+## Canonical World 3.0 hierarchy
+
+WORLD
+- Realm nodes
+  - 人界
+  - 天界
+  - 冥界
+  - ？？？
+- Regions
+  - chapters / lands
+    - stages
+- Discovered Branches
+  - Key Dungeons
+  - World Event clues and hidden routes
+  - Secret Realms
+  - Rift Keys
 
 ## Existing systems intentionally reused
-- `world2.js` / `world2Core.js`: realm visibility, key fragments, forging, key consumption, World Events and persistent event discoveries.
+- `world2.js` / `world2Core.js`: realm visibility, keys, World Events, persistent discovery flags and anomaly progression.
+- `world2Stages.js`: Key Dungeon combat stages and destination identities.
 - `exploration1.js` / `exploration1Core.js`: discovery/clue/unlock state.
-- `secretRealms.js`: Secret Realm and World-event branch stage resolution.
+- `secretRealms.js`: Secret Realm and World-event hidden-stage resolution.
 - `riftKeyCore.js`: Rift Key inventory/modifiers.
+- normal stage clear / equipment / enemy systems for playable World branches.
 
-## Phase 6 next targets
-1. Give Heaven / Underworld stronger destination identity after opening without creating duplicate progression systems.
-2. Continue anomaly/modern-world breadcrumbs toward a later reveal without naming the destination too early.
-3. Final World 3.0 integration audit and completion marker.
+## Completion rule
+World 3.0 is considered complete because the World screen is no longer only a flat chapter list: realm state, region progression, hidden routes, keyed exploration, persistent event discoveries and mystery breadcrumbs all feed one navigation/progression structure.
 
 ## Rule for Claude Code / Codex
-Do not create parallel World/Key/Exploration/Event systems. Extend the existing World 2.0, Exploration, Secret Realm and Rift Key foundations through the World 3.0 hierarchy. Persistent World-event flags are the canonical hooks for later content.
+Do not create parallel World / Realm / Key / Exploration / Event / Quest frameworks for features that can fit this hierarchy. Extend the existing World 3.0 nodes, `Discovered Branches`, persistent World-event flags and secret-stage resolver. New content should answer at least one of these questions: where is it in the World hierarchy, what unlocks it, and which existing progression/reward system it feeds.
