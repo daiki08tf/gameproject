@@ -44,6 +44,17 @@ function appendDropChip(itemsEl, resolved) {
   const chip=document.createElement('div');chip.className='result-item-chip';chip.style.color=resolved.color;chip.style.whiteSpace='pre-line';chip.textContent=resolved.name;wrap.appendChild(chip);itemsEl.appendChild(wrap);
 }
 
+function renderLoot3Chase(result, itemsEl) {
+  const chase=result?.loot3Chase;if(!chase)return;
+  const wrap=document.createElement('div');wrap.className='result-drop-wrap eq3-special';
+  const headline=document.createElement('div');headline.className='result-loot-headline';headline.textContent='――TARGET FARM BONUS――';wrap.appendChild(headline);
+  const chip=document.createElement('div');chip.className='result-item-chip';chip.style.whiteSpace='pre-line';
+  if(chase.type==='relicResonance') chip.textContent=`☀ RELIC RESONANCE — ${chase.name}\n解放資源 +${chase.gold.toLocaleString()} Gold / +${chase.manastone} 魔石`;
+  else if(chase.type==='uniqueEcho') chip.textContent=`🔥 UNIQUE ECHO — ${chase.name}\n試練残響 ${chase.echoes}/${chase.maxEchoes}（初期試練を最大25%補助）`;
+  else chip.textContent='TARGET FARM BONUS';
+  wrap.appendChild(chip);itemsEl.appendChild(wrap);
+}
+
 function renderWorldEvent(result,itemsEl){
   const event=result?.world2?.event;
   if(!event)return;
@@ -60,11 +71,12 @@ export function renderResult(result) {
   stats.textContent=`獲得経験値: ${result.expGained} / 獲得ゴールド: ${result.goldGained}`+(result.world2?.fragment?` / 鍵片 +${result.world2.fragment}`:'')+(result.world2?.keyDungeon?` / 境界鍵路報酬 鍵片 +${result.world2.keyDungeon.keyFragments}`:'')+(result.bounty2?` / 賞金首の証 +${result.bounty2.marks}（所持 ${result.bounty2.totalMarks}）`:'')+(result.bounty2?.nemesisDefeated?' / 宿敵討伐ボーナス！':'')+(result.bountyNemesis?.grew?` / 宿敵Lv.${result.bountyNemesis.level}へ成長`:'')+(result.cleared?'':'（撃破分のみ・レベルや装備は失われません）');
   itemsEl.innerHTML='';
   const normalItems=Array.isArray(result.items)?result.items:[],rune2Drops=Array.isArray(result.rune2Drops)?result.rune2Drops:[];
-  if(normalItems.length===0&&rune2Drops.length===0&&!result.world2?.event)itemsEl.innerHTML='<span class="hint" style="opacity:.6;font-size:12px;">ドロップなし</span>';
+  if(normalItems.length===0&&rune2Drops.length===0&&!result.world2?.event&&!result.loot3Chase)itemsEl.innerHTML='<span class="hint" style="opacity:.6;font-size:12px;">ドロップなし</span>';
   else{
     for(const itemId of normalItems)appendDropChip(itemsEl,resolveDrop(itemId));
     for(const drop of rune2Drops){const rune=getRune2(drop.id);if(!rune)continue;const chip=document.createElement('div');chip.className='result-item-chip';chip.style.color='var(--accent)';chip.textContent=`✨ RUNE ${rune.name} +${drop.amount}刻（${drop.owned}刻）`;itemsEl.appendChild(chip);}
   }
+  renderLoot3Chase(result,itemsEl);
   renderWorldEvent(result,itemsEl);
   const equipBtn=document.getElementById('resultEquipBtn');equipBtn.classList.toggle('hidden',normalItems.length===0);
   attachScrollHint(stats);
