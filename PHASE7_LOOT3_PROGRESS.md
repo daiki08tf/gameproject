@@ -1,6 +1,6 @@
 # Phase 7 — Loot 3.0 Progress
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Goal
 Make every meaningful drop answer three questions immediately:
@@ -48,9 +48,9 @@ Loot 3.0 extends the existing equipment, weapon-instance, Affix, Unique, Set, Co
 - [x] Use combinations of item identity + Affix quality + build synergy for jackpot drops. GOD ROLL requires IP9500+, Ancient Affix, a build-defining axis (Build Affix or Legendary Power), and Greater; raw IP alone cannot qualify.
 
 ### 7.6 Integration audit and COMPLETE marker
-- [ ] Regression tests for instance persistence, quality classification and old-save compatibility.
-- [ ] Confirm Battle 3.0 / World 3.0 / Loot 3.0 reward loops connect cleanly.
-- [ ] Add `PHASE7_LOOT3_COMPLETE.md` only after the player-facing loop is complete.
+- [x] Regression coverage confirms instance persistence, quality classification, legacy-save normalization, fixed Unique/Set safety and Equipment 3.0 load repair.
+- [x] Battle 3.0 / World 3.0 / Loot 3.0 reward loops are connected: battle preserves exact instance IDs, World destinations steer loot, results explain quality/chase reasons, inventory protects build-specialized value, and endgame routes feed back into target farming.
+- [x] `PHASE7_LOOT3_COMPLETE.md` records the final architecture and future guardrails.
 
 ## Guardrails for Claude Code / Codex
 - Do not add another inventory/equipment/rarity framework.
