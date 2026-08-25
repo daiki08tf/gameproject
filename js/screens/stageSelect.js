@@ -2,6 +2,7 @@ import { CHAPTERS } from '../data/stages.js';
 import { journeyName } from '../data/worldVeil.js';
 import { buildSecretRealmStage } from '../data/secretRealms.js';
 import { world3EventStageByFlag } from '../data/world3EventStages.js';
+import { EIGHTH_KEY_STAGES, eighthKeyProgress } from '../data/phase9EighthKey.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 import { rollBlessingChoices } from '../data/blessings.js';
@@ -16,11 +17,26 @@ export function isStageDiscovered(chapter, stage, stageIndex) {
   return !!previousMainStage && state.isStageCleared(previousMainStage.id);
 }
 
+function renderEighthKeyStages(list,onPick){
+  if(!state.phase9NextWorldUnlocked?.())return;
+  const progress=eighthKeyProgress(id=>state.isStageCleared(id));
+  const h=document.createElement('div');h.className='section-heading';h.textContent=`第八鍵観測路　—　${progress.cleared}/${progress.total}`;list.appendChild(h);
+  const intro=document.createElement('div');intro.className='stage-card boss';intro.innerHTML=`<div><div class="name">🔑 存在しない第八鍵</div><div class="rec">5地域MASTERで観測された人工的な境界。3つの高難度区画を突破すると、未知の世界層へ接触できる。</div></div><div class="cleared">${progress.open?'OPEN':'?'}</div>`;list.appendChild(intro);
+  for(const def of EIGHTH_KEY_STAGES){
+    const unlocked=!def.requires||state.isStageCleared(def.requires),cleared=state.isStageCleared(def.id),stage=unlocked?buildSecretRealmStage(def.id):null;
+    const card=document.createElement('div');card.className='stage-card branch'+(!unlocked?' locked':'')+(def.final?' boss':'');
+    card.innerHTML=`<div><div class="name">${unlocked?(def.final?'🚪 ':'◇ ')+def.name:'🔒 ?????'}</div><div class="rec">${unlocked?`推奨Lv ${stage.recLevel} / ${def.modifier.desc}`:'直前の第八鍵区画を突破すると観測可能'}</div></div><div class="cleared">${cleared?'★':unlocked?'→':''}</div>`;
+    if(unlocked)card.addEventListener('click',()=>{Audio_.tap();onPick(stage);});list.appendChild(card);
+  }
+  if(progress.open){const open=document.createElement('div');open.className='stage-card boss';open.innerHTML='<div><div class="name">📡 WORLD LAYER CONTACT</div><div class="rec">零号門が開いた。直線的な建造物、規則的な光、機械文明の信号を明確に観測。次世界「機界」への接続座標を確立した。</div></div><div class="cleared">NEW</div>';list.appendChild(open);}
+}
+
 function renderWorld2StageSelect(onPick){
   document.getElementById('chapterTitle').textContent='発見された分岐';
   const list=document.getElementById('stageList');list.innerHTML='';
   const refresh=()=>renderWorld2StageSelect(onPick);
   const head=document.createElement('div');head.className='stage-card boss';head.innerHTML=`<div><div class="name">🧭 世界の外側へ続く道</div><div class="rec">鍵穴、探索で得た縁と手掛かり、深淵で発見した異界、境界異常をまとめて確認する。</div></div>`;list.appendChild(head);
+  renderEighthKeyStages(list,onPick);
   const keyHeading=document.createElement('div');keyHeading.className='section-heading';keyHeading.textContent=`境界鍵路　—　鍵片 ${state.world2KeyFragments?.()||0}`;list.appendChild(keyHeading);
   const progress=state.world2Progress?.()||0,visibility=state.world2RealmVisibility?.()||{};
   for(const def of Object.values(KEY_DUNGEON_TYPES)){
