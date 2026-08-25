@@ -1,6 +1,6 @@
 import { state } from '../state.js';
 import { computeStats, getJob, TIERS } from '../data/jobs.js';
-import { PROGRESSION3_BASE, JOB_EXP_SHARE_BY_TIER, growthForJob, activeJobModifier } from '../data/progression3.js';
+import { PROGRESSION3_BASE, JOB_EXP_SHARE_BY_TIER, growthForJob, activeJobModifier, jobExpRewardCap } from '../data/progression3.js';
 import { chainMethod } from './patchUtils.js';
 
 const GROWTH_STATS=['hp','mp','atk','def','mag','mdef','spd'];
@@ -37,7 +37,15 @@ state.gainExp=function progression3GainExp(amount){
   const beforeLevel=this.characterLevel;
   const beforeJobLevel=this.currentJobLevel;
   const currentJobId=this.currentJobId;
+  const beforeJob={...(this.data.jobs[currentJobId]||{level:1,exp:0})};
+  const beforeMastered=[...(this.data.mastered||[])];
+
+  // Let Progression 2.0 award the full Character EXP, then replace only the Job-side
+  // result. Otherwise huge Chapter 20/Abyss rewards can MASTER a freshly-switched Job
+  // in a single clear, destroying Job identity as a side-progression track.
   const result=previousGainExp(amount);
+  this.data.jobs[currentJobId]={...beforeJob};
+  this.data.mastered=[...beforeMastered];
 
   // Character Lvアップ時、その瞬間の職業プロファイルに応じた永久成長を刻む。
   const gainedLevels=Math.max(0,this.characterLevel-beforeLevel);
@@ -47,26 +55,26 @@ state.gainExp=function progression3GainExp(amount){
     cg.levelHistory[currentJobId]=(cg.levelHistory[currentJobId]||0)+gainedLevels;
   }
 
-  // Progression 2.0のJob EXP 10%に、Tierごとの追加分を足す。
   const tier=getJob(currentJobId)?.tier||'basic';
   const desired=JOB_EXP_SHARE_BY_TIER[tier]??0.10;
-  const extraShare=Math.max(0,desired-0.10);
-  let extraJobExp=0;
-  if(extraShare>0){
-    const passive=this.currentJob.passive;
-    const commonMult=(passive&&passive.exp?passive.exp:1)*this.awakeningStatMult('exp')*this.jobMasterPassiveMult('exp');
-    extraJobExp=Math.round(Math.max(0,Number(amount)||0)*extraShare*commonMult);
-    const prog=this.data.jobs[currentJobId];
-    prog.exp+=extraJobExp;
-    const tierInfo=TIERS[tier];
-    while(prog.exp>=this.expToNext(prog.level)){
-      prog.exp-=this.expToNext(prog.level);
-      prog.level+=1;
-      if(tierInfo.masteryLv!=null&&prog.level>=tierInfo.masteryLv&&!this.isMastered(currentJobId)) this.data.mastered.push(currentJobId);
-    }
+  const passive=this.currentJob.passive;
+  const commonMult=(passive&&passive.exp?passive.exp:1)*this.awakeningStatMult('exp')*this.jobMasterPassiveMult('exp');
+  const uncappedJobExp=Math.round(Math.max(0,Number(amount)||0)*desired*commonMult);
+  const rewardCap=jobExpRewardCap(beforeJob.level,(lv)=>this.expToNext(lv));
+  const jobExpGained=Math.min(uncappedJobExp,rewardCap);
+  const prog=this.data.jobs[currentJobId];
+  prog.exp+=jobExpGained;
+  const tierInfo=TIERS[tier];
+  let jobLeveledUp=false;
+  while(prog.exp>=this.expToNext(prog.level)){
+    prog.exp-=this.expToNext(prog.level);
+    prog.level+=1;
+    jobLeveledUp=true;
+    if(tierInfo.masteryLv!=null&&prog.level>=tierInfo.masteryLv&&!this.isMastered(currentJobId)) this.data.mastered.push(currentJobId);
   }
+
   this.save();
-  return {...result,extraJobExp,jobLevelBefore:beforeJobLevel,jobLevel:this.currentJobLevel};
+  return {...result,jobExpGained,jobExpUncapped:uncappedJobExp,jobExpCapped:uncappedJobExp>rewardCap,jobLeveledUp,jobLevelBefore:beforeJobLevel,jobLevel:this.currentJobLevel};
 };
 
 chainMethod(state, 'getStats', (previousGetStats) => function progression3Stats(){
