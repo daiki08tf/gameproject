@@ -7,6 +7,9 @@
 
 export const ITEM_POWER_MAX = 10000;
 
+// Progression 3.0: Chapters 1-15 remain the first story arc (IP <= 1000).
+// The Veil arc (Ch16-20) now bridges smoothly from IP1000 to IP3000 so
+// Chapter 20 gear naturally hands off to Abyss 1F (target IP3000).
 export const CHAPTER_ITEM_POWER = Object.freeze({
   1: [10, 80],
   2: [60, 130],
@@ -23,11 +26,16 @@ export const CHAPTER_ITEM_POWER = Object.freeze({
   13: [840, 920],
   14: [890, 970],
   15: [930, 1000],
+  16: [1000, 1350],
+  17: [1300, 1700],
+  18: [1650, 2100],
+  19: [2050, 2550],
+  20: [2500, 3000],
 });
 
 export const ITEM_POWER_BANDS = Object.freeze([
   { id: 'story', label: '本編装備', min: 1, max: 999 },
-  { id: 'abyssal', label: '深淵装備', min: 1000, max: 2999 },
+  { id: 'abyssal', label: '境界・深淵装備', min: 1000, max: 2999 },
   { id: 'mythic', label: '神話装備', min: 3000, max: 4999 },
   { id: 'transcendent', label: '超越装備', min: 5000, max: 7999 },
   { id: 'terminal', label: '終焉装備', min: 8000, max: ITEM_POWER_MAX },
@@ -66,7 +74,7 @@ export function itemPowerBand(itemPower) {
 export function inferChapterNumber(item) {
   const id = String(item?.id || '');
   const m = id.match(/^ch(\d+)_/);
-  if (m) return clamp(Number(m[1]) || 1, 1, 15);
+  if (m) return clamp(Number(m[1]) || 1, 1, 20);
   if (/^(wp_|sh_|hd_|bd_|ac_)/.test(id)) return 1;
   return 1;
 }
@@ -104,13 +112,14 @@ export function itemPowerForDrop(item, ctx = {}, instanceKey = '') {
     return clamp(base + sourceBonus + jitter, 1, ITEM_POWER_MAX);
   }
 
-  const chapter = clamp(Number(ctx.chapter) || inferChapterNumber(item), 1, 15);
+  const chapter = clamp(Number(ctx.chapter) || inferChapterNumber(item), 1, 20);
   const [lo, hi] = CHAPTER_ITEM_POWER[chapter] || CHAPTER_ITEM_POWER[1];
   const t = deterministicJitter(instanceKey || `${item?.id}:${chapter}`);
   let ip = Math.round(lo + (hi - lo) * t);
   if (ctx.elite) ip += Math.round((hi - lo) * 0.18);
   if (ctx.boss) ip += Math.round((hi - lo) * 0.28);
-  return clamp(ip, 1, 1000);
+  // Story/The Veil drops may now legitimately reach IP3000 at Chapter 20.
+  return clamp(ip, 1, 3000);
 }
 
 export function affixTierForItemPower(itemPower) {
