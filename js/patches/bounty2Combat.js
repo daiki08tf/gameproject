@@ -1,6 +1,7 @@
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { bountyBaseIdForStage } from '../data/bounty2.js';
+import { abyssCombatScale } from '../data/abyssEndgame.js';
 
 const BASE_SCALE={
   'bounty-redfang-varg':{hp:1.45,atk:1.25,def:1.10,spd:1.10},
@@ -19,11 +20,12 @@ BattleEngine.prototype._spawnEnemy=function bounty2Spawn(type){
   const extra=stage.bounty2Scale||{hp:1,atk:1,def:1,spd:1};
   const nem=state.bountyNemesisInfo(stage);
   const nemMult=1+Math.min(.50,(nem.level||0)*.05);
-  enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*base.hp*extra.hp*nemMult);
-  enemy.atk=Math.round(enemy.atk*base.atk*extra.atk*nemMult);
-  enemy.def=Math.round(enemy.def*base.def*extra.def*(1+Math.min(.25,(nem.level||0)*.025)));
+  const era=stage.bounty2Tier==='ex'&&stage.bountyAbyssDepth?abyssCombatScale(stage.bountyAbyssDepth):{hp:1,atk:1,def:1};
+  enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*base.hp*extra.hp*era.hp*nemMult);
+  enemy.atk=Math.round(enemy.atk*base.atk*extra.atk*era.atk*nemMult);
+  enemy.def=Math.round(enemy.def*base.def*extra.def*era.def*(1+Math.min(.25,(nem.level||0)*.025)));
   enemy.spd=Math.round(enemy.spd*base.spd*extra.spd*(1+Math.min(.20,(nem.level||0)*.02)));
-  enemy.xp=Math.round(enemy.xp*extra.hp);
+  enemy.xp=Math.round(enemy.xp*extra.hp*Math.max(1,Math.sqrt(era.hp)));
   enemy.gold=Math.round(enemy.gold*extra.hp);
   if(nem.level>0) enemy.name=`${state.bountyNemesisTitle(stage)}${enemy.name}`;
   return enemy;
