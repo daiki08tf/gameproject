@@ -28,7 +28,8 @@ for(const chapter of CHAPTERS){
     phase9ExplorationKind:route.kind,
     phase9RewardTag:route.rewardTag,
     phase9Description:route.desc,
-    requires:route.unlockAfter,
+    requires:index===0?route.unlockAfter:`${chapter.num}-X${index}`,
+    phase9StoryGate:index===0?route.unlockAfter:null,
     waves:routeWaves(chapter,index),
     rewards:scaleReward({gold:180+index*30,exp:150+index*25},1+chapter.num*.16),
     dropTable:index===0?[{itemId:`${chapter.id}_accessory`,weight:1}]:index===1?[{itemId:`${chapter.id}_weapon`,weight:1},{itemId:`${chapter.id}_head`,weight:1}]:[{itemId:`${chapter.id}_body`,weight:1},{itemId:`${chapter.id}_accessory`,weight:1}],
@@ -36,9 +37,9 @@ for(const chapter of CHAPTERS){
   chapter.stages.splice(bossIndex,0,...routes);
   const hidden=chapter.stages.find(s=>s.id===`${chapter.num}-B`);
   if(hidden){
-    delete hidden.requires;
-    hidden.requiresAll=routes.map(s=>s.id);
+    hidden.requires=routes.at(-1)?.id||hidden.requires;
     hidden.phase9HiddenBoss=true;
+    hidden.phase9ExplorationChain=routes.map(s=>s.id);
     hidden.phase9Description=`3つの地域探索を完遂した者だけが辿り着ける隠し強敵。地域踏破の証「${def.reward}」へ続く最終調査。`;
   }
 }
