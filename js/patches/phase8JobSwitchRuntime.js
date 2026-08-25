@@ -4,9 +4,6 @@ import { getJob as legacyGetJob, computeStats as legacyComputeStats, TIERS } fro
 import { getJob, isUnlocked, computeStats } from '../data/jobsPhase8.js';
 
 const previousGetStats = state.getStats.bind(state);
-
-// StateManager's original getter closes over the legacy registry. Shadow it on the
-// singleton so generated fusion_* IDs resolve everywhere that reads state.currentJob.
 Object.defineProperty(state, 'currentJob', { configurable:true, get(){ return getJob(this.data.currentJobId); } });
 
 state.canSwitchTo = function phase8CanSwitchTo(jobId){ return isUnlocked(jobId, this.masteredSet()); };
@@ -16,15 +13,10 @@ state.changeJob = function phase8ChangeJob(jobId){
   if(!getJob(jobId)) return {ok:false,reason:'unknown_job'};
   if(!this.data.jobs[jobId]) this.data.jobs[jobId]={level:1,exp:0};
   this.data.currentJobId=jobId;
-  // A selected Fusion Job is also the active resonance so its constellation applies.
   if(jobId.startsWith('fusion_') && this.setActiveFusion) this.setActiveFusion(jobId);
   this.save(); return {ok:true};
 };
 
-// The mature equipment/permanent-stat pipeline in state.js is preserved. For a new
-// generated Fusion Job we run that pipeline through parent A, then replace only the
-// job-base contribution by scaling to the Fusion profile. This avoids duplicating the
-// large equipment formula while making the new job's averaged parent profile real.
 state.getStats = function phase8FusionStats(){
   const jobId=this.currentJobId, legacy=legacyGetJob(jobId);
   if(legacy) return previousGetStats();
@@ -44,7 +36,17 @@ state.getStats = function phase8FusionStats(){
   return stats;
 };
 
-state.phase8JobRuntimeStatus=function(){
-  const current=getJob(this.currentJobId);
-  return {currentJobId:this.currentJobId,isFusionJob:!!current?.isFusionJob,fusionCount:105,tier:current?.tier||null,masteryLv:current?TIERS[current.tier]?.masteryLv:null};
-};
+state.phase8JobRuntimeStatus=function(){const current=getJob(this.currentJobId);return{currentJobId:this.currentJobId,isFusionJob:!!current?.isFusionJob,fusionCount:105,tier:current?.tier||null,masteryLv:current?TIERS[current.tier]?.masteryLv:null};};
+
+// jobConstellationRuntime defines setActiveFusion later in the same module graph.
+// Wrap it after evaluation: choosing a newly generated resonance from the star chart
+// becomes an actual job change, while the 30 legacy advanced IDs keep old behavior.
+queueMicrotask(()=>{
+  if(typeof state.setActiveFusion!=='function') return;
+  const activate=state.setActiveFusion.bind(state);
+  state.setActiveFusion=function phase8ActivateFusion(fusionId){
+    const ok=activate(fusionId); if(!ok||!fusionId?.startsWith('fusion_')) return ok;
+    if(!this.data.jobs[fusionId]) this.data.jobs[fusionId]={level:1,exp:0};
+    this.data.currentJobId=fusionId; this.save(); return true;
+  };
+});
