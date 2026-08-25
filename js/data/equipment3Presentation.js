@@ -2,6 +2,7 @@
 import { itemPowerBand } from './equipment3.js';
 import { describeAffix, AFFIX_RARITY_LABEL, affixRarityIndex } from './affixes.js';
 import { getLegendaryEffect, getCursedAffix } from './equipment3Legendary.js';
+import { loot3EndgameChase } from './loot3EndgameChase.js';
 
 function lootQuality(item, inst, affixes, { legendary, curse, greaterCount, itemPower }) {
   const reasons = [];
@@ -28,7 +29,8 @@ export function equipment3Presentation(item, inst = null) {
   if (!item) return null;
   if (!inst) {
     const q=lootQuality(item,null,[],{legendary:null,curse:null,greaterCount:0,itemPower:0});
-    return {name:item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,itemPower:null,tier:null,band:null,greaterCount:0,affixes:[],legendary:null,curse:null,...q};
+    const base={name:item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,itemPower:null,tier:null,band:null,greaterCount:0,affixes:[],legendary:null,curse:null,...q};
+    return {...base,chase:loot3EndgameChase(item,base)};
   }
   const itemPower = Math.max(1, Math.floor(Number(inst.itemPower) || 1));
   const tier = Math.max(1, Math.min(10, Math.floor(Number(inst.affixTier) || Math.ceil(itemPower / 1000))));
@@ -38,7 +40,8 @@ export function equipment3Presentation(item, inst = null) {
   const curse = getCursedAffix(inst.curseId);
   const affixes = (inst.affixes || []).map((a) => {const d=describeAffix(a);return{id:a.id,name:d.name,desc:d.desc,category:d.category,rarity:a.rarity,rarityLabel:AFFIX_RARITY_LABEL[a.rarity]||a.rarity,greater:!!a.greater,roll:a.roll};});
   const q=lootQuality(item,inst,affixes,{legendary,curse,greaterCount,itemPower});
-  return {name:inst.displayName||item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,itemPower,tier,band,greaterCount,affixes,legendary,curse,...q};
+  const base={name:inst.displayName||item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,itemPower,tier,band,greaterCount,affixes,legendary,curse,...q};
+  return {...base,chase:loot3EndgameChase(item,base)};
 }
 
 export function equipment3MetaText(p) {
@@ -47,6 +50,7 @@ export function equipment3MetaText(p) {
   if(p.itemPower!=null)bits.push(`IP ${p.itemPower}`,`T${p.tier}`,p.band?.label);
   if (p.archetype) bits.push(`${p.archetype}${p.identity ? `：${p.identity}` : ''}`);
   if (p.greaterCount) bits.push(`★Greater ×${p.greaterCount}`);
+  if (p.chase?.tier) bits.push(p.chase.tier.label);
   return bits.filter(Boolean).join(' / ');
 }
 
@@ -54,10 +58,12 @@ export function equipment3SpecialLines(p) {
   if (!p) return [];
   const lines=[];
   if(p.targetFarmHit&&p.targetFarm)lines.push(`【TARGET HIT】${p.targetFarm}`);
+  if(p.chase?.tier) lines.push(`【CHASE：${p.chase.tier.label}】${p.chase.signals.slice(0,5).join(' / ')}`);
+  else if(p.chase?.next && p.itemPower>=7000) lines.push(`【CHASE】次：${p.chase.next.label}（完成度 ${Math.round(p.chase.progress*100)}%）`);
   if(p.reasons?.length)lines.push(`【LOOT】${p.reasons.join(' / ')}`);
-  if(p.quality==='jackpot'||p.buildCount>0||p.targetFarmHit) {
+  if(p.quality==='jackpot'||p.buildCount>0||p.targetFarmHit||p.chase?.tier) {
     const keepReasons=(p.reasons||[]).filter(r=>/UNIQUE|SET|BUILD|ANCIENT|GREATER|LEGENDARY/.test(r)).slice(0,3);
-    lines.push(`【KEEP候補】${keepReasons.length?keepReasons.join(' / '):'狙い撃ちドロップ'}`);
+    lines.push(`【KEEP候補】${keepReasons.length?keepReasons.join(' / '):(p.chase?.tier?.label||'狙い撃ちドロップ')}`);
   }
   if (p.legendary) lines.push(`《${p.legendary.name}》 ${p.legendary.desc}`);
   if (p.curse) lines.push(`【呪：${p.curse.name}】 ${p.curse.desc}`);
@@ -66,6 +72,9 @@ export function equipment3SpecialLines(p) {
 
 export function equipment3DropHeadline(p) {
   if (!p) return null;
+  if (p.chase?.tier?.id === 'godroll') return '――GOD ROLL――';
+  if (p.chase?.tier?.id === 'apex') return '――APEX DROP――';
+  if (p.chase?.tier?.id === 'endgame') return '――ENDGAME PIECE――';
   if (p.quality === 'jackpot') return `――JACKPOT${p.reasons?.length ? `：${p.reasons.slice(0,2).join(' / ')}` : ''}――`;
   if (p.quality === 'special') return `――SPECIAL DROP${p.reasons?.length ? `：${p.reasons.slice(0,2).join(' / ')}` : ''}――`;
   if (p.targetFarmHit) return '――TARGET DROP――';
