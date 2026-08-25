@@ -2,6 +2,7 @@ import './world2Core.js';
 import './phase9RegionalExplorationRuntime.js';
 import './phase9RegionalMasteryRuntime.js';
 import './phase9EighthKeyRuntime.js';
+import './phase9MachineWorldRuntime.js';
 import { state } from '../state.js';
 import { EXPLORATION_SITES, explorationSite, explorationProgressFor } from '../data/exploration1.js';
 
