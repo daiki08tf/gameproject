@@ -32,8 +32,8 @@ Loot 3.0 extends the existing equipment, weapon-instance, Affix, Unique, Set, Co
 
 ### 7.3 Target farming
 - [x] Connect World 3.0 destinations to explicit loot families.
-- [ ] Heaven: Relic / light-build / high-tier material identity. (Light/Wind Affix + quality steering wired; direct Relic/material chase still pending.)
-- [ ] Underworld: Unique / dark-fire / high-risk identity. (Dark/Fire Affix + Cursed/Legendary steering wired; direct Unique chase still pending.)
+- [x] Heaven: Relic / light-build / high-tier resource identity. Light/Wind Affix steering remains the item chase; eligible locked Relics can trigger `RELIC RESONANCE`, returning 15% of the current unlock cost in existing Gold/Manastone without bypassing Awakening/Abyss gates.
+- [x] Underworld: Unique / dark-fire / high-risk identity. Dark/Fire + Cursed/Legendary steering remains the item chase; defeated Bounty Uniques can gain bounded `UNIQUE ECHO` support for their initial mastery trials, capped at five echoes / 25% of each trial target.
 - [x] Abyss routes and bosses: depth/build/boss-oriented quality pressure.
 - [x] Keep the unknown anomaly route primarily informational until Story resolves it.
 

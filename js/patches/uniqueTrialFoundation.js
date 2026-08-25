@@ -1,5 +1,6 @@
 import { state } from '../state.js';
 import { uniqueTrialDef } from '../data/uniqueTrials.js';
+import { installLoot3RealmChase } from './loot3RealmChaseRewards.js';
 
 function ensure(){
   state.data.uniqueTrials ??= {};
@@ -38,3 +39,5 @@ state.chooseUniqueBranch=function(itemId,branchId){
   const branch=this.uniqueBranchAvailability(itemId).find(b=>b.id===branchId&&b.ready); if(!branch)return false;
   p.branch=branchId; this.save(); return true;
 };
+
+installLoot3RealmChase(state);
