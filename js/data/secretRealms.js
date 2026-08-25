@@ -54,8 +54,6 @@ function buildExpandedRealm(cfg){
 function buildEighthKeyStage(def){
   const base=buildAbyssStage(def.depth,[],{suppressModifiers:true});
   const healMult=def.final?.5:def.id.endsWith('-2')?.65:.8;
-  const dangerMult=def.final?1.28:def.id.endsWith('-2')?1.20:1.15;
-  scaleRealmEnemies(base,{hpMult:dangerMult,atkMult:dangerMult,defMult:def.final?1.25:1.12,speedMult:def.id.endsWith('-1')?1.15:1.08});
   return{
     ...base,
     id:def.id,
