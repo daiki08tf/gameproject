@@ -46,7 +46,7 @@ test('anomaly remains informational and cannot steer loot', () => {
 
 test('target hit is visible even when the item is not otherwise special', () => {
   const item={id:'test',name:'試作装備',slot:'weapon',rarity:'rare'};
-  const p=equipment3Presentation(item,{itemPower:800,affixTier:1,targetFarm:'天界：光Build',targetFarmHit:true,affixes:[{id:'element_light_dmg',rarity:'rare',roll:8}]});
+  const p=equipment3Presentation(item,{itemPower:800,affixTier:1,targetFarm:'天界：風属性',targetFarmHit:true,affixes:[{id:'element_wind_dmg',rarity:'rare',roll:8}]});
   assert.ok(equipment3SpecialLines(p)[0].includes('TARGET HIT'));
   assert.match(equipment3DropHeadline(p),/TARGET DROP/);
 });
