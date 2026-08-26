@@ -1,4 +1,10 @@
 /* Phase 12.11-12.14 — finish horizontal content inside existing systems. */
+// exploration1Core.js defines state.explorationProgress. This file is reached
+// via homeNavigation.js -> systemDeepeningPackC.js -> here, which runs well
+// before main.js's own direct `import './patches/exploration1Core.js'` line —
+// so without this import, state.explorationProgress.bind(state) below throws
+// "Cannot read properties of undefined (reading 'bind')" on every page load.
+import './exploration1Core.js';
 import './phase13ReplayRuntime.js';
 import { state } from '../state.js';
 import { PHASE12_CODEX_GROUPS,phase12MasterySnapshot } from '../data/phase12Finale.js';
