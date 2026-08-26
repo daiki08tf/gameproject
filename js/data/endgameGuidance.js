@@ -33,17 +33,17 @@ export function buildEndgameGuidance({level=1,abyssBestDepth=0,worldTierId='norm
   const best=Math.max(0,Math.min(ENDGAME_ABYSS_MAX_DEPTH,Math.floor(Number(abyssBestDepth)||0)));
   const tier=worldTier(worldTierId),highest=highestWorldTier(lv),reward=endgameRewardProfile(lv);
   const targetDepth=suggestedAbyssDepth(lv);
-  const safeDepth=Math.max(1,targetDepth||1);
   const nextDepth=targetDepth>0?(best<targetDepth?Math.min(targetDepth,best+1):targetDepth):1;
   const targetLevel=abyssRecommendedLevel(nextDepth),targetIp=abyssTargetItemPower(nextDepth),era=abyssEraForDepth(nextDepth);
   const storyBlocked=baseLane.id!=='story'&&!abyssUnlocked;
   const lane=storyBlocked?{...baseLane,id:'story_gate',label:'物語クリアを優先',target:'goStageBtn',purpose:'全章ボスを撃破して深淵を解禁する'}:baseLane;
+  const tierBehind=!storyBlocked&&highest.rank>tier.rank;
   let reason=lane.purpose;
-  if(!storyBlocked&&highest.rank>tier.rank)reason=`${highest.name} が解禁済み。World Tierを上げてから ${lane.purpose}`;
+  if(tierBehind)reason=`${highest.name} が解禁済み。World Tierを上げてから ${lane.purpose}`;
   else if(!storyBlocked&&nemesisLevel>=5)reason=`高Lv Nemesis が成長中。弱点情報を集めつつ ${lane.purpose}`;
   else if(!storyBlocked&&lv>=3000&&best<targetDepth)reason=`現在Lvなら深淵 ${targetDepth}F 前後が進行目安。${lane.purpose}`;
   return{
-    level:lv,laneId:lane.id,title:lane.label,targetButtonId:lane.target,reason,abyssUnlocked:Boolean(abyssUnlocked),
+    level:lv,laneId:lane.id,title:lane.label,targetButtonId:tierBehind?'goStageBtn':lane.target,reason,abyssUnlocked:Boolean(abyssUnlocked),
     activeWorldTier:tier.id,recommendedWorldTier:highest.id,recommendedWorldTierName:highest.name,
     abyssBestDepth:best,recommendedAbyssDepth:targetDepth,nextAbyssDepth:nextDepth,nextAbyssLevel:targetLevel,
     nextAbyssItemPower:targetIp,nextAbyssEra:era,nemesisLevel:Math.max(0,Number(nemesisLevel)||0),
