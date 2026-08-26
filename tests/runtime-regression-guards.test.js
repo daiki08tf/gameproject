@@ -1,3 +1,4 @@
+// Permanent guards for two confirmed high-severity runtime regressions.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
