@@ -51,7 +51,7 @@ export const CP2_SECRET_COMPANIONS=Object.freeze({
 });
 
 export const CP2_SPECIAL_HYBRIDS=Object.freeze({
-  'cp2_silver_fawn+ash_devourer':{id:'cp2_ashen_moonhart',name:'灰月鹿',icon:'🌘🦌',role:'speed',baseStats:{hp:205,mp:34,atk:58,def:35,mag:31,spd:55},growth:{hp:15.0,mp:2.0,atk:6.4,def:4.0,mag:3.6,spd:3.2},traits:['白銀の脚','灰の執念'],skills:[{level:1,id:'ash_slash'},{level:38,id:'sonic'}]},
+  'ash_devourer+cp2_silver_fawn':{id:'cp2_ashen_moonhart',name:'灰月鹿',icon:'🌘🦌',role:'speed',baseStats:{hp:205,mp:34,atk:58,def:35,mag:31,spd:55},growth:{hp:15.0,mp:2.0,atk:6.4,def:4.0,mag:3.6,spd:3.2},traits:['白銀の脚','灰の執念'],skills:[{level:1,id:'ash_slash'},{level:38,id:'sonic'}]},
   'cp2_rib_drake+null_hound':{id:'cp2_zero_drake',name:'零脈竜',icon:'🐉📡',role:'breaker',baseStats:{hp:238,mp:34,atk:68,def:48,mag:36,spd:46},growth:{hp:17.1,mp:2.0,atk:7.4,def:5.4,mag:4.1,spd:2.7},traits:['機械装甲','自己学習'],skills:[{level:1,id:'iron_fang'},{level:40,id:'thunder_claw'}]},
   'cp2_margin_sprite+echo_lux':{id:'cp2_margin_lux',name:'余白残響灯',icon:'📖💡',role:'support',baseStats:{hp:172,mp:72,atk:23,def:26,mag:65,spd:52},growth:{hp:12.5,mp:4.1,atk:2.6,def:2.9,mag:7.1,spd:3.0},traits:['魔力感知'],skills:[{level:1,id:'crystal_ray'},{level:34,id:'slime_heal'},{level:44,id:'sonic'}]},
   'cp2_parallax_wisp+zero_signal_beast':{id:'cp2_dual_observer',name:'双観測獣',icon:'◉📡',role:'specialist',baseStats:{hp:216,mp:62,atk:55,def:42,mag:62,spd:58},growth:{hp:15.6,mp:3.5,atk:6.1,def:4.7,mag:6.8,spd:3.3},traits:['異界適応','自己学習'],skills:[{level:1,id:'crystal_ray'},{level:38,id:'iron_fang'},{level:46,id:'sonic'}]},
