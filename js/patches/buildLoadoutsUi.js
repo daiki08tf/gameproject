@@ -19,17 +19,18 @@ function canApply(preset){
   }
   return missing.length?{ok:false,reason:`不足 ${missing.length}点`}:{ok:true};
 }
+function unequipAll(){for(const slot of SLOT_IDS)if(state.data.equipped?.[slot]&&!state.equipItem(slot,null))return false;return true;}
+function equipSnapshot(target){for(const slot of SLOT_IDS){const id=target?.[slot]||null;if(id&&!state.equipItem(slot,id))return false;}return true;}
+function restoreSnapshot(before){unequipAll();return equipSnapshot(before);}
 function applyPreset(index){
   const preset=data().loadouts[index],check=canApply(preset);if(!check.ok)return check;
-  const before=snapshot(),changed=[];
-  for(const slot of SLOT_IDS){
-    const target=preset.equipment[slot]||null;
-    if((state.data.equipped?.[slot]||null)===target)continue;
-    if(!state.equipItem(slot,target)){
-      for(const rollbackSlot of changed.reverse())state.equipItem(rollbackSlot,before[rollbackSlot]||null);
-      return {ok:false,reason:'現在の職業・所持状態では装備できません'};
-    }
-    changed.push(slot);
+  const before=snapshot();
+  // Unequip first so a target item currently sitting in another slot (e.g. accessory swap)
+  // becomes available in inventory before the preset is applied.
+  if(!unequipAll()){restoreSnapshot(before);return {ok:false,reason:'装備解除に失敗しました'};}
+  if(!equipSnapshot(preset.equipment)){
+    restoreSnapshot(before);state.save();
+    return {ok:false,reason:'現在の職業・所持状態では装備できません'};
   }
   state.save();document.getElementById('goEquipBtn')?.click();return {ok:true};
 }
