@@ -31,11 +31,11 @@ test('Story Expansion I front registers Ch26-29 through the canonical chapter pi
   }
 });
 
-test('Story Expansion I front is visible in the existing regional hierarchy',()=>{
+test('Story Expansion I front remains the first four chapters of the reverse-observation region',()=>{
   const outer=WORLD3_REGIONS.find(r=>r.id==='outer-world');
   const reverse=WORLD3_REGIONS.find(r=>r.id==='reverse-observation');
   assert.deepEqual(outer?.chapters,[21,22,23,24,25]);
-  assert.deepEqual(reverse?.chapters,[26,27,28,29]);
+  assert.deepEqual(reverse?.chapters.slice(0,4),[26,27,28,29]);
 });
 
 test('Ch26-29 story escalates the Eighth Key mystery without naming Japan or Tokyo',()=>{
@@ -64,7 +64,7 @@ test('mandatory story stays on main stages and branches remain optional',()=>{
   }
 });
 
-test('adding Ch26-29 does not silently move the existing Abyss unlock gate',()=>{
+test('adding later story chapters does not silently move the existing Abyss unlock gate',()=>{
   const clearedThrough25=new Set(CHAPTERS.filter(ch=>ch.num<=25).map(ch=>finalStageOf(ch).id));
   assert.equal(isAbyssUnlocked(id=>clearedThrough25.has(id)),true);
   const missingCh25=new Set([...clearedThrough25].filter(id=>id!=='25-8'));
