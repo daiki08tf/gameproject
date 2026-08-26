@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { CHAPTERS } from '../js/data/stages.js';
 import { ENEMY_TYPES } from '../js/data/enemies.js';
 import { cumulativeCharacterExpToLevel } from '../js/data/progression.js';
@@ -57,8 +58,6 @@ test('Abyss stage EXP contributes a stable share toward the Lv3,000 -> 99,999 ro
   }
   const need=cumulativeCharacterExpToLevel(99999)-cumulativeCharacterExpToLevel(3000);
   const share=stageExp/need;
-  // Stage-clear EXP is designed around 55%; enemy EXP supplies the rest. Because
-  // the budget uses the current floor's per-level approximation, allow drift.
   assert.ok(share>=0.45 && share<=0.65,`Abyss stage share ${share}`);
 });
 
@@ -75,8 +74,8 @@ test('Abyss canonical checkpoints stay monotonic and finite through 3000F',()=>{
 });
 
 test('branch stages are not part of the canonical main-route EXP budget contract',()=>{
-  const source15=await import('node:fs').then(fs=>fs.readFileSync(new URL('../js/patches/levelRoadmap99999.js',import.meta.url),'utf8'));
-  const source20=await import('node:fs').then(fs=>fs.readFileSync(new URL('../js/patches/progression3StoryExpansion.js',import.meta.url),'utf8'));
+  const source15=fs.readFileSync(new URL('../js/patches/levelRoadmap99999.js',import.meta.url),'utf8');
+  const source20=fs.readFileSync(new URL('../js/patches/progression3StoryExpansion.js',import.meta.url),'utf8');
   assert.match(source15,/if \(stage\.branch\) continue/);
   assert.match(source20,/if \(stage\.branch\) continue/);
 });
