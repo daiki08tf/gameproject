@@ -4,9 +4,9 @@ import { WORLD3_REGIONS, world3RegionForChapter } from '../js/data/world3Regions
 
 test('World regional hierarchy covers every implemented story chapter exactly once',()=>{
   const chapters=WORLD3_REGIONS.flatMap(r=>r.chapters);
-  assert.equal(chapters.length,29);
-  assert.deepEqual([...chapters].sort((a,b)=>a-b),Array.from({length:29},(_,i)=>i+1));
-  assert.equal(new Set(chapters).size,29);
+  assert.equal(chapters.length,30);
+  assert.deepEqual([...chapters].sort((a,b)=>a-b),Array.from({length:30},(_,i)=>i+1));
+  assert.equal(new Set(chapters).size,30);
 });
 
 test('The Veil remains the second-act block and later story regions follow it in order',()=>{
@@ -15,10 +15,10 @@ test('The Veil remains the second-act block and later story regions follow it in
   const reverse=WORLD3_REGIONS.find(r=>r.id==='reverse-observation');
   assert.deepEqual(veil?.chapters,[16,17,18,19,20]);
   assert.deepEqual(outer?.chapters,[21,22,23,24,25]);
-  assert.deepEqual(reverse?.chapters,[26,27,28,29]);
+  assert.deepEqual(reverse?.chapters,[26,27,28,29,30]);
   assert.ok(WORLD3_REGIONS.indexOf(veil)<WORLD3_REGIONS.indexOf(outer));
   assert.ok(WORLD3_REGIONS.indexOf(outer)<WORLD3_REGIONS.indexOf(reverse));
   assert.equal(world3RegionForChapter(20)?.id,'veil');
   assert.equal(world3RegionForChapter(25)?.id,'outer-world');
-  assert.equal(world3RegionForChapter(29)?.id,'reverse-observation');
+  assert.equal(world3RegionForChapter(30)?.id,'reverse-observation');
 });
