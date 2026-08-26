@@ -6,6 +6,30 @@ export const JOB_EXP_SHARE_BY_TIER = { basic:0.30, advanced:0.20, special:0.15, 
 export const JOB_ACTIVE_MOD_STRENGTH = 0.15;
 export const JOB_LEVELS_PER_REWARD_CAP = 3;
 
+// Phase 10.5 — Job MASTER pacing contract.
+// A very large endgame reward may hit the per-reward cap, but it must still take
+// multiple clears to MASTER a freshly switched Job. These are derived from the
+// canonical mastery levels rather than duplicated as arbitrary battle counts.
+export const JOB_MASTERY_LEVEL_BY_TIER = Object.freeze({ basic:15, advanced:30, special:50 });
+
+export function minimumCappedRewardsToMaster(tier,startLevel=1){
+  const mastery=JOB_MASTERY_LEVEL_BY_TIER[tier];
+  if(!mastery)return null;
+  const start=Math.max(1,Math.floor(Number(startLevel)||1));
+  return Math.max(0,Math.ceil((mastery-start)/JOB_LEVELS_PER_REWARD_CAP));
+}
+
+export function jobMasterPacingProfile(tier,startLevel=1){
+  const mastery=JOB_MASTERY_LEVEL_BY_TIER[tier]??null;
+  return {
+    tier,
+    expShare:JOB_EXP_SHARE_BY_TIER[tier]??0,
+    masteryLevel:mastery,
+    levelsPerRewardCap:JOB_LEVELS_PER_REWARD_CAP,
+    minimumCappedRewards:minimumCappedRewardsToMaster(tier,startLevel),
+  };
+}
+
 export function mdefProfileFor(job){
   const p=job?.profile||{};
   return Math.max(0.5,Math.min(1.7,(Number(p.mag||1)*0.55)+(Number(p.def||1)*0.45)));
