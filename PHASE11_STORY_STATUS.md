@@ -2,9 +2,9 @@
 
 ## Current status
 
-- **11.1 Story Canon — ✅ Complete in this branch**
-- **11.2 Ch1–15 Story Pass — NEXT**
-- 11.3 The Veil Ch16–20 — queued
+- **11.1 Story Canon — ✅ Complete**
+- **11.2 Ch1–15 Story Pass — ✅ Complete**
+- **11.3 The Veil Ch16–20 — NEXT**
 - 11.4 World Mystery Integration — queued
 - 11.5 Ch21–25 Integration — queued
 - 11.6 Modern World Tease — queued
@@ -19,21 +19,26 @@
 - Modern World reveal follows a clue ladder and remains deliberately unresolved.
 - `tests/story-canon.test.js` guards world layers, arc boundaries, Veil single-source behavior, system mappings and writing constraints.
 
-## Next: 11.2 Ch1–15 Story Pass
+## 11.2 completion evidence
 
-The next implementation should add compact, gameplay-adjacent story content to the existing first fifteen chapters:
+- `js/data/storyChapters1to15.js` defines one compact story spine for every core chapter.
+- Each chapter has: journey objective, opening, midpoint discovery, boss confrontation and boss-clear record.
+- `js/patches/story11CoreJourney.js` attaches these beats to existing main stages and reuses `TextBattleScreen` instead of adding a story-only screen.
+- Story appears only at meaningful moments and stays inside the existing text-RPG flow.
+- Branch and bounty stages are not polluted with mandatory story text.
+- Ch1–5 remain grounded adventure, Ch6–9 expose contradictions between regions, Ch10–14 establish shared infrastructure, and Ch15 reveals Black Iron Machine Castle as an active boundary-management facility.
+- The phrase `The Veil` is still withheld until its canonical Ch19 reveal.
+- No EXP, rewards, enemies, unlock gates or save schema changed.
+- `tests/phase11-core-story.test.js` covers all 15 chapters, reveal timing, branch isolation and battle-log story helpers.
+- Full CI passed before closure.
 
-1. short chapter-opening objective text;
-2. one or two environmental/discovery lines per chapter where useful;
-3. short boss intro/phase/defeat lines;
-4. recurring clue motifs that escalate without naming The Veil too early;
-5. no new story screen and no mandatory text walls;
-6. preserve existing stage ids, rewards, level curve and unlock gates.
+## Next: 11.3 The Veil — Ch16–20
 
-### Reveal pacing target
+The next implementation should make the existing second arc feel deliberate rather than merely five more regions:
 
-- Ch1–5: grounded adventure; ancient/common motifs are easy to dismiss.
-- Ch6–9: contradictions between regions become noticeable.
-- Ch10: first explicit "this cannot be coincidence" travel record already exists.
-- Ch11–14: machine/ruin/boundary motifs become more frequent.
-- Ch15: Black Iron Machine Castle becomes the clear transition point into The Veil arc.
+1. give each chapter a clear immediate objective tied to the post-Ch15 boundary failure;
+2. turn existing lore into compact playable discoveries and boss-facing lines;
+3. escalate the seven-key / guardian / outside-world mystery across Ch16–20;
+4. explicitly name The Veil only at Ch19 as already canonized;
+5. make Ch20 reveal that the defeated Abyss entity was the last inner guardian, creating a natural handoff into post-Ch20 endgame/world exploration;
+6. preserve the existing Lv700→3,000 Progression 3.0 balance and stage ids.
