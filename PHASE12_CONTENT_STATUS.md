@@ -12,10 +12,12 @@
 - **12.8 Lore Fragments / World Traces — ✅ Complete**
 - **12.9 Rumors — ✅ Complete**
 - **12.10 World Event Integration — ✅ Complete**
-- **12.11 Region Mastery Expansion — NEXT**
-- **12.12 Codex Expansion — planned**
-- **12.13 Secret / Apex Dungeons — planned**
-- **12.14 Horizontal UI Integration — planned**
+- **12.11 Region Mastery Expansion — ✅ Complete**
+- **12.12 Codex Expansion — ✅ Complete**
+- **12.13 Secret / Apex Dungeons — ✅ Complete**
+- **12.14 Horizontal UI Integration — ✅ Complete**
+
+**Phase 12 — ✅ COMPLETE**
 
 ## Horizontal expansion rules
 
@@ -32,17 +34,15 @@ Phase 12 widens Blade Vale after the main vertical journey and Lv99,999 endgame 
 9. Mobile navigation and compact presentation remain completion criteria.
 10. Horizontal expansion should create multiple valid player goals: loot hunt, companion hunt, Boss hunt, Codex, breeding, lore or completion.
 
-## 12.1 — Boundary Ruins Pack I ✅
+## 12.1–12.2 — Foundation Packs ✅
 
-Four optional discoveries use the existing Abyss exploration flow: **残響観測塔 / 沈降鋳造所 / 記憶果樹園 / 零番境界駅**. Each uses the existing three-fragment discovery model, Secret Realm builder, stage progress, Gold/EXP economy and existing Set pools.
+- Four Boundary Ruins: **残響観測塔 / 沈降鋳造所 / 記憶果樹園 / 零番境界駅**.
+- Fourteen postgame recruitable species, eight readable party roles and four breeding-only hybrids.
+- Existing exploration, Secret Realm, Ranch, recruitment, Bond and breeding routes are reused.
 
-## 12.2 — Companion & Monster Expansion ✅
+## 12.3–12.6 — Dungeon / Ecology / Rare Hunt Pack ✅
 
-Fourteen postgame enemies are recruitable through the existing recruitment flow, eight readable party roles are surfaced in Ranch cards, and four breeding-only hybrid species extend Companion 3.0 without a new resource or capture screen.
-
-## 12.3 — Optional Dungeon Pack I ✅
-
-Five new optional dungeons are embedded in the existing exploration → Secret Realm route:
+Five optional dungeons are embedded in exploration → Secret Realm:
 
 - **古王墓** — Guard/反撃、不死近衛、無名古王。
 - **幻獣の森** — 高速・属性混成、重層生態、幻獣王。
@@ -50,58 +50,35 @@ Five new optional dungeons are embedded in the existing exploration → Secret R
 - **反転図書館** — 魔法・Analysis、高EXP、反転司書。
 - **黒月神殿** — 回復抑制・終盤混成、最高IP帯、黒月神。
 
-All five reuse the existing three-fragment discovery model and are completely optional to the main story.
+Each owns authored ecology, a dedicated Boss and one low-frequency rare encounter. Rare encounters range from **6.0% → 1.5%** and inject directly into the real encounter wave. Each rare owns a hidden fixed Mythic Unique chase drop: **無名王冠 / 幻獣心核 / 始祖竜骸刃 / 反転目録・未刊 / 黒月遮断核**. No new equipment rarity is introduced.
 
-## 12.4 — Enemy Ecology Expansion ✅
+## 12.7–12.10 — Boss / Lore / Rumor / Event Pack ✅
 
-Each new dungeon owns at least four authored archetypes: frontline/guardian/caster/support or controller, a bespoke Boss, and one rare-species archetype. Enemies derive from canonical Abyss depth stats so the pack remains aligned with Lv3,000→99,999 scaling instead of creating a second balance table.
+The five horizontal bosses use Combat 3 signature profiles with escorts, danger tags, counterplay, phase changes and shrinking Break windows. The five dungeons contain **15 optional lore fragments**. Existing World Event outcomes can generate five dungeon rumors, and dungeon clears feed world traces back into the same World 2 discovery ledger, forming **event → rumor → exploration → evidence** without another menu or save root.
 
-## 12.5 — Rare Spawn Expansion ✅
+## 12.11 — Region Mastery Expansion ✅
 
-Five low-frequency rare encounters now roll at Secret Realm construction time:
+Ch21–25 regional mastery now exposes an additional optional `horizontalDepth` record linked to one Phase 12 dungeon per region. Existing `mastered` and facility-unlock results remain untouched, so previously earned mastery is never revoked. A shared horizontal mastery snapshot reports five dungeon clears and five world traces.
 
-- **金棺の亡霊** — 6.0%
-- **白虹ユニコーン** — 4.5%
-- **始祖竜の残骨** — 3.5%
-- **未刊の予言者** — 2.5%
-- **月外観測体・ECLIPSE** — 1.5%
+## 12.12 — Codex Expansion ✅
 
-A hit injects the rare enemy into the encounter immediately before the Boss. A miss does not alter the normal wave layout.
+The existing Monster Codex now receives compact Phase 12 collection summaries for:
 
-## 12.6 — Ultra Rare Loot / Hidden Drops ✅
+- **横断異界種**
+- **希少観測種**
+- **異界主**
+- **収束観測種**
 
-Each rare spawn owns a hidden fixed-Unique chase drop. No new equipment rarity is introduced; all use the existing fixed Unique resolver and only enter the stage drop table when the rare encounter actually appears.
+The summary uses normal Codex seen/kill records. Rare species stay hidden until actually encountered; no second Codex is created.
 
-- **無名王冠**
-- **幻獣心核**
-- **始祖竜骸刃**
-- **反転目録・未刊**
-- **黒月遮断核**
+## 12.13 — Secret / Apex Dungeon ✅
 
-## 12.7 — Boss Expansion ✅
+**収束観測界** is the Phase 12 optional Apex Secret Realm. Reaching Abyss 3000F reveals the route, but **all five horizontal dungeons must actually be cleared** before entry unlocks. Its Boss, **五界観測体・PENTARCH**, uses a dedicated four-phase Combat 3 profile with guards, adds and progressively shorter Break windows. Difficulty stays on the canonical **Lv99,999 / IP10,000** ceiling rather than inventing another vertical tier.
 
-The five horizontal dungeon bosses now use full Combat 3 signature encounter profiles instead of behaving like large HP bars. Each has escorts, danger tags, explicit counterplay and three or more phase transitions with shrinking Break windows. **黒月神・ノクティル** uses a four-phase apex profile.
+## 12.14 — Horizontal UI Integration ✅
 
-## 12.8 — Lore Fragments / World Traces ✅
+No new Home button or horizontal-content screen is added. The existing Abyss/exploration screen displays a compact **横軸探索 X/5 / 世界の痕跡 X/5** card and the Apex requirement in place. The existing Monster Codex receives a compact horizontal ecology summary. Long-form side-content navigation remains inside existing progressive-disclosure surfaces.
 
-Each horizontal dungeon carries three compact evidence fragments (15 total). Clearing the real dungeon records its trace into the existing World 2 discovery ledger. The traces deepen questions around observation sectors, overlapping ecologies, boundary structures, pre-observation records and structured outside signals without giving the main-story answer.
+## Phase 12 completion gate
 
-## 12.9 — Rumors ✅
-
-Five rumor bridges point players toward the horizontal dungeons using the existing discovery ledger:
-
-- **名を持たない王** → 古王墓
-- **霧の向こうの白い角** → 幻獣の森
-- **山より大きな骨** → 竜骸峡谷
-- **天井へ落ちる本** → 反転図書館
-- **月のない夜の月影** → 黒月神殿
-
-No separate rumor screen is introduced.
-
-## 12.10 — World Event Integration ✅
-
-Existing World Event outcomes now feed the rumor layer directly. Choices such as discovering an old patrol mark, following the giant beast trail, recording a meteor bearing, learning Border Company information or detecting anomaly signals can create the matching rumor in the same World 2 discovery ledger. Horizontal dungeon clears feed world traces back into that ledger, creating a loop of **event → rumor → exploration → evidence** without a new save root, menu or currency.
-
-## Next — 12.11 Region Mastery Expansion
-
-Extend existing regional completion so horizontal side content adds optional mastery depth without invalidating already-earned regional mastery. Follow with Codex coverage, apex content and final compact UI integration as one finishing batch.
+Phase 12 is complete when the player can pursue multiple optional goals without disturbing the main journey: dungeon hunt, rare spawn hunt, hidden Unique chase, companion collection/breeding, Boss mastery, Codex completion, rumors/lore traces and the five-realm Apex encounter. All are now connected through existing systems with no new currency, no new Home button and no main-story gate rewrite.

@@ -1,5 +1,6 @@
 import { PHASE12_BOUNDARY_RUINS } from './phase12BoundaryRuins.js';
 import { PHASE12_HORIZONTAL_PACK } from './phase12HorizontalPack.js';
+import { PHASE12_APEX } from './phase12Finale.js';
 
 const LEGACY_SECRET_REALM_EXPANSION = {
   ancient_dragon_gate: {
@@ -29,7 +30,7 @@ const LEGACY_SECRET_REALM_EXPANSION = {
 
 // Phase 12 expands the existing exploration path instead of creating a second
 // content menu. The object shape remains identical for backward compatibility.
-export const SECRET_REALM_EXPANSION = Object.freeze({...LEGACY_SECRET_REALM_EXPANSION,...PHASE12_BOUNDARY_RUINS,...PHASE12_HORIZONTAL_PACK});
+export const SECRET_REALM_EXPANSION = Object.freeze({...LEGACY_SECRET_REALM_EXPANSION,...PHASE12_BOUNDARY_RUINS,...PHASE12_HORIZONTAL_PACK,convergence_observatory:PHASE12_APEX});
 
 export function expandedExplorationSites(){ return Object.values(SECRET_REALM_EXPANSION).map(x=>x.site); }
 export function expandedRealmByStageId(stageId){ return Object.values(SECRET_REALM_EXPANSION).find(x=>x.site.realm.id===stageId)||null; }
