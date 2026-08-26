@@ -10,6 +10,7 @@ import { attachJourneyStory } from '../js/patches/story11CoreJourney.js';
 
 const ch30=()=>CHAPTERS.find(ch=>ch.num===30);
 
+// Story Expansion I finale integration contract.
 test('Ch30 completes Story Expansion I through the established expanded chapter pipeline',()=>{
   const chapter=ch30();
   assert.ok(chapter);
