@@ -5,6 +5,7 @@
 import { CHAPTERS } from '../data/stages.js';
 import { coreStoryBeatForStage } from '../data/storyChapters1to15.js';
 import { veilStoryBeatForStage } from '../data/storyChapters16to20.js';
+import { worldMysteryClueForStage } from '../data/storyWorldMystery.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
 
 function attachJourneyStory(){
@@ -27,11 +28,14 @@ function attachJourneyStory(){
 const attachCoreStory=attachJourneyStory;
 
 function storyStartLines(stage){
-  const story=stage?.story11;if(!story)return[];
+  if(!stage)return[];
+  const story=stage.story11;
   const lines=[];
-  if(story.opening){if(story.act)lines.push(`【${story.act}】`);lines.push(`【旅の目的】${story.objective}`,story.opening);}
-  if(story.discovery)lines.push(`【発見】${story.discovery}`);
-  if(story.bossIntro)lines.push(`【対峙】${story.bossIntro}`);
+  if(story?.opening){if(story.act)lines.push(`【${story.act}】`);lines.push(`【旅の目的】${story.objective}`,story.opening);}
+  if(story?.discovery)lines.push(`【発見】${story.discovery}`);
+  if(story?.bossIntro)lines.push(`【対峙】${story.bossIntro}`);
+  const mystery=worldMysteryClueForStage(stage);
+  if(mystery)lines.push(`【境界観測】${mystery}`);
   return lines;
 }
 
