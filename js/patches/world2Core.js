@@ -22,7 +22,7 @@ state.world2RealmVisibility=function(){ensure();return realmVisibility(this.worl
 state.world2KeyFragments=function(){ensure();return Math.max(0,Math.floor(this.data.world2.keyFragments||0));};
 state.world2AvailableKeyDungeons=function(){ensure();return availableKeyDungeons(this.world2Progress(),this.world2KeyFragments());};
 state.world2Discoveries=function(){ensure();return Object.entries(this.data.world2.discoveries).filter(([,v])=>v?.name).map(([id,v])=>({id,...v})).sort((a,b)=>(b.at||0)-(a.at||0));};
-state.world2EventChains=function(){ensure();return structuredClone?structuredClone(this.data.world2.eventChains):JSON.parse(JSON.stringify(this.data.world2.eventChains));};
+state.world2EventChains=function(){ensure();return typeof structuredClone==='function'?structuredClone(this.data.world2.eventChains):JSON.parse(JSON.stringify(this.data.world2.eventChains));};
 state.world2EventChance=function(){ensure();return eventChanceForDryStreak(this.data.world2.eventDryClears||0);};
 
 state.world2ForgeKey=function(typeId){ensure();const def=KEY_DUNGEON_TYPES[typeId];if(!def)return{ok:false,reason:'unknown'};if(this.world2Progress()<def.minProgress)return{ok:false,reason:'progress',required:def.minProgress};if(this.world2KeyFragments()<def.fragmentCost)return{ok:false,reason:'fragments',cost:def.fragmentCost};this.data.world2.keyFragments-=def.fragmentCost;this.data.world2.keys[typeId]=(this.data.world2.keys[typeId]||0)+1;this.save();return{ok:true,typeId,count:this.data.world2.keys[typeId]};};
@@ -30,7 +30,7 @@ state.world2UseKey=function(typeId){ensure();const def=KEY_DUNGEON_TYPES[typeId]
 
 function applyEventOutcome(manager,event,outcome){
   const w=manager.data.world2;
-  const result={gold:0,goldSpent:0,keyFragments:0,choice:null,discovery:outcome?.discovery||null,hint:outcome?.hint||'',tag:outcome?.tag||null,chainId:event.chainId||null,chainName:event.chainName||null};
+  const result={gold:0,goldSpent:0,keyFragments:0,choice:null,discovery:outcome?.discovery||null,hint:outcome?.hint||'',tag:outcome?.tag||null,chainId:event.chainId||null,chainName:event.chainName||null,nemesis:null};
   const delta=Number(outcome?.gold||0);
   if(delta>0){manager.data.gold=(manager.data.gold||0)+delta;result.gold=delta;}
   else if(delta<0){const spent=Math.min(manager.data.gold||0,Math.abs(delta));manager.data.gold=Math.max(0,(manager.data.gold||0)-spent);result.goldSpent=spent;}
@@ -38,6 +38,7 @@ function applyEventOutcome(manager,event,outcome){
   if(fragments){w.keyFragments+=fragments;result.keyFragments=fragments;}
   if(outcome?.flag){w.flags[outcome.flag]=true;w.discoveries[outcome.flag]={name:outcome.discovery||event.name,hint:outcome.hint||'',source:event.id,chainId:event.chainId||null,at:Date.now()};}
   if(outcome?.flag==='riftAttunement')w.flags.modernContact=true;
+  if(event.chainId==='nemesis'&&outcome?.flag)result.nemesis=manager.applyNemesisEventFlag?.(outcome.flag)||null;
   if(event.chainId){
     const chain=w.eventChains[event.chainId]||(w.eventChains[event.chainId]={started:true,step:0,wait:0,completed:false});
     chain.started=true;chain.lastEventId=event.id;chain.lastAt=Date.now();
@@ -60,7 +61,7 @@ state.world2ResolveEvent=function(eventId,choiceIndex=0){
 function eventContext(manager,progress){
   const w=manager.data.world2;
   const machineUnlocked=!!manager.phase9MachineWorldUnlocked?.()||!!w.flags.modernContact&&progress>=20;
-  const nemesisEligible=progress>=12||!!manager.data.bounty2||!!manager.data.bountyNemesis||!!manager.data.nemesis;
+  const nemesisEligible=!!manager.activeBountyNemesis?.()||Object.values(manager.data.bountyNemesis||{}).some(n=>(n?.level||0)>0);
   return{progress,currentJobId:manager.currentJobId,flags:w.flags,machineUnlocked,nemesisEligible};
 }
 function tickChainWaits(chains){for(const chain of Object.values(chains||{})){if(Number.isFinite(chain?.wait)&&chain.wait>0)chain.wait--;}}
