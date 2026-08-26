@@ -7,7 +7,8 @@
 - **11.3 The Veil Ch16–20 — ✅ Complete**
 - **11.4 World Mystery Integration — ✅ Complete**
 - **11.5 Ch21–25 Integration — ✅ Complete**
-- **11.6 Modern World Tease — NEXT**
+- **11.6 Modern World Tease — ✅ Complete**
+- **Phase 11 Adventure / Story 3.0 — ✅ COMPLETE**
 
 ## Completion evidence
 
@@ -41,23 +42,40 @@
 - Machine World observations escalate by district from boundary management to the discovery that the managers themselves are being observed.
 - Nemesis is framed as a creature learning from boundary echoes; Unique Trials replay conditions recorded in equipment.
 - Artifacts preserve old combat records, while Relics are fragments of world laws capable of changing battle rules.
-- The anomaly route remains deliberately unresolved: machine-like signals are confirmed external, but no modern-world place or identity is named yet.
 - All gameplay rewards, combat values, unlocks, stage ids, save schema and progression remain unchanged.
-- `tests/phase11-world-mystery.test.js` guards system coverage, reveal cadence, anomaly secrecy, battle-log integration and gameplay immutability.
+- `tests/phase11-world-mystery.test.js` guards system coverage, reveal cadence, battle-log integration and gameplay immutability.
 
 ### 11.5 Ch21–25 Integration
 - `js/data/storyChapters21to25.js` turns the five existing outer regions into the third story act: **外縁世界**.
 - Ch21 establishes that the world beyond the breach contains old civilizations connected to the same boundary network.
-- Ch22 reveals repeated reconstruction of the same world coordinates and introduces the idea of selection rather than simple preservation.
+- Ch22 reveals repeated reconstruction of the same world coordinates and introduces selection rather than simple preservation.
 - Ch23 traces ancient anti-intrusion defenses and gives the first clear shape to an unregistered **eighth connection**.
 - Ch24 reveals that routes were deliberately erased from collective memory and ties the hidden connection to the Boundary Throne.
 - Ch25 identifies Blade Vale as one node in a wider boundary network, explains the Eighth Key as an exception outside the normal management system, and ends by naming only its next destination: **機界**.
-- `story11CoreJourney.js` now supports Ch1–25 through the same compact battle-log story layer.
+- `story11CoreJourney.js` supports Ch1–25 through the same compact battle-log story layer.
 - Branch routes remain optional and carry no mandatory main-story exposition.
-- Modern-world names, locations and devices remain unrevealed until 11.6.
 - No stage ids, chapter progression numbers, rewards, combat values, unlock rules or save schema were changed.
-- `tests/phase11-outer-world-story.test.js` guards chapter coverage, reveal escalation, branch isolation, Modern World secrecy and progression-data immutability.
+- `tests/phase11-outer-world-story.test.js` guards chapter coverage, reveal escalation, branch isolation and progression-data immutability.
 
-## Next: 11.6 Modern World Tease
+### 11.6 Modern World Tease
+- `js/data/storyModernWorldTease.js` defines a six-step sensory clue ladder instead of a direct exposition dump.
+- The existing anomaly route first confirms an intentional external radio-like signal.
+- Machine World 11–15 escalates through unfamiliar high-rise architecture, ordered city lights, rail-like vibration/electronic sound, a thin illuminated communication device with date-like notation, and finally familiar-looking `駅` / `線` writing fragments.
+- No clue names Tokyo, Japan or the Modern World as a confirmed destination.
+- The final OBSERVER clue still preserves the Phase 11.4 truth that Machine World managers are themselves observed.
+- Clues appear through the existing compact `【境界観測】` battle-log route; no new screen, Home button, currency or save state is added.
+- The central question — **why Blade Vale and that external inhabited world are connected** — remains unanswered as the next long-term story hook.
+- `tests/phase11-modern-world-tease.test.js` guards clue order/types, destination secrecy, observer continuity, compact presentation and gameplay immutability.
 
-Add controlled sensory fragments beyond the Machine World / Eighth Key: train-like vibration, ordered city lights, date-like notation, communication-device fragments and Japanese-like text patterns. Keep the final reason Blade Vale and the Modern World are connected unresolved; Phase 11 should end with a strong hook rather than a full cosmology dump.
+## Phase 11 completion gate
+
+- Player motivation is understandable from Ch1 onward — ✅
+- Ch1–25 reads as one escalating journey — ✅
+- World/Key/Secret/Machine/Nemesis/Raid/Abyss systems have narrative context — ✅
+- Story text stays compact and mobile-readable — ✅
+- Existing progression/balance is not silently rewritten by story work — ✅
+- Automated regression/CI gate — pending current PR CI
+
+## Next
+
+**Phase 12 — Content Expansion.** Increase volume only through the now-established world/story/system structures; do not create parallel frameworks. Prioritize reusable content and lightweight recognition (Titles / Personal Records) over new top-level systems.
