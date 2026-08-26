@@ -67,9 +67,18 @@ function decorateNotebook(){
     const rec=byName.get(title);if(!rec?.nextAction)return;
     const line=document.createElement('div');line.className='hint cp2e-next';line.textContent=`NEXT — ${rec.nextAction}`;card.appendChild(line);
   });
-  box.querySelector('[data-cp2e-lore]')?.remove();
-  const lore=state.cp2LoreFragments();if(!lore.length)return;
-  const details=document.createElement('details');details.className='ui-detail-disclosure';details.dataset.cp2eLore='1';
+  const lore=state.cp2LoreFragments();
+  const existingLore=box.querySelector('[data-cp2e-lore]');
+  // Rebuilding this block unconditionally on every call is itself a childList
+  // mutation inside #monsterCodexContent, which this function's own
+  // MutationObserver watches with subtree:true — so an unconditional
+  // remove+recreate here retriggers the observer forever (infinite loop,
+  // reproducible as soon as the player has collected at least one 断片).
+  // Only touch the DOM when the fragment count actually changed.
+  if(existingLore&&Number(existingLore.dataset.cp2eLoreCount)===lore.length)return;
+  existingLore?.remove();
+  if(!lore.length)return;
+  const details=document.createElement('details');details.className='ui-detail-disclosure';details.dataset.cp2eLore='1';details.dataset.cp2eLoreCount=String(lore.length);
   details.innerHTML=`<summary>世界断片 ${lore.length}</summary><div class="ui-detail-body">${lore.map(x=>`<div class="forge-card-sub" style="margin:6px 0"><b>${escapeHtml(x.name.replace(/^断片：/,''))}</b><br>${escapeHtml(x.hint)}</div>`).join('')}</div>`;
   box.appendChild(details);
 }
