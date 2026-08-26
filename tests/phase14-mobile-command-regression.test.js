@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const css=fs.readFileSync(new URL('../css/style.css',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../css/finalIntegration.css',import.meta.url),'utf8');
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const battle=fs.readFileSync(new URL('../js/screens/textBattle.js',import.meta.url),'utf8');
 
