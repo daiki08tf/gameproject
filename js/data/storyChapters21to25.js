@@ -58,7 +58,7 @@ const CHAPTER_STORY=Object.freeze({
 
 function stageBeat(chapterNumber,stage,mainIndex,mainCount){
   const story=CHAPTER_STORY[chapterNumber];
-  if(!story||!stage)return null;
+  if(!story||!stage||stage.branch||stage.bounty||mainIndex<0)return null;
   const last=mainIndex===mainCount-1;
   const beat={act:ARC_LABEL,objective:story.objective};
   if(mainIndex===0)beat.opening=story.opening;
