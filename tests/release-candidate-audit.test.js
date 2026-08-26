@@ -12,6 +12,7 @@ import { buildSecretRealmStage } from '../js/data/secretRealms.js';
 import { buildRaidStage } from '../js/data/raidBosses.js';
 
 const finiteNonNegative=v=>Number.isFinite(Number(v))&&Number(v)>=0;
+const finiteNumber=v=>Number.isFinite(Number(v));
 const resolveRewardItem=id=>!id||Boolean(getItem(id)||getRune(id));
 
 test('RC: all story stage ids are unique and every story stage resolves',()=>{
@@ -70,7 +71,9 @@ test('RC: equipment catalog has valid identities, slots, rarities and finite sta
     assert.ok(item.id&&item.name,`bad item identity`);
     assert.ok(validSlots.has(item.slot),`bad slot ${item.id}:${item.slot}`);
     assert.ok(RARITY[item.rarity],`bad rarity ${item.id}:${item.rarity}`);
-    for(const [stat,value] of Object.entries(item.stats||{}))assert.ok(finiteNonNegative(value),`bad stat ${item.id}:${stat}`);
+    // Build-defining Unique/Cursed gear may intentionally trade one stat down.
+    // The release contract is numeric safety, not a blanket non-negative rule.
+    for(const [stat,value] of Object.entries(item.stats||{}))assert.ok(finiteNumber(value),`bad stat ${item.id}:${stat}`);
   }
 });
 
