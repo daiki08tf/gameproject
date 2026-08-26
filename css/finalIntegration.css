@@ -1,0 +1,82 @@
+/* Phase 14 — Final Integration / mobile-first visual identity */
+:root{
+  --surface-1:rgba(16,18,28,.96);
+  --surface-2:rgba(255,255,255,.055);
+  --line-soft:rgba(255,255,255,.11);
+  --text-muted:rgba(240,240,245,.68);
+  --radius-card:12px;
+  --tap-min:44px;
+}
+
+/* Global compactness: primary screens should breathe without becoming long. */
+.screen{min-height:0;gap:0;}
+.subbar{min-height:44px;margin-bottom:10px;}
+.stage-list,.equip-layout,.job-tiers,.blacksmith-content{min-height:0;}
+.stage-card,.forge-card,.job-card,.pick-row{border-radius:var(--radius-card);}
+.stage-card{padding:11px 13px;gap:10px;}
+.stage-card>div:first-child{min-width:0;flex:1 1 auto;}
+.stage-card .name{font-size:14px;line-height:1.35;}
+.stage-card .rec{line-height:1.45;margin-top:2px;}
+.btn-main,.btn-sub,.btn-back,.btn-icon,.tab-btn{min-height:var(--tap-min);}
+
+/* Home: keep the important decision within one phone viewport. */
+#homeScreen{overflow:hidden;}
+#homeScreen .topbar{margin-bottom:8px;flex:0 0 auto;}
+#homeScreen .home-hero{flex:0 0 auto;min-height:50px;font-size:48px;padding:4px 0;}
+#homeScreen .home-menu{min-height:0;overflow-y:auto;padding-bottom:max(8px,env(safe-area-inset-bottom));}
+.phase14-next-goal{background:linear-gradient(135deg,rgba(242,201,76,.16),rgba(255,255,255,.04));border:1px solid rgba(242,201,76,.36);border-radius:12px;padding:10px 12px;margin-bottom:8px;text-align:left;}
+.phase14-next-kicker{font-size:10px;letter-spacing:1.1px;color:var(--accent);font-weight:800;}
+.phase14-next-title{font-size:14px;font-weight:800;margin-top:2px;}
+.phase14-next-sub{font-size:11px;color:var(--text-muted);margin-top:2px;line-height:1.4;}
+.phase14-home-summary{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0 8px;}
+.phase14-home-summary::-webkit-scrollbar{display:none;}
+.phase14-chip{flex:0 0 auto;background:var(--surface-2);border:1px solid var(--line-soft);border-radius:999px;padding:5px 9px;font-size:10px;color:var(--text-muted);white-space:nowrap;}
+
+/* Adventure: compact section tabs supplied by Phase 14 runtime. */
+.phase14-adventure-strip{display:flex;gap:6px;overflow-x:auto;padding:0 0 8px;scrollbar-width:none;}
+.phase14-adventure-strip::-webkit-scrollbar{display:none;}
+.phase14-adventure-strip button{flex:0 0 auto;min-height:38px;padding:7px 11px;font-size:11px;border-radius:999px;}
+.phase14-favorite-btn{flex:0 0 auto;min-width:36px;min-height:36px;padding:4px 8px!important;border-radius:999px!important;}
+.phase14-stage-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
+.phase14-stage-meta span{font-size:10px;border:1px solid var(--line-soft);border-radius:999px;padding:2px 6px;color:var(--text-muted);}
+
+/* Equipment / Ranch / collection lists: dense overview first, detail on demand. */
+.equip-picker,.character-equip-list{gap:6px;}
+.pick-row{padding:8px 10px;}
+.pick-row .item-stats,.forge-card-sub{line-height:1.4;}
+#lootFilterRow{position:sticky;top:0;z-index:6;background:var(--bg);padding:4px 0 6px;margin-bottom:6px;}
+.monster-ranch-list,.ranch-list{min-height:0;}
+.phase14-loadouts{margin-bottom:6px;padding:9px 10px;}
+.phase14-loadout-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:6px;}
+.phase14-loadout-row::-webkit-scrollbar{display:none;}
+.phase14-loadout-unit{flex:0 0 auto;display:grid;grid-template-columns:auto auto;gap:4px;align-items:center;background:var(--surface-2);border:1px solid var(--line-soft);border-radius:10px;padding:6px;}
+.phase14-loadout-unit>span{grid-column:1/-1;font-size:10px;font-weight:800;color:var(--text-muted);}
+.phase14-loadout-unit button{min-height:36px;padding:6px 9px;font-size:10px;}
+
+/* Critical regression guard: many enemies/log lines may scroll, commands may not. */
+#textBattleScreen{min-height:0;overflow:hidden;padding-bottom:max(8px,env(safe-area-inset-bottom));}
+.tb-hud{flex:0 0 auto;}
+.tb-enemy-list{flex:0 1 auto;max-height:min(31vh,220px);overflow-y:auto;overscroll-behavior:contain;margin:7px 0;min-height:0;padding-right:2px;}
+.tb-enemy-card{padding:6px 9px;flex:0 0 auto;}
+.tb-log{min-height:0;max-height:none;overscroll-behavior:contain;}
+.tb-command-grid{position:sticky;bottom:0;z-index:30;background:linear-gradient(180deg,rgba(10,10,18,.78),rgba(10,10,18,.99) 28%);padding-top:8px;margin-top:4px;flex:0 0 auto;}
+.tb-cmd-btn{min-height:44px;padding:11px 5px;touch-action:manipulation;}
+.tb-tech-menu{position:sticky;bottom:0;z-index:30;background:var(--bg);max-height:min(45vh,300px);padding-top:6px;}
+.tb-tech-list{min-height:0;}
+
+/* Small phones / short viewports: protect commands before decorative content. */
+@media (max-height:700px){
+  #textBattleScreen{padding-top:max(8px,env(safe-area-inset-top));}
+  .tb-enemy-list{max-height:25vh;margin:5px 0;gap:4px;}
+  .tb-enemy-card{padding:5px 8px;}
+  .tb-log{font-size:12px;line-height:1.5;padding:7px 9px;}
+  .tb-command-grid{gap:6px;}
+  .tb-cmd-btn{min-height:44px;padding:9px 4px;font-size:14px;}
+  #homeScreen .home-hero{display:none;}
+}
+@media (max-width:380px){
+  .screen{padding-left:10px;padding-right:10px;}
+  .tb-command-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .tb-cmd-btn{font-size:13px;}
+  .stage-card{padding:9px 10px;}
+}
