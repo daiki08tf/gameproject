@@ -1,7 +1,10 @@
 /* Phase 13 replayability lives inside existing battle/stage-confirm surfaces. */
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
-import { PHASE13_CHALLENGES,PHASE13_TITLES,phase13Challenge,phase13BuildFeatIds } from '../data/phase13Replay.js';
+import { ENEMY_TYPES } from '../data/enemies.js';
+import { CHAPTERS } from '../data/stages.js';
+import { buildSecretRealmStage } from '../data/secretRealms.js';
+import { PHASE13_CHALLENGES,PHASE13_TITLES,phase13Challenge,phase13BuildFeatIds,phase13RareHunt } from '../data/phase13Replay.js';
 
 const selectedChallenges=new Map();
 const bossLike=stage=>Boolean(stage?.boss||stage?.raid||stage?.secretRealm);
@@ -62,11 +65,20 @@ export function renderPhase13ChallengePicker(stage){
   anchor.after(wrap);
 }
 
+function injectRareHunt(engine){
+  const hunt=phase13RareHunt(engine.stage.id);if(!hunt||Math.random()>=hunt.chance)return null;
+  const source=ENEMY_TYPES[hunt.sourceEnemyId];if(!source)return null;
+  ENEMY_TYPES[hunt.enemyId]={...source,name:hunt.name,hp:Math.round(source.hp*1.18),atk:Math.round(source.atk*1.16),def:Math.round(source.def*1.10),speed:Math.round((source.speed||80)*1.08),boss:false,phase13RareHunt:true};
+  const bossIndex=Math.max(0,engine.encounterQueue.length-1);engine.encounterQueue.splice(bossIndex,0,{type:hunt.enemyId,count:1});engine.totalToDefeat++;
+  engine.stage={...engine.stage,phase13RareHuntName:hunt.name,phase13RareHuntId:hunt.enemyId,dropTable:[{itemId:hunt.dropId,weight:.28,phase13RareHunt:true},...(engine.stage.dropTable||[])]};
+  return hunt;
+}
 function initEngine(engine){
   if(engine._phase13)return engine._phase13;
   const challenge=selectedPhase13Challenge(engine.stage.id);
-  engine._phase13={challenge,turns:0,maxDamage:0,finished:false};
+  engine._phase13={challenge,turns:0,maxDamage:0,finished:false,rareHunt:null};
   engine.stage={...engine.stage,healMult:(engine.stage.healMult||1)*(challenge.healMult||1)};
+  engine._phase13.rareHunt=injectRareHunt(engine);
   return engine._phase13;
 }
 function scaleEnemy(enemy,ch){
@@ -90,6 +102,18 @@ BattleEngine.prototype._dropChanceBonusMult=function phase13DropMult(...args){co
 const originalAdvance=BattleEngine.prototype.advanceTurn;
 BattleEngine.prototype.advanceTurn=function phase13Advance(...args){
   const meta=initEngine(this);meta.turns++;const out=originalAdvance.apply(this,args);for(const ev of out?.events||[]){if(ev?.type==='enemyAction')continue;meta.maxDamage=Math.max(meta.maxDamage,maxDamageFrom(ev));}
-  if(out?.over&&out?.result?.cleared&&!meta.finished){meta.finished=true;const hpPct=this.player?.maxHp?this.player.hp/this.player.maxHp*100:0;const saved=state.phase13RecordClear(this.stage,{challengeId:meta.challenge.id,turns:meta.turns,maxDamage:meta.maxDamage,hpPct});out.result.phase13={challenge:meta.challenge,turns:meta.turns,maxDamage:meta.maxDamage,hpPct,newTitles:saved.newTitles,newFeats:saved.newFeats,record:saved.record};}
+  if(out?.over&&out?.result?.cleared&&!meta.finished){meta.finished=true;const hpPct=this.player?.maxHp?this.player.hp/this.player.maxHp*100:0;const saved=state.phase13RecordClear(this.stage,{challengeId:meta.challenge.id,turns:meta.turns,maxDamage:meta.maxDamage,hpPct});out.result.phase13={challenge:meta.challenge,turns:meta.turns,maxDamage:meta.maxDamage,hpPct,rareHunt:meta.rareHunt,newTitles:saved.newTitles,newFeats:saved.newFeats,record:saved.record};}
   return out;
 };
+
+function stageByConfirmName(name){
+  for(const chapter of CHAPTERS)for(const stage of chapter.stages||[])if(stage.name===name)return stage;
+  for(const site of state.explorationSites||[]){if(!site.realm)continue;const stage=buildSecretRealmStage(site.realm.id);if(stage?.name===name)return stage;}
+  return null;
+}
+function attachPickerObserver(){
+  const label=document.getElementById('confirmStageName');if(!label)return;
+  const render=()=>{const stage=stageByConfirmName(label.textContent);if(stage)renderPhase13ChallengePicker(stage);};
+  new MutationObserver(render).observe(label,{childList:true,characterData:true,subtree:true});
+}
+attachPickerObserver();
