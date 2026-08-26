@@ -37,10 +37,10 @@ function syncChains(){
 }
 state.cp2SecretChains=function(){syncChains();return Object.values(CP2_SECRET_CHAINS).map(c=>({...chainState(c),definition:c}));};
 
-function registerBoss(def){
-  if(ENEMY_TYPES[def.name])return;
+function registerBoss(bossId,def){
+  if(ENEMY_TYPES[bossId])return;
   const src=ENEMY_TYPES[def.sourceEnemyId];if(!src)return;
-  ENEMY_TYPES[def.bossId]={...src,name:def.name,hp:Math.max(1,Math.round(src.hp*def.hpMult)),atk:Math.max(1,Math.round(src.atk*def.atkMult)),def:Math.max(0,Math.round(src.def*def.defMult)),speed:Math.max(1,Math.round((src.speed||80)*def.speedMult)),boss:true,contentPackII:true,cp2HiddenBoss:true};
+  ENEMY_TYPES[bossId]={...src,name:def.name,hp:Math.max(1,Math.round(src.hp*def.hpMult)),atk:Math.max(1,Math.round(src.atk*def.atkMult)),def:Math.max(0,Math.round(src.def*def.defMult)),speed:Math.max(1,Math.round((src.speed||80)*def.speedMult)),boss:true,contentPackII:true,cp2HiddenBoss:true};
 }
 function eligibleBosses(stageId){
   syncChains();
@@ -61,7 +61,6 @@ TextBattleScreen.prototype.start=function cp2CDStart(stageId,onEnd,blessingId){
           if(!already)state.createCompanion(reward.companion,{epithet:'秘密連鎖の仔'});
         }
       }
-      // Eighth-rib resolution also reveals a non-boss juvenile tied to Zero Station.
       if(this._cp2CDBosses.includes('cp2_boss_octave_warden')&&state.createCompanion){
         const already=Object.values(state.data.companionInstances||{}).some(x=>x?.speciesId==='cp2_zero_larva');
         if(!already)state.createCompanion('cp2_zero_larva',{epithet:'第零線より来たもの'});
@@ -73,7 +72,7 @@ TextBattleScreen.prototype.start=function cp2CDStart(stageId,onEnd,blessingId){
   const out=previousStart.call(this,stageId,wrappedEnd,blessingId);
   const list=eligibleBosses(stageId);this._cp2CDBosses=[];
   for(const [bossId,def] of list){
-    registerBoss(def);if(!ENEMY_TYPES[bossId])continue;
+    registerBoss(bossId,def);if(!ENEMY_TYPES[bossId])continue;
     this.engine.encounterQueue.push({type:bossId,count:1});
     this.engine.totalToDefeat+=1;
     this._cp2CDBosses.push(bossId);
@@ -85,7 +84,7 @@ const previousReveal=TextBattleScreen.prototype._revealNextGroupIfNeeded;
 TextBattleScreen.prototype._revealNextGroupIfNeeded=function cp2CDReveal(){
   const before=new Set((this.engine?.aliveEnemies||[]).map(e=>e.id));
   const out=previousReveal.apply(this,arguments);
-  const found=(this.engine?.aliveEnemies||[]).find(e=>e.cp2HiddenBoss&&!before.has(e.id));
+  const found=(this.engine?.aliveEnemies||[]).find(e=>this._cp2CDBosses?.includes(e.type)&&!before.has(e.id));
   if(found){
     this._cp2CDBossShown??=new Set();
     if(!this._cp2CDBossShown.has(found.id)){
@@ -96,7 +95,6 @@ TextBattleScreen.prototype._revealNextGroupIfNeeded=function cp2CDReveal(){
   return out;
 };
 
-// Keep notebook automatic; chain records appear beside existing rumors.
 const previousNotebook=state.rumorNotebook?.bind(state);
 if(previousNotebook&&!state.rumorNotebook.__cp2cd){
   const wrapped=function cp2CDNotebook(){syncChains();return previousNotebook();};wrapped.__cp2cd=true;state.rumorNotebook=wrapped;
