@@ -31,7 +31,7 @@ function applyPreset(index){
     }
     changed.push(slot);
   }
-  state.save();render();document.getElementById('goEquipBtn')?.click();return {ok:true};
+  state.save();document.getElementById('goEquipBtn')?.click();return {ok:true};
 }
 function render(){
   const screen=document.getElementById('equipmentScreen'),layout=screen?.querySelector('.equip-layout');if(!layout)return;
@@ -45,7 +45,6 @@ function render(){
     const save=document.createElement('button');save.className='btn-sub';save.textContent=preset?'上書き':'保存';save.addEventListener('click',()=>savePreset(index));unit.appendChild(save);row.appendChild(unit);
   });box.appendChild(row);
 }
-const screen=document.getElementById('equipmentScreen');if(screen&&typeof MutationObserver!=='undefined')new MutationObserver(()=>queueMicrotask(render)).observe(screen,{childList:true,subtree:true});
 document.addEventListener('click',e=>{if(e.target?.closest?.('#goEquipBtn,#autoEquipBtn,.equip-slot,.pick-row button'))queueMicrotask(render);});
 render();
 export { savePreset,applyPreset,canApply };
