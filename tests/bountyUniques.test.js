@@ -6,13 +6,19 @@ import { getItem } from '../js/data/equipment.js';
 
 test('each initial bounty has exactly one registered unique reward', () => {
   assert.equal(BOUNTIES.length, 5);
-  assert.equal(BOUNTY_UNIQUES.length, 5);
+  const bountyRewards=BOUNTY_UNIQUES.filter(u=>u.bountyId);
+  assert.equal(bountyRewards.length, 5);
   for (const bounty of BOUNTIES) {
     const unique = uniqueForBounty(bounty.id);
     assert.ok(unique, `missing unique for ${bounty.id}`);
     assert.equal(unique.unique, true);
     assert.equal(getItem(unique.id)?.id, unique.id);
   }
+});
+
+test('non-bounty fixed Uniques can coexist without changing bounty reward mapping',()=>{
+  const extra=BOUNTY_UNIQUES.filter(u=>!u.bountyId);
+  assert.ok(extra.every(u=>u.unique&&getItem(u.id)?.id===u.id));
 });
 
 test('bounty stages remain hidden-content stages with combat hints', () => {
