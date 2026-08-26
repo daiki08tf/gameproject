@@ -3,7 +3,9 @@ import { machineWorldStageDef } from './phase9MachineWorld.js';
 
 export function buildMachineWorldStage(stageId){
   const def=machineWorldStageDef(stageId);if(!def)return null;
-  const base=buildAbyssStage(def.depth,[],{suppressModifiers:true});
+  // Machine World has its own handcrafted reward tiers and can also be played under
+  // World Tier. Suppress the Abyss-only era reward boost here to avoid triple stacking.
+  const base=buildAbyssStage(def.depth,[],{suppressModifiers:true,suppressEndgameRewards:true});
   const boss=!!def.boss,district2=def.district===2,district3=def.district===3;
   const dropTable=[...(base.dropTable||[])];
   if(def.id==='machine-world-10')dropTable.push({itemId:'uq_architect_core',weight:.28});
