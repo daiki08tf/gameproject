@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { buildEndgameGuidance, guidanceLaneForLevel, suggestedAbyssDepth, ENDGAME_ABYSS_MAX_DEPTH } from '../js/data/endgameGuidance.js';
 import { endgameRewardProfile } from '../js/data/endgameRewardScaling.js';
+import { abyssRecommendedLevel } from '../js/data/abyssEndgame.js';
 import { WORLD_TIERS } from '../js/data/worldTiers.js';
 
 test('guidance lanes cover the Lv1-99999 roadmap without gaps',()=>{
@@ -15,14 +16,19 @@ test('guidance lanes cover the Lv1-99999 roadmap without gaps',()=>{
 });
 
 test('recommended Abyss depth follows the canonical 3000F roadmap',()=>{
-  const cases=[[1,0],[2999,0],[3000,4],[4500,24],[7000,99],[9999,249],[16000,499],[29999,999],[49999,1999],[74999,2999],[99999,3000]];
+  const milestones=[[1,0],[2999,0],[3000,1],[9999,100],[29999,500],[49999,1000],[74999,2000],[99999,3000]];
   let previous=0;
-  for(const [level,depth] of cases){
+  for(const [level,depth] of milestones){
     const actual=suggestedAbyssDepth(level);
     assert.equal(actual,depth,`Lv${level}`);
     assert.ok(actual>=previous);
     assert.ok(actual<=ENDGAME_ABYSS_MAX_DEPTH);
     previous=actual;
+  }
+  for(const level of [4500,7000,16000,40000,60000,90000]){
+    const depth=suggestedAbyssDepth(level);
+    assert.ok(abyssRecommendedLevel(depth)<=level,`Lv${level} should support ${depth}F`);
+    if(depth<ENDGAME_ABYSS_MAX_DEPTH)assert.ok(abyssRecommendedLevel(depth+1)>level,`Lv${level} should not support ${depth+1}F`);
   }
 });
 
@@ -46,7 +52,10 @@ test('guidance recommends the highest unlocked World Tier and warns when active 
   for(const tier of WORLD_TIERS){
     const g=buildEndgameGuidance({level:tier.unlockLevel,worldTierId:'normal',abyssUnlocked:true});
     assert.equal(g.recommendedWorldTier,tier.id);
-    if(tier.rank>0)assert.match(g.reason,/解禁済み/);
+    if(tier.rank>0){
+      assert.match(g.reason,/解禁済み/);
+      assert.equal(g.targetButtonId,'goStageBtn');
+    }
   }
 });
 
@@ -60,7 +69,7 @@ test('guidance never sends a story-blocked character into locked Abyss',()=>{
 });
 
 test('Nemesis pressure becomes the recommendation reason once tier is current',()=>{
-  const g=buildEndgameGuidance({level:9999,abyssBestDepth:249,worldTierId:'transcendent',nemesisLevel:5,abyssUnlocked:true});
+  const g=buildEndgameGuidance({level:9999,abyssBestDepth:100,worldTierId:'transcendent',nemesisLevel:5,abyssUnlocked:true});
   assert.match(g.reason,/Nemesis/);
 });
 
