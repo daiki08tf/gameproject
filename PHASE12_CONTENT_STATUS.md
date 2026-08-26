@@ -3,7 +3,7 @@
 ## Current status
 
 - **12.1 Boundary Ruins Pack I — ✅ Complete**
-- **12.2 Companion & Monster Expansion — implementation complete / CI pending**
+- **12.2 Companion & Monster Expansion — ✅ Complete**
 - **12.3 Optional Dungeon Pack I — NEXT**
 - **12.4 Enemy Ecology Expansion — planned**
 - **12.5 Rare Spawn Expansion — planned**
@@ -45,7 +45,7 @@ Each ruin uses the existing three-fragment discovery model, Secret Realm builder
 
 No Home button, standalone screen, currency, save schema, chapter gate or parallel progression table is introduced.
 
-## 12.2 — Companion & Monster Expansion
+## 12.2 — Companion & Monster Expansion ✅
 
 Phase 12.2 turns the three-companion party into a clearer build axis without creating another capture system.
 
