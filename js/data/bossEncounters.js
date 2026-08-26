@@ -109,6 +109,22 @@ const SPECIAL = Object.freeze({
       {ratio:.12,name:'境界王座崩壊',atkMult:1.40,spdMult:1.20,breakGaugePct:.28,accelerateBossAI:.46},
     ],
   },
+
+  // Official Phase 10-E — Raid Boss.
+  // 数値を伸ばすだけでなく、Guard役の再配置と段階的に狭まるBreak窓を
+  // 中心に「準備→読み→集中攻撃」を要求する。
+  raid_archeon:{
+    id:'raid-boundary-king-archeon',
+    dangerTags:['guard','resource','phase','break'],
+    counterHint:'守護機を優先して排除し、位相反転直後のBreak窓へ火力を集中する。終盤は長期戦を避ける。',
+    startEscorts:[{type:'ch25_tank',count:2,guard:true},{type:'ch25_fast',count:1}],guardDefMult:2.12,
+    phases:[
+      {ratio:.84,name:'七鍵・再封鎖',defMult:1.16,spawn:[{type:'ch25_tank',count:1,guard:true}]},
+      {ratio:.62,name:'零界位相反転',atkMult:1.16,spdMult:1.10,breakGaugePct:.70,spawn:[{type:'ch25_fast',count:2}]},
+      {ratio:.36,name:'境界観測崩壊',atkMult:1.26,defMult:1.08,breakGaugePct:.42,accelerateBossAI:.60,spawn:[{type:'ch25_tank',count:1,guard:true}]},
+      {ratio:.12,name:'断界王座・最終観測',atkMult:1.38,spdMult:1.20,breakGaugePct:.24,accelerateBossAI:.44},
+    ],
+  },
 });
 
 export function bossEncounterProfile(type){
