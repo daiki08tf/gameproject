@@ -1,5 +1,6 @@
 import { BattleEngine } from '../battleEngine.js';
 import { bossEncounterProfile } from '../data/bossEncounters.js';
+import { PHASE12_APEX_BOSS_PROFILE } from '../data/phase12Finale.js';
 
 const MAX_ENCOUNTER_ENEMIES=5;
 
@@ -62,7 +63,7 @@ proto.beginNextEncounter=function combat3BossEncounterBegin(){
   if(!event)return event;
   const boss=this.aliveEnemies.find(e=>e.boss);
   if(!boss)return event;
-  const profile=bossEncounterProfile(boss.type);
+  const profile=bossEncounterProfile(boss.type)||(boss.type==='phase12_apex_boss'?PHASE12_APEX_BOSS_PROFILE:null);
   if(!profile)return event;
   boss.combat3Encounter={profile,nextPhase:0};
   const added=spawnAdds(this,boss,profile.startEscorts);
