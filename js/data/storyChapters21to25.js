@@ -60,7 +60,7 @@ function stageBeat(chapterNumber,stage,mainIndex,mainCount){
   const story=CHAPTER_STORY[chapterNumber];
   if(!story||!stage)return null;
   const last=mainIndex===mainCount-1;
-  const beat={arc:ARC_LABEL,objective:story.objective};
+  const beat={act:ARC_LABEL,objective:story.objective};
   if(mainIndex===0)beat.opening=story.opening;
   if(mainIndex===2)beat.discovery=story.discovery;
   if(stage.midBoss||mainIndex===3)beat.discovery=story.mid;
