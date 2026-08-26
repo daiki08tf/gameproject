@@ -43,6 +43,12 @@ test('Phase 14 preserves existing collection-scale compact Equipment and Ranch U
   assert.match(ranch,/TABS/);
 });
 
+test('Phase 14 stage identity becomes text-first instead of emoji-first',()=>{
+  assert.match(runtime,/function stageKind/);
+  assert.match(runtime,/nameEl\.textContent=stage\.name/);
+  assert.match(runtime,/RAID|BOUNTY|BOSS|SECRET|SIDE/);
+});
+
 test('Phase 14 visual integration remains mobile-first and compact',()=>{
   assert.match(css,/@media \(max-height:700px\)/);
   assert.match(css,/#homeScreen \.home-menu\{[^}]*overflow-y:auto/s);
