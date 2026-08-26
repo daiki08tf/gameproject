@@ -36,6 +36,17 @@ export const PHASE12_APEX={
   phase12Apex:true,
 };
 
+export const PHASE12_APEX_BOSS_PROFILE=Object.freeze({
+  id:'five-realm-observer-pentarch',dangerTags:['guard','analysis','break','phase'],counterHint:'収束守衛を落とし、観測位相が切り替わるたびに短く開くBreak窓を逃さない。',
+  startEscorts:[{type:'phase12_apex_guard',count:2,guard:true},{type:'phase12_apex_wisp',count:1}],guardDefMult:2.12,
+  phases:[
+    {ratio:.82,name:'第一観測・王墓',defMult:1.18,spawn:[{type:'phase12_apex_guard',count:1,guard:true}]},
+    {ratio:.58,name:'第二観測・幻獣',spdMult:1.18,breakGaugePct:.58,spawn:[{type:'phase12_apex_wisp',count:1}]},
+    {ratio:.33,name:'第三観測・反転',atkMult:1.28,breakGaugePct:.36,accelerateBossAI:.58},
+    {ratio:.10,name:'五界同時観測',atkMult:1.42,spdMult:1.20,breakGaugePct:.18,accelerateBossAI:.40},
+  ],
+});
+
 export function phase12MasterySnapshot(isCleared,discoveries={}){
   const regions=PHASE12_REGION_DEPTH.map(x=>({...x,cleared:Boolean(isCleared(x.stageId)),traceSeen:Boolean(discoveries[`trace:${x.siteId}`])}));
   const cleared=regions.filter(x=>x.cleared).length,traces=regions.filter(x=>x.traceSeen).length;
