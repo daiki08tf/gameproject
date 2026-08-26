@@ -10,10 +10,12 @@ export const PHASE12_REGION_DEPTH=Object.freeze([
   {chapter:25,region:'境界王座',siteId:'black_moon_temple',stageId:'secret-black-moon-temple',label:'黒月神殿を踏破'},
 ]);
 
+const horizontalBossIds=Object.values(PHASE12_HORIZONTAL_PACK).flatMap(cfg=>Object.entries(cfg.enemyArchetypes).filter(([,d])=>d.boss).map(([id])=>id));
 export const PHASE12_CODEX_GROUPS=Object.freeze([
-  {id:'horizontal_common',name:'横断異界種',enemyIds:Object.values(PHASE12_HORIZONTAL_PACK).flatMap(cfg=>Object.keys(cfg.enemyArchetypes).filter(id=>cfg.enemyArchetypes[id].role!=='rare'))},
+  {id:'horizontal_common',name:'横断異界種',enemyIds:Object.values(PHASE12_HORIZONTAL_PACK).flatMap(cfg=>Object.keys(cfg.enemyArchetypes).filter(id=>cfg.enemyArchetypes[id].role!=='rare'&&!cfg.enemyArchetypes[id].boss))},
   {id:'horizontal_rare',name:'希少観測種',enemyIds:Object.values(PHASE12_HORIZONTAL_PACK).map(cfg=>cfg.rareSpawn.enemyId)},
-  {id:'horizontal_boss',name:'異界主',enemyIds:Object.values(PHASE12_HORIZONTAL_PACK).flatMap(cfg=>Object.entries(cfg.enemyArchetypes).filter(([,d])=>d.boss).map(([id])=>id))},
+  {id:'horizontal_boss',name:'異界主',enemyIds:horizontalBossIds},
+  {id:'horizontal_apex',name:'収束観測種',enemyIds:['phase12_apex_guard','phase12_apex_wisp','phase12_apex_boss']},
 ]);
 
 export const PHASE12_APEX={
