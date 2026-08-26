@@ -1,6 +1,6 @@
 /* ============================================================
-   Phase 9.7 — Machine World Expansion
-   Two connected machine-city districts beyond the Eighth Key.
+   Phase 9.8 — Machine World Deep Layer
+   Three connected districts beyond the Eighth Key.
    ============================================================ */
 
 export const MACHINE_WORLD_ENEMIES=Object.freeze({
@@ -13,6 +13,11 @@ export const MACHINE_WORLD_ENEMIES=Object.freeze({
   machine_null:{name:'無効化端末・NULL-7',base:'ch25_normal',mult:{hp:1.38,atk:1.26,def:1.24,speed:1.16},role:'caster'},
   machine_colossus:{name:'重装機神・ギガント',base:'ch25_tank',mult:{hp:1.82,atk:1.34,def:1.62,speed:.84},role:'guardian'},
   machine_architect:{name:'設計主機・ARCHITECT-1',base:'ch25_boss',mult:{hp:2.35,atk:1.58,def:1.72,speed:1.22},role:'boss'},
+  machine_mirror:{name:'模倣端末・MIMIC-9',base:'ch25_fast',mult:{hp:1.72,atk:1.48,def:1.30,speed:1.42},role:'adaptive'},
+  machine_judge:{name:'裁定機・LEX-3',base:'ch25_normal',mult:{hp:1.85,atk:1.52,def:1.48,speed:1.20},role:'suppressor'},
+  machine_seraph:{name:'浮遊機神・SERAPH',base:'ch25_tank',mult:{hp:2.10,atk:1.56,def:1.82,speed:1.04},role:'guardian'},
+  machine_observer:{name:'観測端末・EYE-0',base:'ch25_fast',mult:{hp:1.68,atk:1.36,def:1.40,speed:1.52},role:'support'},
+  machine_origin:{name:'外部観測者・OBSERVER-∅',base:'ch25_boss',mult:{hp:3.25,atk:1.92,def:2.05,speed:1.36},role:'secretBoss'},
 });
 
 export const MACHINE_WORLD_STAGES=Object.freeze([
@@ -21,13 +26,17 @@ export const MACHINE_WORLD_STAGES=Object.freeze([
   {id:'machine-world-3',district:1,name:'機界・記憶保管塔',requires:'machine-world-2',depth:1875,desc:'消去された世界記録を保存する塔。修復端末が戦線を維持する。',modifier:{id:'machine_archive',name:'自動修復領域',desc:'回復効果-20% ／ 敵回復・防御支援あり'},tags:['analysis','insight','construct'],waves:[{type:'machine_guard',count:2,interval:1.2},{type:'machine_repair',count:1,interval:0},{type:'machine_drone',count:4,interval:.85}]},
   {id:'machine-world-4',district:1,name:'機界・母機製造層',requires:'machine-world-3',depth:2000,desc:'機械生命が組み立てられる製造層。ここから生体に似た反応が検出される。',modifier:{id:'machine_factory',name:'増産命令',desc:'敵HP+20% ／ ドロップ率+30% ／ 機械生命加入候補'},tags:['construct','fortify','reaction'],waves:[{type:'machine_scout',count:4,interval:.65},{type:'machine_guard',count:3,interval:1.1},{type:'machine_repair',count:1,interval:0}]},
   {id:'machine-world-5',district:1,name:'機界・中央演算宮',requires:'machine-world-4',depth:2150,desc:'機界第一都市を統括する中央演算核。人界を「観測対象」と呼ぶ存在との初接触。',modifier:{id:'machine_mother',name:'中央演算支配',desc:'回復効果-35% ／ 敵攻防+25% ／ 機界第一地区の主'},tags:['construct','fusion','fate','analysis'],boss:true,waves:[{type:'machine_guard',count:2,interval:1.1},{type:'machine_repair',count:1,interval:0},{type:'machine_boss',count:1,interval:0}]},
-
   {id:'machine-world-6',district:2,name:'機界・禁制演算街',requires:'machine-world-5',depth:2350,desc:'MOTHER-0の記録から開いた第二都市。自己改変を禁止された機械生命が徘徊する。',modifier:{id:'machine_forbidden',name:'禁制プロトコル',desc:'敵SPD+20% ／ 状態異常・Breakを起点にしたLootが増加'},tags:['construct','break','status','analysis'],waves:[{type:'machine_hunter',count:4,interval:.65},{type:'machine_null',count:3,interval:.9}]},
   {id:'machine-world-7',district:2,name:'機界・消去庭園',requires:'machine-world-6',depth:2500,desc:'不要と判断された記憶と人格を廃棄する庭園。消去命令そのものが敵として現れる。',modifier:{id:'machine_nullfield',name:'記憶消去領域',desc:'回復効果-30% ／ MP圧力上昇 ／ Insight系Lootが増加'},tags:['construct','insight','fate','dark'],waves:[{type:'machine_null',count:4,interval:.82},{type:'machine_hunter',count:3,interval:.72},{type:'machine_repair',count:1,interval:0}]},
   {id:'machine-world-8',district:2,name:'機界・巨神格納庫',requires:'machine-world-7',depth:2650,desc:'都市戦争用に封印された超大型機兵群。正面突破では押し潰される。',modifier:{id:'machine_colossus_field',name:'重力固定',desc:'敵DEF+35% ／ Break時の報酬補正上昇'},tags:['construct','fortify','break','physical'],waves:[{type:'machine_colossus',count:2,interval:1.4},{type:'machine_hunter',count:4,interval:.7}]},
   {id:'machine-world-9',district:2,name:'機界・設計記録中枢',requires:'machine-world-8',depth:2825,desc:'MOTHER系列を設計した存在の記録庫。「観測者」は単なる機械文明ではなかった。',modifier:{id:'machine_origin',name:'原型照合',desc:'敵攻防+20% ／ Fusion・Analysis系Lootが増加'},tags:['construct','fusion','analysis','fate'],waves:[{type:'machine_null',count:3,interval:.8},{type:'machine_colossus',count:2,interval:1.3},{type:'machine_repair',count:1,interval:0}]},
-  {id:'machine-world-10',district:2,name:'機界・設計神殿',requires:'machine-world-9',depth:3000,desc:'機界第二都市の最深部。MOTHER-0を作った設計主機が、人界と機界を同じ「実験層」と呼ぶ。',modifier:{id:'machine_architect_rule',name:'設計者権限',desc:'回復効果-45% ／ 敵攻防+30% ／ Fusion・Unique報酬強化'},tags:['construct','fusion','fate','analysis','unique'],boss:true,final:true,waves:[{type:'machine_colossus',count:2,interval:1.2},{type:'machine_null',count:2,interval:.8},{type:'machine_architect',count:1,interval:0}]},
+  {id:'machine-world-10',district:2,name:'機界・設計神殿',requires:'machine-world-9',depth:3000,desc:'機界第二都市の最深部。MOTHER-0を作った設計主機が、人界と機界を同じ「実験層」と呼ぶ。',modifier:{id:'machine_architect_rule',name:'設計者権限',desc:'回復効果-45% ／ 敵攻防+30% ／ Fusion・Unique報酬強化'},tags:['construct','fusion','fate','analysis','unique'],boss:true,waves:[{type:'machine_colossus',count:2,interval:1.2},{type:'machine_null',count:2,interval:.8},{type:'machine_architect',count:1,interval:0}]},
+  {id:'machine-world-11',district:3,name:'機界・設計外領域',requires:'machine-world-10',depth:3300,desc:'ARCHITECT-1の権限外に存在する非登録領域。敵はプレイヤーの行動傾向を模倣する。',modifier:{id:'machine_mirror_field',name:'戦術複写',desc:'同じ行動の連打に圧力 ／ 行動多様性・Fusion向けLoot強化'},tags:['construct','fusion','diversity','analysis'],waves:[{type:'machine_mirror',count:4,interval:.62},{type:'machine_judge',count:3,interval:.86}]},
+  {id:'machine-world-12',district:3,name:'機界・裁定法廷',requires:'machine-world-11',depth:3600,desc:'世界層の継続可否を判定する自動法廷。存在価値そのものが戦闘条件になる。',modifier:{id:'machine_judgement',name:'存在裁定',desc:'敵攻防+35% ／ Breakと会心で裁定を崩しやすい'},tags:['construct','break','crit','fate'],waves:[{type:'machine_judge',count:4,interval:.82},{type:'machine_seraph',count:2,interval:1.25}]},
+  {id:'machine-world-13',district:3,name:'機界・外部観測窓',requires:'machine-world-12',depth:3900,desc:'機界の空ではなく、世界の外側を映す窓。観測端末がこちらを「第八実験体」と記録する。',modifier:{id:'machine_observation',name:'外部観測',desc:'敵SPD+30% ／ Analysis・Insight・Secret系Loot強化'},tags:['construct','analysis','insight','secret'],waves:[{type:'machine_observer',count:4,interval:.58},{type:'machine_mirror',count:3,interval:.66},{type:'machine_seraph',count:1,interval:1.2}]},
+  {id:'machine-world-14',district:3,name:'機界・零式隔離門',requires:'machine-world-13',depth:4200,desc:'設計者すら開けなかった隔離門。MOTHERとARCHITECTの設計ログが一斉に警告を発する。',modifier:{id:'machine_zero_seal',name:'零式封鎖',desc:'回復効果-55% ／ 敵攻防+40% ／ Mythic Set報酬強化'},tags:['construct','fortify','fusion','set'],waves:[{type:'machine_seraph',count:2,interval:1.2},{type:'machine_judge',count:3,interval:.78},{type:'machine_observer',count:2,interval:.6}]},
+  {id:'machine-world-15',district:3,name:'機界・観測者座',requires:'machine-world-14',depth:4500,desc:'世界層の外から人界と機界を観測していた存在の端末。実験を作った者ではなく、実験を選別していた者が待つ。',modifier:{id:'machine_observer_rule',name:'観測者権限',desc:'回復効果-60% ／ 敵攻防+45% ／ 行動多様性・Break・Fusionが攻略鍵'},tags:['construct','fusion','fate','analysis','unique','secret'],boss:true,final:true,secretBoss:true,waves:[{type:'machine_mirror',count:2,interval:.65},{type:'machine_observer',count:2,interval:.55},{type:'machine_origin',count:1,interval:0}]},
 ]);
 
 export function machineWorldStageDef(id){return MACHINE_WORLD_STAGES.find(s=>s.id===id)||null;}
-export function machineWorldProgress(isCleared){const cleared=MACHINE_WORLD_STAGES.filter(s=>isCleared(s.id)).length;return{cleared,total:MACHINE_WORLD_STAGES.length,completed:cleared===MACHINE_WORLD_STAGES.length,next:MACHINE_WORLD_STAGES.find(s=>!isCleared(s.id))||null,district1:MACHINE_WORLD_STAGES.filter(s=>s.district===1&&isCleared(s.id)).length,district2:MACHINE_WORLD_STAGES.filter(s=>s.district===2&&isCleared(s.id)).length};}
+export function machineWorldProgress(isCleared){const cleared=MACHINE_WORLD_STAGES.filter(s=>isCleared(s.id)).length;return{cleared,total:MACHINE_WORLD_STAGES.length,completed:cleared===MACHINE_WORLD_STAGES.length,next:MACHINE_WORLD_STAGES.find(s=>!isCleared(s.id))||null,district1:MACHINE_WORLD_STAGES.filter(s=>s.district===1&&isCleared(s.id)).length,district2:MACHINE_WORLD_STAGES.filter(s=>s.district===2&&isCleared(s.id)).length,district3:MACHINE_WORLD_STAGES.filter(s=>s.district===3&&isCleared(s.id)).length};}
