@@ -65,19 +65,29 @@ function renderWorldEvent(result,itemsEl){
   card.appendChild(actions);itemsEl.appendChild(card);
 }
 
+function renderPhase13(result,itemsEl){
+  const p=result?.phase13;if(!p)return;
+  const card=document.createElement('div');card.className='stage-card branch';card.style.cssText='margin-top:12px;display:block';
+  const rarity=p.rareHunt?`\nRARE HUNT: ${p.rareHunt.name}`:'';
+  const unlocks=[...(p.newTitles||[]).map(x=>`称号「${x.name}」`),...(p.newFeats||[]).map(x=>`Build Feat: ${x}`)].join(' / ');
+  card.innerHTML=`<div class="name">CHALLENGE RECORD — ${p.challenge?.name||'通常'}</div><div class="rec">${p.turns} turn / 最大 ${Number(p.maxDamage||0).toLocaleString()} dmg / 残HP ${Number(p.hpPct||0).toFixed(0)}%${rarity}${unlocks?`\nNEW: ${unlocks}`:''}</div>`;
+  card.style.whiteSpace='pre-line';itemsEl.appendChild(card);
+}
+
 export function renderResult(result) {
   const title=document.getElementById('resultTitle'),stats=document.getElementById('resultStats'),itemsEl=document.getElementById('resultItems');
   if(result.retreated){title.textContent='RETREAT';title.style.color='#b9c0cc';}else if(result.bountyUnique){title.textContent='BOUNTY CLEARED — UNIQUE FOUND';title.style.color='#f2c94c';}else if(result.bountyNemesis?.grew){title.textContent=`DEFEATED — ${result.bountyNemesis.title || 'NEMESIS'}`;title.style.color='#e6425a';}else if(result.cleared){title.textContent='STAGE CLEAR';title.style.color='';}else{title.textContent='DEFEATED...';title.style.color='#e6425a';}
   stats.textContent=`獲得経験値: ${result.expGained} / 獲得ゴールド: ${result.goldGained}`+(result.world2?.fragment?` / 鍵片 +${result.world2.fragment}`:'')+(result.world2?.keyDungeon?` / 境界鍵路報酬 鍵片 +${result.world2.keyDungeon.keyFragments}`:'')+(result.bounty2?` / 賞金首の証 +${result.bounty2.marks}（所持 ${result.bounty2.totalMarks}）`:'')+(result.bounty2?.nemesisDefeated?' / 宿敵討伐ボーナス！':'')+(result.bountyNemesis?.grew?` / 宿敵Lv.${result.bountyNemesis.level}へ成長`:'')+(result.cleared?'':'（撃破分のみ・レベルや装備は失われません）');
   itemsEl.innerHTML='';
   const normalItems=Array.isArray(result.items)?result.items:[],rune2Drops=Array.isArray(result.rune2Drops)?result.rune2Drops:[];
-  if(normalItems.length===0&&rune2Drops.length===0&&!result.world2?.event&&!result.loot3Chase)itemsEl.innerHTML='<span class="hint" style="opacity:.6;font-size:12px;">ドロップなし</span>';
+  if(normalItems.length===0&&rune2Drops.length===0&&!result.world2?.event&&!result.loot3Chase&&!result.phase13)itemsEl.innerHTML='<span class="hint" style="opacity:.6;font-size:12px;">ドロップなし</span>';
   else{
     for(const itemId of normalItems)appendDropChip(itemsEl,resolveDrop(itemId));
     for(const drop of rune2Drops){const rune=getRune2(drop.id);if(!rune)continue;const chip=document.createElement('div');chip.className='result-item-chip';chip.style.color='var(--accent)';chip.textContent=`✨ RUNE ${rune.name} +${drop.amount}刻（${drop.owned}刻）`;itemsEl.appendChild(chip);}
   }
   renderLoot3Chase(result,itemsEl);
   renderWorldEvent(result,itemsEl);
+  renderPhase13(result,itemsEl);
   const equipBtn=document.getElementById('resultEquipBtn');equipBtn.classList.toggle('hidden',normalItems.length===0);
   attachScrollHint(stats);
 }

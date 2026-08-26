@@ -1,4 +1,5 @@
 /* Phase 12.11-12.14 — finish horizontal content inside existing systems. */
+import './phase13ReplayRuntime.js';
 import { state } from '../state.js';
 import { PHASE12_CODEX_GROUPS,phase12MasterySnapshot } from '../data/phase12Finale.js';
 
