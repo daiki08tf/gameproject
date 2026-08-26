@@ -1,8 +1,8 @@
 # Blade Vale — Official Roadmap
 
-> **Current:** Core/Foundation ✅ / System Deepening ✅ / **Content Pack II ✅ COMPLETE**
+> **Current:** Core/Foundation ✅ / System Deepening ✅ / Content Pack II ✅ / **Story Expansion I — Part A (Ch26–29) ✅ IMPLEMENTED**
 >
-> **NEXT:** **Story Expansion I — Ch26–30** → Content Pack III → play / tune / deepen.
+> **NEXT:** **Story Expansion I — Part B: Ch30 + full integration** → Difficulty / Constraint Unlock redesign → Content Pack III.
 
 Blade Vale is a personal evolving text-command hack-and-slash RPG. The preferred rhythm is:
 
@@ -20,6 +20,7 @@ Blade Vale is a personal evolving text-command hack-and-slash RPG. The preferred
 8. SD-4 conditional Boss hidden drops stay deferred.
 9. Modern World evidence stays restrained; do not casually reveal Japan/Tokyo.
 10. Preserve save compatibility and automated regression coverage.
+11. Appending new story chapters must not silently move already-live endgame unlock gates.
 
 ### System-sprawl guardrails
 
@@ -42,6 +43,7 @@ Blade Vale is a personal evolving text-command hack-and-slash RPG. The preferred
 | Automated integrity audit | ✅ |
 | System Deepening Pack A–C | ✅ |
 | Content Pack II A–E | ✅ |
+| Story Expansion I Part A — Ch26–29 | ✅ |
 
 ## Content Pack II — COMPLETE
 
@@ -72,33 +74,74 @@ Delivered:
 - all progress remains in existing `world2.discoveries`
 - no new Home route, screen, currency or save root
 
-The mystery now supports these hypotheses without resolving them:
-- some monster lineages may exist across multiple layers at once
-- the Eighth Rib may be a maintenance conduit tied to Zero Boundary Station
-- two observation directions appear to measure the same still-unlocated subject
-- The Veil may function as infrastructure/network as well as separation
+## Story Expansion I — Part A COMPLETE (Ch26–29)
 
-The unknown subject remains unidentified and unlocated. Japan/Tokyo is not explicitly revealed.
+Implemented as one large vertical batch through the existing expanded-chapter pipeline.
 
-## NEXT — Story Expansion I (Ch26–30)
+### Ch26 — 零外接続域
+- continues directly from the Boundary Throne
+- the Eighth Key is reclassified from an “eighth member” to an **exception connection** outside the seven-key management architecture
+- a weak external verification signal is recovered
 
-Goal: extend the vertical story again now that horizontal world density is strong.
+### Ch27 — 遠信残響帯
+- follows the external signal through ordered lights, tall silhouettes, metallic periodic vibration and thin luminous surfaces
+- strongly suggests an inhabited artificial civilization without naming its location
+- no Japan/Tokyo confirmation
 
-Direction:
-- continue immediately after Ch25
-- deepen the Eighth Key / external signal / Veil anomaly arc
-- use CP2 discoveries as optional context, never mandatory gating
-- strengthen evidence of an external modern civilization gradually
-- do not abruptly state Japan/Tokyo unless a deliberate later story beat earns it
-- keep MOTHER / ARCHITECT as artificial administration/observation layers, not creators
-- preserve the central question: **why are Blade Vale and the external modern world connected?**
+### Ch28 — 機界監査層
+- MOTHER is identified as an operational management system
+- ARCHITECT is identified as a design/repair system
+- neither holds world-creation authority
+- Machine World decisions were themselves reported to an external observation route
 
-Ch26–30 exact beats should be authored in Story Expansion I rather than guessed here.
+### Ch29 — 逆観測門
+- Seven Keys = internal world-layer control system
+- Eighth Key = external connection point bypassing that control system
+- observation is bidirectional
+- the unknown external side returns one clear response, but the gate itself remains closed for Ch30
 
-## After Story Expansion I
+Part A also adds:
+- 4 expanded regions
+- 32 main stages + 4 optional branches
+- normal / fast / tank / midboss / boss / branchboss sets for each chapter
+- chapter equipment and named rewards through the existing equipment generator
+- regional field rules and exploration events
+- regional hierarchy entries for both Ch21–25 and Ch26–29
+- regression guard so Story Expansion does not silently move the existing Abyss unlock gate
+
+## NEXT — Story Expansion I Part B (Ch30 + integration)
+
+One final large Story Expansion batch:
+- Ch30 climax region and final boss for this arc
+- reveal why the connection is being prevented, without forcing the guardian to be simply evil
+- briefly expose stronger external-world sensory evidence after the climax
+- keep Japan/Tokyo unnamed unless the story deliberately earns that reveal later
+- integrate Ch26–30 with CP2 Rumor / Lore / Codex context without making optional content mandatory
+- audit Ch26–30 stage/reward/difficulty continuity
+- full save / startup / MutationObserver / mobile battle regression sweep
+- close Story Expansion I and prepare Content Pack III
+
+## Immediately after Story Expansion I — Difficulty / Constraint Unlock redesign
+
+Current problem: stage difficulty and challenge constraints can appear available before the story has established why the player can alter combat conditions.
+
+Direction already chosen:
+- Normal remains available from the beginning
+- higher difficulty tiers unlock through story progression
+- individual stages may additionally require a first clear before higher tiers are selectable there
+- challenge constraints unlock later as in-world **battle-record / boundary-condition / observation-condition** capabilities
+- advanced/multiple constraints arrive only after the player has learned enough about the boundary/observation systems
+- connect challenge clears to existing Personal Records / Prestige Titles / Build Feats / REMATCH+ rather than a new currency or screen
+- locked options should be hidden or compactly explained so early-game UI stays simple
+
+Exact unlock milestones will be inspected against the current difficulty/constraint implementation after Story Expansion I Part B is merged.
+
+## After that
 
 ```text
-STORY EXPANSION I — Ch26–30
+STORY EXPANSION I — Part B / Ch30
+      ↓
+DIFFICULTY + CONSTRAINT UNLOCK REDESIGN
       ↓
 CONTENT PACK III
       ↓
@@ -114,8 +157,9 @@ For a new ChatGPT / Claude Code session:
 1. read this file
 2. read `STORY_CANON.md`
 3. read `CONTENT_PACK_II_ROADMAP.md`
-4. do **not** redo Content Pack II A–E
-5. next work is **Story Expansion I — Ch26–30**
-6. preserve Lv99,999, SD-4 deferral, no rotating challenges, no extra Home route/currency
-7. preserve the permanent mobile command regression and save compatibility
-8. inspect existing code/tests before adding parallel systems
+4. do **not** redo Content Pack II A–E or Story Expansion I Ch26–29
+5. next story work is **Story Expansion I Part B — Ch30 + full integration**
+6. after Story Expansion I, immediately perform the **Difficulty / Constraint Unlock redesign** described above
+7. preserve Lv99,999, SD-4 deferral, no rotating challenges, no extra Home route/currency
+8. preserve the permanent mobile command regression, startup dependency guards, MutationObserver idempotence and save compatibility
+9. inspect existing code/tests before adding parallel systems
