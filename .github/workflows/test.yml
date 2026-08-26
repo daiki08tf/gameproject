@@ -21,5 +21,9 @@ jobs:
       - name: Regression tests
         shell: bash
         run: |
-          set -o pipefail
-          npm test 2>&1 | tail -n 120
+          set +e
+          npm test > /tmp/blade-vale-test.log 2>&1
+          status=$?
+          grep -n -B 10 -A 40 '^not ok' /tmp/blade-vale-test.log || true
+          tail -n 20 /tmp/blade-vale-test.log
+          exit $status
