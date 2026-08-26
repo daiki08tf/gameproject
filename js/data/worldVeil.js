@@ -1,11 +1,16 @@
 // World / Journey presentation layer.
 // Internal chapter ids remain progression keys, but the player experiences them as places on one continuous journey.
+import { VEIL_CANON } from './storyCanon.js';
 
 export function journeyName(chapter) {
   if (!chapter) return '';
   if (chapter.displayName) return chapter.displayName;
   return String(chapter.name || '').replace(/^第\d+章\s*/, '');
 }
+
+// Narrative layers that need a concise definition should read this canonical value
+// instead of inventing a second explanation of The Veil.
+export const VEIL_CANON_DEFINITION = VEIL_CANON.definition;
 
 export const VEIL_FRAGMENTS = Object.freeze([
   {
