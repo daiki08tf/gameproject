@@ -5,6 +5,8 @@ import { highestWorldTier, worldTier } from './worldTiers.js';
 import { endgameRewardProfile } from './endgameRewardScaling.js';
 import { abyssRecommendedLevel, abyssTargetItemPower, abyssEraForDepth } from './abyssEndgame.js';
 
+export const ENDGAME_ABYSS_MAX_DEPTH=3000;
+
 export const ENDGAME_GUIDANCE_LANES=Object.freeze([
   {id:'story',maxLevel:2999,label:'物語・地域探索',target:'goStageBtn',purpose:'未踏破章・地域ルートを進める'},
   {id:'awakening',maxLevel:9998,label:'World Tier + 深淵入口',target:'goAbyssBtn',purpose:'World IIで装備を更新し、深淵を開拓する'},
@@ -20,15 +22,17 @@ export function guidanceLaneForLevel(level){const lv=clampLevel(level);return EN
 
 export function suggestedAbyssDepth(level){
   const lv=clampLevel(level);
-  let lo=1,hi=5000;
+  let lo=1,hi=ENDGAME_ABYSS_MAX_DEPTH;
   while(lo<hi){const mid=Math.floor((lo+hi+1)/2);if(abyssRecommendedLevel(mid)<=lv)lo=mid;else hi=mid-1;}
   return lo;
 }
 
 export function buildEndgameGuidance({level=1,abyssBestDepth=0,worldTierId='normal',nemesisLevel=0}={}){
-  const lv=clampLevel(level),lane=guidanceLaneForLevel(lv),best=Math.max(0,Math.floor(Number(abyssBestDepth)||0));
+  const lv=clampLevel(level),lane=guidanceLaneForLevel(lv);
+  const best=Math.max(0,Math.min(ENDGAME_ABYSS_MAX_DEPTH,Math.floor(Number(abyssBestDepth)||0)));
   const tier=worldTier(worldTierId),highest=highestWorldTier(lv),reward=endgameRewardProfile(lv);
-  const targetDepth=suggestedAbyssDepth(lv),nextDepth=Math.max(1,Math.min(5000,best+1,targetDepth));
+  const targetDepth=suggestedAbyssDepth(lv);
+  const nextDepth=best<targetDepth?Math.min(targetDepth,best+1):targetDepth;
   const targetLevel=abyssRecommendedLevel(nextDepth),targetIp=abyssTargetItemPower(nextDepth),era=abyssEraForDepth(nextDepth);
   let reason=lane.purpose;
   if(highest.rank>tier.rank)reason=`${highest.name} が解禁済み。World Tierを上げてから ${lane.purpose}`;
