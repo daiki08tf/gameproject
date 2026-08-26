@@ -16,10 +16,17 @@ Blade Vale is a personal evolving text-command hack-and-slash RPG. The preferred
 4. Mobile battle commands must never become unreachable; the many-enemies regression is permanent.
 5. Optional horizontal content must not gate Ch1–25 story completion.
 6. Rare/Unique rewards should create build or collection choices, not universal mandatory BiS.
-7. Phase 13.4 Rotating Challenges stays omitted.
+7. Phase 13.4 Rotating Challenges remains intentionally omitted.
 8. SD-4 conditional Boss hidden drops stay deferred.
 9. Modern World evidence stays restrained; do not casually reveal Japan/Tokyo.
 10. Preserve save compatibility and automated regression coverage.
+
+### System-sprawl guardrails
+
+- **Do not add a new currency merely to separate a content pack.** Reuse existing progression/economy when it fits.
+- **Avoid new Home buttons.** Add content inside existing Adventure / World / Codex / Ranch / Equipment / Job / Settlement surfaces first.
+- Prefer **systems talking to each other** over parallel one-off systems.
+- Keep these as practical development guardrails, not release bureaucracy.
 
 ## Completed foundation
 
