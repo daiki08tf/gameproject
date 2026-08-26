@@ -20,4 +20,4 @@ export function renderEndgameGuidance(){
 
 queueMicrotask(renderEndgameGuidance);
 const home=document.getElementById('homeScreen');
-if(home)new MutationObserver(()=>{if(home.classList.contains('active'))renderEndgameGuidance();}).observe(home,{attributes:true,subtree:true,childList:true});
+if(home)new MutationObserver(()=>{if(home.classList.contains('active'))renderEndgameGuidance();}).observe(home,{attributes:true,attributeFilter:['class']});
