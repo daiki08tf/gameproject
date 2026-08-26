@@ -2,6 +2,7 @@
    Companion 3.0 — Breeding / Genetics
    ============================================================ */
 import { COMPANION_SPECIES, COMPANION_NATURES, COMPANION_RARITY } from './companions.js';
+import { COMPANION_ROLES, PHASE12_SPECIAL_HYBRIDS } from './phase12CompanionPack.js';
 
 export const BREEDING_COST = Object.freeze({ gold: 12000, manastone: 18 });
 
@@ -10,10 +11,11 @@ const HYBRIDS = Object.freeze({
   'bat+thunder_beast': { id:'thunder_bat', name:'雷翼蝙蝠', icon:'🦇⚡', baseStats:{hp:66,mp:20,atk:16,def:10,mag:15,spd:24}, growth:{hp:6.4,mp:1.7,atk:2.2,def:1.4,mag:2.2,spd:1.8}, traits:['夜目','雷駆'], skills:[{level:1,id:'bite'},{level:18,id:'thunder_claw'}] },
   'ash_soldier+iron_hound': { id:'ash_hound', name:'灰鉄猟犬', icon:'🔥⚙️', baseStats:{hp:132,mp:14,atk:29,def:28,mag:8,spd:15}, growth:{hp:11.5,mp:1,atk:3.5,def:3.3,mag:1,spd:1.1}, traits:['灰の執念','機械装甲'], skills:[{level:1,id:'iron_fang'},{level:22,id:'ash_slash'}] },
   'crystal_bug+rot_beast': { id:'crystal_rot', name:'晶苔蟲', icon:'💎🌿', baseStats:{hp:118,mp:26,atk:18,def:25,mag:23,spd:10}, growth:{hp:10.2,mp:2,atk:2.2,def:3.1,mag:2.8,spd:.8}, traits:['晶殻','腐食嗅覚'], skills:[{level:1,id:'crystal_ray'},{level:24,id:'rot_bite'}] },
+  ...PHASE12_SPECIAL_HYBRIDS,
 });
 
 for (const def of Object.values(HYBRIDS)) {
-  if (!COMPANION_SPECIES[def.id]) COMPANION_SPECIES[def.id] = { ...def, type:'monster', recruit:{baseChance:0}, hybrid:true };
+  if (!COMPANION_SPECIES[def.id]) COMPANION_SPECIES[def.id] = { ...def, type:'monster', roleName:COMPANION_ROLES[def.role]?.name||null, recruit:{baseChance:0}, hybrid:true };
 }
 
 function pairKey(a,b){return [a,b].sort().join('+');}
