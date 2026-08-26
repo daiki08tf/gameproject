@@ -1,31 +1,29 @@
 # Content Pack II — Horizontal World Expansion
 
-> **Status: CURRENT — A+B ✅ / C+D NEXT / E FINAL**
+> **Status: CURRENT — A+B ✅ / C+D ✅ / E NEXT**
 >
-> Parent source of truth: `ROADMAP.md`. System Deepening Pack A–C is complete and is now infrastructure for this pack.
+> Parent source of truth: `ROADMAP.md`. System Deepening Pack A–C is complete and is infrastructure for this pack.
 
 ## Goal
 
 Turn the System Deepening loop into a content-rich world where rumors create revisits, knowledge improves pursuit, hidden encounters reveal routes, routes join into secret chains, and those chains lead to Boss/Companion/Unique/Lore rewards.
 
-Core loop:
-
 ```text
 Rumor → Tracking → Revisit → Hidden Encounter / Clue
-      → Hidden Route → Secret Chain → Boss / Companion / Reward
-      → Codex / Build / Rumor update → another lead
+      → Hidden Route → Secret Chain → Hidden Boss
+      → Companion / Unique / Codex / Lore → another lead
 ```
 
 ## Permanent guardrails
 
-- no new level cap; Lv99,999 remains canonical
+- Lv99,999 remains canonical
 - no new mandatory currency
 - no daily/weekly/FOMO loop
-- no new Home button when Codex/Adventure/World/Secret Realm can host content
+- no new Home button when existing surfaces work
 - reuse `world2.discoveries`, Rumor Notebook, Codex, Region Mastery, Secret Realm, Ranch, Equipment and Job systems
-- secrets stay diegetic; no ordinary UI showing exact hidden spawn percentages
+- no ordinary UI showing exact hidden spawn percentages
 - optional content does not gate Ch1–25 story completion
-- Modern World remains restrained: no explicit Japan/Tokyo reveal unless a later story decision authorizes it
+- no explicit Japan/Tokyo reveal in this pack
 - SD-4 Boss conditional Hidden Drop objectives remain deferred
 - mobile battle command reachability remains release-blocking
 
@@ -35,31 +33,7 @@ Rumor → Tracking → Revisit → Hidden Encounter / Clue
 
 ## CP2-A — Rumor & Hidden Encounter Expansion
 
-Added **10 new rumors**, two for each Phase12 horizontal ecology:
-
-### 古王墓
-- 後ろ向きに巡回する近衛
-- 空位の玉座に残る影
-
-### 幻獣の森
-- 季節を外れた銀鹿
-- 鳴かない巣
-
-### 竜骸峡谷
-- 名のない竜骨の脈動
-- 八本目の肋骨
-
-### 反転図書館
-- 頁の外を歩く記録体
-- 過去を持たない本
-
-### 黒月神殿
-- 瞬きをしない観測眼
-- 二つ目の周期信号
-
-Rumors reuse the automatic Rumor Notebook. They become visible from existing Phase12 rumor/trace/clear knowledge and progress through the existing unresolved / tracking / resolved language.
-
-### Five new Hidden Encounters
+Added 10 new rumors across the five Phase12 horizontal ecologies and five rumor-gated Hidden Encounters:
 
 - 古王墓 — **逆歩近衛・RETROGRADE**
 - 幻獣の森 — **季外銀鹿・ARGENT**
@@ -69,119 +43,173 @@ Rumors reuse the automatic Rumor Notebook. They become visible from existing Pha
 
 Rules:
 - unresolved rumor = encounter chance 0
-- tracking enables the encounter at a very low base frequency
-- Region Mastery gives only a tiny relative pursuit benefit
-- Codex knowledge gives only a small relative benefit
-- hard helper ceiling remains 5%
-- no exact percentages are exposed in player-facing rumor text
-- Hidden Encounter is inserted as the **next one-enemy encounter after the initial group**, never into the opening enemy pile
+- tracking enables only a very low base chance
+- Region Mastery / Codex knowledge add only small relative pursuit bonuses
+- helper hard ceiling is 5%
+- Hidden Encounter is a later one-enemy encounter, never part of the opening enemy pile
 
 ## CP2-B — Treasure / Hidden Route Expansion
 
-Seeing the associated Hidden Encounter creates an in-world route lead using existing `world2.discoveries`:
+Observing the hidden ecology creates five route discoveries using existing `world2.discoveries`:
 
-- **空列の回廊** — Old King Tomb
-- **無音の産室** — Phantom Beast Forest
-- **第八肋骨路** — Dragonbone Canyon
-- **逆棚回廊** — Inverted Library
-- **盲壁観測孔** — Black Moon Temple
+- **空列の回廊**
+- **無音の産室**
+- **第八肋骨路**
+- **逆棚回廊**
+- **盲壁観測孔**
 
-These are textual hidden-route discoveries, not a new map currency or menu. Their current reward hints deliberately point toward later C+D content rather than awarding an unrelated new progression token.
+No map currency or new screen was created.
 
 Implementation:
 - `js/data/contentPackIIAB.js`
 - `js/patches/contentPackIIAB.js`
 - `tests/content-pack-ii-ab.test.js`
 
-Initial validation:
-- Blade Vale Tests **#539 ✅**
-- Phase 8 Validation **#130 ✅**
+Final merged A+B validation:
+- Blade Vale Tests #541 ✅
+- Phase 8 Validation #132 ✅
 
 ---
 
-# Batch 2 — C+D ⏭ NEXT
+# Batch 2 — C+D ✅ COMPLETE
 
 ## CP2-C — Secret Chain Expansion
 
-Turn the five A+B Hidden Routes into **2–3 authored multi-region chains**.
+Three authored multi-region chains now turn A+B route leads into real revisit paths.
 
-Target chains:
+### Chain Alpha — 声なき獣の系譜
 
-### Chain Alpha — Silent Beast Route
+`無音の産室 → 空列の回廊 → 盲壁観測孔`
 
-`無音の産室 → 灰燼/幻獣側の追加痕跡 → 黒月側の観測記録 → Rare Companion / breeding lead`
+Reveals that one lineage may be growing in multiple layers at the same time.
 
-Purpose:
-- connect Companion/Ranch to rumor exploration
-- make a Rare Companion feel discovered, not selected from a list
-- avoid IV grind; individuality remains light
+### Chain Beta — 第八肋骨の行先
 
-### Chain Beta — Eighth Rib Route
+`第八肋骨路 → 逆棚回廊 → 零番境界駅`
 
-`第八肋骨路 → 反転図書館の解読 → 零番境界駅 / boundary trace → hidden observation site`
+Reveals that the eighth rib may be a maintenance conduit connected to the Zero Boundary Station rather than an ordinary biological structure.
 
-Purpose:
-- deepen the observation-network mystery
-- connect Pack C's 第零座標 to a new optional location
-- do not resolve the central Modern World question
+### Chain Gamma — 盲壁の二重観測
 
-### Chain Gamma — Blind Wall Route
+`盲壁観測孔 → 逆棚回廊 → 埋もれた観測座標`
 
-`盲壁観測孔 → 二つ目の周期信号 → multiple region records → hidden high-end encounter`
+Establishes two observation directions measuring the same still-unlocatable subject. It does **not** identify Japan, Tokyo or the Modern World.
 
-Purpose:
-- establish that two observation directions may be measuring the same unknown subject
-- seed later Story Expansion I without saying Japan/Tokyo
-
-Requirements:
-- at least two chains span 3+ existing locations
-- old cleared regions gain a real revisit reason
-- each step is represented by in-game clues, not source-code-only conditions
-- no chain is mandatory for main story
+All three chains:
+- span 3 existing locations/records
+- progress automatically in the existing Rumor Notebook
+- persist in `world2.discoveries`
+- remain optional for main story
 
 ## CP2-D — Hidden Boss & Reward Layer
 
-Add rewards to the chains rather than create a new shop/currency.
+### Hidden Bosses — 5
 
-Target directional scale for this batch:
-- ~4–6 Hidden/elite Boss encounters
-- ~6–10 new recruitable/secret/breeding Companion additions
-- ~10–15 Unique/Relic/content rewards
-- authored Codex entries and lore fragments
+- **無鳴母獣・NEST-MOTHER**
+- **灰角残響獣・CINDER-HART**
+- **第八脈守・OCTAVE**
+- **重記司書・PALIMPSEST**
+- **双方向観測体・PARALLAX**
 
-Reward principles:
-- build-changing > raw universal BiS
-- Companion rewards should create party options, not mandatory stat superiority
-- use existing Job synergy tags (BREAK / GUARD / ANALYSIS etc.) where appropriate
-- SD-4 remains deferred: **do not use timed kill / no-death / Break-finisher conditions to gate Boss drops**
+Bosses appear only after their chain resolves. They are appended as a **single-enemy encounter group** through the existing Text Battle queue, preserving the mobile command-area safety contract.
+
+### Secret Companions — 6
+
+- 無鳴銀仔
+- 燼角仔
+- 第八骨竜仔
+- 余白精
+- 視差灯
+- 零線幼体
+
+They reuse the existing Ranch/Companion system. Secret reward companions have no ordinary field recruitment chance.
+
+### Special Breeding — 4
+
+- 無鳴銀仔 × 灰喰らい → **灰月鹿**
+- 第八骨竜仔 × 軌道猟犬・NULL → **零脈竜**
+- 余白精 × 残響灯・ルクス → **余白残響灯**
+- 視差灯 × 零響獣シグナル → **双観測獣**
+
+These use the existing deterministic hybrid resolver; no new breeding currency or screen.
+
+### Fixed Unique Rewards — 12
+
+Representative rewards:
+- 無音鈴
+- 重層産室心核
+- 灰角反響冠
+- 空列守盾
+- 第八脈断刀
+- 零線脊柱核
+- 重記余白帳
+- 八脈外殻
+- 視差観測眼
+- 盲壁断片
+- 二重信号核
+- 未定義焦点片
+
+Reward rule:
+- completing a chain reveals the boss
+- first successful boss clear grants its fixed rewards and secret companion
+- **no random boss reward roll**
+- **no timed kill / no-death / Break-finisher requirement**
+- therefore SD-4 remains deferred
+
+Implementation:
+- `js/data/contentPackIICD.js`
+- `js/patches/contentPackIICD.js`
+- `js/data/uniqueEquipment.js`
+- `js/data/companionBreeding.js`
+- `tests/content-pack-ii-cd.test.js`
+
+Initial C+D validation before handoff:
+- Blade Vale Tests #543 ✅
+- Phase 8 Validation #134 ✅
 
 ---
 
-# Batch 3 — E FINAL
+# Batch 3 — E ⏭ NEXT
 
 ## CP2-E — World Mystery Integration + Content Density Pass
 
-After C+D works end-to-end:
+This is the final Content Pack II integration pass, not another giant feature layer.
 
-- connect all CP2 rumors to resolved/tracking states
-- make Codex records reflect the new ecology
-- add remaining Lore fragments
-- connect region mastery knowledge to the new leads
-- ensure Hidden Routes have satisfying outcomes
-- audit reward density and revisit value
-- audit repeated-grind friction
-- verify no content requires external notes
-- preserve mystery restraint
-- run full save/mobile/CI regressions
+### E1 — Rumor / Chain Closure
+- verify all A+B rumors progress correctly into C+D outcomes
+- ensure solved Hidden Encounters and defeated Hidden Bosses update useful notebook text
+- remove dead-end clues
+- ensure no external notes are required
 
-Directional full-pack scale remains:
-- ~5–8 optional major locations/routes/dungeons
-- ~30–40 authored enemies/variants when C+D/E are finished
-- ~8–12 Boss/elite encounters total
-- ~15–20 companion additions total
-- ~20–30 meaningful Unique/Relic/content rewards total
+### E2 — Codex Ecology Integration
+- add/verify Codex identity for the five Hidden Encounters and five Hidden Bosses
+- make habitat/ecology text reflect routes and chains
+- ensure Field Guide knowledge helps without exposing formulas
 
-These are directional targets, not quotas. Connected content is more important than count.
+### E3 — Lore / World Mystery Integration
+- connect the three chains to The Veil, observation network, Eighth Key and external-signal mystery
+- preserve uncertainty: the unknown observed subject remains unlocated
+- do not explicitly reveal Japan/Tokyo/Modern World
+
+### E4 — Reward / Revisit Density Audit
+- check whether each Hidden Route has a satisfying outcome
+- check reward duplication / universal-BiS risk
+- check Companion/breeding rewards create real party choices
+- check old-region revisits do not become excessive grind
+
+### E5 — UI / Mobile / Save Integration
+- compact Rumor Notebook presentation with increased entry count
+- no Home button proliferation
+- verify Ranch/Equipment remain manageable with new entries
+- save compatibility / lazy data behavior
+- permanent many-enemies command reachability regression
+
+### E6 — Full Pack Handoff
+- run both CI workflows
+- update `ROADMAP.md` and this file to Content Pack II COMPLETE
+- hand off the next work to **Story Expansion I — Ch26–30**
+
+Directional full-pack counts are design targets, not quotas. Connected content matters more than forcing numbers.
 
 ---
 
@@ -195,7 +223,7 @@ STORY EXPANSION I — Ch26–30
 CONTENT PACK III
 ```
 
-Story Expansion I should continue the Eighth Key / external signal / Veil anomaly arc while preserving the question: **why are Blade Vale and the external modern world connected?**
+Story Expansion I should continue the Eighth Key / external signal / Veil anomaly arc while preserving the central question: **why are Blade Vale and the external modern world connected?**
 
 ## Claude / new-chat handoff
 
@@ -203,10 +231,10 @@ When resuming with no conversation history:
 1. read `ROADMAP.md`
 2. read `SYSTEM_DEEPENING_ROADMAP.md` for completed infrastructure
 3. read this file
-4. **do not redo Content Pack II A+B**
-5. start with **CP2-C Secret Chain Expansion**, then batch CP2-D Hidden Boss & Reward Layer with it where shared data makes sense
+4. **do not redo A+B or C+D**
+5. next work is **CP2-E World Mystery Integration + Content Density Pass**
 6. leave Boss conditional Hidden Drops deferred
-7. preserve Rumor Notebook automatic accumulation and `world2.discoveries` persistence
+7. preserve automatic Rumor Notebook accumulation and `world2.discoveries`
 8. do not add a new Home route/currency
-9. preserve the many-enemies mobile command regression
-10. run both CI workflows, then update this handoff before merge
+9. preserve many-enemies mobile command reachability
+10. run both CI workflows and update handoff before merge
