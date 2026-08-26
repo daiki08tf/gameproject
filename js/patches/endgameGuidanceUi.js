@@ -15,7 +15,10 @@ export function renderEndgameGuidance(){
   let card=menu.querySelector('[data-endgame-guide]');
   if(!card){card=document.createElement('button');card.type='button';card.className='endgame-guide-card';card.dataset.endgameGuide='true';const primary=menu.querySelector('.home-primary-action');if(primary)primary.after(card);else menu.prepend(card);card.addEventListener('click',()=>{const id=card.dataset.targetButton;document.getElementById(id)?.click();});}
   card.dataset.targetButton=g.targetButtonId;
-  card.innerHTML=`<span class="endgame-guide-kicker">NEXT / Lv ${g.level.toLocaleString()}</span><strong>${g.title}</strong><span class="endgame-guide-reason">${g.reason}</span><span class="endgame-guide-meta">${g.recommendedWorldTierName} ・ 深淵 ${g.nextAbyssDepth}F / 推奨Lv ${g.nextAbyssLevel.toLocaleString()} / IP ${g.nextAbyssItemPower}</span><span class="endgame-guide-reward">報酬基準 Drop ×${g.reward.drop} / Gold ×${g.reward.gold} / IP +${g.reward.itemPowerBonus}</span>`;
+  const meta=g.laneId==='story'
+    ?`${g.recommendedWorldTierName} ・ Lv 3,000からWorld Tier / 深淵導線へ`
+    :`${g.recommendedWorldTierName} ・ 深淵 ${g.nextAbyssDepth}F / 推奨Lv ${g.nextAbyssLevel.toLocaleString()} / IP ${g.nextAbyssItemPower}`;
+  card.innerHTML=`<span class="endgame-guide-kicker">NEXT / Lv ${g.level.toLocaleString()}</span><strong>${g.title}</strong><span class="endgame-guide-reason">${g.reason}</span><span class="endgame-guide-meta">${meta}</span><span class="endgame-guide-reward">報酬基準 Drop ×${g.reward.drop} / Gold ×${g.reward.gold} / IP +${g.reward.itemPowerBonus}</span>`;
 }
 
 queueMicrotask(renderEndgameGuidance);
