@@ -30,7 +30,6 @@ function chapterEnemyKeys(chapter) {
 }
 
 function stageOldLevel(stage, entry) {
-  const span = Math.max(1, entry.oldMax - entry.oldMin);
   return Math.max(entry.oldMin, Math.min(entry.oldMax, Number(stage.recLevel) || entry.oldMin));
 }
 
@@ -42,6 +41,7 @@ function remapLevel(oldLevel, entry) {
 function currentChapterExpBudget(chapter) {
   let total = 0;
   for (const stage of chapter.stages) {
+    if (stage.branch) continue;
     total += Number(stage.rewards?.exp) || 0;
     for (const wave of stage.waves || []) {
       const enemy = ENEMY_TYPES[wave.type];
@@ -83,7 +83,7 @@ function applyExpansionEntry(entry) {
     enemy.xp = Math.max(1, Math.round(enemy.xp * expFactor));
   }
 
-  return { ...entry, levelRatio, hpFactor, atkFactor, defFactor, expFactor };
+  return { ...entry, rawExpBudget:oldBudget, targetExp:targetChapterExp(entry), levelRatio, hpFactor, atkFactor, defFactor, expFactor };
 }
 
 function applyStoryExpansionRoadmap() {
