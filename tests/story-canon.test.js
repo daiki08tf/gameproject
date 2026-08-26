@@ -41,14 +41,16 @@ test('existing endgame systems receive narrative meaning instead of parallel rep
   }
 });
 
-test('chapter arcs preserve Ch1-15, Ch16-20 and Ch21-25 as one escalating journey', () => {
+test('chapter arcs preserve Ch1-25 and formally map Story Expansion I through Ch30', () => {
   assert.equal(storyArcForChapter(1)?.id, 'arc1');
   assert.equal(storyArcForChapter(15)?.id, 'arc1');
   assert.equal(storyArcForChapter(16)?.id, 'arc2');
   assert.equal(storyArcForChapter(20)?.id, 'arc2');
   assert.equal(storyArcForChapter(21)?.id, 'arc3');
   assert.equal(storyArcForChapter(25)?.id, 'arc3');
-  assert.equal(storyArcForChapter(26), null);
+  assert.equal(storyArcForChapter(26)?.id, 'arc4');
+  assert.equal(storyArcForChapter(30)?.id, 'arc4');
+  assert.equal(storyArcForChapter(31), null);
 });
 
 test('clue ladder delays explicit modern-world evidence until the latest tier', () => {
