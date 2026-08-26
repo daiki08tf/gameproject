@@ -46,5 +46,9 @@ test('Pack B uses old-save null defaults instead of rerolling old companions',()
   const runtime=fs.readFileSync(new URL('../js/patches/systemDeepeningPackB.js',import.meta.url),'utf8');
   assert.match(runtime,/inst\.rareTrait\?\?=null/);
   assert.match(runtime,/inst\.epithet\?\?=null/);
-  assert.doesNotMatch(runtime,/ensureIndividuality\([^)]*\).*rollCompanionRareTrait/s);
+  const getStart=runtime.indexOf('state.getCompanion=function packBGetCompanion');
+  const getEnd=runtime.indexOf('if(state.gainCompanionExp)',getStart);
+  assert.ok(getStart>=0&&getEnd>getStart,'wrapped getCompanion block must exist');
+  const oldSaveReadPath=runtime.slice(getStart,getEnd);
+  assert.doesNotMatch(oldSaveReadPath,/rollCompanionRareTrait|rollCompanionEpithet/,'reading an old companion must never reroll individuality');
 });
