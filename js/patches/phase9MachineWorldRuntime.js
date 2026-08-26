@@ -1,4 +1,5 @@
 /* Phase 9.8 — Machine World runtime bridge. */
+import './phase9MechanosageRuntime.js';
 import { state } from '../state.js';
 import { CHAPTERS } from '../data/stages.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
