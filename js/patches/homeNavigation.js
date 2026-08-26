@@ -17,6 +17,7 @@ import './uiFoundationBootstrap.js';
 import './equipmentCompactUi.js';
 import './monsterRanchCompactUi.js';
 import './endgameGuidanceUi.js';
+import './buildLoadoutsUi.js';
 import { enhanceHome } from './finalIntegrationUi.js';
 import { applyHomePixelIcons } from '../ui/pixelIcons.js';
 
