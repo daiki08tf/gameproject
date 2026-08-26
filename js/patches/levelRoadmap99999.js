@@ -43,25 +43,36 @@ export const LONG_TERM_LEVEL_ERAS = Object.freeze([
   { id: 'terminal',    min: 50000, max: CHARACTER_LEVEL_MAX, label: '終焉域' },
 ]);
 
-const BASELINE_FULL_CHAPTER_EXP = 681; // 標準5ステージ: 敵EXP+ステージEXPの旧基準合計
-const ONE_PASS_TARGET_SHARE = 0.85;    // 章を1周で目標差分の約85%。少量の周回余地を残す
-
-function legacyChapterRewardMult(chapter) {
-  return chapter === 1 ? 1 : 1 + (chapter - 1) * 0.35;
-}
-
-function targetChapterExpMult(entry) {
-  const previousEnd = entry.chapter === 1 ? 1 : STORY_LEVEL_ROADMAP[entry.chapter - 2].max;
-  const needed = Math.max(0,
-    cumulativeCharacterExpToLevel(entry.max) - cumulativeCharacterExpToLevel(previousEnd)
-  );
-  return Math.max(1, (needed * ONE_PASS_TARGET_SHARE) / BASELINE_FULL_CHAPTER_EXP);
-}
+const ONE_PASS_TARGET_SHARE = 0.85; // 章を1周で目標差分の約85%。少量の周回余地を残す
 
 function chapterEnemyKeys(chapter) {
   if (chapter === 1) return ['grunt', 'fast', 'tank', 'boss_orcking', 'branch_goblin_chief'];
   const prefix = `ch${chapter}`;
   return [`${prefix}_normal`, `${prefix}_fast`, `${prefix}_tank`, `${prefix}_boss`, `${prefix}_branchboss`];
+}
+
+function currentChapterExpBudget(chapter) {
+  let total = 0;
+  for (const stage of chapter.stages) {
+    total += Number(stage.rewards?.exp) || 0;
+    for (const wave of stage.waves || []) {
+      const enemy = ENEMY_TYPES[wave.type];
+      if (enemy) total += (Number(enemy.xp) || 0) * Math.max(1, Number(wave.count) || 1);
+    }
+  }
+  return Math.max(1, total);
+}
+
+function targetChapterExp(entry) {
+  const previousEnd = entry.chapter === 1 ? 1 : STORY_LEVEL_ROADMAP[entry.chapter - 2].max;
+  const needed = Math.max(0,
+    cumulativeCharacterExpToLevel(entry.max) - cumulativeCharacterExpToLevel(previousEnd)
+  );
+  return Math.max(1, needed * ONE_PASS_TARGET_SHARE);
+}
+
+function targetChapterExpMult(chapter, entry) {
+  return Math.max(1, targetChapterExp(entry) / currentChapterExpBudget(chapter));
 }
 
 function scaleRecommendedLevels(chapter, entry) {
@@ -75,15 +86,11 @@ function scaleRecommendedLevels(chapter, entry) {
   }
 }
 
-function scaleChapterEnemies(entry) {
+function scaleChapterEnemies(chapter, entry, expFactor) {
   const levelRatio = entry.max / entry.oldMax;
-  // Character成長は概ねレベルに対して線形。HPは同比率、ATK/DEFはやや抑えて
-  // 一撃死・硬すぎる敵を避けながら旧バランス感を維持する。
   const hpFactor = levelRatio;
   const atkFactor = Math.pow(levelRatio, 0.90);
   const defFactor = Math.pow(levelRatio, 0.85);
-
-  const expFactor = targetChapterExpMult(entry) / legacyChapterRewardMult(entry.chapter);
 
   for (const key of chapterEnemyKeys(entry.chapter)) {
     const enemy = ENEMY_TYPES[key];
@@ -97,8 +104,7 @@ function scaleChapterEnemies(entry) {
   return { levelRatio, hpFactor, atkFactor, defFactor, expFactor };
 }
 
-function scaleStageExp(chapter, entry) {
-  const expFactor = targetChapterExpMult(entry) / legacyChapterRewardMult(entry.chapter);
+function scaleStageExp(chapter, expFactor) {
   for (const stage of chapter.stages) {
     if (!stage.rewards || !Number.isFinite(stage.rewards.exp)) continue;
     stage.rewards.exp = Math.max(1, Math.round(stage.rewards.exp * expFactor));
@@ -113,16 +119,19 @@ function applyRoadmap() {
   for (const entry of STORY_LEVEL_ROADMAP) {
     const chapter = CHAPTERS.find((ch) => ch.num === entry.chapter || ch.id === `ch${entry.chapter}`);
     if (!chapter) continue;
+    const rawBudget = currentChapterExpBudget(chapter);
+    const expFactor = targetChapterExpMult(chapter, entry);
     scaleRecommendedLevels(chapter, entry);
-    const combat = scaleChapterEnemies(entry);
-    scaleStageExp(chapter, entry);
-    applied.push({ ...entry, ...combat, expMult: targetChapterExpMult(entry) });
+    const combat = scaleChapterEnemies(chapter, entry, expFactor);
+    scaleStageExp(chapter, expFactor);
+    applied.push({ ...entry, ...combat, rawExpBudget:rawBudget, targetExp:targetChapterExp(entry), expMult:expFactor });
   }
 
   state.levelRoadmap99999 = {
     cap: CHARACTER_LEVEL_MAX,
     story: STORY_LEVEL_ROADMAP,
     eras: LONG_TERM_LEVEL_ERAS,
+    onePassTargetShare: ONE_PASS_TARGET_SHARE,
     applied,
   };
 }
