@@ -67,6 +67,14 @@ function applyStageFilter(list,mode){
     card.hidden=!show;
   });
 }
+function stageKind(stage){
+  if(stage.raid)return 'RAID';
+  if(stage.bounty)return 'BOUNTY';
+  if(stage.boss)return 'BOSS';
+  if(stage.secretRealm)return 'SECRET';
+  if(stage.branch)return 'SIDE';
+  return '';
+}
 function enhanceStageList(){
   const list=document.getElementById('stageList');if(!list)return;
   list.querySelectorAll(':scope > .stage-card').forEach(card=>{
@@ -75,8 +83,11 @@ function enhanceStageList(){
     card.dataset.phase14Enhanced='true';card.dataset.phase14StageId=stage.id;
     card.addEventListener('click',()=>rememberRecent(stage.id),{capture:true});
     const main=card.firstElementChild;if(!main)return;
+    // Generic emoji remain secondary decoration elsewhere, but stage identity is text-first.
+    const nameEl=card.querySelector('.name');if(nameEl)nameEl.textContent=stage.name;
     const meta=document.createElement('div');meta.className='phase14-stage-meta';
-    const r=state.phase13RecordFor?.(stage.id);meta.innerHTML=`${state.isStageCleared(stage.id)?'<span>CLEAR</span>':'<span>NEW</span>'}${r?.bestTurns?`<span>BEST ${r.bestTurns}T</span>`:''}`;main.appendChild(meta);
+    const r=state.phase13RecordFor?.(stage.id),kind=stageKind(stage);
+    meta.innerHTML=`${kind?`<span>${kind}</span>`:''}${state.isStageCleared(stage.id)?'<span>CLEAR</span>':'<span>NEW</span>'}${r?.bestTurns?`<span>BEST ${r.bestTurns}T</span>`:''}`;main.appendChild(meta);
     const fav=document.createElement('button');fav.type='button';fav.className='btn-sub phase14-favorite-btn';fav.textContent=uiData().favoriteStageIds.includes(stage.id)?'★':'☆';fav.setAttribute('aria-label','お気に入り');
     fav.addEventListener('click',ev=>{ev.stopPropagation();fav.textContent=toggleFavorite(stage.id)?'★':'☆';enhanceHome();});card.appendChild(fav);
   });
