@@ -2,9 +2,13 @@
  * 単純なキル数ではなく、装備の個性に沿ったプレイ実績で覚醒資格を得る。
  * event は汎用Trial trackerが受け取るイベント名。
  */
+import { worldMysteryClue } from './storyWorldMystery.js';
+
+export const UNIQUE_TRIAL_STORY_CLUE=worldMysteryClue('uniqueTrial');
+
 export const UNIQUE_TRIALS = {
   uq_bloodfang_gram: {
-    name:'血牙グラムの試練', flavor:'牙はまだ、主を認めていない。',
+    name:'血牙グラムの試練', flavor:'牙はまだ、主を認めていない。', storyClue:UNIQUE_TRIAL_STORY_CLUE,
     trials:[
       {id:'bounty3', label:'賞金首を3体討伐する', event:'bountyKill', target:3},
       {id:'boss_high_hp', label:'HP50%以上を維持してボスを撃破する', event:'bossKillHighHp', target:1},
@@ -16,7 +20,7 @@ export const UNIQUE_TRIALS = {
     ]
   },
   uq_ash_knight_shield: {
-    name:'灰騎士の大盾の試練', flavor:'守るだけでは、城にはなれない。',
+    name:'灰騎士の大盾の試練', flavor:'守るだけでは、城にはなれない。', storyClue:UNIQUE_TRIAL_STORY_CLUE,
     trials:[
       {id:'guard30',label:'ガードを30回成功させる',event:'guard',target:30},
       {id:'guard_boss',label:'ボスの強攻撃をガードして生存する',event:'guardBossHeavy',target:1},
@@ -28,7 +32,7 @@ export const UNIQUE_TRIALS = {
     ]
   },
   uq_star_oracle_staff: {
-    name:'星詠みの杖の試練', flavor:'星は詠む者ではなく、繋ぐ者を選ぶ。',
+    name:'星詠みの杖の試練', flavor:'星は詠む者ではなく、繋ぐ者を選ぶ。', storyClue:UNIQUE_TRIAL_STORY_CLUE,
     trials:[
       {id:'spell_chain30',label:'呪文→通常攻撃の星追撃を30回発動する',event:'starStrike',target:30},
       {id:'spell_bounty3',label:'呪文で賞金首にとどめを3回刺す',event:'bountySpellKill',target:3},
@@ -40,7 +44,7 @@ export const UNIQUE_TRIALS = {
     ]
   },
   uq_regicide: {
-    name:'王殺しの試練', flavor:'雑兵の血では、この刃は満たされない。',
+    name:'王殺しの試練', flavor:'雑兵の血では、この刃は満たされない。', storyClue:UNIQUE_TRIAL_STORY_CLUE,
     trials:[
       {id:'bounty_b3',label:'B級以上の賞金首を3体討伐する',event:'highRankBountyKill',target:3},
       {id:'fast_boss',label:'ボスを規定ターン以内に撃破する',event:'fastBossKill',target:3},
@@ -52,7 +56,7 @@ export const UNIQUE_TRIALS = {
     ]
   },
   uq_omega_core: {
-    name:'零式演算核の試練', flavor:'単調な行動は、演算する価値すらない。',
+    name:'零式演算核の試練', flavor:'単調な行動は、演算する価値すらない。', storyClue:UNIQUE_TRIAL_STORY_CLUE,
     trials:[
       {id:'diverse20',label:'攻撃・特技・呪文を1戦で全て使う ×20戦',event:'diverseBattle',target:20},
       {id:'sequence10',label:'異なる3行動を連続で10回成立させる',event:'diverseSequence',target:10},
