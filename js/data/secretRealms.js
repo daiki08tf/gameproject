@@ -19,10 +19,33 @@ function scaleRealmEnemies(stage, cfg){
   }
 }
 
+function registerRealmEnemyArchetypes(cfg){
+  if(!cfg.enemyArchetypes)return;
+  // buildAbyssStage(baseDepth) has already registered all four canonical enemy
+  // roles for this exact depth. Clone those values so content packs stay on the
+  // Lv99,999 curve without mutating the shared Abyss enemies.
+  for(const [id,def] of Object.entries(cfg.enemyArchetypes)){
+    const source=ENEMY_TYPES[`abyss_${cfg.baseDepth}_${def.source}`];
+    if(!source)continue;
+    ENEMY_TYPES[id]={
+      ...source,
+      name:def.name,
+      hp:Math.max(1,Math.round(source.hp*(def.hpMult||1))),
+      atk:Math.max(1,Math.round(source.atk*(def.atkMult||1))),
+      def:Math.max(0,Math.round(source.def*(def.defMult||1))),
+      speed:Math.max(1,Math.round((source.speed||80)*(def.speedMult||1))),
+      boss:Boolean(def.boss),
+      phase12:true,
+      phase12Role:def.role||def.source,
+    };
+  }
+}
+
 function buildExpandedRealm(cfg){
   const site=cfg.site;
   const base=buildAbyssStage(cfg.baseDepth,[],{suppressModifiers:true});
   scaleRealmEnemies(base,cfg);
+  registerRealmEnemyArchetypes(cfg);
   const setDrops=base.dropTable.filter(x=>String(x.itemId).startsWith(cfg.setPrefix)).map(x=>({...x,weight:0.32}));
   const fallbackSetIds={
     'set_dragon_':['set_dragon_shield','set_dragon_body','set_dragon_accessory'],
@@ -31,6 +54,7 @@ function buildExpandedRealm(cfg){
     'set_abyss_':['set_abyss_head','set_abyss_body','set_abyss_accessory'],
   }[cfg.setPrefix]||[];
   const guaranteedPool=setDrops.length?setDrops:fallbackSetIds.map(itemId=>({itemId,weight:0.32}));
+  const waves=cfg.waves?cfg.waves.map(w=>({...w})):(base.waves||[]).map(w=>({...w}));
   return {
     ...base,
     id:site.realm.id,
@@ -40,12 +64,14 @@ function buildExpandedRealm(cfg){
     isAbyss:false,
     secretRealm:true,
     secretRealmId:site.id,
+    phase12BoundaryRuin:Boolean(cfg.enemyArchetypes),
     abyssDepth:null,
     abyssEra:`異界：${site.realmName}`,
     healMult:Math.min(base.healMult||1,cfg.healMult||1),
     dropMult:(base.dropMult||1)*(cfg.dropMult||1),
     rewards:{gold:Math.round(base.rewards.gold*(cfg.goldMult||1)),exp:Math.round(base.rewards.exp*(cfg.expMult||1))},
     dropTable:[...guaranteedPool,...base.dropTable.filter(x=>!String(x.itemId).startsWith('set_'))],
+    waves,
     modifiers:[cfg.modifier],
     dropRegionTags:cfg.tags||[],
   };
