@@ -116,4 +116,15 @@ function attachPickerObserver(){
   const render=()=>{const stage=stageByConfirmName(label.textContent);if(stage)renderPhase13ChallengePicker(stage);};
   new MutationObserver(render).observe(label,{childList:true,characterData:true,subtree:true});
 }
-attachPickerObserver();
+function appendStatusReplaySummary(){
+  const root=document.getElementById('statusContent');if(!root||root.querySelector('[data-phase13-summary]'))return;
+  const d=data(),titles=PHASE13_TITLES.filter(t=>d.titles.includes(t.id));
+  const box=document.createElement('div');box.dataset.phase13Summary='1';box.className='status-section';
+  box.innerHTML=`<h3>Challenge Records</h3><div class="status-grid"><div class="status-row"><span class="status-label">記録ステージ</span><span class="status-value">${Object.keys(d.records).length}</span></div><div class="status-row"><span class="status-label">Challenge勝利</span><span class="status-value">${d.challengeWins}</span></div><div class="status-row"><span class="status-label">REMATCH+勝利</span><span class="status-value">${d.rematchWins}</span></div><div class="status-row"><span class="status-label">Build Feat</span><span class="status-value">${d.buildFeats.length}</span></div></div><div class="hint" style="margin-top:7px">称号: ${titles.length?titles.map(t=>t.name).join(' ／ '):'未獲得'}</div>`;
+  root.appendChild(box);
+}
+function attachStatusObserver(){
+  const root=document.getElementById('statusContent');if(!root)return;
+  new MutationObserver(()=>appendStatusReplaySummary()).observe(root,{childList:true});
+}
+attachPickerObserver();attachStatusObserver();
