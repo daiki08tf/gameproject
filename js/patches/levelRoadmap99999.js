@@ -43,7 +43,7 @@ export const LONG_TERM_LEVEL_ERAS = Object.freeze([
   { id: 'terminal',    min: 50000, max: CHARACTER_LEVEL_MAX, label: '終焉域' },
 ]);
 
-const ONE_PASS_TARGET_SHARE = 0.85; // 章を1周で目標差分の約85%。少量の周回余地を残す
+const ONE_PASS_TARGET_SHARE = 0.85; // 本線1周で約85%。分岐・再挑戦・装備掘りで残りを埋める
 
 function chapterEnemyKeys(chapter) {
   if (chapter === 1) return ['grunt', 'fast', 'tank', 'boss_orcking', 'branch_goblin_chief'];
@@ -54,6 +54,9 @@ function chapterEnemyKeys(chapter) {
 function currentChapterExpBudget(chapter) {
   let total = 0;
   for (const stage of chapter.stages) {
+    // Branch stages are optional side content and intentionally belong to the
+    // remaining ~15%, so they must not inflate the canonical one-pass budget.
+    if (stage.branch) continue;
     total += Number(stage.rewards?.exp) || 0;
     for (const wave of stage.waves || []) {
       const enemy = ENEMY_TYPES[wave.type];
@@ -86,7 +89,7 @@ function scaleRecommendedLevels(chapter, entry) {
   }
 }
 
-function scaleChapterEnemies(chapter, entry, expFactor) {
+function scaleChapterEnemies(entry, expFactor) {
   const levelRatio = entry.max / entry.oldMax;
   const hpFactor = levelRatio;
   const atkFactor = Math.pow(levelRatio, 0.90);
@@ -122,7 +125,7 @@ function applyRoadmap() {
     const rawBudget = currentChapterExpBudget(chapter);
     const expFactor = targetChapterExpMult(chapter, entry);
     scaleRecommendedLevels(chapter, entry);
-    const combat = scaleChapterEnemies(chapter, entry, expFactor);
+    const combat = scaleChapterEnemies(entry, expFactor);
     scaleStageExp(chapter, expFactor);
     applied.push({ ...entry, ...combat, rawExpBudget:rawBudget, targetExp:targetChapterExp(entry), expMult:expFactor });
   }
