@@ -16,6 +16,7 @@ import './companionBondUi.js';
 import './uiFoundationBootstrap.js';
 import './equipmentCompactUi.js';
 import './monsterRanchCompactUi.js';
+import './endgameGuidanceUi.js';
 import { applyHomePixelIcons } from '../ui/pixelIcons.js';
 
 const HOME_HUBS = [
