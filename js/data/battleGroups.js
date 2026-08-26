@@ -36,9 +36,23 @@ function distributeMixed(waves, groupCount){
   return groups.filter(g=>g.length).map(compress);
 }
 
+function stageWavesForBattleGroups(stage){
+  const waves=Array.isArray(stage?.waves)?stage.waves.filter(w=>w?.type&&safeCount(w.count)>0):[];
+  // Chapter 3's deepest room predates the text-battle/Combat 3 group model. Its
+  // 5+5+3 composition becomes an early-game 13-enemy endurance wall, and the
+  // stone soldiers can repeatedly protect the whole group. Keep the encounter's
+  // three-enemy identity while capping this one legacy stage at 4+4+2.
+  if(stage?.id!=='3-4')return waves;
+  return waves.map(w=>{
+    if(w.type==='ch3_tank')return {...w,count:Math.min(2,safeCount(w.count))};
+    if(w.type==='ch3_normal'||w.type==='ch3_fast')return {...w,count:Math.min(4,safeCount(w.count))};
+    return w;
+  });
+}
+
 export function buildBattleGroups(stage){
   const explicit=explicitGroups(stage); if(explicit)return explicit;
-  const waves=Array.isArray(stage?.waves)?stage.waves.filter(w=>w?.type&&safeCount(w.count)>0):[];
+  const waves=stageWavesForBattleGroups(stage);
   const normal=waves.filter(w=>!isBossType(w.type));
   const bosses=waves.filter(w=>isBossType(w.type));
   const normalTotal=normal.reduce((n,w)=>n+safeCount(w.count),0);
