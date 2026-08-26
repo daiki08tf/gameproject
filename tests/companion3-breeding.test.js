@@ -11,11 +11,14 @@ import {
 } from '../js/data/companionBreeding.js';
 
 test('special parent pairs always resolve to registered hybrid species',()=>{
+  const legacyIds=['gobslime','thunder_bat','ash_hound','crystal_rot'];
   assert.equal(breedingSpecies('slime','goblin',()=>0.99),'gobslime');
   assert.equal(breedingSpecies('bat','thunder_beast',()=>0.99),'thunder_bat');
   assert.equal(breedingSpecies('ash_soldier','iron_hound',()=>0.99),'ash_hound');
   assert.equal(breedingSpecies('crystal_bug','rot_beast',()=>0.99),'crystal_rot');
-  assert.equal(hybridSpeciesIds().length,4);
+  const registered=new Set(hybridSpeciesIds());
+  for(const id of legacyIds)assert.ok(registered.has(id),`${id} should remain registered`);
+  assert.ok(registered.size>=legacyIds.length,'later phases may extend the hybrid registry');
 });
 
 test('same species breeding keeps species and talent inheritance stays bounded',()=>{
