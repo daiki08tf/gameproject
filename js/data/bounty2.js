@@ -1,11 +1,11 @@
 import { BOUNTIES } from './bounties.js';
-import { abyssRecommendedLevel, abyssTargetItemPower, abyssEraForDepth } from './abyssEndgame.js';
+import { abyssRecommendedLevel, abyssTargetItemPower, abyssEraForDepth, abyssStageExpBudget } from './abyssEndgame.js';
+import { endgameRewardProfile, endgameBossRewardMult } from './endgameRewardScaling.js';
 
 const VARIANT_SCALE={hp:1.55,atk:1.25,def:1.15,spd:1.10};
 const EX_SCALE={hp:2.15,atk:1.55,def:1.30,spd:1.20};
 
-// Progression 3.0: EX bounties are no longer tiny chapter-level rematches.
-// Each base bounty becomes a landmark hunt in a different Abyss era after Chapter 20.
+// Progression 3.0: EX bounties are landmark hunts in different Abyss eras.
 const EX_ABYSS_DEPTH=Object.freeze({
   'bounty-redfang-varg':1,
   'bounty-ash-knight':100,
@@ -24,6 +24,13 @@ function buildTierStage(base,tier){
   const recLevel=isEx?abyssRecommendedLevel(abyssDepth):Math.round(base.recLevel*1.25);
   const itemPowerTarget=isEx?abyssTargetItemPower(abyssDepth):null;
   const era=isEx?abyssEraForDepth(abyssDepth):null;
+  const rewardProfile=isEx?endgameRewardProfile(recLevel):null;
+  const bossReward=isEx?endgameBossRewardMult({boss:true}):1;
+  const rewards=isEx?{
+    gold:Math.max(Math.round(base.rewards.gold*2.5),Math.round(1500*rewardProfile.gold*bossReward)),
+    exp:Math.max(Math.round(base.rewards.exp*2.5),Math.round(abyssStageExpBudget(abyssDepth)*1.35)),
+  }:{gold:Math.round(base.rewards.gold*1.5),exp:Math.round(base.rewards.exp*1.5)};
+  const dropMult=isEx?Number((rewardProfile.drop*bossReward).toFixed(3)):1.25;
   return {
     id,
     name:`${suffix}${base.name}`,
@@ -42,7 +49,9 @@ function buildTierStage(base,tier){
     rumor:isEx?`深淵${abyssDepth}F級の異常個体が確認された。${era}に到達する冒険者を狩る「宿敵」として再出現する。`:'再出現した個体に通常とは異なる兆候が見られる。',
     bountyGimmick:isEx?'深淵Era相当の基礎能力と固有ギミックを持つ。敗北するたびNemesisが学習し、次戦でさらに強化される。':'基礎能力と固有ギミックが強化される。',
     bountyRewardHint:isEx?`大量の賞金首の証。目標IP ${itemPowerTarget}級の育成帯向け。`:'賞金首の証を多く獲得できる。',
-    rewards:{gold:Math.round(base.rewards.gold*(isEx?2.5:1.5)),exp:Math.round(base.rewards.exp*(isEx?2.5:1.5))},
+    rewards,
+    dropMult,
+    endgameRewardProfile:rewardProfile,
     waves:[{type:base.enemyType,count:1,interval:0}],
     dropTable:[],
   };
