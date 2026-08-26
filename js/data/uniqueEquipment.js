@@ -5,6 +5,7 @@ export const BOUNTY_UNIQUES = [
   { id:'uq_star_oracle_staff', bountyId:'bounty-fallen-oracle', name:'星詠みの杖', slot:'weapon', weaponType:'staff', rarity:'legendary', stats:{mag:105,mp:-18}, unique:true, effects:[{trigger:'passive',kind:'spellArmsStarStrike',magRatio:0.8}], lore:'未来を一瞬だけ固定し、詠唱の残光を次の打撃へ宿す杖。' },
   { id:'uq_regicide', bountyId:'bounty-crownless', name:'王殺し', slot:'weapon', weaponType:'sword', rarity:'mythic', stats:{atk:210,crit:7}, unique:true, effects:[{trigger:'passive',kind:'bossDmg',power:0.5},{trigger:'passive',kind:'normalEnemyDmgPenalty',power:0.3}], lore:'王の首だけを求める処刑剣。名もなき敵には刃が鈍る。' },
   { id:'uq_omega_core', bountyId:'bounty-omega-zero', name:'零式演算核', slot:'accessory', rarity:'mythic', stats:{atk:70,mag:70,spd:35}, unique:true, effects:[{trigger:'passive',kind:'actionDiversityBuff',power:0.25,turns:3}], lore:'異なる戦闘行動を解析し、戦術の多様性そのものを出力へ変換する禁機の核。' },
+  { id:'uq_architect_core', bountyId:null, sourceStageId:'machine-world-10', name:'設計主機の中枢核', slot:'accessory', rarity:'mythic', stats:{atk:120,mag:120,def:80,spd:45}, unique:true, effects:[{trigger:'passive',kind:'actionDiversityBuff',power:0.32,turns:3},{trigger:'passive',kind:'bossDmg',power:0.18}], lore:'ARCHITECT-1の設計権限を切り離した中枢核。異なる戦術を接続するほど演算出力が増す。' },
 ];
 
 export function uniqueForBounty(bountyId){ return BOUNTY_UNIQUES.find(x=>x.bountyId===bountyId)||null; }
