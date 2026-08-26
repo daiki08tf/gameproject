@@ -8,10 +8,10 @@ const read = path => fs.readFileSync(new URL(path, import.meta.url), 'utf8');
 test('runtime guard: phase12 finale imports exploration core before binding explorationProgress',()=>{
   const runtime=read('../js/patches/phase12FinaleRuntime.js');
   const importIndex=runtime.indexOf("import './exploration1Core.js';");
-  const bindIndex=runtime.indexOf('state.explorationProgress.bind(state)');
+  const bindIndex=runtime.indexOf('const previousProgress=state.explorationProgress.bind(state);');
   assert.ok(importIndex>=0,'phase12FinaleRuntime must explicitly import exploration1Core.js');
   assert.ok(bindIndex>=0,'phase12FinaleRuntime still wraps explorationProgress');
-  assert.ok(importIndex<bindIndex,'exploration1Core import must occur before explorationProgress.bind(state)');
+  assert.ok(importIndex<bindIndex,'exploration1Core import must occur before the actual explorationProgress wrapper binding');
 });
 
 test('runtime guard: exploration core remains the owner of state.explorationProgress',()=>{
