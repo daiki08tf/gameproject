@@ -51,6 +51,16 @@ export const SECRET_JOBS = [
       {id:'crownless',label:'王冠なき処刑人を討伐',check:s=>!!s.isBountyDefeated?.('bounty-crownless')},
     ]
   },
+  {
+    id:'secret_mechanosage', name:'機巧賢者', carrierJobId:'artificer', weapon:'staff', secret:true,
+    desc:'魔導技術と機界演算を接続し、戦闘そのものを再設計する超高位隠し職。', masteryLv:50,
+    hint:'人の技術だけでは届かない。魔導技師の星を極め、設計者の中枢核を持ち帰れ。',
+    conditions:[
+      {id:'artificer',label:'魔導技師をMASTER',check:s=>s.isMastered('artificer')},
+      {id:'architect',label:'設計主機・ARCHITECT-1を撃破',check:s=>!!s.isStageCleared?.('machine-world-10')},
+      {id:'core',label:'設計主機の中枢核を所持',check:s=>!!s.ownsItem?.('uq_architect_core')},
+    ]
+  },
 ];
 
 export function getSecretJob(id){ return SECRET_JOBS.find(j=>j.id===id)||null; }

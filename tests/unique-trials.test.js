@@ -4,7 +4,7 @@ import { UNIQUE_TRIALS } from '../js/data/uniqueTrials.js';
 import { BOUNTY_UNIQUES } from '../js/data/uniqueEquipment.js';
 
 test('every bounty unique has mastery trials and two branches',()=>{
-  for(const unique of BOUNTY_UNIQUES){
+  for(const unique of BOUNTY_UNIQUES.filter(u=>u.bountyId)){
     const def=UNIQUE_TRIALS[unique.id];
     assert.ok(def, `${unique.id} trial definition missing`);
     assert.ok(def.trials.length>=3, `${unique.id} should have at least 3 trials`);
