@@ -45,6 +45,7 @@ for(const chapter of CHAPTERS){
       phase9ExplorationKind:route.kind,
       phase9RewardTag:route.rewardTag,
       phase9Description:route.desc,
+      phase9RewardAnchorId:anchor.id,
       phase9FarmIdentity:profile.farm,
       phase9Repeatable:true,
       phase9DensityPass:'9.9',
