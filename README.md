@@ -1,8 +1,10 @@
 # Blade Vale
 
-スマホブラウザで遊べる、テキストコマンド戦闘を中心としたステージクリア型ハック＆スラッシュRPGです。
+スマホブラウザで遊べる、**テキストコマンド戦闘 × 長期育成 × ハック＆スラッシュ**RPGです。
 
-装備を掘り、職業を育て、呪文・特技・Rune・仲間・図鑑・継承など複数の成長システムを重ねながら15章とエンドコンテンツを攻略します。Vanilla JavaScript / ES Modulesで動作し、ビルドや外部ゲームライブラリは不要です。
+装備を掘り、職業・仲間・覚醒・恒久成長を育てながらストーリーと複数のエンドゲームへ進みます。Character Lvは最大99,999。Vanilla JavaScript / ES Modulesで動作し、外部ゲームライブラリは不要です。
+
+> 開発の正式な方針・現在地は `ROADMAP.md` を参照してください。Lv99,999の進行設計は `LEVEL_ROADMAP_99999.md`、Official Phase 10の最終監査は `PHASE10_FINAL_AUDIT.md` が補助資料です。
 
 ## 起動方法
 
@@ -15,152 +17,133 @@ python3 -m http.server 8000
 
 ## 基本ゲームループ
 
-1. ホームでキャラクター・装備・職業・仲間などを整える
-2. 章とステージを選択して出撃
-3. テキストコマンドで戦闘する
-4. EXP・Job EXP・Gold・装備・Runeなどの報酬を獲得
-5. キャラクター、職業、装備、仲間、恒久強化を育てる
-6. より高難度の章や深淵へ挑戦する
+1. キャラクター・装備・職業・仲間などを整える
+2. Adventureから章・地域・ステージへ進む
+3. テキストコマンドで敵の行動・弱点・Break・Boss Phaseに対応する
+4. EXP / Job EXP / Gold / 装備 / 各種成長報酬を獲得する
+5. ビルドを更新する
+6. ストーリー、Key/Secret系コンテンツ、Abyss、Nemesisなどへ進む
 
-敗北しても、それまでに獲得した成長や戦利品を活かして再挑戦できます。
+敗北しても、それまでに得た成長や戦利品を使って再挑戦できます。
 
 ## 戦闘
 
-戦闘はテキストベースのコマンドバトルです。通常攻撃だけでなく、職業ごとに習得する特技・呪文、防御、各種特殊効果を使い分けて攻略します。
+戦闘はテキストベースのコマンドバトルです。
 
 - 通常攻撃
 - 職業固有の特技
-- MPを使用する呪文
-- 防御・ボス行動への対応
+- MPを使う呪文
+- 防御 / 敵Intentへの対応
 - バフ / デバフ / 回復 / 状態異常
-- 会心、追加攻撃、吸血、反撃などの装備・Artifact効果
-- 仲間による自動戦闘支援
-- Runeや図鑑など恒久成長からの戦闘補正
+- 属性 / 弱点 / 耐性
+- Break / Stagger
+- ボスPhase / 取り巻き / Guard役
+- 武器・装備・Artifact等の特殊効果
+- 仲間による戦闘支援
 
-## ワールド / ステージ
+Combat 3系のBoss Encounterでは、主要Bossを単なる高HP敵ではなく、Phase変化・守護役・Break窓・危険行動を持つEncounterとして扱います。
 
-現在は第1章から第15章まで実装されています。
+## ワールド / ストーリー
 
-第2章以降は `js/data/chapters.js` の章メタデータをもとに敵・装備・ステージを生成する構成です。第11〜15章では新しい敵、装備、Rune探索地点、仲間候補も追加されています。
+現在のリポジトリには**第1章〜第25章の章データ**があります。
 
-通常ルートに加えて分岐ステージやボス戦があり、章を進めるほど敵・報酬・ドロップ内容が強化されます。
+- **Ch1–15**：コアとなる第一部の旅
+- **Ch16–20**：The Veil
+- **Ch21–25**：外縁世界 / 次章アークの既存データ
 
-## キャラクター成長 — Progression 2.0
+Ch21–25までデータが存在することと、Adventure / Story 3.0として全編の演出・世界観統合が完了していることは別です。Official Roadmap Phase 11で、Human Realm → Heaven → Underworld → Dimensional Boundary → Modern Worldの一本の物語として統合します。
 
-キャラクター自身の成長と職業の成長を分離しています。
+World3 Realms、Secret Realms、Key/Rift、Machine World、地域探索・Masteryなど、通常章以外の世界コンテンツも存在します。
 
-- **Character Lv**：キャラクター本体のレベル。専用EXPカーブで最大Lv99,999まで対応
-- **Job Lv**：現在職の熟練レベル。Character EXPとは別のJob EXPで成長
-- Character EXPはキャラクターへ100%入り、Job EXPは別レートでゆっくり成長
-- ステータスはキャラクター層・職業・装備・恒久強化など複数レイヤーから計算
-- ホームにはキャラクター成長を確認するダッシュボードを用意
+## キャラクター成長 — Progression 3.0
+
+- **Character Lv**：最大99,999
+- **Job Lv**：Character EXPとは別のJob EXPで成長
+- Lv1〜99,999を章・The Veil・Abyss・EX Bounty・Nemesis・高難度世界へ接続
+- Awakening milestone：Lv90 / 300 / 700 / 3,000
+- 大きな数値は `numericSafety` を含む安全策とシミュレーションで監視
+
+現在の正規EXPカーブ・章進行・Abyss到達目標は `LEVEL_ROADMAP_99999.md` と実装コードが基準です。
 
 ## 職業
 
-職業は4段階です。
+56職の基盤があります。
 
-- **基本職：15種**
-- **上級職：30種**
-- **特級職：10種**
-- **勇者：1種**
+- 基本職：15種
+- 上級職：30種
+- 特級職：10種
+- 勇者：1種
 
-基本職はLv15、上級職はLv30、特級職はLv50がMASTER基準です。上位職は下位職のMASTER状況によって解放されます。
-
-職業ごとにステータス傾向、得意武器、特技・呪文、MASTER時の永続ボーナスが異なります。レベルはMASTER後も上げ続けられます。
-
-## 特技 / 呪文
-
-基本職・上級職を中心に、職業固有の特技と呪文を実装しています。
-
-攻撃だけではなく、回復、自己強化、敵弱体化、状態異常、ボスの予兆に対応する防御行動など、職業ごとに戦い方が変わる設計です。一定Job LvやMASTER到達で新しい技を習得します。
+職業ごとにステータス傾向、得意武器、特技・呪文、MASTER時の永続要素などが異なります。Specialization、Legacy/Master系パッシブ、Secret Jobs、Job Codex、Fusion/Constellation系の拡張もあります。
 
 ## 装備 / ハクスラ
 
-装備枠は以下の6スロットです。
+主要装備枠は武器・盾・頭・胴・アクセサリー×2。
 
-- 武器
-- 盾
-- 頭
-- 胴
-- アクセサリー ×2
+Equipment 3系では以下を含むハクスラ基盤があります。
 
-武器は剣・斧・杖・弓・短剣・拳具・楽器・錫杖の8系統。職業ごとに得意武器が設定されています。
+- Affix / Greater Affix
+- Legendary / Unique / Set
+- Smart Loot
+- Craft / Reforge / Blacksmith
+- endgame chase / target farm
+- Item Powerを含む進行連携
+- compact inventory UI
 
-装備にはレアリティと章ごとの基礎性能差があり、ボス級装備には固有効果も存在します。「最強装備」で所持品から自動装備することもできます。
+Official Roadmapでは今後、Loot Filter、安全なAuto Dismantle、delta中心のItem Compare、Build Loadoutを既存システムのQoLとして追加します。
 
-### Weapon Affix
+## 仲間 / Monster Ranch
 
-ドロップ武器は個体化され、Affix（追加能力）が付与される場合があります。
+- 種族・個体差・レアリティ
+- 性格 / Trait
+- スキル / 進化
+- 最大3体のParty
+- Synergy / Bond
+- Breeding / Mutation
+- Ranch facilities
+- compact Ranch UI
 
-Affixは武器ごとの個性を作るハクスラ要素で、ドロップ時の個体IDとともに保存されます。獲得したAffixはリザルト画面や装備・ステータス関連UIから確認できます。
+今後は役割の読みやすさと、ExpeditionをWorld/素材/探索へつなぐ改善を予定しています。
 
-## Rune 2.0 — 恒久刻印
+## Codex
 
-特定ステージでは低確率でRuneがドロップします。Runeは装備品ではなく、獲得した「刻」数に応じて恒久的に効果が成長します。
+モンスターや発見情報を収集するCodexがあります。戦闘・仲間・発見と連動し、未知情報は最初から全開示しない方針です。
 
-実装済みRuneには、ATK / DEF / MAG / HP / MPを伸ばす基礎Runeのほか、先攻、攻撃間隔、ドロップ、敵情報表示、難易度と報酬を同時に上げるChallenge、仲間の加入・育成を強化するBondなどの特殊Runeがあります。
+Story 3.0ではCodex Loreを世界設定・異世界/現代世界の謎を運ぶ仕組みとして強化する予定です。
 
-同じRuneを繰り返し集めること自体が長期的な成長要素になっています。
+## Awakening / Inheritance / Artifact・Relic
 
-## 仲間 — Companion 2.0
+Awakeningは長期成長の節目、Inheritanceは周回成長の継承、Artifact/Relicはビルドルールを変える恒久・付替え要素として扱います。旧来の重複システムは新しい並行システムを増やすのではなく、整理・統合する方針です。
 
-戦闘後などにモンスターが仲間になることがあります。
+## Abyss / Endgame
 
-- 仲間ごとの種族・ステータス・成長率
-- Normal / Rare / Epic / Legendary / Mythic の個体レアリティ
-- 性格による能力補正・AI傾向
-- 個体ごとの才能
-- 種族固有Trait
-- レベルアップと仲間EXP
-- レベルによる仲間スキル習得
-- 仲間の進化
-- 最大3体のパーティ編成
-- 組み合わせによるParty Synergy
-- Bond Runeによる加入率・仲間EXP・高レア加入率の強化
+Abyssは**所定のストーリー進行条件を満たすと解放**されます。旧READMEにあった「第10章ボス撃破だけで解放」という説明は現在の実装を正確に表していません。
 
-仲間はプレイヤーと一緒に戦い、種族・性格・Trait・スキル・編成の組み合わせによって役割が変化します。
+AbyssにはPacts、Challenges、Routes、Run Build、長期深度成長、target farm等があります。さらにNemesis、World Tier、EX Bounty、Machine Worldなどが長期進行を構成します。
 
-## モンスター図鑑 — Codex 2.0
+Official Roadmap Phase 10の監査では、Abyss / Nemesis / World Tier / transcendent-world role / Challenge Boss roleは既存実装で満たし、**Raid Boss integrationが最後の実装ギャップ**と判定しています。
 
-遭遇したモンスターは図鑑へ記録されます。
+## Settlement
 
-図鑑では収集状況を確認でき、登録・収集を進めること自体がキャラクターの恒久成長につながります。戦闘や仲間システムとも連動しています。
+Settlementのfoundation / runtime / UIがあります。Blacksmith、Monster Ranchなど既存機能をBase側へまとめ、Homeのトップレベルボタン増殖を防ぐ接続ハブとして育てます。
 
-## 継承 — Inheritance
+## UI方針
 
-周回時の成長を次へつなぐ継承システムを実装しています。
+Blade Vale 3.0ではMobileを主対象にします。
 
-継承時には獲得したBPを各種強化へ割り振り、次の育成を有利に進められます。継承元は現在の職業だけに依存せず、キャラクター全体の成長をもとに扱われます。
-
-## 覚醒ツリー
-
-覚醒ポイントを使って恒久強化を取得できます。
-
-3つの系統があります。
-
-- **征服**：HP / ATK / DEF / SPD / CRITやボス火力など戦闘力を強化
-- **探求**：Gold / Dropや未所持装備の発見効率を強化
-- **輪廻**：EXPや周回開始時の成長を強化
-
-通常の数値強化だけでなく、ゲームルールに影響する大型ノードも存在します。
-
-## Artifact / Relic
-
-恒久的に解放し、スロットへ自由に付け替えるArtifactを実装しています。
-
-既存の特殊効果を利用する「秘宝」に加え、ビルドのルールそのものを変えるRelicがあります。会心時の追加落雷、低HP時の攻撃強化、スキルCD踏み倒し、HPを犠牲にAffixを強化する効果など、単純なステータス増加とは異なるビルド要素です。
-
-## 深淵 — Abyss
-
-第10章ボス撃破後に解放される、際限なく深くなるエンドコンテンツです。
-
-深度ごとに敵が強くなり、ボスフロアや特殊モディファイアが登場します。モディファイアは敵を強化する代わりにEXP・Gold・Dropなどの報酬も変化するハイリスク・ハイリターン方式です。
-
-深淵専用の成長要素も用意されており、通常15章攻略とは別の長期育成先になっています。
+- Homeを機能ボタンの縦長リストにしない
+- common actionはおおむね3 taps以内
+- **Overview → Detail**を標準にする
+- 長文・全Affix・全Traitを一覧カードへ常時展開しない
+- Equipment / Ranch / Codex / Jobsは100+件でも扱えるfilter/category構造にする
+- 新機能のためだけのHome buttonを原則増やさない
+- generic emoji依存を最終的にpixel/icon setへ置き換える
 
 ## セーブ
 
 進行データはブラウザの `localStorage` に自動保存されます。
+
+現時点の開発優先はBlade Vale 3.0本体の完成であり、Cloud Save / native app化はOfficial Roadmapには入れていません。
 
 ## 技術構成
 
@@ -168,41 +151,47 @@ Affixは武器ごとの個性を作るハクスラ要素で、ドロップ時の
 - ES Modules
 - HTML / CSS
 - Web Audio API
-- 外部ゲームライブラリなし
-- Node.jsベースの回帰テスト
-- GitHub ActionsによるCI
+- external game libraryなし
+- Node.js回帰テスト
+- GitHub Actions CI
 
 主な構成：
 
 ```text
-index.html                 画面構造・各ゲームシステムの読み込み
-css/                       UIスタイル
-js/main.js                 画面遷移・イベント配線
-js/state.js                プレイヤー状態・保存・ステータス計算
-js/battleEngine.js         テキストコマンド戦闘の中核
-js/battleLog.js            戦闘ログ
-js/data/jobs.js            職業・習得技・MASTERボーナス
-js/data/skills.js          特技定義
-js/data/spells.js          呪文定義
-js/data/equipment.js       装備生成
-js/data/affixes.js         Weapon Affix
-js/data/chapters.js        第2〜15章メタデータ
-js/data/companions.js      仲間種族・性格・Trait
-js/data/companionSkills.js 仲間スキル
-js/data/runes2.js          Rune 2.0
-js/data/codex.js           モンスター図鑑
-js/data/awakening.js       覚醒ツリー
-js/data/artifacts.js       Artifact / Relic
-js/data/abyss.js           深淵ステージ生成
-js/data/abyssTree.js       深淵専用成長
-js/patches/                Progression 2.0等の機能レイヤー
-js/screens/                各画面UI
-scripts/                   検証・シミュレーション用スクリプト
-tests/                     回帰テスト
+index.html                         画面構造
+css/                               UI styles
+js/main.js                         画面遷移・event wiring
+js/state.js                        player state / save / progression state
+js/battleEngine.js                 text-command combat core
+js/battleLog.js                    battle log
+js/data/chapters.js                Ch1–15 core chapter data
+js/data/chapters16to20.js          The Veil
+js/data/chapters21to25.js          Ch21–25 expansion data
+js/data/bossEncounters.js          phase/escort/Break boss profiles
+js/data/world3Realms.js            World3 realm layer
+js/data/phase9MachineWorld.js      Machine World
+js/data/jobs.js                    56-job foundation
+js/data/equipment3*.js             Equipment 3 systems
+js/data/uniqueTrials.js            Unique mastery/build trials
+js/data/abyss*.js                  Abyss/endgame systems
+js/data/nemesis3.js                Nemesis
+js/data/worldTiers.js              World Tier
+js/data/endgameGuidance.js         current endgame NEXT guidance
+js/data/numericSafety.js           large-number safety helpers
+js/patches/                        integration/runtime layers
+js/screens/                        screen UI
+scripts/                           simulations/validation
+ tests/                            regression tests
 ```
 
 ## 開発方針
 
-Blade Valeは、短時間で終わる一本道RPGではなく、装備厳選・職業MASTER・Rune収集・仲間育成・図鑑・継承・覚醒・深淵を重ねて長期間キャラクターを育てるハクスラRPGを目指しています。
+Blade Valeは短時間で終わる一本道RPGではなく、装備厳選・Job・仲間・覚醒・探索・Abyssなどがつながって長期間キャラクターを育てられるテキストハクスラRPGを目指します。
 
-新しいシステムを追加する際は、既存のセーブデータとの互換性と回帰テストを維持しながら段階的に拡張します。
+これからは「新しいシステムの数」より、**既存システム同士が一つのゲームとして意味を持ってつながっているか**を優先します。
+
+大きな作業は原則として：
+
+**実装 → automated tests → balance/simulation where relevant → CI → main → next phase**
+
+の順で進めます。
