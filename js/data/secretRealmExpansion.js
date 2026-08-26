@@ -1,4 +1,6 @@
-export const SECRET_REALM_EXPANSION = Object.freeze({
+import { PHASE12_BOUNDARY_RUINS } from './phase12BoundaryRuins.js';
+
+const LEGACY_SECRET_REALM_EXPANSION = {
   ancient_dragon_gate: {
     site: {
       id:'ancient_dragon_gate', hiddenName:'？？？', discoveredName:'竜鱗に覆われた石門', realmName:'古竜の巣',
@@ -22,7 +24,11 @@ export const SECRET_REALM_EXPANSION = Object.freeze({
     site:{id:'void_corridor',hiddenName:'？？？？？',discoveredName:'音のない亀裂',realmName:'虚無回廊',discoverDepth:1880,clueDepth:2100,fragmentSources:[2300,2600,2900],fragmentsRequired:3,inspectText:['空間そのものが裂けたような、黒い亀裂が浮いている。','近づいても風も音もない。代わりに、自分の足音だけが一拍遅れて返ってくる。','亀裂の縁には、三つの方位を示す羅針盤の刻印がある。'],unlockedText:'三つの虚無座標が重なった瞬間、亀裂が一本の通路へと変わった。',realm:{id:'secret-void-corridor',recLevel:99999,itemPowerTarget:10000,rule:'敵SPD+35% / Drop+60% / 深淵歩き向け',rewardHint:'深淵歩きSet・回避/貫通/速度系装備を狙える。'}},
     baseDepth:2950, speedMult:1.35, dropMult:1.60, goldMult:1.45, expMult:1.40,setPrefix:'set_abyss_',tags:['dark','wind','lightning'],modifier:{id:'realm_void_shift',name:'虚無転位',desc:'敵SPD+35% ／ Drop+60% ／ 深淵歩き装備率UP'},
   },
-});
+};
+
+// Phase 12 expands the existing exploration path instead of creating a second
+// content menu. The object shape remains identical for backward compatibility.
+export const SECRET_REALM_EXPANSION = Object.freeze({...LEGACY_SECRET_REALM_EXPANSION,...PHASE12_BOUNDARY_RUINS});
 
 export function expandedExplorationSites(){ return Object.values(SECRET_REALM_EXPANSION).map(x=>x.site); }
 export function expandedRealmByStageId(stageId){ return Object.values(SECRET_REALM_EXPANSION).find(x=>x.site.realm.id===stageId)||null; }
