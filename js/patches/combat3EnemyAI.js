@@ -1,12 +1,30 @@
 import { BattleEngine } from '../battleEngine.js';
 import { state } from '../state.js';
 import { enemyCombatProfile, enemyRole } from '../data/enemyCombat3.js';
+import './systemDeepeningPackA.js';
+
+function planCombat3Skill(enemy){
+  const skill=enemy?.combat3Skill;
+  if(!skill){enemy.combat3WillUseSkill=false;return false;}
+  // Cooldown is ticked at the beginning of the next enemy turn. cd<=1 therefore
+  // means the skill will be ready when the reserved action is actually resolved.
+  const ready=(enemy.combat3SkillCd||0)<=1;
+  enemy.combat3WillUseSkill=!!(ready&&Math.random()<(skill.chance||0));
+  return enemy.combat3WillUseSkill;
+}
 
 const proto=BattleEngine.prototype;
 const originalSpawn=proto._spawnEnemy;
 proto._spawnEnemy=function(type){
   const e=originalSpawn.call(this,type); const profile=enemyCombatProfile(type),role=enemyRole(type);
-  if(!e.boss){e.combat3Role=role;e.combat3Skill=profile.skill;e.combat3SkillCd=0;e.combat3Buffs={def:{mult:1,turns:0},spd:{mult:1,turns:0}};const known=state.data?.monsterCodex?.[type];if(known?.roleKnown||known?.analyzed)e.name=`${role.icon}${e.name}`;}
+  if(!e.boss){
+    e.combat3Role=role;e.combat3Skill=profile.skill;e.combat3SkillCd=0;e.combat3Buffs={def:{mult:1,turns:0},spd:{mult:1,turns:0}};
+    const known=state.data?.monsterCodex?.[type];if(known?.roleKnown||known?.analyzed)e.name=`${role.icon}${e.name}`;
+    // System Deepening SD-8: reserve the next tactical action now. The UI reads
+    // this reservation, so an intent never promises a skill and then silently
+    // performs a different random roll on the same turn.
+    planCombat3Skill(e);
+  }
   return e;
 };
 
@@ -56,12 +74,17 @@ const originalTurn=proto.performEnemyTurn;
 proto.performEnemyTurn=function(enemy){
   if(enemy?.boss)return originalTurn.call(this,enemy);
   if(enemy?.dead)return null;
-  if(enemy.frozenTurns>0)return originalTurn.call(this,enemy);
+  if(enemy.frozenTurns>0){const result=originalTurn.call(this,enemy);planCombat3Skill(enemy);return result;}
   tickBuffs(enemy);
   const skill=enemy.combat3Skill;
-  if(skill&&enemy.combat3SkillCd<=0){
+  let result=null;
+  if(skill&&enemy.combat3SkillCd<=0&&enemy.combat3WillUseSkill){
     const healReady=skill.kind!=='healAlly'||!!lowestInjured(this);
-    if(healReady&&Math.random()<(skill.chance||0)){const r=performSkill(this,enemy,skill);if(r)return r;}
+    if(healReady)result=performSkill(this,enemy,skill);
   }
-  return originalTurn.call(this,enemy);
+  if(!result)result=originalTurn.call(this,enemy);
+  planCombat3Skill(enemy);
+  return result;
 };
+
+export { planCombat3Skill };

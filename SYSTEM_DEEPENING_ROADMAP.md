@@ -1,352 +1,223 @@
 # System Deepening Pack — Implementation Roadmap
 
-> Status: **CURRENT**
+> **Status: CURRENT — Pack A ✅ COMPLETE / Pack B NEXT**
 >
-> Purpose: deepen existing Blade Vale systems before Content Pack II. This is not a new numbered Phase and should not create a new parallel progression ladder.
+> Purpose: deepen existing Blade Vale systems before Content Pack II. This is not a new numbered Phase and must not create a parallel progression ladder.
 >
-> Source-of-truth parent: `ROADMAP.md`.
+> Parent source of truth: `ROADMAP.md`.
 
-## Overall goals
+## Current handoff
 
-1. Make existing choices matter more.
-2. Make systems reinforce each other.
-3. Make revisiting content meaningful.
-4. Make discoveries feel diegetic rather than wiki-like.
-5. Preserve compact mobile UX and save compatibility.
-6. Prepare stronger foundations for Content Pack II.
+**Completed:** SD-1 Unique/Relic Build Identity, SD-2 Job Synergy Deepening, SD-8 Enemy Intent.
 
-## Non-goals
+**Next implementation batch:** Pack B — SD-3 Companion Individuality → SD-5 Codex Field Guide → SD-11 Rare Encounter Presentation.
+
+**After Pack B:** Pack C — SD-6 automatic Rumor Notebook → SD-7 Region Mastery Benefits → SD-10 Treasure Maps / Clue Items → SD-9 Secret Chains.
+
+**Deferred:** SD-4 Boss conditional Hidden Drops. Do not implement unless explicitly re-enabled.
+
+## Permanent rules
 
 - no new level cap
-- no new daily/weekly rotations
+- no daily/weekly rotating challenges
 - no new mandatory currency
-- no parallel Ranch/Codex/Adventure screens when existing surfaces can host the feature
-- no Boss conditional Hidden Drop objectives in this pack
-- no giant stat-inflation-only progression system
+- reuse existing Ranch / Codex / Adventure / World / Equipment / Job surfaces
+- no new Home button when an existing grouped destination works
+- no giant stat-inflation-only progression layer
+- preserve old saves through lazy/default-safe data
+- mobile battle commands must remain reachable regardless of enemy count/log length
+- hints should guide without turning the game into an exact-spawn-rate wiki
 
 ---
 
-# Pack A — BUILD / COMBAT
+# Pack A — BUILD / COMBAT ✅ COMPLETE
 
-## SD-1 — Unique / Relic Build Identity
+## SD-1 — Unique / Relic Build Identity ✅
 
-### Problem
+Implemented a reusable lateral identity vocabulary using existing combat concepts rather than another equipment tier.
 
-Loot can become a linear Item Power comparison if rare equipment does not change how the player plays.
+Representative live identities:
 
-### Goal
+- **始祖竜骸刃 — BREAK / 竜骸破断**
+  - stronger during a real depleted Break window
+  - slight neutral-damage tradeoff outside Break
+- **無名王冠 — GUARD / 王墓の反勢**
+  - strengthens the next normal attack after Guard
+- **反転目録・未刊 — ANALYSIS / 既知反転**
+  - stronger against analyzed enemies
+  - slight tradeoff against unknown targets
 
-A strong Unique/Relic should answer:
+Implementation:
+- shared data vocabulary in `js/data/systemDeepeningPackA.js`
+- runtime uses existing Equipment / BattleEngine / Codex state
+- no new save root or equipment rarity
+- compact BUILD identity is surfaced inside the existing Equipment UI
 
-> “What build or tactic does this item encourage?”
+Future Content Pack items should prefer these reusable tags/hooks or deliberately add another reusable identity rather than one-off hard-coded combat branches.
 
-rather than only:
+## SD-2 — Job Synergy Deepening ✅
 
-> “Is its number bigger?”
+Existing Job 3.0 Specialization / MASTER architecture remains authoritative. No second mastery bar was added.
 
-### Design vocabulary
+Representative live links:
 
-Use existing combat concepts where possible:
+- **剣聖 MASTER → BREAK** — extra damage during Break
+- **護剣 MASTER → GUARD** — extra damage on the post-Guard normal attack
+- **秘術師 MASTER → ANALYSIS** — extra damage against analyzed enemies
 
-- Break
-- Guard
-- Analysis
-- element / weakness
-- critical
-- statuses
-- Job resources
-- Companion roles
-- low/high HP
-- phase transitions
+Important behavior:
+- synergy requires the **currently active route to be MASTERed**
+- existing inherited MASTER/Legacy systems remain intact
+- equipment and Job bonuses share the same build vocabulary, so combinations reinforce each other without becoming a new progression layer
 
-### Effect model
+## SD-8 — Enemy Intent ✅
 
-Prefer reusable data-driven concepts such as:
+Combat3 normal-enemy tactical skill rolls are now reserved before the action resolves. The UI reads that same reservation, preventing a misleading “telegraphed skill” followed by an unrelated fresh random roll.
 
-- `trigger`
-- `condition`
-- `effect`
-- `synergyTags`
-- `tradeoff`
-
-Do not hard-code every Unique directly into battle flow if a generic resolver is practical.
-
-### Example identities
-
-- Break weapon: lower neutral output, large Break-window payoff.
-- Guard crown/shield: successful Guard builds temporary offensive momentum.
-- Analysis relic: substantially better against analyzed/known targets, weaker general-purpose performance.
-- Companion-support relic: buffs a specific party role rather than raw player damage.
-
-### Acceptance
-
-- representative Unique/Relic families have distinct build identity
-- at least Break / Guard / Analysis are supported as reusable interaction hooks
-- effects do not create obvious universal BiS
-- Item Compare can summarize the identity without becoming a giant card
-- existing saves remain valid
-- tests cover trigger/condition resolution
-
----
-
-## SD-2 — Job Synergy Deepening
-
-### Problem
-
-A mastered Job can become a completed checklist rather than an active build decision.
-
-### Goal
-
-MASTER should deepen identity without adding another Job-level treadmill.
-
-### Direction
-
-Strengthen existing MASTER/passive architecture with lateral synergies:
-
-- weapon family
-- Break timing
-- Guard/protection
-- Analysis/weakness exploitation
-- element/status
-- Companion role
-- Job-specific resource behavior
-
-### Example concepts
-
-- sword-oriented MASTER: Break-window follow-up behavior
-- guardian MASTER: protect/redirect interaction with Companion targeting
-- magic/analysis MASTER: better exploitation of analyzed weaknesses
-- hunter/tracker MASTER: modest rare-ecology utility rather than huge encounter-rate inflation
-
-### Rules
-
-- no new Job currency
-- no second mastery bar
-- Secret Jobs remain lateral/specialized, not strict replacements
-- synergies should combine naturally with SD-1 equipment identities
-
-### Acceptance
-
-- MASTER choice can affect build/tactics after mastery
-- several clear equipment + Job + Companion combinations emerge
-- no Job becomes mandatory for general progression
-- existing Job Codex/readability remains manageable
-
----
-
-## SD-8 — Enemy Intent
-
-### Problem
-
-When enemy actions are too opaque, optimal play trends toward repeatedly pressing attack/heal rather than reading combat state.
-
-### Goal
-
-Give the player enough pre-action information to make a decision without exposing exact simulation data.
-
-### Intent vocabulary
-
-Core semantic classes may include:
+Intent vocabulary includes:
 
 - ATTACK
 - GUARD
 - CAST
 - SUPPORT
-- SUMMON
 - DISRUPT
 - DANGER
 
-Normal enemies can use compact text. Bosses can use authored/lore-flavored telegraphs.
+Bosses reuse existing `pendingSpecial`, phase and encounter information for authored/tactical warnings.
 
-### Examples
+UI contract:
+- one compact intent line **inside** each existing enemy card
+- no separate intent panel
+- ellipsis/short-height compaction
+- existing bounded enemy-list scroller remains authoritative
+- sticky command grid / 44px tap target / attack-button regression contract remains unchanged
 
-Normal:
-- “強力な単体攻撃を狙っている”
-- “防御態勢へ移ろうとしている”
-- “魔力を集中している”
-- “仲間を呼ぼうとしている”
-
-Boss:
-- “王墓の剣が赤く染まる。”
-- “観測眼がこちらの動きを記録している。”
-
-### Important UX rule
-
-Intent must not expand enemy cards so far that combat controls become inaccessible.
-
-Use:
-- compact one-line intent
-- icons/tags only as supplemental identity
-- bounded enemy list
-- existing sticky command region
-
-### Acceptance
-
-- player can anticipate major tactical categories
-- exact damage/AI internals remain hidden
-- Boss telegraphs retain authored flavor
-- permanent many-enemies/mobile regression test continues to pass
+Validation on initial Pack A head:
+- Blade Vale Tests #529 ✅
+- Phase 8 Validation #120 ✅
 
 ---
 
-# Pack B — COLLECTION
+# Pack B — COLLECTION ⏭ NEXT
 
 ## SD-3 — Companion Individuality
 
-### Problem
-
-Species/roles are meaningful, but two members of the same species can feel interchangeable.
-
 ### Goal
 
-Create attachment and collection interest without introducing exhausting IV breeding.
+Make two members of the same species feel slightly different without creating an IV-grind where normal recruits are inferior or disposable.
 
-### Layer 1: Personality
+### Layer 1 — Personality
 
-Small visible tradeoffs, e.g.:
+Small, visible tradeoffs. Candidate vocabulary:
 
-- 獰猛: ATK↑ / DEF↓
-- 慎重: DEF↑ / SPD↓
-- 機敏: SPD↑ / HP↓
-- 献身: support/heal↑ / personal damage↓
+- **獰猛** — ATK↑ / DEF↓
+- **慎重** — DEF↑ / SPD↓
+- **機敏** — SPD↑ / HP↓
+- **献身** — support/heal↑ / personal damage↓
 
-Exact numbers should remain modest.
+Exact values should remain modest.
 
-### Layer 2: Rare Trait
+### Layer 2 — Rare Trait
 
-Low-frequency modest traits such as:
+Low-frequency traits with modest effects, e.g. Break affinity, Fast Learner, Treasure Sense, Iron Skin, Arcane Sense.
 
-- Break affinity
-- fast learner
-- treasure sense
-- iron skin
-- arcane sense
+A Rare Trait should be exciting but never required for viability.
 
-Rare Trait must be exciting but not required for viability.
+### Layer 3 — Epithet
 
-### Layer 3: Epithet
+Flavor/prestige identity such as rare epithets or provenance. It may be cosmetic only.
 
-Mostly prestige/flavor identity:
+### Requirements
 
-- uncommon epithets
-- rare encounter/breeding provenance
-- no mandatory stat benefit required
-
-### Guardrail
-
-A normal individual should remain completely usable. The system must not encourage hundreds of captures just to obtain acceptable stats.
-
-### Acceptance
-
-- individuality is visible in compact Ranch details
-- search/filter remains usable at collection scale
-- old companions lazily receive safe defaults
-- breeding/recruitment still works without migration breakage
+- old companions receive safe defaults lazily
+- recruitment/breeding save compatibility remains intact
+- compact Ranch UI remains usable at collection scale
+- normal individuals remain fully viable
+- no hundreds-of-captures optimization loop
 
 ---
 
 ## SD-5 — Codex Field Guide
 
-### Problem
-
-A collection-only Codex has less gameplay value after an entry is seen.
-
 ### Goal
 
-Turn the existing Codex into a knowledge progression / in-game field guide.
+Turn the existing Monster Codex from a static collection list into an in-game knowledge progression system.
 
-### Knowledge progression
+Recommended semantic ladder:
 
-Exact thresholds may vary, but the model is:
-
-1. **Seen** — identity, unknown fields
-2. **Observed** — rough HP/behavior class
+1. **Seen** — identity; most information unknown
+2. **Observed** — rough HP / behavior category
 3. **Studied** — weakness / resistance / Break tendency
-4. **Known** — ordinary drop/habitat data
-5. **Mastered** — rare ecological clue or advanced hint
+4. **Known** — ordinary drops / habitat information
+5. **Mastered** — rare ecological clue / advanced hint
 
-Rare enemies can remain hidden until actually observed.
-
-### Important rule
-
-The Codex should provide useful information but should not simply print exact secret spawn formulas when discovery is intended to be mysterious.
+Exact kill thresholds may vary by enemy class.
 
 ### Cross-system links
 
-Codex knowledge may connect to:
-
+Codex knowledge should be able to inform:
 - Rumor Notebook
 - Region Mastery
 - Rare Hunt
 - Treasure Maps
 - Companion recruitment/ecology
 
-### Acceptance
+### Rules
 
-- kill/seen history drives knowledge reveal
-- fields update automatically
-- compact summary + progressive detail
-- no separate “advanced Codex” screen
+- rare enemies may remain completely hidden until first observation
+- fields update automatically from existing seen/kill/analyzed data
+- do not print exact secret spawn formulas where mystery is intended
+- no second “advanced Codex” screen
 
 ---
 
 ## SD-11 — Rare Encounter Presentation
 
-### Problem
-
-A 0.2% encounter does not feel special if it appears exactly like an ordinary wave.
-
 ### Goal
 
-Make rare discovery emotionally legible through text presentation.
+A 0.2% encounter should feel meaningfully different from an ordinary wave.
 
-### Presentation pattern
+Preferred pattern: short ecology-flavored text, then a clear `RARE ENCOUNTER` identity. First observation should feed Codex and, later, the Rumor Notebook.
 
-Short, skippable/fast text sequence:
+Example tone:
 
-> 周囲の音が消えた。
->
-> 魔物たちが姿を消す。
->
-> 何かがこちらを見ている。
->
+> 周囲の音が消えた。  
+> 魔物たちが姿を消す。  
+> 何かがこちらを見ている。  
 > **RARE ENCOUNTER**
 
-Not every species needs the same wording. Prefer ecology-specific authored variants where practical.
+### Requirements
 
-### On discovery/result
+- presentation is short and fast on repeat encounters
+- different ecologies may use authored variants
+- existing rewards/drop rules remain authoritative
+- presentation cannot expand battle layout enough to threaten command reachability
 
-- clearly mark first observation
-- feed the Codex
-- progress matching Rumor Notebook entry
-- preserve normal reward systems
+### Pack B completion gate
 
-### Acceptance
-
-- rare encounter feels distinct
-- presentation remains fast on repeated encounters
-- enemy-list height/commands remain safe
+Pack B is complete when:
+- companion individuality works end-to-end with old-save defaults
+- normal companions remain viable
+- Codex knowledge progresses automatically
+- rare encounters have distinct first/repeat presentation
+- Codex/Ranch remain compact on mobile
+- CI and permanent battle-command regression pass
 
 ---
 
 # Pack C — EXPLORATION INTELLIGENCE
 
-## SD-6 — Rumor Notebook
+## SD-6 — Rumor Notebook — CENTRAL FEATURE
 
-### Role
+The player should automatically accumulate useful rumors without maintaining external notes.
 
-This is the central navigation/knowledge feature of Pack C.
+### Persistence
 
-The player should naturally accumulate rumors without maintaining external notes.
+Prefer extending/reusing existing World 2 discovery/rumor records or a tightly attached lazy subrecord. Avoid a second unrelated lore database.
 
-### Persistence model
-
-Prefer extending/reusing existing World 2 discovery/rumor records or a tightly attached lazy subrecord. Avoid an unrelated top-level lore database if possible.
-
-A rumor needs at minimum:
-
+A rumor should have:
 - stable id
-- title / short rumor text
+- title / diegetic rumor text
 - source/provenance when useful
 - state
 - optional related region/site once known
@@ -355,190 +226,117 @@ A rumor needs at minimum:
 
 ### States
 
-Recommended semantic states:
-
 - `unresolved`
 - `tracking` / `clued`
 - `resolved`
 
-The exact internal values can follow existing conventions.
-
 ### Automatic sources
-
-Rumors can be created/updated by:
 
 - World Events
 - NPC/event outcomes
 - Lore Fragments
 - region discoveries
-- Secret Realm clears/discovery
-- rare encounter discovery
+- Secret Realm discovery/clear
+- rare encounter observation
 - Codex knowledge thresholds
-- Treasure Map/clue item acquisition
+- Treasure Map / clue acquisition
 
 ### UI
 
-Do not add a Home button.
-
-Place a compact entry inside an existing Adventure/World/Codex-adjacent surface, e.g.:
+No Home button. Use an existing Adventure / World / Codex-adjacent surface with a compact entry such as:
 
 `RUMORS 12/38`
 
-Notebook presentation:
-
+Notebook filters:
 - 未解決
 - 追跡中
 - 解決済み
 
-Use compact rows → detail disclosure.
+Rows stay compact; details use progressive disclosure.
 
 ### Writing standard
 
-Rumors are diegetic clues.
-
 Bad:
-- “黒月神殿3Fに0.3%でECLIPSEが出る”
+> 黒月神殿3Fに0.3%でECLIPSEが出る。
 
 Good:
-- “月の光が最も弱い場所で、白い影を見た者がいる。”
+> 月の光が最も弱い場所で、白い影を見た者がいる。
 
-### Resolution
+Once genuinely discovered, the notebook may reveal the real identity and resolution.
 
-Once the player genuinely discovers the subject, the notebook may reveal the actual identity and record how the rumor was resolved.
-
-### Acceptance
-
-- rumors automatically accumulate
-- state advances through gameplay
-- old Phase 12 rumors appear in the notebook where compatible
-- no manual note-taking required
-- unresolved secrets are not spoiled
-- no new Home route
+Existing compatible Phase12 rumors must bridge automatically into the notebook.
 
 ---
 
 ## SD-7 — Region Mastery Benefits
 
-### Goal
+Region Mastery should represent local knowledge rather than only a checklist.
 
-Make region mastery feel like local knowledge rather than only a checklist.
+Candidate small benefits:
+- tiny **relative** rare encounter bonus
+- additional wording for unresolved rumor hints
+- modest local recruitment knowledge bonus
+- slightly clearer treasure/secret clues
 
-### Small-benefit candidates
+Example: +5% relative means 1.00% → ~1.05%, **not** 6.00%.
 
-- tiny relative rare encounter bonus
-- additional Rumor Notebook clue wording
-- modest local recruitment bonus
-- stronger treasure/secret clue precision
-
-### Balance rule
-
-Benefits are convenience/knowledge rewards. They should not make region mastery mandatory before engaging with content.
-
-Example: a +5% **relative** rare modifier means 1.00% → ~1.05%, not 6.00%.
-
-### Acceptance
-
-- existing mastery completion is not revoked
-- benefits are small/readable
-- no new mastery currency/level ladder
+Existing mastery completion cannot be revoked and unfinished mastery must not feel punitive.
 
 ---
 
 ## SD-10 — Treasure Maps / Clue Items
 
-### Goal
+Textual items become exploration gameplay:
+- torn maps
+- coordinate fragments
+- damaged survey notes
+- encoded routes
+- symbolic directions
 
-Turn item text into exploration gameplay.
-
-### Types
-
-- torn map
-- coordinate fragment
-- damaged survey note
-- encoded route
-- symbolic drawing/description
-
-### Example
-
+Example:
 > 黒い塔の西。三本の骨柱が交わる場所。
 
-The game can know the target precisely; the player-facing text should remain interpretive.
+The game may know the exact destination; player-facing text should remain interpretive.
 
-### Outcomes
+Rewards should reuse existing systems where practical: Gold/material/equipment/Lore/Rumor/Companion-related rewards/another clue/Secret discovery.
 
-Use existing rewards where possible:
-
-- Gold/materials
-- equipment
-- Lore
-- rumor progression
-- companion-related reward
-- another clue/map
-- secret discovery
-
-### Chains
-
-Multi-step map chains are allowed when each step gives enough information to continue.
-
-### Acceptance
-
-- clue item automatically connects to Rumor Notebook/Adventure when appropriate
-- no map currency
-- no mandatory external note-taking
-- existing exploration route handles destinations
+No treasure-map currency.
 
 ---
 
 ## SD-9 — Secret Chains
 
-### Goal
+Connect discoveries across existing locations to create meaningful revisits.
 
-Make discoveries connect across locations and create reasons to revisit older optional areas.
+Representative architecture target:
 
-### Canonical pattern
+**古王墓の石板 → 反転図書館で解読 → 竜骸峡谷の座標 → Hidden route / encounter / secret**
 
-Example only:
+Requirements:
+- each step changes existing exploration/discovery state
+- clues are understandable in-game
+- no arbitrary checklist chain
+- never mandatory for main-story completion
+- may deepen The Veil / outside-observer mystery without prematurely answering the central reveal
 
-**古王墓の石板**
-→ **反転図書館で解読**
-→ **竜骸峡谷の座標**
-→ **Hidden route / encounter / secret**
-
-### Design requirements
-
-- each step changes an existing exploration/discovery state
-- clues should be understandable in-game
-- avoid pure “visit every dungeon in arbitrary order” checklists
-- main-story completion cannot depend on long secret chains
-- secret chains may deepen The Veil/external-observer mystery without answering the main reveal early
-
-### Acceptance
-
-- at least one representative multi-location chain validates the architecture before Content Pack II
-- existing dungeons gain revisiting value
-- Rumor Notebook shows useful progress without giving away the next exact action
+At least one representative multi-location chain must work end-to-end before Content Pack II begins.
 
 ---
 
-# Deferred — SD-4 Boss Conditional Hidden Drops
+# SD-4 — DEFERRED ⛔
 
-Owner decision: **do not implement now**.
-
-Potential future home: Boss Deepening Pack.
+Boss conditional Hidden Drop objectives are deliberately postponed.
 
 Until explicitly re-enabled:
-
-- do not add timed-kill Hidden Drop requirements
-- do not add no-death/Break-finisher special drops
+- no timed-kill Hidden Drop requirements
+- no no-death / Break-finisher special drop conditions
 - do not hide equivalent mechanics inside Content Pack II
 
-Existing ordinary/rare/hidden loot behavior is unaffected.
+Existing ordinary/rare/hidden loot behavior remains unchanged.
 
 ---
 
-# Cross-pack gameplay loop target
-
-The finished System Deepening Pack should enable loops like:
+# Target cross-system loop
 
 ```text
 World Event / Lore
@@ -559,77 +357,41 @@ Try harder content / revisit another lead
       ↺
 ```
 
-This loop is the foundation for Content Pack II.
+This loop becomes the foundation for Content Pack II.
 
----
+# Implementation order
 
-# Implementation batching
+```text
+Pack A ✅
+  SD-1 → SD-2 → SD-8
+      ↓
+Pack B ← NEXT
+  SD-3 → SD-5 → SD-11
+      ↓
+Pack C
+  SD-6 → SD-7 → SD-10 → SD-9
+      ↓
+SYSTEM DEEPENING COMPLETE
+      ↓
+CONTENT PACK II
+```
 
-Preferred PR batches:
+Large coherent batches are preferred when shared architecture makes them safer.
 
-## Batch A1
-- SD-1 reusable Unique/Relic interaction hooks
-- representative converted items
-- tests
+# Final completion gate
 
-## Batch A2
-- SD-2 Job synergies
-- integrate with A1 tags/hooks
-- tests
-
-## Batch A3
-- SD-8 Enemy Intent
-- normal + Boss telegraphs
-- permanent battle-command mobile regression
-
-Then merge Pack A status.
-
-## Batch B1
-- SD-3 Companion individuality data/runtime/save defaults
-
-## Batch B2
-- SD-5 Codex knowledge ladder
-- SD-11 Rare encounter presentation
-
-Then merge Pack B status.
-
-## Batch C1
-- SD-6 Rumor Notebook data/runtime/UI
-- migrate/bridge existing Phase 12 rumors
-
-## Batch C2
-- SD-7 Region Mastery benefits
-- SD-10 Treasure Map/clue framework
-
-## Batch C3
-- SD-9 representative Secret Chain
-- final cross-system integration/audit
-
-Then mark System Deepening complete and begin Content Pack II.
-
-Large batches may be combined when the shared architecture makes that safer.
-
----
-
-# Completion gate
-
-System Deepening Pack is complete when:
-
-- Unique/Relic identities support real build decisions
-- MASTER Jobs create lateral tactical synergies
-- enemies communicate actionable intent
-- companions have light, non-punishing individuality
+System Deepening is complete when:
+- Unique/Relic identities create real build choices
+- MASTER Jobs provide lateral tactical synergies
+- Enemy Intent is actionable and truthful
+- companions have light non-punishing individuality
 - Codex works as a field guide
 - rare encounters feel special
-- Rumor Notebook automatically accumulates and resolves clues
-- Region Mastery grants small local knowledge/convenience benefits
-- Treasure Maps/clue items use textual exploration
+- Rumor Notebook automatically accumulates/resolves clues
+- Region Mastery gives small local knowledge/convenience benefits
+- Treasure Maps use textual exploration
 - at least one multi-location Secret Chain works end-to-end
-- no SD-4 conditional Boss Hidden Drop feature was added
-- no rotating challenge feature was added
-- mobile battle commands remain reachable under maximum enemy pressure
-- save compatibility and CI pass
-
-## Handoff line
-
-**Current target: implement Pack A first (SD-1 → SD-2 → SD-8). After that Pack B (SD-3 → SD-5 → SD-11), then Pack C centered on automatic Rumor Notebook (SD-6 → SD-7 → SD-10 → SD-9). SD-4 is deferred.**
+- SD-4 remains absent
+- rotating challenges remain absent
+- battle commands remain reachable under maximum enemy pressure
+- save compatibility and both CI workflows pass
