@@ -1,5 +1,5 @@
 /* ============================================================
-   Phase 9.1 — Regional Identity
+   Phase 9.1 / Story Expansion I — Regional Identity
    BGMなし。地域ごとの戦闘傾向・推奨対策・探索イベントをデータ化する。
    ============================================================ */
 
@@ -52,6 +52,46 @@ export const PHASE9_REGION_PROFILES = Object.freeze({
       {id:'seventh_key',name:'七鍵封鎖端末',kind:'lore',rewardTag:'fusion'},
       {id:'world_layer',name:'失われた世界層',kind:'loot',rewardTag:'dark'},
       {id:'eighth_key',name:'存在しない第八鍵',kind:'choice',rewardTag:'fate'},
+    ],
+  },
+  ch26:{
+    id:'zero_external_link',name:'零外接続域',theme:'例外接続と封鎖',hazards:['phase','seal'],favored:['analysis','break','guard'],resisted:['light','dark'],
+    enemyBias:{fast:'中',tank:'高',status:'封鎖'},lootFocus:['analysis','guard','fate'],
+    fieldRule:{id:'exception_route',name:'例外経路',desc:'規格外の敵行動が混ざる。意図を読み、BreakとGuardを切り替えて接続を安定させる地域。'},
+    events:[
+      {id:'missing_origin',name:'消失した接続元',kind:'lore',rewardTag:'analysis'},
+      {id:'unregistered_key',name:'未登録鍵路',kind:'loot',rewardTag:'fate'},
+      {id:'reverse_relay',name:'逆向き中継器',kind:'choice',rewardTag:'guard'},
+    ],
+  },
+  ch27:{
+    id:'far_signal_echo',name:'遠信残響帯',theme:'信号同期と高速走査',hazards:['shock','scan'],favored:['mark','analysis','evade'],resisted:['lightning'],
+    enemyBias:{fast:'高',tank:'中',status:'同期'},lootFocus:['speed','analysis','mark'],
+    fieldRule:{id:'signal_lock',name:'信号同期',desc:'高速行動が同周期に揃う。Markや解析で同期点を見つけると連続行動を崩せる地域。'},
+    events:[
+      {id:'ordered_lights',name:'整列する遠方光',kind:'lore',rewardTag:'insight'},
+      {id:'thin_luminous_plate',name:'薄い発光片',kind:'loot',rewardTag:'light'},
+      {id:'metallic_pulse',name:'周期金属振動',kind:'choice',rewardTag:'evade'},
+    ],
+  },
+  ch28:{
+    id:'machine_audit_layer',name:'機界監査層',theme:'権限照合と被観測',hazards:['seal','analysis'],favored:['analysis','fusion','break'],resisted:['ice','light'],
+    enemyBias:{fast:'中',tank:'高',status:'権限拒絶'},lootFocus:['analysis','fusion','spell'],
+    fieldRule:{id:'audit_protocol',name:'監査手順',desc:'同じ行動を繰り返すと監査対象として対策される。攻撃軸を切り替えて照合を外す地域。'},
+    events:[
+      {id:'mother_audit',name:'母機監査記録',kind:'lore',rewardTag:'analysis'},
+      {id:'architect_signature',name:'設計者外部署名',kind:'loot',rewardTag:'fusion'},
+      {id:'observer_target',name:'観測先照合器',kind:'choice',rewardTag:'insight'},
+    ],
+  },
+  ch29:{
+    id:'reverse_observation_gate',name:'逆観測門',theme:'二重観測と焦点反転',hazards:['phase','focus'],favored:['analysis','reaction','fate'],resisted:['dark','wind'],
+    enemyBias:{fast:'高',tank:'高',status:'焦点反転'},lootFocus:['reaction','fate','speed'],
+    fieldRule:{id:'reverse_focus',name:'逆焦点',desc:'こちらの狙いと敵の観測が重なるほど圧力が増す。解析・反応・行動順の管理が重要な地域。'},
+    events:[
+      {id:'eighth_socket',name:'第八接続室',kind:'lore',rewardTag:'fate'},
+      {id:'asymmetric_keyhole',name:'非対称鍵孔',kind:'loot',rewardTag:'dark'},
+      {id:'returned_focus',name:'返された焦点',kind:'choice',rewardTag:'analysis'},
     ],
   },
 });
