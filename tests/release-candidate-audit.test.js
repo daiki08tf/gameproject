@@ -91,12 +91,16 @@ test('RC: recruitable species have unique enemy links, sane progression and reso
   }
 });
 
-test('RC: feature freeze and mobile command safety remain release gates',()=>{
+test('RC: system-sprawl guard and mobile command safety remain release gates',()=>{
   const roadmap=fs.readFileSync(new URL('../ROADMAP.md',import.meta.url),'utf8');
   const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
   const css=fs.readFileSync(new URL('../css/finalIntegration.css',import.meta.url),'utf8');
   const battleTest=fs.readFileSync(new URL('./phase14-mobile-command-regression.test.js',import.meta.url),'utf8');
-  assert.match(roadmap,/feature freeze/i);
+  assert.match(roadmap,/System Deepening Pack/i);
+  assert.match(roadmap,/Do not add a new currency merely to separate a content pack/i);
+  assert.match(roadmap,/Avoid new Home buttons/i);
+  assert.match(roadmap,/Phase 13\.4 Rotating Challenges remains intentionally omitted/i);
+  assert.match(roadmap,/systems talking to each other/i);
   assert.doesNotMatch(html,/goPhase1[5-9]Btn|phase1[5-9]Screen/);
   assert.match(css,/\.tb-enemy-list\{[^}]*overflow-y:auto/s);
   assert.match(css,/\.tb-command-grid\{[^}]*position:sticky/s);
