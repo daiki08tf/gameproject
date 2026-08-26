@@ -3,6 +3,7 @@
  * no rewards, progression gates, combat values or save fields are changed.
  */
 import { ENDGAME_STORY_MEANINGS } from './storyCanon.js';
+import { modernWorldTeaseForStage } from './storyModernWorldTease.js';
 
 export const WORLD_MYSTERY_SYSTEMS=Object.freeze({
   abyss:Object.freeze({label:'深淵',meaning:ENDGAME_STORY_MEANINGS.abyss,clue:'ここは地下ではない。壊れたThe Veilに、複数世界の残滓が折り重なっている。'}),
@@ -33,6 +34,11 @@ export function abyssMysteryClue(depth=1){
 }
 
 function machineWorldMysteryClue(stage){
+  const teaser=modernWorldTeaseForStage(stage);
+  if(teaser){
+    if(stage?.machineWorldSecretBoss)return `外部観測層は機界にも観測番号を付けていた。管理者もまた観測される側だった。${teaser.clue}`;
+    return teaser.clue;
+  }
   const district=Math.max(1,Math.floor(Number(stage?.machineWorldDistrict)||1));
   if(stage?.machineWorldSecretBoss||district>=3)return '外部観測層の記録は、機界そのものにも観測番号を付けている。管理者もまた、誰かに観測される側だった。';
   if(district>=2)return '管理記録に「実験層」という語が現れる。人界だけでなく複数世界が比較対象として並んでいる。';
@@ -45,7 +51,10 @@ export function worldMysteryClueForStage(stage){
   if(stage.machineWorld)return machineWorldMysteryClue(stage);
   if(stage.phase9EighthKey)return '第八鍵は七鍵の延長ではない。既知のThe Veil管理系から外れた座標へ接続している。';
   if(stage.keyDungeon){
-    if(stage.world2KeyType==='anomaly')return WORLD_MYSTERY_SYSTEMS.anomaly.clue;
+    if(stage.world2KeyType==='anomaly'){
+      const teaser=modernWorldTeaseForStage(stage);
+      return teaser?`${WORLD_MYSTERY_SYSTEMS.anomaly.clue}${teaser.clue}`:WORLD_MYSTERY_SYSTEMS.anomaly.clue;
+    }
     return WORLD_MYSTERY_SYSTEMS.keyDungeon.clue;
   }
   if(stage.secretRealm)return WORLD_MYSTERY_SYSTEMS.secretRealm.clue;
