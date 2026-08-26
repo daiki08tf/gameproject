@@ -17,7 +17,7 @@ import './uiFoundationBootstrap.js';
 import './equipmentCompactUi.js';
 import './monsterRanchCompactUi.js';
 import './endgameGuidanceUi.js';
-import './finalIntegrationUi.js';
+import { enhanceHome } from './finalIntegrationUi.js';
 import { applyHomePixelIcons } from '../ui/pixelIcons.js';
 
 const HOME_HUBS = [
@@ -81,7 +81,7 @@ function closeAllHubs(menu, exceptId = null) {
 function organizeHomeMenu() {
   ensureHomeStyles();
   const menu = document.querySelector('#homeScreen .home-menu');
-  if (!menu || menu.dataset.uiFoundation3 === 'true') return;
+  if (!menu || menu.dataset.uiFoundation3 === 'true') { enhanceHome(); return; }
 
   const allCards = [...menu.querySelectorAll('.menu-card')];
   const buttons = new Map(allCards.map((btn) => [btn.id, btn]));
@@ -137,6 +137,7 @@ function organizeHomeMenu() {
   menu.append(hubGrid, panels);
   menu.dataset.uiFoundation3 = 'true';
   applyHomePixelIcons();
+  enhanceHome();
 }
 
 organizeHomeMenu();
