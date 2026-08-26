@@ -32,16 +32,16 @@ test('story beats use opening, midpoint discovery and boss closure only',()=>{
   assert.equal(boss.clear,chapter.clear);
 });
 
-test('runtime attaches story only to Ch1-15 main stages and keeps branch stages clean',()=>{
+test('runtime attaches journey story to Ch1-20 main stages and keeps branches/future chapters clean',()=>{
   attachCoreStory();
-  for(const chapter of CHAPTERS.filter(ch=>ch.num<=15)){
+  for(const chapter of CHAPTERS.filter(ch=>ch.num<=20)){
     const main=chapter.stages.filter(s=>!s.branch&&!s.bounty);
     assert.ok(main[0].story11?.opening,`chapter ${chapter.num} opening not attached`);
     assert.ok(main.find(s=>s.boss)?.story11?.bossIntro,`chapter ${chapter.num} boss intro not attached`);
     assert.ok(main.find(s=>s.boss)?.story11?.clear,`chapter ${chapter.num} clear not attached`);
     for(const branch of chapter.stages.filter(s=>s.branch||s.bounty))assert.equal(branch.story11,undefined);
   }
-  for(const chapter of CHAPTERS.filter(ch=>ch.num>15))for(const stage of chapter.stages)assert.equal(stage.story11,undefined);
+  for(const chapter of CHAPTERS.filter(ch=>ch.num>20))for(const stage of chapter.stages)assert.equal(stage.story11,undefined);
 });
 
 test('battle story helpers are compact and clear text appears only on victory',()=>{
