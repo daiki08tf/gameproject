@@ -8,11 +8,11 @@
 - **12.4 Enemy Ecology Expansion — ✅ Complete**
 - **12.5 Rare Spawn Expansion — ✅ Complete**
 - **12.6 Ultra Rare Loot / Hidden Drops — ✅ Complete**
-- **12.7 Boss Expansion — NEXT**
-- **12.8 Lore Fragments / World Traces — planned**
-- **12.9 Rumors — planned**
-- **12.10 World Event Integration — planned**
-- **12.11 Region Mastery Expansion — planned**
+- **12.7 Boss Expansion — ✅ Complete**
+- **12.8 Lore Fragments / World Traces — ✅ Complete**
+- **12.9 Rumors — ✅ Complete**
+- **12.10 World Event Integration — ✅ Complete**
+- **12.11 Region Mastery Expansion — NEXT**
 - **12.12 Codex Expansion — planned**
 - **12.13 Secret / Apex Dungeons — planned**
 - **12.14 Horizontal UI Integration — planned**
@@ -78,8 +78,30 @@ Each rare spawn owns a hidden fixed-Unique chase drop. No new equipment rarity i
 - **反転目録・未刊**
 - **黒月遮断核**
 
-The five dungeons also contain compact world traces, but none states the main-story answer or turns optional content into a progression gate.
+## 12.7 — Boss Expansion ✅
 
-## Next — 12.7 Boss Expansion
+The five horizontal dungeon bosses now use full Combat 3 signature encounter profiles instead of behaving like large HP bars. Each has escorts, danger tags, explicit counterplay and three or more phase transitions with shrinking Break windows. **黒月神・ノクティル** uses a four-phase apex profile.
 
-Expand horizontal Boss variety across existing optional content. Prefer signature mechanics, phase transitions, escorts, Break-window changes and counterplay over raw HP inflation. Reuse the Combat 3/Boss Encounter vocabulary and keep all rewards inside existing loot systems.
+## 12.8 — Lore Fragments / World Traces ✅
+
+Each horizontal dungeon carries three compact evidence fragments (15 total). Clearing the real dungeon records its trace into the existing World 2 discovery ledger. The traces deepen questions around observation sectors, overlapping ecologies, boundary structures, pre-observation records and structured outside signals without giving the main-story answer.
+
+## 12.9 — Rumors ✅
+
+Five rumor bridges point players toward the horizontal dungeons using the existing discovery ledger:
+
+- **名を持たない王** → 古王墓
+- **霧の向こうの白い角** → 幻獣の森
+- **山より大きな骨** → 竜骸峡谷
+- **天井へ落ちる本** → 反転図書館
+- **月のない夜の月影** → 黒月神殿
+
+No separate rumor screen is introduced.
+
+## 12.10 — World Event Integration ✅
+
+Existing World Event outcomes now feed the rumor layer directly. Choices such as discovering an old patrol mark, following the giant beast trail, recording a meteor bearing, learning Border Company information or detecting anomaly signals can create the matching rumor in the same World 2 discovery ledger. Horizontal dungeon clears feed world traces back into that ledger, creating a loop of **event → rumor → exploration → evidence** without a new save root, menu or currency.
+
+## Next — 12.11 Region Mastery Expansion
+
+Extend existing regional completion so horizontal side content adds optional mastery depth without invalidating already-earned regional mastery. Follow with Codex coverage, apex content and final compact UI integration as one finishing batch.
