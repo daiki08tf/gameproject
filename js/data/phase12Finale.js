@@ -21,7 +21,7 @@ export const PHASE12_CODEX_GROUPS=Object.freeze([
 export const PHASE12_APEX={
   site:{
     id:'convergence_observatory',hiddenName:'？？？？？？',discoveredName:'五つの座標が重なる観測孔',realmName:'収束観測界',
-    discoverDepth:3000,clueDepth:3000,fragmentSources:[3000,3000,3000],fragmentsRequired:3,
+    discoverDepth:2997,clueDepth:2998,fragmentSources:[2998,2999,3000],fragmentsRequired:3,
     inspectText:['五つの異界で得た座標が、一点だけ同じ空白を指している。','空白は新しい世界ではなく、複数の異界を同時に観測する中継層らしい。','五つの異界主を越えた記録が揃えば、観測孔を逆向きに辿れる。'],
     unlockedText:'五つの異界記録が重なり、観測する側へ向かう逆流路が開いた。',
     realm:{id:'secret-convergence-observatory',recLevel:abyssRecommendedLevel(3000),itemPowerTarget:abyssTargetItemPower(3000),rule:'五異界複合 / 4段階Boss / 短Break窓',rewardHint:'Phase 12横断制覇のApex戦。既存最高IP帯の装備を狙える。'},
