@@ -2,19 +2,41 @@
 
 > **Status:** Active roadmap / source of truth for development toward Blade Vale 3.0.
 >
-> This document supersedes the old feature-addition roadmap. Before starting a large feature, check this roadmap first.
+> **Current:** Official Phase 10 final closure — Raid Boss integration is the remaining material gap.
+>
+> This document supersedes old feature-addition roadmaps. Before starting a large feature, inspect current code/tests and check this roadmap first.
 
 ## Goal
 
-Blade Vale already has a large foundation: 15 chapters, text-command combat, Character Lv 99,999, Jobs, Equipment/Affixes, Rune, Companions/Monster Ranch, Codex, Inheritance, Awakening, Artifact/Relic, Abyss, Bounty, Unique Trials, Secret Jobs, and World/Key-Dungeon systems.
+Blade Vale already has a large foundation: text-command combat, Character Lv99,999, 25 chapter data sets (Ch1–15 core journey, Ch16–20 The Veil, Ch21–25 expansion arc), Jobs, Equipment/Affixes, Rune, Companions/Monster Ranch, Codex, Inheritance, Awakening, Artifact/Relic, Abyss, Bounty, Unique Trials, Secret Jobs, Settlement and World/Key-Dungeon systems.
 
-The main risk is no longer lack of systems. It is **feature sprawl, weak connections between systems, excessive scrolling, overloaded navigation, inconsistent UI, and an endgame that does not yet fully justify Lv 99,999**.
+The main risk is no longer lack of systems. It is **feature sprawl, weak connections between systems, excessive scrolling, overloaded navigation, inconsistent UI, and endgame/story layers that do not yet feel like one coherent game**.
 
-From this point onward the development order is:
+Development order:
 
 **Audit → UI foundation → compact UI → progression → awakening → combat integration → world integration → equipment/job completion → settlement → endgame → story → content expansion → visual identity → final integration.**
 
-Large new systems should not be added merely because they sound interesting. Prefer connecting and finishing existing systems.
+Large new systems should not be added merely because they sound interesting. Prefer connecting, finishing, simplifying or retiring existing systems.
+
+---
+
+## Implementation status snapshot
+
+- Phase 0 System & UI Audit — ✅ foundation complete; continue targeted audits when touching old systems.
+- Phase 1 UI / UX Foundation 3.0 — ✅ foundation implemented; preserve compact navigation rules.
+- Phase 2 Compact UI 3.0 — ✅ core Equipment/Ranch work implemented; continue collection-scale polish.
+- Phase 3 Progression 3.0 — ✅ Lv1–99,999 progression foundation and simulation complete.
+- Phase 4 Awakening 3.0 — ✅ milestone/imprint foundation implemented.
+- Phase 5 Battle Integration 3.0 — ✅ integration foundation complete.
+- Phase 6 World 3.0 — ✅ world/realm/branch foundation complete.
+- Phase 7 Equipment / Loot 3.0 Final — ✅ major foundation complete; QoL extensions remain scheduled.
+- Phase 8 Job 3.0 Final — ✅ major foundation complete.
+- Phase 9 Settlement 2.0 — ✅ foundation/UI/runtime implemented; deeper cross-system links remain scheduled.
+- Phase 10 Endgame 3.0 — 🟡 **Raid Boss integration remains before official closure.** See `PHASE10_FINAL_AUDIT.md`.
+- Phase 11 Adventure / Story 3.0 — ⏭ next major phase after Phase 10 closure.
+- Phases 12–14 — planned.
+
+The completed Phase 10.1–10.7 items in `LEVEL_ROADMAP_99999.md` are the **Lv99,999 progression/endgame tuning sub-roadmap**. They do not replace the capability checklist in Official Phase 10 below.
 
 ---
 
@@ -22,368 +44,200 @@ Large new systems should not be added merely because they sound interesting. Pre
 
 **Priority: Critical**
 
-Freeze non-essential large feature additions and classify every existing system as:
+Classify existing systems as Complete / Partial / Legacy / Disconnected / Retirement candidate and verify:
 
-- Complete
-- Partially complete
-- Legacy / needs redesign
-- Implemented but disconnected
-- Retirement candidate
+**data → state/save → UI → gameplay → rewards → cross-system integration → tests**
 
-Audit Battle, World, Equipment, Job, Companion, Monster Ranch, Rune, Codex, Awakening, Inheritance, Bounty, Unique Trials, Abyss, Secret Jobs, Key Dungeons, save data and progression.
-
-For each system verify the complete route:
-
-**data definition → state/save → UI → gameplay → rewards → cross-system integration → tests**
-
-### UI audit
-
-Record for every screen:
-
-- number of primary actions
-- navigation depth
-- approximate scroll length
-- duplicated information
-- excessively long cards/text
-- missing filtering/sorting/search
-- mobile overflow / controls below the fold
-- features exposed as separate home buttons that should be grouped
+UI audits record primary actions, navigation depth, scroll cost, duplicated information, missing filters/search and mobile overflow.
 
 ### Completion criteria
 
 - Current implementation matrix exists.
-- No major feature is assumed complete only because files exist.
-- UI pain points are documented before further screen growth.
+- Files alone are never treated as proof of completion.
+- UI pain points are documented before screen growth.
 
 ---
 
 ## Phase 1 — UI / UX Foundation 3.0
 
-**Priority: Critical**
+UI is structural, not final polish.
 
-UI is now a structural concern, not final polish. Fix the navigation model before adding more systems.
+### Home / navigation
 
-### 1-A Home redesign
+- Player summary: level, job, HP/MP/EXP, key currencies.
+- One dominant **Adventure** action.
+- Group destinations such as Character / Companion / Base / Collection.
+- Do not grow a vertical list of top-level feature buttons.
+- Common destinations should be reachable within roughly 3 taps.
 
-The home screen must no longer be a growing vertical list of feature buttons.
+### Information hierarchy
 
-Target structure:
+Global rule:
 
-- Player summary: level, job, HP/MP/EXP, key currencies
-- One dominant **Adventure** action
-- A small set of grouped destinations such as Character / Companion / Base / Collection
-- Secondary systems moved behind appropriate groups
-- Major actions visible without long scrolling on a typical phone
+- **Overview/list:** identity + essential numbers + state.
+- **Detail:** full stats/effects/lore/traits/history.
+- Long explanations open on demand.
 
-### 1-B Persistent navigation
-
-Evaluate a compact bottom navigation such as:
-
-**Home / Adventure / Growth / Companions / Menu**
-
-Do not require returning to Home merely to jump between common systems.
-
-### 1-C Information hierarchy
-
-Adopt a global rule:
-
-- **List/card:** identity + essential numbers + state
-- **Detail:** full stats, effects, lore, inheritance, traits, etc.
-- Long explanations are collapsed or opened on demand.
-
-### 1-D Shared UI primitives
-
-Create reusable components/patterns for:
-
-- compact cards
-- tabs
-- segmented filters
-- stat rows
-- rarity badges
-- locked/undiscovered states
-- detail drawers/modals
-- compare views
-- empty states
-
-Avoid each patch inventing a different UI style.
-
-### Completion criteria
-
-- Home does not overflow with top-level feature buttons.
-- Common destinations are reachable within roughly 3 taps.
-- New systems have an obvious place in the information architecture before implementation.
+Reusable UI primitives: compact cards, tabs, segmented filters, stat rows, rarity badges, locked states, detail drawers/modals, compare views and empty states.
 
 ---
 
 ## Phase 2 — Compact UI 3.0
 
-**Priority: Critical**
+Remove “scroll to read everything”.
 
-Remove the current “scroll to read everything” pattern, especially from Equipment and Monster Ranch.
+### Equipment
 
-### 2-A Equipment inventory
+Compact inventory cards show item name, rarity/type, primary power, 1–2 key markers and equipped/favorite/new state. Full Affix/Set/Unique/flavor text belongs in detail.
 
-Inventory cards show only essential information, e.g.:
+Standardize sorting, filters, favorites/lock, new marker, bulk dismantle, auto-lock and **delta-focused item comparison**.
 
-- item name
-- rarity / type
-- primary power/stat
-- 1–2 important markers
-- equipped/favorite/new state
+### Monster Ranch / Companion
 
-Full Affix, Set, Unique and flavor descriptions belong in a detail view.
+Compact cards prioritize species/name, level, rarity, key stats, primary role/trait, Bond and assignment. Genetics/mutations/inheritance/research belong in detail.
 
-Add or standardize:
+Use tabs such as **Companions / Eggs / Breeding / Training / Expeditions / Facilities / Research**.
 
-- rarity/type/stat sorting
-- filters
-- favorites / lock
-- new-item marker
-- bulk dismantle
-- auto-lock rules where appropriate
-- comparison against currently equipped gear
+### Collections
 
-Comparison should emphasize deltas rather than paragraphs.
-
-### 2-B Monster Ranch / Companion lists
-
-A companion card should remain compact even as breeding/genetics systems grow.
-
-List view prioritizes:
-
-- species/name
-- level
-- rarity
-- key stats
-- important trait
-- Bond / current assignment
-
-Move genetics, mutation detail, inherited traits, research data and long descriptions into detail views.
-
-Split Ranch functions into clear tabs or sections:
-
-**Companions / Eggs / Breeding / Training / Expeditions / Facilities / Research**
-
-### 2-C Jobs, Codex and other large collections
-
-Never present dozens/hundreds of entries as one unstructured text wall.
-
-Use category tabs, filters, discovery state, progress indicators and compact cards.
-
-### UI performance targets
-
-- Home primary actions fit approximately within one phone viewport.
-- Large lists remain usable at 100+ items.
-- Avoid routine screens requiring ~5 screens of vertical scrolling.
-- Full descriptions are not permanently expanded in collection lists.
+Jobs, Codex and large collections require categories, filters, discovery states and progress indicators. They must remain usable at 100+ entries.
 
 ---
 
 ## Phase 3 — Progression 3.0
 
-Make Character Lv 1–99,999 one coherent game rather than a numerical cap.
+Make Character Lv1–99,999 one coherent game rather than a numerical cap.
 
-### Level bands
+Current canonical progression is defined by the current progression files and `LEVEL_ROADMAP_99999.md`; do not revive stale level-band assumptions from older docs.
 
-| Level | Primary progression |
-|---|---|
-| 1–700 | Main 15-region journey |
-| 700–2,999 | Early Abyss / EX Bounty / Hidden Boss / advanced keys |
-| 3,000–9,999 | Nemesis / mid-Abyss / advanced build systems |
-| 10,000–29,999 | Transcendent regions |
-| 30,000–49,999 | Divine regions |
-| 50,000–99,999 | Final/end-of-world regions |
+### Connected-play improvement: Global NEXT Goal
 
-### Work
+Extend the existing endgame guidance idea across the full game. Surface **one most meaningful next objective** rather than a wall of suggestions, e.g. next story target, Awakening, Job unlock, equipment threshold or endgame route.
 
-- Rebalance the 15 main regions around Lv1–700.
-- Rework EXP so normal play + reasonable side content reaches intended levels.
-- Couple enemy HP/ATK/DEF/EXP to the new progression model.
-- Map World, Key Dungeons, Bounty, Unique Trials, Secret Jobs, Ranch, Awakening, Equipment tiers and Abyss to meaningful level bands.
-- Verify very large HP/damage/EXP values and number formatting.
-
-### Completion criteria
-
-At every major level band the player has a clear answer to:
+The player should always have a compact answer to:
 
 **“What am I trying to unlock, farm, defeat or build toward now?”**
+
+### Connected-play improvement: Continue / Recent / Favorites
+
+Adventure should support:
+
+- Continue from the most relevant route.
+- Recently played stages.
+- Favorite farming locations.
+
+These are shortcuts inside Adventure, not new Home buttons.
 
 ---
 
 ## Phase 4 — Awakening 3.0
 
-Replace/merge legacy Awakening concepts into a long-term progression spine.
+Use Awakening as a long-term progression spine, not a pile of small percentage nodes.
 
-Candidate milestone structure:
+Canonical milestones currently include Lv90 / 300 / 700 / 3,000. Meaningful unlocks can include imprint/build slots, mechanics, high-tier access, Secret Job requirements and advanced Key content.
 
-- First Awakening: Lv90
-- Second Awakening: Lv300
-- Third Awakening: Lv700
-- Fourth Awakening: Lv3,000
-
-Awakening should not be a collection of small percentage bonuses. Use it to unlock meaningful choices such as:
-
-- build/imprint slots
-- new mechanics
-- high-tier content access
-- Secret Job requirements
-- advanced Key Dungeons
-- endgame progression systems
-
-Migrate or retire obsolete Awakening nodes safely and preserve save compatibility where practical.
+Migrate/retire obsolete concepts safely and preserve save compatibility.
 
 ---
 
 ## Phase 5 — Battle Integration 3.0
 
-Battle 2.0 and later combat patches already provide substantial foundations. Do not restart combat from scratch. Integrate and balance what exists.
-
-Unify:
+Do not restart combat. Integrate and balance existing foundations:
 
 - elements / weaknesses / resistances
 - Break / Stagger
 - status interactions
-- enemy tactical AI
+- tactical AI
 - boss phases
-- formations / groups
-- companion AI and commands
+- formations/groups
+- companion AI/commands
 - weapon techniques
 - job mechanics/resources
 
-### Battle UI
+### Enemy Intent / Tell
 
-Enemy presentation should expose actionable information compactly:
+Readable enemy intent should become a stronger decision tool where appropriate. The goal is not to reveal every secret, but to let players respond to dangerous attacks with defense, Break, status control, companion commands or other build tools.
 
-- HP
-- Break
-- discovered weakness/resistance
-- important status
-- readable intent/tell where appropriate
+### Boss Signature Mechanics
 
-Codex discovery should remain meaningful; unknown information should not automatically be revealed.
+Major bosses should each have at least one memorable rule or pressure pattern. Prefer mechanics such as phase changes, summons/guards, resource pressure, Break timing or behavior changes over pure HP inflation.
 
-### Completion criteria
-
-**Reading the enemy and choosing actions must outperform mindless normal-attack spam.**
+**Completion criterion:** reading the enemy and choosing actions must outperform mindless normal-attack spam.
 
 ---
 
 ## Phase 6 — World 3.0
 
-Turn chapter/stage selection into a coherent adventure structure.
+Present the journey as a coherent regional network rather than an ever-growing flat stage list.
 
-### 6-A Regional network
-
-Present the current journey as connected regions rather than an ever-growing flat list.
-
-### 6-B Secret areas
-
-Unlock through combinations such as:
-
-- boss conditions
-- companion requirements
-- Codex progress
-- special keys
-- Unique/Trial/Job conditions
-
-### 6-C Key Dungeons
-
-Finish the existing playable key route with richer generation, reward identity and events.
-
-### 6-D Heaven / Underworld
-
-Treat these as high-level worlds reached through progression/story/key conditions, not ordinary menu entries.
-
-### 6-E Modern-world mystery
-
-Rare dimensional anomalies may hint at or connect to a modern world (e.g. Tokyo). This is a late-story mystery, not an immediately explained gimmick.
-
-### 6-F Exploration events
-
-Integrate travelers, shrines, merchants, rumors, hidden paths, companion events and anomalies.
+- Secret areas unlock through meaningful conditions.
+- Key Dungeons have reward identity/events.
+- Heaven/Underworld/other realms are progression/story destinations, not loose menu entries.
+- Dimensional anomalies can foreshadow the modern-world mystery.
+- Exploration events integrate travelers, shrines, merchants, rumors, hidden paths and companion events.
 
 ### World UI
 
-Use hierarchical navigation:
+Use **World/Region → local stages/branches**.
 
-**World/Region → local stages/branches**
+### Connected-play improvement: Region Mastery
 
-Avoid one enormous vertical stage list.
+Make regional completion readable at a glance: story, boss, secret area, Codex, Unique, companion and hidden-event progress. Preserve unknown entries as meaningful `?` states.
+
+### Connected-play improvement: Rumors
+
+Settlement/Tavern rumors may point to World events, hidden bosses, routes or anomalies. Rumors are a bridge between existing systems, not a new isolated menu.
 
 ---
 
 ## Phase 7 — Equipment / Loot 3.0 Final
 
-Finish and normalize the existing Equipment 3.x foundation rather than creating another parallel loot system.
-
-Unify roles:
+Normalize the existing Equipment 3.x foundation.
 
 - normal gear = procedural farming/optimization
 - Unique = build-changing rule
-- Set = multi-slot build direction
-- Relic/Artifact = high-level rule changes
+- Set = multi-slot direction
+- Relic/Artifact = high-level rule change
 
-Finalize as needed:
+Continue to use existing Affix/Greater/Legendary/Unique/Set/Smart Loot/Crafting foundations.
 
-- Affix / Greater Affix
-- Legendary / Unique / Set
-- Smart Loot
-- Reforge / Craft
-- dismantling/material loop
-- rare endgame tiers (only if they add a real progression role)
-- high-rarity drop presentation
+### Connected-play improvement: Loot Filter / Auto Dismantle
 
-A bad Legendary should still have economic/crafting value.
+Provide understandable rules for showing/keeping/dismantling drops by rarity, upgrade value, Codex-new state, Greater/Unique status and lock/favorite state. Never destroy protected items silently.
+
+### Connected-play improvement: Build Loadouts
+
+Allow a small number of presets for existing build components (Job, equipment and compatible build-layer selections such as Artifact/Companion where safe). Switching must validate unavailable/locked items and remain save-compatible.
+
+This is QoL for existing systems, not a second equipment system.
 
 ---
 
 ## Phase 8 — Job 3.0 Final
 
-Finish the existing Job 3.x and Secret Job work.
+Maintain the existing 56-job foundation, specialization, legacy/master passives, resources, Secret Jobs and Job Codex.
 
-Integrate:
+Secret Jobs are lateral/specialized playstyles, not strictly superior replacements.
 
-- 56-job foundation
-- specialization
-- legacy/master passives
-- job resources where they improve identity
-- Ultimates where appropriate
-- Secret Jobs
-- Job Codex
+Job UI distinguishes mastered, active, locked/discovered and undiscovered states without rendering all jobs as one long list.
 
-Secret Jobs should be lateral/specialized playstyles, not simple superior replacements.
-
-### Job UI
-
-Group by tier/category and clearly distinguish:
-
-- mastered
-- active/in progress
-- discovered but locked
-- undiscovered
-
-Do not render all jobs as one long list.
+Build Loadout integration from Phase 7 must respect Job unlock/mastery rules.
 
 ---
 
 ## Phase 9 — Settlement 2.0
 
-This is one of the remaining candidates for a genuinely new large system because it can **connect existing systems instead of adding another isolated menu**.
+Use Settlement as a connective base for systems such as Blacksmith, Monster Ranch, Magic Research, Tavern, Exploration Guild, Alchemy, Shop and Training Grounds.
 
-Unify the base around facilities such as:
+Facility levels should unlock services/mechanics, not only +X% bonuses. Settlement should reduce Home clutter by housing related functions naturally.
 
-- Blacksmith
-- Monster Ranch
-- Magic Research
-- Tavern
-- Exploration Guild
-- Alchemy
-- Shop
-- Training Grounds
+### Connected-play improvement: Expeditions
 
-Facility levels should unlock mechanics/services, not merely provide +X% bonuses.
+Companion/Ranch expeditions should return value to existing loops: region materials, Artifact/Relic fragments, mutation/breeding resources, discovery clues or endgame information. Avoid a disconnected timer-only reward screen.
 
-Settlement should also reduce Home clutter: Blacksmith, Ranch, research, etc. can live naturally inside the Base/Settlement structure.
+### Companion role readability
+
+Show a concise primary role/readiness summary (for example damage, Break, support, defense, sustain, farming) without hiding the deeper trait/build system.
 
 ---
 
@@ -391,35 +245,56 @@ Settlement should also reduce Home clutter: Blacksmith, Ranch, research, etc. ca
 
 Make Lv700–99,999 worthwhile.
 
-### 10-A Abyss 3 completion
+### 10-A Abyss 3 completion — ✅
 
-Integrate Pacts, Challenges, run builds, special floors and long-term rewards.
+Pacts, Challenges, route/run-build layers, long-term progression/reward scaling and target-farm foundations exist. Continue to use their existing sources of truth.
 
-### 10-B Nemesis
+### 10-B Nemesis — ✅
 
-Enemies/bounties that defeat the player can grow/change and become personal targets.
+Nemesis 3.0 provides personal evolving targets and has regression coverage.
 
-### 10-C World Tier
+### 10-C World Tier — ✅
 
-Post-clear world tiers alter enemy strength, AI and loot tables rather than only multiplying HP.
+World Tier is implemented in the Adventure/stage flow with difficulty/reward behavior. Do not create a parallel difficulty selector.
 
-### 10-D Transcendent regions
+### 10-D Transcendent regions — ✅ mapped to existing world stack
 
-Examples: Void, Divine Realm, temporal/dimensional fractures.
+World3 Realms, Secret Realms, dimensional/rift content and Machine World collectively satisfy this role. Expand those structures when needed instead of creating another region framework.
 
-### 10-E Raid Bosses
+### 10-E Raid Bosses — 🟡 CURRENT
 
-Huge bosses should demand mechanics, Break windows, phase knowledge and build preparation—not merely long HP bars.
+Implement a distinct endgame raid route by **reusing** Combat 3 Boss Encounter, Enemy Intent, Break/phase foundations and current endgame reward scaling.
 
-### 10-F Challenge Bosses
+Raid requirements:
 
-Use for build tests and prestige rewards such as titles/cosmetics/special artifacts.
+- preparation information before battle
+- danger/mechanic hints without revealing every secret
+- meaningful Break windows
+- multiple phases or encounter-state changes
+- build preparation matters
+- reusable rewards using existing economies
+- no HP-sponge-only design
+- no new top-level Home button
+- mobile-compact presentation
+- regression tests + CI
+
+See `PHASE10_FINAL_AUDIT.md`.
+
+### 10-F Challenge Bosses — ✅ mapped
+
+Unique Trials plus Boss Encounter conditions already fill the build-test/mastery role. Future prestige rewards can extend Titles/Records, but do not create a duplicate challenge-boss system.
+
+### Official Phase 10 completion gate
+
+Close Phase 10 only after Raid Boss has a verified route:
+
+**data → state/save where needed → UI/navigation → gameplay → rewards → tests/CI**.
 
 ---
 
 ## Phase 11 — Adventure / Story 3.0
 
-Connect the world structure into one narrative:
+Connect existing worlds into one narrative:
 
 **Human Realm → Heaven → Underworld → Dimensional Boundary → Modern World**
 
@@ -427,17 +302,43 @@ Central mystery:
 
 **Why are Blade Vale's world and the modern world connected?**
 
-Seed the answer gradually through Key Dungeons, artifacts, ruins, Secret Jobs, anomalies and environmental text.
+### 11.1 Story Canon
 
-Story must support exploration and systems rather than becoming a separate visual-novel layer.
+Define the relationship among Human/Heaven/Underworld/Boundary/Machine/Modern worlds and establish what the player is actually pursuing.
+
+### 11.2 Ch1–15 Story Pass
+
+Add concise dialogue, boss lines, discoveries and environmental text. Avoid visual-novel-length walls.
+
+### 11.3 The Veil — Ch16–20
+
+Make the second major arc legible and connect its progression to the post-Ch15 world/endgame transition.
+
+### 11.4 World Mystery Integration
+
+Give Key Dungeons, Secret Realms, Nemesis, Machine World, Unique Trials, relics and anomalies narrative meaning.
+
+### 11.5 Ch21–25 Integration
+
+Use the already-existing chapter data as the next arc rather than inventing a parallel story route.
+
+### 11.6 Modern World Tease
+
+Seed restrained clues—architecture, signals, sounds, writing, devices or date fragments—without immediately explaining the mystery.
+
+### Connected-play improvement: Codex Lore
+
+Codex knowledge can unlock in layers from identity/weakness to ecology/lore/secret information. Use late Codex entries to connect monsters, artifacts and worlds to the central mystery.
+
+Story supports exploration/systems rather than becoming a separate VN layer.
 
 ---
 
 ## Phase 12 — Content Expansion
 
-Only after the major systems and interfaces stabilize, increase volume.
+Only after major systems/interfaces stabilize, increase volume.
 
-Long-term targets (guidelines, not quotas):
+Long-term guidelines:
 
 - Regions: 30–40
 - Normal monsters: 150+
@@ -446,53 +347,26 @@ Long-term targets (guidelines, not quotas):
 - Mutations: 30–50
 - Unique equipment: 100+
 - Artifact / Relic: 100+
-- Key Dungeon variants/content: 50+
+- Key Dungeon content: 50+
 
-Prefer reusable generation rules, archetypes, modifiers and event pools over hand-authoring hundreds of near-identical entries.
+Prefer reusable generation rules, archetypes, modifiers and event pools over near-identical hand-authored entries.
 
-Do **not** front-load content production before the systems are stable.
+### Titles / Personal Records
+
+Add lightweight long-term recognition without turning titles into mandatory stat inflation. Candidate records include deepest Abyss, largest damage, fastest boss clear, highest Item Power, collection milestones and other meaningful feats.
+
+Use these for prestige, history and challenge feedback rather than another required power ladder.
 
 ---
 
 ## Phase 13 — Visual Identity 3.0
 
-The structural UI work happens in Phases 1–2. This phase gives the finished interfaces a coherent Blade Vale identity.
+Give stabilized interfaces a coherent Blade Vale identity.
 
-### 13-A Replace emoji-dependent UI
-
-Gradually replace generic emoji icons with a consistent pixel/icon set.
-
-### 13-B Design tokens
-
-Standardize:
-
-- spacing
-- typography scale
-- button hierarchy
-- card geometry
-- borders/shadows
-- rarity treatment
-- semantic colors
-
-### 13-C Typography and density
-
-Prioritize:
-
-**name/title → important numbers/state → secondary explanation**
-
-Avoid walls of equally weighted text.
-
-### 13-D Battle/drop feedback
-
-Keep the text-RPG identity while improving feedback through restrained:
-
-- screen shake
-- flash
-- damage number emphasis
-- Critical / Break feedback
-- boss phase transitions
-- high-rarity drop reveals
-- SE / music hooks
+- Replace emoji-dependent UI with a consistent pixel/icon set.
+- Standardize spacing, typography, button hierarchy, card geometry, borders/shadows, rarity and semantic colors.
+- Prioritize **name/title → important state/numbers → secondary explanation**.
+- Improve battle/drop feedback with restrained shake/flash/damage emphasis/Critical/Break/boss-phase/high-rarity/SE hooks.
 
 ---
 
@@ -500,16 +374,16 @@ Keep the text-RPG identity while improving feedback through restrained:
 
 **Feature freeze. No new large systems.**
 
-### Final audit
+Final audit:
 
 1. Cross-system reward loops
 2. Lv1–99,999 progression curve
 3. Gold/material/Memory/key economy
-4. All Job balance
-5. Monster/Boss balance
-6. Equipment/drop balance
-7. Companion/Ranch balance
-8. Save compatibility/migrations
+4. Job balance
+5. Monster/Boss/Raid balance
+6. Equipment/drop balance and Loot Filter safety
+7. Companion/Ranch/Expedition balance
+8. Save compatibility/migrations/loadouts
 9. Monkey-patch/load-order audit
 10. Performance
 11. Mobile UI/viewport audit
@@ -517,6 +391,9 @@ Keep the text-RPG identity while improving feedback through restrained:
 13. Postgame/endgame playthrough
 14. Very-high-level simulations
 15. CI/test suite clean
+16. NEXT Goal validity across progression
+17. Recent/favorite route usability
+18. Titles/records consistency
 
 ### Final UI acceptance criteria
 
@@ -525,11 +402,12 @@ Keep the text-RPG identity while improving feedback through restrained:
 - Equipment remains manageable at 100+ items.
 - Companion/Ranch remains manageable at 100+ monsters.
 - Collection screens use categories/filtering instead of giant text lists.
-- Detail text is progressive disclosure, not always-expanded content.
+- Detail text uses progressive disclosure.
 - No routine screen requires excessive multi-screen scrolling without a strong reason.
-- Mobile one-handed use is treated as the default interaction model.
+- Mobile one-handed use is the default interaction model.
 - Generic emoji are no longer the primary visual language.
-- Numeric decision screens and lore/explanation screens have distinct information hierarchy.
+- Numeric decision screens and lore/explanation screens have distinct hierarchy.
+- Overview → Detail is the default pattern for information-heavy systems.
 
 When all integration, balance, UX and test gates pass:
 
@@ -537,57 +415,60 @@ When all integration, balance, UX and test gates pass:
 
 ---
 
+# Connected-play improvement priority
+
+These items are already assigned to phases above; this list is for implementation priority, **not a new parallel roadmap**.
+
+### S — high impact
+
+- Global NEXT Goal
+- Build Loadouts
+- Loot Filter / safe auto dismantle
+- Continue / Recent / Favorite stages
+
+### A — strong integration polish
+
+- Enemy Intent strengthening
+- Boss Signature Mechanics
+- Item Compare deltas
+- Region Mastery UI
+- Companion role readability
+- Codex Lore
+
+### B — long-term depth / recognition
+
+- Rumors
+- Expedition integration
+- Titles
+- Personal Records
+
+---
+
 # Development Order
 
 ```text
+COMPLETED FOUNDATION
+Phase 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
+
 CURRENT
-  |
-  v
-Phase 0   System & UI Audit
-  |
-  v
-Phase 1   UI / UX Foundation 3.0
-  |
-  v
-Phase 2   Compact UI 3.0
-  |
-  v
-Phase 3   Progression 3.0
-  |
-  v
-Phase 4   Awakening 3.0
-  |
-  v
-Phase 5   Battle Integration 3.0
-  |
-  v
-Phase 6   World 3.0
-  |
-  v
-Phase 7   Equipment / Loot 3.0 Final
-  |
-  v
-Phase 8   Job 3.0 Final
-  |
-  v
-Phase 9   Settlement 2.0
-  |
-  v
-Phase 10  Endgame 3.0
-  |
-  v
-Phase 11  Adventure / Story 3.0
-  |
-  v
-Phase 12  Content Expansion
-  |
-  v
-Phase 13  Visual Identity 3.0
-  |
-  v
-Phase 14  Final Integration
-  |
-  v
+Phase 10-E  Raid Boss integration
+   |
+   v
+Phase 10    Official Endgame 3.0 closure
+   |
+   v
+Phase 11    Adventure / Story 3.0
+   |
+   v
+Phase 12    Content Expansion + long-term recognition
+   |
+   v
+Phase 13    Visual Identity 3.0
+   |
+   v
+Phase 14    Final Integration / feature freeze
+   |
+   v
 BLADE VALE 3.0
 ```
 
@@ -595,32 +476,30 @@ BLADE VALE 3.0
 
 # Development Rules for Claude Code / Codex / Contributors
 
-These rules are part of the roadmap, not optional suggestions.
-
 1. **Read this ROADMAP.md before proposing or implementing a major feature.**
-2. Do not assume an old roadmap phase is unimplemented; inspect current code/tests first. Several systems have advanced beyond their old version labels.
+2. Do not assume an old roadmap phase is unimplemented; inspect current code/tests first.
 3. Prefer finishing, connecting, simplifying or retiring existing systems over adding parallel systems.
-4. Before adding a new top-level Home button, prove that the feature cannot fit inside an existing navigation group.
-5. Do not solve information growth by making cards taller. Use progressive disclosure, tabs, filters, detail views and comparison UI.
+4. Before adding a new top-level Home button, prove the feature cannot fit inside an existing navigation group.
+5. Do not solve information growth by making cards taller. Use Overview → Detail, progressive disclosure, tabs, filters and comparison UI.
 6. Mobile is the primary UX target. Check viewport overflow and scroll cost.
 7. Preserve save compatibility or provide an explicit migration path.
-8. Every large phase follows:
-   **implementation → automated tests → balance/simulation where relevant → CI → main → next phase.**
-9. A feature is not complete until its gameplay loop, UI, rewards, persistence and cross-system integration are verified.
-10. Avoid introducing a new currency/resource unless an existing one cannot serve the role.
-11. Avoid unnecessary monkey patches; when touching heavily patched areas, consider consolidation/refactoring.
+8. Every large phase follows **implementation → automated tests → balance/simulation where relevant → CI → main → next phase**.
+9. A feature is not complete until gameplay loop, UI, rewards, persistence and cross-system integration are verified.
+10. Avoid a new currency/resource unless an existing one cannot serve the role.
+11. Avoid unnecessary monkey patches; consolidate heavily patched areas when practical.
 12. Content quantity comes after system stability.
-13. Lv99,999 is a design commitment: new progression/endgame work must be evaluated against the full level curve.
-14. UI quality is a completion criterion, not cosmetic cleanup to postpone indefinitely.
+13. Lv99,999 is a design commitment; progression/endgame work is evaluated against the full curve.
+14. UI quality is a completion criterion, not cleanup to postpone indefinitely.
 15. During Phase 14, feature freeze is strict: fix, balance, optimize and integrate only.
 
 ## Core Design Principles
 
 1. Undiscovered content should remain meaningfully undiscovered.
-2. Prefer new decisions and playstyles over simple percentage inflation.
+2. Prefer new decisions/playstyles over percentage inflation.
 3. Connect existing systems; avoid isolated menus.
 4. Failure, revisiting areas and collecting should have purpose.
-5. Trials should demonstrate mastery, not only time spent grinding.
-6. The player should be able to understand the next meaningful goal without consulting source code.
+5. Trials should demonstrate mastery, not only grinding time.
+6. The player should understand the next meaningful goal without consulting source code.
 7. A large game does not require a cluttered interface.
-8. Text-RPG identity should be preserved while presentation becomes cleaner, faster and more readable.
+8. Preserve the text-RPG identity while presentation becomes cleaner, faster and more readable.
+9. Reuse canonical progression/reward sources; never solve one feature by inventing a conflicting parallel table.
