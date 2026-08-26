@@ -22,15 +22,15 @@ test('Phase 9.9 gives all 15 regional routes a repeatable farm identity',()=>{
   }
 });
 
-test('regional route rewards scale from their nearby story gates instead of tiny fixed rewards',()=>{
+test('regional route rewards scale from nearby story gates instead of tiny fixed rewards',()=>{
   for(let num=21;num<=25;num++){
     const chapter=CHAPTERS.find(ch=>ch.num===num);
     for(const route of chapter.stages.filter(s=>s.phase9Exploration)){
-      const source=chapter.stages.find(s=>s.id===(route.phase9StoryGate||route.phase9ExplorationIndex===0?route.phase9StoryGate:null));
-      if(source){
-        assert.ok(route.rewards.gold>=source.rewards.gold);
-        assert.ok(route.rewards.exp>=source.rewards.exp);
-      }
+      const source=chapter.stages.find(s=>s.id===route.phase9RewardAnchorId);
+      assert.ok(source,`${route.id} reward anchor`);
+      assert.ok(route.rewards.gold>=source.rewards.gold);
+      assert.ok(route.rewards.exp>=source.rewards.exp);
+      assert.ok(route.itemPowerTarget>(source.itemPowerTarget||source.recLevel||0));
     }
   }
 });
