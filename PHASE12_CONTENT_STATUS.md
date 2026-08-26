@@ -4,11 +4,11 @@
 
 - **12.1 Boundary Ruins Pack I — ✅ Complete**
 - **12.2 Companion & Monster Expansion — ✅ Complete**
-- **12.3 Optional Dungeon Pack I — NEXT**
-- **12.4 Enemy Ecology Expansion — planned**
-- **12.5 Rare Spawn Expansion — planned**
-- **12.6 Ultra Rare Loot / Hidden Drops — planned**
-- **12.7 Boss Expansion — planned**
+- **12.3 Optional Dungeon Pack I — ✅ Complete**
+- **12.4 Enemy Ecology Expansion — ✅ Complete**
+- **12.5 Rare Spawn Expansion — ✅ Complete**
+- **12.6 Ultra Rare Loot / Hidden Drops — ✅ Complete**
+- **12.7 Boss Expansion — NEXT**
 - **12.8 Lore Fragments / World Traces — planned**
 - **12.9 Rumors — planned**
 - **12.10 World Event Integration — planned**
@@ -34,47 +34,52 @@ Phase 12 widens Blade Vale after the main vertical journey and Lv99,999 endgame 
 
 ## 12.1 — Boundary Ruins Pack I ✅
 
-Four optional discoveries use the existing Abyss exploration flow:
-
-- **残響観測塔** — fast observation enemies and an Analysis/Break identity.
-- **沈降鋳造所** — armored constructs and Break-focused heavy combat.
-- **記憶果樹園** — status pressure, memory ecology and a short-fight boss identity.
-- **零番境界駅** — high-speed late-endgame encounter and restrained continuation of the outside-world signal mystery.
-
-Each ruin uses the existing three-fragment discovery model, Secret Realm builder, stage progress, Gold/EXP economy and existing Set pools. Dedicated enemy archetypes derive from the canonical Abyss combat curve.
-
-No Home button, standalone screen, currency, save schema, chapter gate or parallel progression table is introduced.
+Four optional discoveries use the existing Abyss exploration flow: **残響観測塔 / 沈降鋳造所 / 記憶果樹園 / 零番境界駅**. Each uses the existing three-fragment discovery model, Secret Realm builder, stage progress, Gold/EXP economy and existing Set pools.
 
 ## 12.2 — Companion & Monster Expansion ✅
 
-Phase 12.2 turns the three-companion party into a clearer build axis without creating another capture system.
+Fourteen postgame enemies are recruitable through the existing recruitment flow, eight readable party roles are surfaced in Ranch cards, and four breeding-only hybrid species extend Companion 3.0 without a new resource or capture screen.
 
-### Recruitable Species Pack I
+## 12.3 — Optional Dungeon Pack I ✅
 
-Fourteen enemies become recruitable through the existing post-battle recruitment flow:
+Five new optional dungeons are embedded in the existing exploration → Secret Realm route:
 
-- Ch21: **灰喰らい / 燐火の猟犬**
-- Ch22: **氷玻璃兵 / 鏡雪の妖精**
-- Ch23: **雷葬兵 / 閃雷翼**
-- Ch24: **虚花の従者 / 夢喰い蝶**
-- Ch25: **境界執行体 / 位相猟犬**
-- Boundary Ruins: **残響灯・ルクス / 重槌機兵・アンヴィル / 追憶蛾・メモリア / 軌道猟犬・NULL**
+- **古王墓** — Guard/反撃、不死近衛、無名古王。
+- **幻獣の森** — 高速・属性混成、重層生態、幻獣王。
+- **竜骸峡谷** — 高火力・Break、巨大竜骸、竜骸帝。
+- **反転図書館** — 魔法・Analysis、高EXP、反転司書。
+- **黒月神殿** — 回復抑制・終盤混成、最高IP帯、黒月神。
 
-### Party roles
+All five reuse the existing three-fragment discovery model and are completely optional to the main story.
 
-The pack establishes eight readable identities: **Attacker / Breaker / Guardian / Sustain / Support / Debuffer / Speed / Specialist**. Roles are surfaced inside the existing Ranch card and use existing stats, skills, Traits, Bond, mutation, nature and talent systems.
+## 12.4 — Enemy Ecology Expansion ✅
 
-### Special breeding
+Each new dungeon owns at least four authored archetypes: frontline/guardian/caster/support or controller, a bespoke Boss, and one rare-species archetype. Enemies derive from canonical Abyss depth stats so the pack remains aligned with Lv3,000→99,999 scaling instead of creating a second balance table.
 
-Four breeding-only discoveries extend the existing Companion 3.0 breeding table:
+## 12.5 — Rare Spawn Expansion ✅
 
-- **燼鋼猟獣**
-- **黄昏樹精**
-- **裂界グリフォン**
-- **零響獣シグナル**
+Five low-frequency rare encounters now roll at Secret Realm construction time:
 
-They cannot be recruited directly and do not introduce a new breeding resource.
+- **金棺の亡霊** — 6.0%
+- **白虹ユニコーン** — 4.5%
+- **始祖竜の残骨** — 3.5%
+- **未刊の予言者** — 2.5%
+- **月外観測体・ECLIPSE** — 1.5%
 
-## Next — 12.3 Optional Dungeon Pack I
+A hit injects the rare enemy into the encounter immediately before the Boss. A miss does not alter the normal wave layout.
 
-Add a first broad set of optional dungeons outside the main-story route. Each dungeon should combine its own enemy ecology, Boss/chase reward and a restrained world trace. Candidate identities include **古王墓 / 幻獣の森 / 竜骸峡谷 / 反転図書館 / 黒月神殿**. The player should be able to ignore all of them and still complete the main journey.
+## 12.6 — Ultra Rare Loot / Hidden Drops ✅
+
+Each rare spawn owns a hidden fixed-Unique chase drop. No new equipment rarity is introduced; all use the existing fixed Unique resolver and only enter the stage drop table when the rare encounter actually appears.
+
+- **無名王冠**
+- **幻獣心核**
+- **始祖竜骸刃**
+- **反転目録・未刊**
+- **黒月遮断核**
+
+The five dungeons also contain compact world traces, but none states the main-story answer or turns optional content into a progression gate.
+
+## Next — 12.7 Boss Expansion
+
+Expand horizontal Boss variety across existing optional content. Prefer signature mechanics, phase transitions, escorts, Break-window changes and counterplay over raw HP inflation. Reuse the Combat 3/Boss Encounter vocabulary and keep all rewards inside existing loot systems.
