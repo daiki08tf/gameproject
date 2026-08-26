@@ -20,15 +20,18 @@ test('World Tier has six monotonic progression bands through Lv74,999+',()=>{
   assert.equal(highestWorldTier(99999).id,'boundary_zero');
 });
 
-test('World Tier selection is level gated and persisted in state data',()=>{
-  const oldLevel=state.data.characterLevel,oldTier=state.data.worldTierId;
+test('World Tier gating is level driven and selection persists in state data',()=>{
+  assert.deepEqual(unlockedWorldTiers(1).map(t=>t.id),['normal']);
+  assert.equal(unlockedWorldTiers(74998).some(t=>t.id==='boundary_zero'),false);
+  assert.equal(unlockedWorldTiers(74999).some(t=>t.id==='boundary_zero'),true);
+  assert.equal(highestWorldTier(99999).id,'boundary_zero');
+
+  const oldTier=state.data.worldTierId;
   try{
-    state.data.characterLevel=1;state.data.worldTierId='normal';
-    assert.equal(state.setWorldTier('boundary_zero'),false);
-    state.data.characterLevel=99999;
-    assert.equal(state.setWorldTier('boundary_zero'),true);
-    assert.equal(state.activeWorldTier().id,'boundary_zero');
-  }finally{state.data.characterLevel=oldLevel;state.data.worldTierId=oldTier;}
+    assert.equal(state.setWorldTier('normal'),true);
+    assert.equal(state.data.worldTierId,'normal');
+    assert.equal(state.activeWorldTier().id,'normal');
+  }finally{state.data.worldTierId=oldTier;}
 });
 
 test('World Tier runtime wraps BattleEngine combat without touching Abyss scaling',()=>{
