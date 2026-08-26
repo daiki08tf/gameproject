@@ -8,14 +8,16 @@
 import { EFFECTS } from './chapters.js';
 import { worldMysteryClue } from './storyWorldMystery.js';
 
+const ARTIFACT_STORY_CLUE=worldMysteryClue('artifact');
+const RELIC_STORY_CLUE=worldMysteryClue('relic');
+
 export const EFFECT_ARTIFACTS = Object.keys(EFFECTS).map((effectId) => ({
   id: `artifact_${effectId}`,
   effectId,
   name: `${EFFECTS[effectId].name}の秘宝`,
   desc: EFFECTS[effectId].desc,
+  storyClue: ARTIFACT_STORY_CLUE,
 }));
-
-const RELIC_STORY_CLUE=worldMysteryClue('relic');
 
 // 5つのRelicは深淵の主要マイルストーンに1つずつ配置する。
 // 到達だけで自動取得はせず、既存のGold/魔石解放コストも残す。
