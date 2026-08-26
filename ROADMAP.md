@@ -4,7 +4,7 @@
 >
 > **Current:** Blade Vale 3.0 foundation + System Deepening Pack are complete. **Content Pack II is current.**
 >
-> **Current batch:** CP2-A+B ✅ → **CP2-C+D NEXT** → CP2-E → Story Expansion I (Ch26–30) → Content Pack III.
+> **Current batch:** CP2-A+B ✅ → CP2-C+D ✅ → **CP2-E NEXT** → Story Expansion I (Ch26–30) → Content Pack III.
 >
 > Before major work, read this file, `SYSTEM_DEEPENING_ROADMAP.md`, and `CONTENT_PACK_II_ROADMAP.md`.
 
@@ -14,7 +14,7 @@ Blade Vale is a personal evolving text-command hack-and-slash RPG built around o
 
 **Main Story → exploration → combat/builds → loot → companions → rumors/clues → secrets → endgame → replay → back into exploration**
 
-The game already has enough system breadth. New work should deepen and connect existing systems, then feed substantial horizontal content into them.
+New work should deepen and connect existing systems rather than create isolated progression stacks.
 
 ## Permanent design rules
 
@@ -54,16 +54,7 @@ The game already has enough system breadth. New work should deepen and connect e
 | Automated RC Audit | ✅ | cross-system / progression / equipment / Ranch / mobile gates |
 | System Deepening Pack | ✅ | Build identities, Job synergy, Enemy Intent, Companion individuality, Codex Field Guide, Rare presentation, Rumor Notebook, Region knowledge, Treasure clues, Secret Chains |
 
-Canonical detail docs:
-- `LEVEL_ROADMAP_99999.md`
-- `STORY_CANON.md`
-- `PHASE10_FINAL_AUDIT.md`
-- `PHASE11_STORY_STATUS.md`
-- `PHASE12_CONTENT_STATUS.md`
-- `PHASE13_REPLAY_STATUS.md`
-- `PHASE14_FINAL_INTEGRATION_STATUS.md`
-- `RELEASE_CANDIDATE_AUDIT.md`
-- `SYSTEM_DEEPENING_ROADMAP.md`
+Canonical detail docs include `STORY_CANON.md`, `SYSTEM_DEEPENING_ROADMAP.md`, and `CONTENT_PACK_II_ROADMAP.md`.
 
 ---
 
@@ -75,65 +66,65 @@ Purpose: use the System Deepening infrastructure to make the world feel dense, m
 
 ## Batch 1 — CP2-A+B ✅ COMPLETE
 
-### CP2-A — Rumor & Hidden Encounter Expansion
 - 10 new diegetic rumors across the five Phase12 horizontal ecologies
 - 5 rumor-gated Hidden Encounter variants
-- unresolved rumor means no hidden encounter roll
+- 5 Hidden Routes: 空列の回廊 / 無音の産室 / 第八肋骨路 / 逆棚回廊 / 盲壁観測孔
+- unresolved rumor = no hidden encounter roll
 - Region Mastery / Codex knowledge provide only small relative pursuit benefits
-- exact percentages remain hidden from player-facing text
-- Hidden Encounters enter as a later compact one-enemy encounter, never enlarge the opening enemy pile
+- Hidden Encounters enter as later one-enemy encounters, never enlarge the opening enemy pile
+- existing `world2.discoveries`, Rumor Notebook and Codex surfaces reused
 
-### CP2-B — Treasure / Hidden Route Expansion
-Five route discoveries now grow out of actually observing the new hidden ecology:
-- 空列の回廊
-- 無音の産室
-- 第八肋骨路
-- 逆棚回廊
-- 盲壁観測孔
+## Batch 2 — CP2-C+D ✅ COMPLETE
 
-They reuse `world2.discoveries` and the existing Rumor/Codex surfaces. No map currency or new screen.
+### Secret Chains — 3
 
-## Batch 2 — CP2-C+D ⏭ NEXT
+- **声なき獣の系譜** — 無音の産室 → 空列の回廊 → 盲壁観測孔
+- **第八肋骨の行先** — 第八肋骨路 → 逆棚回廊 → 零番境界駅
+- **盲壁の二重観測** — 盲壁観測孔 → 逆棚回廊 → 埋もれた観測座標
 
-### CP2-C — Secret Chain Expansion
-Create 2–3 authored multi-region chains using the A+B route leads.
+All chains are optional, progress in the existing Rumor Notebook and preserve central mystery restraint.
 
-Targets:
-- Silent Beast chain → Rare Companion / breeding lead
-- Eighth Rib chain → observation-network hidden site
-- Blind Wall chain → high-end mystery encounter
+### Hidden Boss / Reward Layer
 
-At least two chains should span 3+ existing locations and provide real revisit value.
+Five chain-gated Hidden Bosses:
+- 無鳴母獣・NEST-MOTHER
+- 灰角残響獣・CINDER-HART
+- 第八脈守・OCTAVE
+- 重記司書・PALIMPSEST
+- 双方向観測体・PARALLAX
 
-### CP2-D — Hidden Boss & Reward Layer
-Directional target for this batch:
-- ~4–6 Hidden/elite Boss encounters
-- ~6–10 recruitable/secret/breeding Companion additions
-- ~10–15 Unique/Relic/content rewards
-- new Codex/Lore connections
+Content rewards:
+- 6 secret companions
+- 4 deterministic special breeding hybrids
+- 12 fixed mythic Unique rewards
 
-Do **not** implement SD-4-style timed/no-death/finisher Hidden Drop conditions.
+Reward policy:
+- chain completion reveals a Hidden Boss
+- first successful clear grants fixed rewards
+- no random conditional Boss-drop objective
+- no timed kill / no-death / Break-finisher requirement
+- SD-4 remains deferred
 
-## Batch 3 — CP2-E
+Hidden Bosses are appended as one-enemy encounter groups through the existing battle queue, preserving mobile command safety.
 
-World Mystery Integration + density/tuning pass:
-- resolve and cross-link rumors
-- expand Codex ecology
-- finish Lore connections
-- audit Region Mastery clue usefulness
-- ensure all Hidden Routes lead somewhere worthwhile
-- audit repetitive grind
-- verify the game provides enough in-world clues without external notes
-- full save/mobile/CI regression
+## Batch 3 — CP2-E ⏭ NEXT
 
-Directional full Content Pack II scale remains roughly:
-- 5–8 optional major locations/routes/dungeons
-- 30–40 authored enemies/variants
-- 8–12 Boss/elite encounters
-- 15–20 companion additions
-- 20–30 meaningful Unique/Relic/content rewards
+**World Mystery Integration + Content Density Pass.**
 
-These are design targets, not quotas. **Connection matters more than raw count.**
+Scope:
+- close the full Rumor → Hidden Encounter → Hidden Route → Secret Chain → Hidden Boss loop
+- integrate CP2 enemies/Bosses into Codex ecology and knowledge text
+- connect chain Lore to The Veil / observation network / Eighth Key / external-signal mystery
+- keep the unknown observed subject unresolved and unlocated
+- audit reward density and universal-BiS risk
+- audit repeated revisit/grind friction
+- ensure no clue requires external notes
+- compact Rumor Notebook with increased entry count
+- ensure Ranch / Equipment remain manageable after additions
+- save compatibility and full mobile regression
+- run both CI workflows and mark Content Pack II COMPLETE
+
+After E, next work becomes **Story Expansion I — Ch26–30**.
 
 ---
 
@@ -152,12 +143,10 @@ Direction:
 
 # THEN — Content Pack III
 
-Return to horizontal expansion after Ch26–30.
-
 ```text
 SYSTEM DEEPENING ✅
       ↓
-CONTENT PACK II ← CURRENT
+CONTENT PACK II ← CURRENT / E NEXT
       ↓
 STORY EXPANSION I (Ch26–30)
       ↓
@@ -174,8 +163,8 @@ When a new ChatGPT conversation, Claude Code session or coding agent starts:
 2. read `SYSTEM_DEEPENING_ROADMAP.md`
 3. read `CONTENT_PACK_II_ROADMAP.md`
 4. inspect code/tests before assuming a listed item is missing
-5. **do not redo CP2-A+B**
-6. next work is **CP2-C Secret Chains + CP2-D Hidden Boss/Reward Layer**
+5. **do not redo CP2-A+B or CP2-C+D**
+6. next work is **CP2-E World Mystery Integration + Content Density Pass**
 7. keep Boss conditional Hidden Drops and rotating challenges omitted
 8. preserve automatic Rumor Notebook accumulation and existing `world2.discoveries`
 9. no new Home route/currency unless an explicit future decision requires one
@@ -184,4 +173,4 @@ When a new ChatGPT conversation, Claude Code session or coding agent starts:
 
 ## Current one-line handoff
 
-**System Deepening is complete. Content Pack II A+B is complete with 10 new rumors, 5 rumor-gated Hidden Encounters and 5 Hidden Routes. NEXT: CP2-C multi-region Secret Chains + CP2-D Hidden Boss/Companion/Unique reward layer; SD-4 and rotating challenges remain omitted.**
+**System Deepening and Content Pack II A+B/C+D are complete. Current implementation has 10 CP2 rumors, 5 Hidden Encounters, 5 Hidden Routes, 3 multi-region Secret Chains, 5 Hidden Bosses, 6 secret companions, 4 special hybrids and 12 fixed Unique rewards. NEXT: CP2-E integration/tuning, then Story Expansion I (Ch26–30). SD-4 and rotating challenges remain omitted.**
