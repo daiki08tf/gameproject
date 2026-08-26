@@ -1,5 +1,8 @@
 /* Phase 10.2 — Nemesis 3.0 */
+import { worldMysteryClue } from './storyWorldMystery.js';
+
 export const NEMESIS_MAX_LEVEL=15;
+export const NEMESIS_STORY_CLUE=worldMysteryClue('nemesis');
 
 export const NEMESIS_TRAITS=Object.freeze({
   bloodthirst:{id:'bloodthirst',name:'血喰らい',desc:'攻撃力が上昇し、瀕死時はさらに凶暴化する。',atk:1.12,enrageAtk:1.18},
