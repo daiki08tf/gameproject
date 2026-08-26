@@ -28,7 +28,6 @@ function allKnownStages(){
   for(const site of state.explorationSites||[]){if(!site.realm)continue;const stage=buildSecretRealmStage(site.realm.id);if(stage)out.push(stage);}
   return out;
 }
-function stageMap(){return new Map(allKnownStages().map(s=>[s.id,s]));}
 function cleanName(v=''){return String(v).replace(/^[\s\p{Extended_Pictographic}◇◆🔀🎯👑🚪✦🔒]+/u,'').trim();}
 function stageFromCard(card){
   const name=cleanName(card.querySelector('.name')?.textContent||'');
@@ -90,7 +89,6 @@ function enhanceStageList(){
   }
 }
 function installObservers(){
-  const menu=document.querySelector('#homeScreen .home-menu');if(menu)new MutationObserver(()=>queueMicrotask(enhanceHome)).observe(menu,{childList:true,subtree:true});
   const list=document.getElementById('stageList');if(list)new MutationObserver(()=>queueMicrotask(enhanceStageList)).observe(list,{childList:true,subtree:true});
 }
 
@@ -98,5 +96,5 @@ function installObservers(){
 const previousRecordStageResult=state.recordStageResult.bind(state);
 state.recordStageResult=function phase14RecordStageResult(stageId,cleared){const out=previousRecordStageResult(stageId,cleared);if(cleared)rememberRecent(stageId);return out;};
 
-ensureStyles();enhanceHome();enhanceStageList();installObservers();
+ensureStyles();enhanceStageList();installObservers();
 export { enhanceHome,enhanceStageList,nextGoal,rememberRecent,toggleFavorite };
