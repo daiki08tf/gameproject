@@ -101,11 +101,12 @@ let selectedBlessingId = null;
 
 export function renderStageConfirm(stage) {
   document.getElementById('confirmStageName').textContent = stage.name;
-  document.getElementById('confirmStageRec').textContent = `推奨Lv ${stage.recLevel}`;
+  document.getElementById('confirmStageRec').textContent = stage.itemPowerTarget ? `推奨Lv ${stage.recLevel} / 目標IP ${stage.itemPowerTarget}` : `推奨Lv ${stage.recLevel}`;
   const rewardText = stage.bounty ? `討伐報酬: 経験値 ${stage.rewards.exp} / ゴールド ${stage.rewards.gold} / 初回討伐で固有の戦利品` : `クリア報酬: 経験値 ${stage.rewards.exp} / ゴールド ${stage.rewards.gold}${stage.firstClear ? '（初回クリアで装備入手）' : ''}`;
   document.getElementById('confirmStageRewards').textContent = rewardText;
   const modEl = document.getElementById('confirmModifiers');
-  if(stage.keyDungeon){modEl.textContent=`🔑 ${stage.world3Identity||'境界鍵ダンジョン'}：出撃時に鍵を1本消費\n${stage.world3Goal||''}${stage.world3Goal?'\n':''}${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
+  if(stage.raid){const tags=(stage.raidDangerTags||[]).join(' / ');modEl.textContent=`RAID PREPARATION\n危険: ${tags}\nMechanic: ${stage.raidMechanic}\n攻略ヒント: ${stage.raidCounterHint}\n報酬: ${stage.raidRewardHint}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
+  else if(stage.keyDungeon){modEl.textContent=`🔑 ${stage.world3Identity||'境界鍵ダンジョン'}：出撃時に鍵を1本消費\n${stage.world3Goal||''}${stage.world3Goal?'\n':''}${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if(stage.worldEventStage){modEl.textContent=`探索分岐：${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||stage.name}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if(stage.secretRealm){modEl.textContent=`異界：${stage.abyssEra||stage.name}\n${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if (stage.bounty) {const hint = stage.bountyRewardHint ? ` ／ 戦利品の噂：${stage.bountyRewardHint}` : '';modEl.textContent = `手配書：${stage.rumor || '詳細不明'} ／ 特徴：${stage.bountyGimmick || '未知の強敵'}${hint}`;modEl.classList.remove('hidden');}

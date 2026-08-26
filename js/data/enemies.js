@@ -29,3 +29,19 @@ for(const ch of ALL_CHAPTER_SPECS){
  if(ch.midboss)ENEMY_TYPES[`${ch.id}_midboss`]=scale(MIDBOSS_BASE,ch.midboss.enemyName,ch.num);
  if(ch.branch)ENEMY_TYPES[`${ch.id}_branchboss`]=scale(BRANCH_BASE,ch.branch.enemyName,ch.num);
 }
+
+// Official Phase 10-E — first Raid reuses the Ch25 combat vocabulary but is
+// deliberately only a moderate numeric step. Its real difficulty comes from
+// guards, phase changes and Break timing in bossEncounters.js, not an HP sponge.
+const ARCHEON=ENEMY_TYPES.ch25_boss;
+ENEMY_TYPES.raid_archeon={
+ ...ARCHEON,
+ name:'境界王アルケオン・零界再臨',
+ hp:Math.round(ARCHEON.hp*1.8),
+ atk:Math.round(ARCHEON.atk*1.25),
+ def:Math.round(ARCHEON.def*1.15),
+ xp:Math.round(ARCHEON.xp*1.6),
+ gold:Math.round(ARCHEON.gold*1.6),
+ boss:true,
+ raid:true,
+};
