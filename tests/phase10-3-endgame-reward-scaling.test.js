@@ -30,18 +30,19 @@ test('World Tier reward values align with the shared endgame milestones',()=>{
   }
 });
 
-test('Abyss gains intrinsic loot and gold chase value as depth rises',()=>{
+test('normal Abyss stages carry the intrinsic era reward profile through depth',()=>{
   const depths=[1,100,500,1000,2000,3000];
-  const stages=depths.map(d=>buildAbyssStage(d,[],{suppressModifiers:true}));
+  const stages=depths.map(d=>buildAbyssStage(d));
   for(let i=1;i<stages.length;i++){
-    assert.ok(stages[i].dropMult>stages[i-1].dropMult);
-    assert.ok(stages[i].rewards.gold>stages[i-1].rewards.gold);
+    assert.ok(stages[i].endgameRewardProfile.drop>stages[i-1].endgameRewardProfile.drop);
+    assert.ok(stages[i].endgameRewardProfile.gold>stages[i-1].endgameRewardProfile.gold);
   }
   assert.equal(stages.at(-1).endgameRewardProfile.drop,2.8);
+  assert.ok(stages.at(-1).rewards.gold>stages[0].rewards.gold);
 });
 
-test('derived Machine World stages suppress Abyss-era reward stacking',()=>{
-  const raw=buildAbyssStage(2000,[],{suppressModifiers:true,suppressEndgameRewards:true});
+test('derived content can keep the legacy neutral Abyss template',()=>{
+  const raw=buildAbyssStage(2000,[],{suppressModifiers:true});
   assert.equal(raw.dropMult,1);
   assert.equal(raw.endgameRewardProfile.drop,1);
   const machine=buildMachineWorldStage('machine-world-15');
