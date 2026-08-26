@@ -1,11 +1,12 @@
 /* ============================================================
    ステージ／章データ定義
    第1章は既存のまま。第2〜15章は標準5ステージ構成、
-   第16〜25章は8ステージ＋隠し道（中Bossあり）で展開する。
+   第16〜29章は8ステージ＋隠し道（中Bossあり）で展開する。
    ============================================================ */
 import { CHAPTER_SPECS, chapterMult, CHAPTER_REGION_TAGS } from './chapters.js';
 import { CHAPTER_EXPANSION_16_20, CHAPTER_EXPANSION_REGION_TAGS } from './chapters16to20.js';
 import { CHAPTER_EXPANSION_21_25, CHAPTER_EXPANSION_REGION_TAGS_21_25 } from './chapters21to25.js';
+import { CHAPTER_EXPANSION_26_29, CHAPTER_EXPANSION_REGION_TAGS_26_29 } from './chapters26to29.js';
 import { regionProfileForChapter } from './regionsPhase9.js';
 import { buildAbyssStage } from './abyss.js';
 import { buildSecretRealmStage } from './secretRealms.js';
@@ -49,8 +50,8 @@ function buildExpandedChapter(ch){
   return{id:ch.id,num:ch.num,name:`第${ch.num}章 ${ch.name}`,lore:ch.lore,expanded:true,stages};
 }
 
-export const CHAPTERS=[CHAPTER_1,...CHAPTER_SPECS.map(buildChapter),...CHAPTER_EXPANSION_16_20.map(buildExpandedChapter),...CHAPTER_EXPANSION_21_25.map(buildExpandedChapter)];
-const ALL_REGION_TAGS={...CHAPTER_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS_21_25};
+export const CHAPTERS=[CHAPTER_1,...CHAPTER_SPECS.map(buildChapter),...CHAPTER_EXPANSION_16_20.map(buildExpandedChapter),...CHAPTER_EXPANSION_21_25.map(buildExpandedChapter),...CHAPTER_EXPANSION_26_29.map(buildExpandedChapter)];
+const ALL_REGION_TAGS={...CHAPTER_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS_21_25,...CHAPTER_EXPANSION_REGION_TAGS_26_29};
 for(const ch of CHAPTERS){
   const tags=ALL_REGION_TAGS[ch.id]||[],profile=regionProfileForChapter(ch.id);
   ch.regionProfile=profile;
@@ -70,4 +71,5 @@ export function findStage(stageId){
  return null;
 }
 export function isChapterUnlocked(chapterIndex,isStageCleared){if(chapterIndex===0)return true;const prevChapter=CHAPTERS[chapterIndex-1];return isStageCleared(finalStageOf(prevChapter).id);} 
-export function isAbyssUnlocked(isStageCleared){return CHAPTERS.every(ch=>isStageCleared(finalStageOf(ch).id));}
+// Story Expansion must not silently move the already-live Abyss gate when new story chapters are appended.
+export function isAbyssUnlocked(isStageCleared){return CHAPTERS.filter(ch=>ch.num<=25).every(ch=>isStageCleared(finalStageOf(ch).id));}

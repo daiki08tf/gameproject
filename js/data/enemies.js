@@ -1,11 +1,12 @@
 /* ============================================================
    敵データ定義
    第1章は既存のまま。第2章以降は chapter metadata から
-   normal/fast/tank/boss を自動生成。16〜25章はmidbossも生成する。
+   normal/fast/tank/boss を自動生成。16〜29章はmidbossも生成する。
    ============================================================ */
 import { CHAPTER_SPECS, chapterMult } from './chapters.js';
 import { CHAPTER_EXPANSION_16_20 } from './chapters16to20.js';
 import { CHAPTER_EXPANSION_21_25 } from './chapters21to25.js';
+import { CHAPTER_EXPANSION_26_29 } from './chapters26to29.js';
 import { ENEMY_SCALING, chapterScaleMult } from './balance.js';
 
 export function hpMult(num) { return chapterScaleMult(ENEMY_SCALING.HP_BASE_MULT, ENEMY_SCALING.HP_EARLY_RATE, ENEMY_SCALING.HP_LATE_RATE, ENEMY_SCALING.PIVOT_CHAPTER, num); }
@@ -20,7 +21,7 @@ const MIDBOSS_BASE={hp:255,atk:14,def:7,speed:76,radius:28,color:'#d47748',xp:70
 const BRANCH_BASE={hp:150,atk:20,def:9,speed:70,radius:26,color:'#d68b3a',xp:40,gold:25,boss:true};
 function scale(base,name,num){const isBoss=!!base.boss;return{...base,name,hp:Math.round(base.hp*(isBoss?bossHpMult(num):hpMult(num))),atk:Math.round(base.atk*atkMult(num)),def:Math.round(base.def*defMult(num)),xp:Math.round(base.xp*chapterMult(num)),gold:Math.round(base.gold*chapterMult(num))};}
 export const ENEMY_TYPES={grunt:scale(NORMAL_BASE,'ゴブリン',1),fast:scale(FAST_BASE,'コウモリ',1),tank:scale(TANK_BASE,'オーガ',1),boss_orcking:scale(BOSS_BASE,'オークキング',1),branch_goblin_chief:scale(BRANCH_BASE,'ゴブリンの頭目',1)};
-export const ALL_CHAPTER_SPECS=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_21_25];
+export const ALL_CHAPTER_SPECS=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_21_25,...CHAPTER_EXPANSION_26_29];
 for(const ch of ALL_CHAPTER_SPECS){
  ENEMY_TYPES[`${ch.id}_normal`]=scale(NORMAL_BASE,ch.enemies.normal,ch.num);
  ENEMY_TYPES[`${ch.id}_fast`]=scale(FAST_BASE,ch.enemies.fast,ch.num);

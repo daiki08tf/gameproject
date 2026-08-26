@@ -1,4 +1,4 @@
-/* Phase 11 — Journey story integration.
+/* Phase 11 / Story Expansion I — Journey story integration.
  * Reuses existing stage data and TextBattleScreen. No new screen, currency,
  * progression gate or save field is introduced.
  */
@@ -6,12 +6,13 @@ import { CHAPTERS } from '../data/stages.js';
 import { coreStoryBeatForStage } from '../data/storyChapters1to15.js';
 import { veilStoryBeatForStage } from '../data/storyChapters16to20.js';
 import { outerWorldStoryBeatForStage } from '../data/storyChapters21to25.js';
+import { reverseObservationStoryBeatForStage } from '../data/storyChapters26to29.js';
 import { worldMysteryClueForStage } from '../data/storyWorldMystery.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
 
 function attachJourneyStory(){
   for(const chapter of CHAPTERS){
-    if(chapter.num<1||chapter.num>25)continue;
+    if(chapter.num<1||chapter.num>29)continue;
     const mainStages=chapter.stages.filter(stage=>!stage.branch&&!stage.bounty);
     chapter.stages.forEach(stage=>{
       const mainIndex=mainStages.indexOf(stage);
@@ -20,14 +21,15 @@ function attachJourneyStory(){
         ? coreStoryBeatForStage(chapter.num,stage,mainIndex,mainStages.length)
         : chapter.num<=20
           ? veilStoryBeatForStage(chapter.num,stage,mainIndex,mainStages.length)
-          : outerWorldStoryBeatForStage(chapter.num,stage,mainIndex,mainStages.length);
+          : chapter.num<=25
+            ? outerWorldStoryBeatForStage(chapter.num,stage,mainIndex,mainStages.length)
+            : reverseObservationStoryBeatForStage(chapter.num,stage,mainIndex,mainStages.length);
       if(beat)stage.story11=beat;
     });
   }
 }
 
 // Backward-compatible alias kept for Phase 11.2 tests/extensions.
-// The implementation now covers Ch1–25, but existing consumers must not break.
 const attachCoreStory=attachJourneyStory;
 
 function storyStartLines(stage){
