@@ -2,7 +2,7 @@
 
 ## Current status
 
-- **12.1 Boundary Ruins Pack I — implementation complete / CI pending**
+- **12.1 Boundary Ruins Pack I — ✅ Complete**
 - **12.2 Recruitable Species Pack I — NEXT**
 - **12.3 Unique / Artifact / Relic Pack I — planned**
 - **12.4 Boss Pack / Signature Encounters — planned**
@@ -21,7 +21,7 @@ Phase 12 increases playable variety only after the systems and Story 3.0 foundat
 6. Content should strengthen the Story Canon rather than invent a parallel cosmology.
 7. Mobile navigation and compact presentation remain completion criteria.
 
-## 12.1 — Boundary Ruins Pack I
+## 12.1 — Boundary Ruins Pack I ✅
 
 Four optional discoveries are added to the existing Abyss exploration flow:
 
@@ -33,6 +33,8 @@ Four optional discoveries are added to the existing Abyss exploration flow:
 Each ruin uses the existing three-fragment discovery model, Secret Realm builder, stage progress, Gold/EXP economy and existing Set pools. Dedicated enemy archetypes are derived from the canonical Abyss combat curve at the ruin's base depth so the pack scales naturally through the Lv99,999 endgame.
 
 No Home button, standalone screen, currency, save schema, chapter gate or parallel progression table is introduced.
+
+Regression coverage verifies exploration registration, expansion-safe site counts, canonical Lv/IP scaling, Secret Realm resolution, dedicated enemies/bosses, valid existing equipment drops and repeat-build stat stability.
 
 ## Next — 12.2 Recruitable Species Pack I
 
