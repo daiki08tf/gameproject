@@ -17,6 +17,7 @@ import './uiFoundationBootstrap.js';
 import './equipmentCompactUi.js';
 import './monsterRanchCompactUi.js';
 import './endgameGuidanceUi.js';
+import './finalIntegrationUi.js';
 import { applyHomePixelIcons } from '../ui/pixelIcons.js';
 
 const HOME_HUBS = [
