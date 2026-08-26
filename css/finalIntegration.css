@@ -46,6 +46,12 @@
 .pick-row .item-stats,.forge-card-sub{line-height:1.4;}
 #lootFilterRow{position:sticky;top:0;z-index:6;background:var(--bg);padding:4px 0 6px;margin-bottom:6px;}
 .monster-ranch-list,.ranch-list{min-height:0;}
+.phase14-loadouts{margin-bottom:6px;padding:9px 10px;}
+.phase14-loadout-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:6px;}
+.phase14-loadout-row::-webkit-scrollbar{display:none;}
+.phase14-loadout-unit{flex:0 0 auto;display:grid;grid-template-columns:auto auto;gap:4px;align-items:center;background:var(--surface-2);border:1px solid var(--line-soft);border-radius:10px;padding:6px;}
+.phase14-loadout-unit>span{grid-column:1/-1;font-size:10px;font-weight:800;color:var(--text-muted);}
+.phase14-loadout-unit button{min-height:36px;padding:6px 9px;font-size:10px;}
 
 /* Critical regression guard: many enemies/log lines may scroll, commands may not. */
 #textBattleScreen{min-height:0;overflow:hidden;padding-bottom:max(8px,env(safe-area-inset-bottom));}
