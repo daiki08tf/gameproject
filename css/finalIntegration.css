@@ -14,6 +14,7 @@
 .stage-list,.equip-layout,.job-tiers,.blacksmith-content{min-height:0;}
 .stage-card,.forge-card,.job-card,.pick-row{border-radius:var(--radius-card);}
 .stage-card{padding:11px 13px;gap:10px;}
+.stage-card>div:first-child{min-width:0;flex:1 1 auto;}
 .stage-card .name{font-size:14px;line-height:1.35;}
 .stage-card .rec{line-height:1.45;margin-top:2px;}
 .btn-main,.btn-sub,.btn-back,.btn-icon,.tab-btn{min-height:var(--tap-min);}
@@ -35,7 +36,7 @@
 .phase14-adventure-strip{display:flex;gap:6px;overflow-x:auto;padding:0 0 8px;scrollbar-width:none;}
 .phase14-adventure-strip::-webkit-scrollbar{display:none;}
 .phase14-adventure-strip button{flex:0 0 auto;min-height:38px;padding:7px 11px;font-size:11px;border-radius:999px;}
-.phase14-favorite-btn{min-width:36px;min-height:36px;padding:4px 8px!important;border-radius:999px!important;}
+.phase14-favorite-btn{flex:0 0 auto;min-width:36px;min-height:36px;padding:4px 8px!important;border-radius:999px!important;}
 .phase14-stage-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
 .phase14-stage-meta span{font-size:10px;border:1px solid var(--line-soft);border-radius:999px;padding:2px 6px;color:var(--text-muted);}
 
