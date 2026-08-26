@@ -66,6 +66,7 @@ import './patches/abyss2Pacts.js';
 import './patches/abyss3Challenges.js';
 import './patches/abyssRunBuild.js';
 import './patches/exploration1Core.js';
+import './patches/phase12FinaleRuntime.js';
 import './patches/riftKeyCore.js';
 import './patches/endgameDropContextFix.js';
 import './patches/loot3RealmTargetFarm.js';
