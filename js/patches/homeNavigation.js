@@ -23,6 +23,7 @@ import './systemDeepeningPackB.js';
 import './systemDeepeningPackC.js';
 import './contentPackIIAB.js';
 import './contentPackIICD.js';
+import './contentPackIIE.js';
 import { enhanceHome } from './finalIntegrationUi.js';
 import { applyHomePixelIcons } from '../ui/pixelIcons.js';
 
