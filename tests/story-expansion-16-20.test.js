@@ -6,13 +6,14 @@ import { CHAPTER_EXPANSION_16_20 } from '../js/data/chapters16to20.js';
 import { WEAPON_TYPES } from '../js/data/weaponTypes.js';
 import { nextStageAfter } from '../js/data/resultNextStage.js';
 
-test('story preserves chapters 16-20 and Phase 9.1 extends the journey to chapter 25',()=>{
-  assert.equal(CHAPTERS.length,25);
+test('story preserves chapters 16-20 while later expansion continues beyond chapter 25',()=>{
+  assert.ok(CHAPTERS.length>=29);
   assert.equal(CHAPTERS.find(ch=>ch.id==='ch20')?.num,20);
   assert.equal(finalStageOf(CHAPTERS.find(ch=>ch.id==='ch20')).id,'20-8');
   assert.equal(finalStageOf(CHAPTERS.find(ch=>ch.id==='ch20')).recLevel,700);
-  assert.equal(CHAPTERS.at(-1).id,'ch25');
-  assert.equal(finalStageOf(CHAPTERS.at(-1)).id,'25-8');
+  assert.equal(CHAPTERS.find(ch=>ch.id==='ch25')?.num,25);
+  assert.equal(finalStageOf(CHAPTERS.find(ch=>ch.id==='ch25')).id,'25-8');
+  assert.equal(CHAPTERS.find(ch=>ch.id==='ch29')?.num,29);
 });
 
 test('chapters 16-20 use eight main stages plus one hidden branch',()=>{
@@ -39,11 +40,11 @@ test('story expansion only uses supported weapon classes',()=>{
   for(const ch of CHAPTER_EXPANSION_16_20)assert.ok(WEAPON_TYPES[ch.weaponType],`${ch.id}:${ch.weaponType}`);
 });
 
-test('next-stage flow crosses chapter 15, chapter 20, and ends cleanly at chapter 25',()=>{
+test('next-stage flow crosses chapter 15, chapter 20, and chapter 25 into the current story',()=>{
   assert.equal(nextStageAfter(findStage('15-5').stage).id,'16-1');
   assert.equal(nextStageAfter(findStage('16-4').stage).id,'16-5');
   assert.equal(nextStageAfter(findStage('16-7').stage).id,'16-8');
   assert.equal(nextStageAfter(findStage('20-8').stage).id,'21-1');
   assert.equal(nextStageAfter(findStage('24-8').stage).id,'25-1');
-  assert.equal(nextStageAfter(findStage('25-8').stage),null);
+  assert.equal(nextStageAfter(findStage('25-8').stage).id,'26-1');
 });
