@@ -96,5 +96,5 @@ Character EXPカーブは上限99,999まで既存の多項式ベースを維持�
 1. ✅ EX賞金首 / Nemesisを深淵Eraへ割り当てる
 2. ✅ 装備Tier / Affix / RelicのLv3,000以降の伸びを深淵IPへ接続する
 3. ✅ Job MASTER速度の再検証 — Phase 10.5。終盤の巨大報酬でも1報酬最大3 Job Lv、fresh Jobの最短MASTERは基本5勝 / 上級10勝 / 特級17勝を維持。
-4. ▶ Lv10,000以降の数値表示・戦闘式の桁耐性確認
-5. ⬜ 第1〜20章＋深淵を通したEXPシミュレーション
+4. ✅ Lv10,000以降の数値表示・戦闘式の桁耐性確認 — Phase 10.6。Lv99,999までの主要EXP・Abyss・Endgame Reward計算がfinite / safe integer圏内であることを回帰テスト化し、NaN / Infinity / 0除算向け共通numeric safety helperを追加。
+5. ▶ 第1〜20章＋深淵を通したEXPシミュレーション
