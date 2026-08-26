@@ -1,4 +1,4 @@
-/* Phase 9.6 — Machine World runtime bridge. */
+/* Phase 9.7 — Machine World runtime bridge. */
 import { state } from '../state.js';
 import { CHAPTERS } from '../data/stages.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
@@ -19,6 +19,7 @@ function scaledEnemy(def){
     xp:Math.max(1,Math.round((base.xp||1)*1.35)),
     gold:Math.max(1,Math.round((base.gold||1)*1.4)),
     machineWorld:true,
+    machineRole:def.role,
   };
 }
 
@@ -29,7 +30,7 @@ for(const [id,def] of Object.entries(MACHINE_WORLD_ENEMIES)){
 
 if(!CHAPTERS.some(ch=>ch.id==='machine_world')){
   CHAPTERS.push({
-    id:'machine_world',num:26,name:'機界・第一都市圏',subtitle:'第八鍵の向こう側に広がる人工世界',
+    id:'machine_world',num:26,name:'機界・双都市圏',subtitle:'第八鍵の向こう側で、設計者の正体を追う人工世界',
     stages:MACHINE_WORLD_STAGES.map(def=>buildMachineWorldStage(def.id)),
     phase9MachineWorld:true,
   });
@@ -44,3 +45,5 @@ state.phase9MachineWorldProgress=function(){
 state.phase9MachineWorldStageUnlocked=function(stageId){
   return !!this.phase9MachineWorldProgress().stages.find(s=>s.id===stageId)?.unlocked;
 };
+
+state.phase9ArchitectDefeated=function(){return !!this.isStageCleared?.('machine-world-10');};
