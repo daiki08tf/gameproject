@@ -1,6 +1,7 @@
 import { BattleEngine } from '../battleEngine.js';
 import { state } from '../state.js';
 import { enemyCombatProfile, enemyRole } from '../data/enemyCombat3.js';
+import './systemDeepeningPackA.js';
 
 function planCombat3Skill(enemy){
   const skill=enemy?.combat3Skill;
