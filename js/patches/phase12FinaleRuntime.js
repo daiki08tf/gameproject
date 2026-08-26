@@ -11,6 +11,17 @@ state.phase12RegionDepthMastery=function(chapter){
   return this.phase12HorizontalMastery().regions.find(x=>x.chapter===Number(chapter))||null;
 };
 
+// Preserve the Phase 9 mastery contract exactly; Phase 12 only attaches an
+// optional horizontal-depth record and never revokes an already earned mastery.
+if(state.phase9RegionMastery){
+  const previousRegionMastery=state.phase9RegionMastery.bind(state);
+  state.phase9RegionMastery=function phase12RegionMasteryExpansion(chapterId){
+    const base=previousRegionMastery(chapterId);
+    if(!base)return base;
+    return {...base,horizontalDepth:this.phase12RegionDepthMastery(chapterId)};
+  };
+}
+
 state.phase12CodexGroups=function(){
   const entries=this.data.monsterCodex||{};
   return PHASE12_CODEX_GROUPS.map(group=>{
