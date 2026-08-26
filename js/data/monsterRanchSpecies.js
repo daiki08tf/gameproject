@@ -2,6 +2,7 @@
    Keep legacy companion IDs stable while expanding recruitable species across all regions. */
 import { CHAPTER_SPECS } from './chapters.js';
 import { CHAPTER_EXPANSION_16_20 } from './chapters16to20.js';
+import { PHASE12_RECRUITABLE_SPECIES } from './phase12CompanionPack.js';
 
 const LEGACY_NORMAL_IDS=Object.freeze({ch11:'ash_soldier',ch12:'thunder_beast',ch13:'crystal_bug',ch14:'rot_beast',ch15:'iron_hound'});
 const LEGACY_NAMES=new Set(['ゴブリン','コウモリ','灰骸兵','雷羽獣','蒼晶蟲','腐苔獣','鉄歯機兵']);
@@ -13,7 +14,7 @@ function chanceFor(num,role){const base=role==='fast'?.095:.08;return Math.max(.
 function makeSpecies(ch,role,index){const name=ch.enemies[role];if(LEGACY_NAMES.has(name))return null;const id=role==='normal'&&LEGACY_NORMAL_IDS[ch.id]?LEGACY_NORMAL_IDS[ch.id]:slug(ch,role),st=statsFor(ch.num,role),trait=TRAITS[role][(ch.num+index)%TRAITS[role].length];return[id,{id,name,type:'monster',family:role==='fast'?'spirit':'beast',regionId:ch.id,regionName:ch.name,enemyType:`${ch.id}_${role}`,icon:ICONS[(ch.num*2+index)%ICONS.length],...st,recruit:{baseChance:chanceFor(ch.num,role)},traits:[trait],skills:role==='fast'?[{level:1,id:'bite'},{level:12,id:'sonic'}]:[{level:1,id:'body_attack'},{level:14,id:'club_hit'}]}];}
 const ALL=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20];
 const MACHINE_SPECIES={machine_iris:{id:'machine_iris',name:'索敵機・アイリス',type:'monster',family:'construct',regionId:'machine_world',regionName:'機界・第一都市圏',enemyType:'machine_scout',icon:'🤖',baseStats:{hp:190,mp:42,atk:38,def:31,mag:34,spd:42},growth:{hp:13.5,mp:2.2,atk:4.2,def:3.4,mag:3.8,spd:2.4},recruit:{baseChance:.024},traits:['自己学習'],skills:[{level:1,id:'iron_fang'},{level:32,id:'sonic'}]}};
-export const RANCH_REGION_SPECIES=Object.freeze({...Object.fromEntries(ALL.flatMap((ch,i)=>['normal','fast'].map(role=>makeSpecies(ch,role,i)).filter(Boolean))),...MACHINE_SPECIES});
+export const RANCH_REGION_SPECIES=Object.freeze({...Object.fromEntries(ALL.flatMap((ch,i)=>['normal','fast'].map(role=>makeSpecies(ch,role,i)).filter(Boolean))),...MACHINE_SPECIES,...PHASE12_RECRUITABLE_SPECIES});
 export const RANCH_RECRUIT_BY_ENEMY_TYPE=Object.freeze(Object.fromEntries(Object.values(RANCH_REGION_SPECIES).map(s=>[s.enemyType,s.id])));
 export const RANCH_SPECIES_TRAIT_EFFECTS=Object.freeze({
 '野生本能':{kind:'lowHpDamage',power:.12,threshold:.50,desc:'HP50%以下の敵へのダメージ +12%'},'頑健':{kind:'physicalMitigation',power:.08,desc:'通常攻撃の被ダメージ -8%'},'執念':{kind:'lowHpDamage',power:.16,threshold:.35,desc:'HP35%以下の敵へのダメージ +16%'},'群生':{kind:'physicalMitigation',power:.06,desc:'通常攻撃の被ダメージ -6%'},'異界適応':{kind:'physicalMitigation',power:.10,desc:'通常攻撃の被ダメージ -10%'},'先駆け':{kind:'initiativeSpd',power:.12,desc:'行動順判定時のSPD +12%'},'狩猟眼':{kind:'lowHpDamage',power:.14,threshold:.50,desc:'HP50%以下の敵へのダメージ +14%'},'幻走':{kind:'initiativeSpd',power:.18,desc:'行動順判定時のSPD +18%'},'魔力感知':{kind:'initiativeSpd',power:.10,desc:'行動順判定時のSPD +10%'},'急襲':{kind:'initiativeSpd',power:.16,desc:'行動順判定時のSPD +16%'},'自己学習':{kind:'initiativeSpd',power:.24,desc:'行動順判定時のSPD +24%'}});
