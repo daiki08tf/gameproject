@@ -11,14 +11,18 @@ import '../js/patches/equipment3GearFoundation.js';
 import '../js/patches/equipment3UniqueGearSafety.js';
 import '../js/patches/equipment3SetBonuses.js';
 
-test('Phase 1 ships five fixed three-piece Sets', () => {
-  assert.equal(Object.keys(EQUIPMENT3_SETS).length, 5);
-  assert.equal(SET_EQUIPMENT.length, 15);
-  for (const setId of Object.keys(EQUIPMENT3_SETS)) {
+test('Phase 1 five fixed three-piece Sets remain intact while later Sets can extend the registry', () => {
+  const phase1Ids = ['blood_king', 'ancient_dragon', 'star_weaver', 'abyss_walker', 'executioner'];
+  assert.ok(Object.keys(EQUIPMENT3_SETS).length >= phase1Ids.length);
+  for (const setId of phase1Ids) {
+    assert.ok(EQUIPMENT3_SETS[setId]);
     const pieces = SET_EQUIPMENT.filter((item) => item.setId === setId);
     assert.equal(pieces.length, 3);
     assert.ok(pieces.every((item) => item.fixedSet && item.rarity === 'mythic'));
     assert.ok(pieces.every((item) => getItem(item.id)?.setId === setId));
+  }
+  for (const setId of Object.keys(EQUIPMENT3_SETS)) {
+    assert.equal(SET_EQUIPMENT.filter((item) => item.setId === setId).length, 3);
   }
 });
 
