@@ -2,7 +2,7 @@
 
 > **Status:** Active roadmap / source of truth for development toward Blade Vale 3.0.
 >
-> **Current:** Phase 11 — Adventure / Story 3.0.
+> **Current:** Phase 12 — Content Expansion.
 >
 > Before starting a large feature, inspect current code/tests and check this roadmap first. This document supersedes older feature-addition roadmaps.
 
@@ -35,9 +35,9 @@ Prefer connecting, finishing, simplifying or retiring existing systems over addi
 | 8 Job 3.0 Final | ✅ core | 56-job/Secret Job foundation |
 | 9 Settlement 2.0 | ✅ core | deeper cross-system links scheduled |
 | 10 Endgame 3.0 | ✅ | Official Phase 10 closed; see `PHASE10_FINAL_AUDIT.md` |
-| 11 Adventure / Story 3.0 | 🟡 CURRENT | connect worlds/systems into one narrative |
-| 12 Content Expansion | ⏭ | after story/system stabilization |
-| 13 Visual Identity 3.0 | ⏭ | after structure stabilizes |
+| 11 Adventure / Story 3.0 | ✅ | Story Canon + Ch1–25 + world mystery + Modern World tease complete |
+| 12 Content Expansion | 🟡 CURRENT | expand playable variety through existing systems |
+| 13 Visual Identity 3.0 | ⏭ | after content structure stabilizes |
 | 14 Final Integration | ⏭ | feature freeze |
 
 `LEVEL_ROADMAP_99999.md` Phase 10.1–10.7 is the completed **Lv99,999 progression/endgame tuning sub-roadmap**. It is distinct from Official Phase 10, which is also now complete.
@@ -199,7 +199,7 @@ Unique Trials + Boss Encounter conditions already fill the build-test/mastery ro
 
 ---
 
-## Phase 11 — Adventure / Story 3.0 🟡 CURRENT
+## Phase 11 — Adventure / Story 3.0 ✅ COMPLETE
 
 Connect the world into one narrative:
 
@@ -211,48 +211,37 @@ Central mystery:
 
 Story supports exploration and systems; it must not become a separate visual-novel layer.
 
-### 11.1 Story Canon
+### 11.1 Story Canon ✅
 
-Define the relationship among Human / Heaven / Underworld / Boundary / Machine / Modern worlds, the player's central objective, what The Veil is, and what each existing endgame system means in-world.
+The Human / Heaven / Underworld / Boundary / Machine / Modern layers, player objective, The Veil and endgame meanings have one canonical source.
 
-### 11.2 Ch1–15 Story Pass
+### 11.2 Ch1–15 Story Pass ✅
 
-Add concise dialogue, boss lines, discoveries and environmental text. Do not create long mandatory text walls.
+Compact objectives, discoveries, boss lines and clear records now live in the existing text-battle flow.
 
-### 11.3 The Veil — Ch16–20
+### 11.3 The Veil — Ch16–20 ✅
 
-Make the second major arc legible and connect its progression to the post-Ch15 world/endgame transition.
+The second act establishes The Veil, outside intrusion and the Ch20 guardian reversal.
 
-### 11.4 World Mystery Integration
+### 11.4 World Mystery Integration ✅
 
-Give Key Dungeons, Secret Realms, Nemesis, Machine World, Unique Trials, artifacts/relics and anomalies narrative meaning.
+Key Dungeons, Secret Realms, Nemesis, Machine World, Unique Trials, artifacts/relics, Raid and anomalies have narrative meaning.
 
-### 11.5 Ch21–25 Integration
+### 11.5 Ch21–25 Integration ✅
 
-Use the already-existing chapter data as the next arc rather than creating a parallel story route.
+Existing outer-world chapters form the third act and lead through the Boundary Throne to the Eighth Key / Machine World.
 
-### 11.6 Modern World Tease
+### 11.6 Modern World Tease ✅
 
-Seed restrained clues—architecture, signals, sounds, writing, devices, dates—without immediately explaining the mystery.
+Controlled sensory fragments—architecture, signals, rail-like vibration, date notation, a thin device and familiar writing—hint at the Modern World while the connection reason stays unresolved.
 
-### Codex Lore
-
-Unlock knowledge in layers from identity/weakness to ecology/lore/secret information. Late Codex knowledge can connect monsters, artifacts and realms to the central mystery.
-
-### Phase 11 completion gate
-
-- Player motivation is understandable from Ch1 onward.
-- Ch1–25 reads as one escalating journey.
-- World/Key/Secret/Machine/Nemesis/Raid/Abyss systems have narrative context.
-- Story text stays compact and mobile-readable.
-- Existing progression/balance is not silently rewritten by story work.
-- Tests/CI remain clean.
+Full evidence: `PHASE11_STORY_STATUS.md`.
 
 ---
 
-## Phase 12 — Content Expansion
+## Phase 12 — Content Expansion 🟡 CURRENT
 
-Only after systems/story stabilize, increase volume.
+Only after systems/story stabilize, increase volume. **Content should deepen existing loops rather than create another menu or progression layer.**
 
 Long-term guidelines, not quotas:
 
@@ -265,11 +254,33 @@ Long-term guidelines, not quotas:
 - Artifact / Relic 100+
 - Key Dungeon content 50+
 
-Prefer reusable archetypes/modifiers/events over near-identical hand-authored entries.
+Prefer reusable archetypes/modifiers/events over near-identical hand-authored entries. Canonical Lv99,999/IP10,000 progression functions remain the source of truth for endgame recommendations.
 
-### Titles / Personal Records
+### 12.1 Boundary Ruins Pack I 🟡
+
+Add four optional Secret Realm discoveries through the existing Abyss exploration flow: **残響観測塔 / 沈降鋳造所 / 記憶果樹園 / 零番境界駅**. Each has a distinct enemy/boss identity and reuses existing Set, Gold/EXP, stage progress and exploration-fragment systems. No Home button, new currency or save schema.
+
+### 12.2 Recruitable Species Pack I ⏭
+
+Increase Monster Ranch / Companion variety using the existing recruitment, role, breeding, mutation and bond systems. Tie acquisition to existing regions/content instead of a parallel capture menu.
+
+### 12.3 Unique / Artifact / Relic Pack I ⏭
+
+Increase build-changing rewards with distinct rules and target-farm locations. Do not pad counts with percentage-only variants.
+
+### 12.4 Boss Pack / Signature Encounters ⏭
+
+Add memorable bosses through existing Battle 3 boss vocabulary—Intent, escorts, phases, Break windows and resource pressure—not HP-only inflation.
+
+### 12.5 Region / World Event Density ⏭
+
+Increase reusable events, routes and regional discoveries while keeping Adventure navigation compact.
+
+### 12.6 Titles / Personal Records ⏭
 
 Add lightweight prestige/history such as deepest Abyss, largest damage, fastest boss clear, highest Item Power and collection feats. Avoid turning Titles into another mandatory power ladder.
+
+Detailed status: `PHASE12_CONTENT_STATUS.md`.
 
 ## Phase 13 — Visual Identity 3.0
 
@@ -354,12 +365,9 @@ These items are assigned to phases above; this is **not a parallel roadmap**.
 
 ```text
 COMPLETED FOUNDATION
-Phase 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
+Phase 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11
 
 CURRENT
-Phase 11    Adventure / Story 3.0
-   |
-   v
 Phase 12    Content Expansion + long-term recognition
    |
    v
