@@ -6,6 +6,7 @@ import './patches/progression3Combat.js';
 import './patches/progression3Ui.js';
 import './patches/levelRoadmap99999.js';
 import './patches/progression3StoryExpansion.js';
+import './patches/worldTierRuntime.js';
 import './patches/battleRewardAccountingFix.js';
 import './patches/jobCodexUi.js';
 import './patches/inheritanceCore.js';
