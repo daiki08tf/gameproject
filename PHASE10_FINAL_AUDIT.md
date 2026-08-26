@@ -6,9 +6,9 @@
 
 ## Decision
 
-Official Phase 10 is **almost complete, but not yet closable**.
+Official Phase 10 is **complete**.
 
-The repository already contains working implementations for Abyss 3, Nemesis, World Tier, transcendent/otherworld progression and challenge-style build tests. The only material roadmap gap is a distinct **Raid Boss** endgame route.
+The audit first identified Raid Boss as the only material gap after mapping existing implementations to 10-A/B/C/D/F. Phase 10-E was then implemented on PR #192 as an integration layer over the existing Combat 3/Boss Encounter foundations.
 
 Do not create duplicate replacements for systems that already satisfy the roadmap role.
 
@@ -16,40 +16,48 @@ Do not create duplicate replacements for systems that already satisfy the roadma
 
 | Roadmap item | Status | Existing implementation / decision |
 |---|---|---|
-| 10-A Abyss 3 | ✅ Satisfied | `abyssPacts`, `abyssChallenges`, `abyssRoutes`, `abyssRunBuild`, `abyssEndgame`, target farm, Abyss UI and regression tests already form the long-term run loop. |
+| 10-A Abyss 3 | ✅ Satisfied | `abyssPacts`, `abyssChallenges`, `abyssRoutes`, `abyssRunBuild`, `abyssEndgame`, target farm, Abyss UI and regression tests form the long-term run loop. |
 | 10-B Nemesis | ✅ Satisfied | `js/data/nemesis3.js` and Phase 10 Nemesis regression coverage. |
 | 10-C World Tier | ✅ Satisfied | `js/data/worldTiers.js`, `js/patches/worldTierRuntime.js`, stage-flow integration and tests. |
-| 10-D Transcendent regions | ✅ Satisfied by existing world stack | `world3Realms`, Secret Realms, dimensional/rift content and Machine World collectively occupy the transcendent-region role. Do not add another parallel “region system”. |
-| 10-E Raid Bosses | ⏳ Gap | No distinct raid route/profile layer currently exists. Implement by reusing Combat 3 boss encounter, Break, phase, intent and endgame reward foundations. |
-| 10-F Challenge Bosses | ✅ Satisfied / mapped | Unique Trials + Boss Encounter conditions already test builds and boss mastery. Extend prestige rewards later rather than adding another challenge-boss menu. |
+| 10-D Transcendent regions | ✅ Satisfied by existing world stack | `world3Realms`, Secret Realms, dimensional/rift content and Machine World collectively occupy the transcendent-region role. Do not add another parallel region system. |
+| 10-E Raid Bosses | ✅ Implemented | `raidBosses.js`, `raid_archeon`, Boss Encounter phase profile, Abyss/Endgame route, preparation UI and regression coverage. |
+| 10-F Challenge Bosses | ✅ Satisfied / mapped | Unique Trials + Boss Encounter conditions test builds and boss mastery. Extend prestige rewards later rather than adding another challenge-boss menu. |
 
-## Why Raid Boss is a real gap
+## Phase 10-E implementation
 
-`js/data/bossEncounters.js` already proves the correct combat model: escorts, guard roles, phase thresholds, Break windows, danger tags and counter hints. What is missing is an endgame-facing raid layer that deliberately combines those mechanics with preparation, clear unlock/progression rules and reusable rewards.
+First Raid:
 
-Raid must therefore be an **integration layer**, not a second battle engine.
+**RAID：境界王アルケオン・零界再臨**
 
-## Phase 10-E acceptance criteria
+- Unlock: Abyss 10F.
+- Recommended Lv: 3,000.
+- Target Item Power: 3,000.
+- Route: existing Abyss/Endgame screen; no new Home button.
+- Preparation UI: danger tags, mechanic, counter hint and reward hint.
+- Combat: Guard escorts + four encounter phases + progressively smaller Break windows.
+- Numeric scaling: moderate uplift from Ch25 boss; difficulty is not HP-only.
+- Rewards: existing Ch25 equipment, EXP and Gold; no new currency and no parallel reward multiplier table.
+- Persistence: normal non-Abyss stage result path records `raid-archeon` clear state in existing `stageProgress`.
 
-A Raid Boss implementation is complete only when all of the following are true:
+## Acceptance criteria result
 
-1. At least one endgame raid encounter is reachable through the existing Adventure/Endgame flow.
-2. No new top-level Home button is added.
-3. The pre-battle surface communicates recommended level/item power, danger tags, counter/preparation hints and the core mechanic.
-4. The encounter has meaningful phase changes and explicit Break opportunities; HP inflation alone is not sufficient.
-5. Existing Combat 3/Boss Encounter/Enemy Intent foundations are reused.
-6. Rewards reuse the existing endgame loot/reward scaling sources of truth rather than introducing a parallel multiplier table or unnecessary new currency.
-7. Clear/repeat state is persisted where needed and remains save-compatible.
-8. Automated tests cover unlock, encounter definition, phase/Break mechanics, rewards and navigation exposure.
-9. Mobile presentation remains compact and uses progressive disclosure.
-10. CI is clean.
+1. Existing Adventure/Endgame route — ✅
+2. No new top-level Home button — ✅
+3. Preparation information — ✅
+4. Phase changes / Break opportunities — ✅
+5. Reuses Combat 3/Boss Encounter foundations — ✅
+6. Reuses existing reward economy — ✅
+7. Clear state uses existing save-compatible stage progress — ✅
+8. Regression coverage — ✅ `tests/phase10-raid-boss.test.js`
+9. Compact mobile-oriented presentation — ✅
+10. CI — ✅ `Blade Vale Tests` and `Phase 8 Validation` passed on PR #192 before closure update.
 
 ## Phase 10 nomenclature note
 
-The completed `LEVEL_ROADMAP_99999.md` Phase 10.1–10.7 work is the **Lv99,999 progression/endgame tuning sub-roadmap**. It should not be confused with the six capability groups in Official `ROADMAP.md` Phase 10.
+The completed `LEVEL_ROADMAP_99999.md` Phase 10.1–10.7 work is the **Lv99,999 progression/endgame tuning sub-roadmap**. It is distinct from the six capability groups in Official `ROADMAP.md` Phase 10.
 
-Both are valid, but Official Phase 10 closes only after the Raid Boss gap above is completed.
+Both are now complete.
 
-## Next after Phase 10
+## Next
 
 Proceed to **Phase 11 — Adventure / Story 3.0**. The story pass should connect existing systems rather than layering a separate visual-novel structure on top of them.
