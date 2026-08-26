@@ -9,7 +9,7 @@ export const WORLD3_REGIONS=Object.freeze([
   Object.freeze({id:'last-mortal',name:'人界最奥',subtitle:'蒼晶・腐界・黒鉄の果て',chapters:[13,14,15],tone:'mortal'}),
   Object.freeze({id:'veil',name:'The Veil',subtitle:'世界の外側へ続く第二部',chapters:[16,17,18,19,20],tone:'boundary'}),
   Object.freeze({id:'outer-world',name:'外縁世界',subtitle:'境界網の外側に連なる第三部',chapters:[21,22,23,24,25],tone:'outer'}),
-  Object.freeze({id:'reverse-observation',name:'逆観測域',subtitle:'第八鍵の接続元を追う第四部',chapters:[26,27,28,29],tone:'observer'}),
+  Object.freeze({id:'reverse-observation',name:'逆観測域',subtitle:'第八鍵の接続元を追う第四部',chapters:[26,27,28,29,30],tone:'observer'}),
 ]);
 
 export function world3RegionForChapter(chapterNumber){
