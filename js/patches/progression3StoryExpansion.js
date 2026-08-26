@@ -6,6 +6,7 @@
    back to Ch.16 Lv260. This patch makes the Veil expansion a continuous
    Lv700→3,000 story/endgame bridge.
    ============================================================ */
+import './story11CoreJourney.js';
 import { state } from '../state.js';
 import { CHAPTERS } from '../data/stages.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
