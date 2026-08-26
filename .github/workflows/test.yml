@@ -1,10 +1,10 @@
 name: Blade Vale Tests
 
 on:
-  pull_request:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
@@ -12,14 +12,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-
+          node-version: 22
       - name: Syntax check
         run: npm run test:syntax
-
       - name: Regression tests
-        run: npm test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tail -n 120
