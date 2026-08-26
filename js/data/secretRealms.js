@@ -21,9 +21,6 @@ function scaleRealmEnemies(stage, cfg){
 
 function registerRealmEnemyArchetypes(cfg){
   if(!cfg.enemyArchetypes)return;
-  // buildAbyssStage(baseDepth) has already registered all four canonical enemy
-  // roles for this exact depth. Clone those values so content packs stay on the
-  // Lv99,999 curve without mutating the shared Abyss enemies.
   for(const [id,def] of Object.entries(cfg.enemyArchetypes)){
     const source=ENEMY_TYPES[`abyss_${cfg.baseDepth}_${def.source}`];
     if(!source)continue;
@@ -41,6 +38,13 @@ function registerRealmEnemyArchetypes(cfg){
   }
 }
 
+function rollRareSpawn(cfg){
+  const rare=cfg.rareSpawn;
+  if(!rare||!rare.enemyId)return null;
+  const chance=Math.max(0,Math.min(.20,Number(rare.chance)||0));
+  return Math.random()<chance?{...rare,chance}:null;
+}
+
 function buildExpandedRealm(cfg){
   const site=cfg.site;
   const base=buildAbyssStage(cfg.baseDepth,[],{suppressModifiers:true});
@@ -55,6 +59,13 @@ function buildExpandedRealm(cfg){
   }[cfg.setPrefix]||[];
   const guaranteedPool=setDrops.length?setDrops:fallbackSetIds.map(itemId=>({itemId,weight:0.32}));
   const waves=cfg.waves?cfg.waves.map(w=>({...w})):(base.waves||[]).map(w=>({...w}));
+  const rareSpawn=rollRareSpawn(cfg);
+  if(rareSpawn){
+    const rareWave={type:rareSpawn.enemyId,count:1,interval:0,phase12Rare:true};
+    const bossIndex=Math.max(0,waves.length-1);
+    waves.splice(bossIndex,0,rareWave);
+  }
+  const rareDrops=rareSpawn?.dropId?[{itemId:rareSpawn.dropId,weight:0.18,phase12UltraRare:true}]:[];
   return {
     ...base,
     id:site.realm.id,
@@ -64,13 +75,18 @@ function buildExpandedRealm(cfg){
     isAbyss:false,
     secretRealm:true,
     secretRealmId:site.id,
-    phase12BoundaryRuin:Boolean(cfg.enemyArchetypes),
+    phase12BoundaryRuin:Boolean(cfg.enemyArchetypes&&!cfg.rareSpawn),
+    phase12Horizontal:Boolean(cfg.rareSpawn),
+    phase12RareSpawn:rareSpawn?.label||null,
+    phase12RareSpawnId:rareSpawn?.enemyId||null,
+    phase12WorldTrace:cfg.trace||null,
+    phase12UltraRareDropId:rareSpawn?.dropId||null,
     abyssDepth:null,
     abyssEra:`異界：${site.realmName}`,
     healMult:Math.min(base.healMult||1,cfg.healMult||1),
     dropMult:(base.dropMult||1)*(cfg.dropMult||1),
     rewards:{gold:Math.round(base.rewards.gold*(cfg.goldMult||1)),exp:Math.round(base.rewards.exp*(cfg.expMult||1))},
-    dropTable:[...guaranteedPool,...base.dropTable.filter(x=>!String(x.itemId).startsWith('set_'))],
+    dropTable:[...rareDrops,...guaranteedPool,...base.dropTable.filter(x=>!String(x.itemId).startsWith('set_'))],
     waves,
     modifiers:[cfg.modifier],
     dropRegionTags:cfg.tags||[],
