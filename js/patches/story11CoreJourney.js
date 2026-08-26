@@ -22,6 +22,10 @@ function attachJourneyStory(){
   }
 }
 
+// Backward-compatible alias kept for Phase 11.2 tests/extensions.
+// The implementation now covers Ch1–20, but existing consumers must not break.
+const attachCoreStory=attachJourneyStory;
+
 function storyStartLines(stage){
   const story=stage?.story11;if(!story)return[];
   const lines=[];
@@ -58,4 +62,4 @@ if(!globalThis.__BLADE_VALE_STORY11_CORE_JOURNEY__){
   };
 }
 
-export { attachJourneyStory, storyStartLines, storyClearLines };
+export { attachJourneyStory, attachCoreStory, storyStartLines, storyClearLines };
