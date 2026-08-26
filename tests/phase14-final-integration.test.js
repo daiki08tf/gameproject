@@ -26,10 +26,12 @@ test('Phase 14 navigation history is lazy and save-compatible',()=>{
   assert.match(runtime,/previousRecordStageResult\(stageId,cleared\)/);
 });
 
-test('Phase 14 equipment presets are small, validated and rollback on equip failure',()=>{
+test('Phase 14 equipment presets are small, validated and rollback-safe',()=>{
   assert.match(loadouts,/loadouts \|\|= \[null,null,null\]/);
   assert.match(loadouts,/state\.ownsItem/);
-  assert.match(loadouts,/for\(const rollbackSlot of changed\.reverse\(\)\)/);
+  assert.match(loadouts,/function unequipAll/);
+  assert.match(loadouts,/function restoreSnapshot/);
+  assert.match(loadouts,/if\(!equipSnapshot\(preset\.equipment\)\)/);
   assert.match(home,/buildLoadoutsUi\.js/);
   assert.doesNotMatch(loadouts,/currentJobId\s*=|equippedArtifacts\s*=/);
 });
