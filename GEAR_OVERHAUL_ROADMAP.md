@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **ACTIVE / Phase 0 audit**
+> Status: **ACTIVE / Phase 1 Option 4.0 foundation**
 >
 > This roadmap temporarily takes priority over further Deep Survey expansion. The reason is simple: high-difficulty content is more valuable after the loot loop itself becomes the main attraction.
 
@@ -174,6 +174,27 @@ A candidate new weapon family must pass all of these:
 
 Current Equipment 3.0 already provides 24 sub-archetypes across the 8 mastery families, including 大剣 / 刀 / 魔導書 / 双短剣 / 弩 / 大斧 etc. These must be audited before adding any ninth mastery family.
 
+## Implementation checkpoint — 2026-08-27
+
+Merged foundation work:
+
+- PR #229 — audit/docs + Option 4.0 compatibility foundation + Fusion `weapons[]` metadata + armor/accessory max-3 Options
+- PR #230 — new weapon drops normalized to max 3 Options while legacy saved 4–5 Affix weapons remain untouched
+- PR #231 — new weapon/armor/accessory Options persist `familyId / rarity / level / xp`; existing `roll` remains authoritative during migration
+
+Current live data contract for **new drops**:
+
+```text
+optionSchemaVersion: 1
+familyId: stable Affix/Option family ID
+rarity: common..ancient
+level: 1 (Phase 1 bridge default)
+xp: 0
+roll: existing combat value, still authoritative for now
+```
+
+This is deliberately staged. The next Phase 1 step is to replace raw roll-band authority with authored **rarity + Option Lv value curves**, then define drop-time starting Option Lv ranges before Option Fusion is enabled.
+
 ## Work phases
 
 ### Phase 0A — System inventory ✅
@@ -192,36 +213,46 @@ Confirmed:
 
 ### Phase 0B — Affix audit 🔄
 
-Audit all 77 current Affixes and classify each as:
+First-pass family audit is documented in `GEAR_OVERHAUL_AUDIT.md`. Exact 77-ID migration/value-curve mapping remains in progress.
 
-- KEEP — good identity; becomes an Option family
-- RENAME — good mechanic, weak/generic current presentation
-- MERGE — too close to another family for a max-3 Option game
-- RARE-LOCK — should start only at a higher option rarity
-- BUILD — build-changing option; preserve scarcity
-- REVIEW — mechanic/value needs validation before migration
+Classification vocabulary:
+- KEEP
+- RENAME
+- MERGE
+- RARE-LOCK
+- BUILD
+- REVIEW
 
-Deliverable: `GEAR_OVERHAUL_AUDIT.md`.
+### Phase 0C — Weapon × Job audit ✅
 
-### Phase 0C — Weapon × Job audit
+Audit completed in `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`.
 
-Audit:
-- 8 mastery families × 15 Basic Jobs
-- inherited weapon behavior in Advanced/Special jobs
-- 105 Fusion Jobs and how a Fusion job resolves/communicates weapon affinity
-- 24 existing weapon archetypes
+Key result:
+- current 8 mastery families / 24 archetypes are sufficient for now
+- no new mastery family is justified yet
+- generated Fusion jobs previously inherited only the first canonical parent weapon
+- compatibility foundation now exposes all parent affinities through `job.weapons[]` while retaining legacy `job.weapon`
 
-Deliverable: identify under-supported families and only then decide whether a new mastery weapon family is needed.
+New mastery families remain gated until this model is fully consumed by affinity/UI callers.
 
-### Phase 1 — Option 4.0 foundation
+### Phase 1 — Option 4.0 foundation 🔄
 
-Implement the new canonical Option data model:
-- max 3 random options
-- Option family
-- seven rarities
-- Lv1–100
-- value from rarity + level
-- compatibility/migration for existing saved Affixes
+Completed:
+- max 3 random Options on new weapon/armor/accessory drops
+- Option family metadata
+- seven-rarity compatibility
+- Lv1–100 schema bounds
+- `familyId / level / xp` persisted on new drops
+- old `roll` retained as compatibility combat value
+- legacy saved weapon Affixes are not destructively trimmed
+
+Remaining:
+- exact 77-family migration table
+- authored rarity display-name ladders beyond the ATK example
+- curve classes per family
+- rarity + Option Lv -> authoritative value calculation
+- drop-time starting Option Lv distribution by source/IP
+- explicit migration policy for old saved options if/when value authority moves
 
 No fusion UI yet; first make drops and application stable.
 
@@ -297,12 +328,14 @@ Any ChatGPT / Claude Code session working on Gear Overhaul must read:
 1. `ROADMAP.md`
 2. `GEAR_OVERHAUL_ROADMAP.md`
 3. `GEAR_OVERHAUL_AUDIT.md`
-4. `js/data/affixes.js`
-5. `js/data/equipment3.js`
-6. `js/data/equipment3Gear.js`
-7. `js/data/equipment3Archetypes.js`
-8. `js/data/equipment3AffixQuality.js`
-9. `js/data/equipment3Crafting.js`
-10. `js/data/equipment3SmartLoot.js`
+4. `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`
+5. `js/data/options4.js`
+6. `js/data/affixes.js`
+7. `js/data/equipment3.js`
+8. `js/data/equipment3Gear.js`
+9. `js/data/equipment3Archetypes.js`
+10. `js/data/equipment3AffixQuality.js`
+11. `js/data/equipment3Crafting.js`
+12. `js/data/equipment3SmartLoot.js`
 
-Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, or add weapon families before the job/archetype audit.
+Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity by leveling, or add weapon families before the documented weapon/job/archetype gate is deliberately revisited.
