@@ -39,10 +39,20 @@ state.worldLoreFragments=function(){
   return [...new Map(merged.map(x=>[x.id,x])).values()];
 };
 
+function postStoryBossBaseline(sourceEnemyId){
+  const src=ENEMY_TYPES[sourceEnemyId];if(!src)return null;
+  const suffix=String(sourceEnemyId).replace(/^ch\d+_/,'');
+  const benchmark=ENEMY_TYPES[`ch30_${suffix}`]||ENEMY_TYPES.ch30_boss||src;
+  return {src,benchmark};
+}
 function registerBoss(id,def){
   if(ENEMY_TYPES[id])return true;
-  const src=ENEMY_TYPES[def.sourceEnemyId];if(!src)return false;
-  ENEMY_TYPES[id]={...src,name:def.name,hp:Math.max(1,Math.round(src.hp*def.hpMult)),atk:Math.max(1,Math.round(src.atk*def.atkMult)),def:Math.max(0,Math.round(src.def*def.defMult)),speed:Math.max(1,Math.round((src.speed||80)*def.speedMult)),boss:true,contentPackIII:true,cp3HiddenBoss:true};
+  const base=postStoryBossBaseline(def.sourceEnemyId);if(!base)return false;
+  const{src,benchmark}=base;
+  // CP3 is unlocked only after Ch30. Preserve authored skills/identity from
+  // the old-region source, but benchmark combat stats against the equivalent
+  // Ch30 enemy so a discovered hidden boss cannot be an accidental pushover.
+  ENEMY_TYPES[id]={...src,name:def.name,hp:Math.max(1,Math.round(benchmark.hp*def.hpMult)),atk:Math.max(1,Math.round(benchmark.atk*def.atkMult)),def:Math.max(0,Math.round(benchmark.def*def.defMult)),speed:Math.max(1,Math.round((benchmark.speed||src.speed||80)*def.speedMult)),xp:Math.max(Number(src.xp)||0,Number(benchmark.xp)||0),boss:true,contentPackIII:true,cp3HiddenBoss:true,cp3PostStoryScaled:true};
   return true;
 }
 function eligibleBoss(stageId){

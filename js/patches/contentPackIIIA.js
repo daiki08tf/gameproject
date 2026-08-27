@@ -1,4 +1,5 @@
 /* Content Pack III A — post-Ch30 observation reflux runtime. */
+import './progression3OuterStory.js';
 import './contentPackIIE.js';
 import { state } from '../state.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
@@ -28,10 +29,20 @@ export function syncCP3(){
 state.cp3Rumors=function(){syncCP3();return this.rumorNotebook().filter(r=>r.contentPackIII);};
 state.cp3HiddenRoutes=function(){syncCP3();return Object.entries(world().discoveries).filter(([,v])=>v?.contentPackIII&&v?.hiddenRoute).map(([id,v])=>({id,...v}));};
 
+function postStoryBaseline(sourceEnemyId){
+  const src=ENEMY_TYPES[sourceEnemyId];if(!src)return null;
+  const suffix=String(sourceEnemyId).replace(/^ch\d+_/,'');
+  const benchmark=ENEMY_TYPES[`ch30_${suffix}`]||ENEMY_TYPES.ch30_normal||src;
+  return {src,benchmark};
+}
 function registerEnemy(def){
   if(ENEMY_TYPES[def.enemyId])return true;
-  const src=ENEMY_TYPES[def.sourceEnemyId];if(!src)return false;
-  ENEMY_TYPES[def.enemyId]={...src,name:def.name,hp:Math.max(1,Math.round(src.hp*1.14)),atk:Math.max(1,Math.round(src.atk*1.10)),def:Math.max(0,Math.round(src.def*1.06)),speed:Math.max(1,Math.round((src.speed||80)*1.08)),boss:false,contentPackIII:true,cp3HiddenEncounter:true};
+  const base=postStoryBaseline(def.sourceEnemyId);if(!base)return false;
+  const{src,benchmark}=base;
+  // Preserve the old-region identity/actions, but CP3 only exists after Ch30:
+  // its combat floor must therefore be the equivalent Ch30 archetype rather
+  // than the original Ch21–24 raw stats.
+  ENEMY_TYPES[def.enemyId]={...src,name:def.name,hp:Math.max(1,Math.round(benchmark.hp*1.14)),atk:Math.max(1,Math.round(benchmark.atk*1.10)),def:Math.max(0,Math.round(benchmark.def*1.06)),speed:Math.max(1,Math.round((benchmark.speed||src.speed||80)*1.08)),xp:Math.max(Number(src.xp)||0,Number(benchmark.xp)||0),boss:false,contentPackIII:true,cp3HiddenEncounter:true,cp3PostStoryScaled:true};
   return true;
 }
 function shouldInject(engine,def){
