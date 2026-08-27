@@ -2,7 +2,7 @@
 
 > **Current:** Core/Foundation ✅ / System Deepening ✅ / Content Pack II ✅ / Story Expansion I ✅ / Difficulty + Constraint Unlock ✅ / **Content Pack III ✅**
 >
-> **NEXT:** **PLAY / TUNE / SYSTEM & UI POLISH** before the next story expansion.
+> **NEXT / ACTIVE:** **GEAR OVERHAUL — loot identity, max-3 Options, Option Lv1–100, weapon/job audit.**
 
 Blade Vale is a personal evolving text-command hack-and-slash RPG.
 
@@ -24,6 +24,9 @@ Preferred rhythm:
 10. Preserve save compatibility and automated regression coverage.
 11. Appending story chapters must not silently move already-live endgame unlock gates.
 12. Significant named content must update `GAME_CONTENT_CATALOG.md`; canon changes must update `WORLD_LORE_BIBLE.md` / `STORY_CANON.md` as appropriate.
+13. Gear Overhaul random Options are capped at **3 per item**; Named/Unique fixed effects are separate.
+14. Gear Overhaul keeps seven Option rarities and adds **Option Lv1–100** with deterministic duplicate-fusion progress.
+15. High difficulty must preserve **No Single Correct Build**: intended builds can clear efficiently, while extreme raw investment may brute-force most soft checks.
 
 ### System-sprawl guardrails
 
@@ -140,32 +143,87 @@ Completed:
 - `STORY_CANON.md` — high-level narrative guardrails
 - `CONTENT_PACK_III_ROADMAP.md` — CP3 implementation/history
 - `CONTENT_PACK_III_B_NOTES.md` — compact CP3-B implementation handoff
+- `GEAR_OVERHAUL_ROADMAP.md` — active Gear Overhaul design, phases and non-negotiable rules
+- `GEAR_OVERHAUL_AUDIT.md` — live equipment/Affix/weapon-job audit and migration decisions
 
 Exact numeric stats remain in code.
 
-## NEXT — Play / Tune / Polish
+## ACTIVE — Gear Overhaul
 
-Before adding Ch31+ by default, use the enlarged game and tighten what already exists.
+The current priority is the hack-and-slash core: **finding gear, evaluating three meaningful Options, and making even non-jackpot drops useful through Option growth**.
 
-Preferred batch:
-- actual progression / difficulty sweep across early, mid, Ch21–30 and Lv99,999 endgame
-- equipment reward identity / power audit, especially CP2/CP3 Unique and Relic rewards
-- Ranch discoverability and breeding clarity
-- Rumor / Codex `NEXT` readability and duplicate-density audit
-- mobile scroll / tap / battle-command sweep
-- Home / Adventure density review without adding top-level buttons
-- save / startup / long-session regression checks
+Core target:
 
-If play reveals that another story arc is already earned, then plan Story Expansion II from the unresolved questions in `WORLD_LORE_BIBLE.md` rather than revealing Japan/Tokyo by default.
+```text
+DROP
+  ↓
+3 meaningful Options
+  ↓
+use it OR feed matching Option material
+  ↓
+Option Lv rises
+  ↓
+build gets stronger
+  ↓
+higher difficulty / faster farming
+  ↺
+```
+
+Canonical rules:
+- random Options: max 3
+- fixed Unique effects: separate
+- Option rarity: Common → Uncommon → Rare → Epic → Legendary → Mythic → Ancient
+- Option Lv: 1–100
+- higher rarity = higher base + stronger per-level growth
+- unwanted equipment with the same Option family becomes Option EXP material
+- no new Option-level currency
+- rarity does not automatically promote through leveling
+- low rarity material still contributes reduced EXP
+- brute-force progression is intentionally viable
+
+Gameplay philosophy:
+
+> **No Single Correct Build**
+>
+> A correct counter-build should clear earlier and cheaper. A player who keeps farming and raises offense/defense/sustain far enough should also be allowed to say **「知らん、火力と耐久で押し切る」** and eventually win.
+
+Current phases:
+
+| Gear phase | Status |
+|---|---|
+| 0A System inventory | ✅ |
+| 0B 77-Affix audit | 🔄 |
+| 0C Weapon × Job/Fusion × 24 archetype audit | NEXT |
+| 1 Option 4.0 canonical data model | queued |
+| 2 Option Fusion / duplicate feeding | queued |
+| 3 Greater/Temper/random-roll consolidation | queued |
+| 4 Equipment UI compact redesign | queued |
+| 5 Smart Loot 4.0 | queued |
+| 6 Existing weapon identity strengthening | queued |
+| 7 New weapon-family decision | gated by audit |
+| 8 Unique 2.0 | queued |
+| 9 Loot distribution + return to endgame content | queued |
+
+Do not add new mastery weapon families before Phase 0C. Equipment 3.0 already contains 24 archetypes including 大剣 / 刀 / 魔導書 / 双短剣 / 弩 / 大斧 etc.
+
+See `GEAR_OVERHAUL_ROADMAP.md` and `GEAR_OVERHAUL_AUDIT.md` before modifying gear code.
+
+## Deferred while Gear Overhaul is active
+
+Further Deep Survey expansion / Survey Conditions / Convergence Apex remain valid future directions, but they are intentionally behind Gear Overhaul so the new high-difficulty content has a stronger loot reason to exist.
+
+Story Ch31+ is also not the default next task.
 
 ## Development rhythm
 
 ```text
 CONTENT PACK III ✅
       ↓
-PLAY / TUNE / POLISH
+GEAR OVERHAUL ← ACTIVE
       ↓
-FIX / DEEPEN EXISTING SYSTEMS
+LOOT / BUILD PLAYTEST & TUNE
+      ↓
+DEEP SURVEY / ENDGAME RETURN
       ↓
 NEXT STORY EXPANSION WHEN EARNED
       ↓
@@ -177,11 +235,14 @@ HORIZONTAL CONTENT AGAIN
 
 For a new ChatGPT / Claude Code session:
 1. read this file
-2. read `STORY_CANON.md`
-3. read `WORLD_LORE_BIBLE.md`
-4. read `GAME_CONTENT_CATALOG.md`
-5. read `CONTENT_PACK_III_ROADMAP.md`
-6. do not redo Content Pack II, Story Expansion I, Difficulty/Constraint Unlock, or Content Pack III
-7. next default work is **PLAY / TUNE / SYSTEM & UI POLISH**
-8. preserve Lv99,999, SD-4 deferral, no rotating challenges, no extra Home route/currency
-9. preserve mobile command safety, startup dependency guards, MutationObserver idempotence and save compatibility
+2. read `GEAR_OVERHAUL_ROADMAP.md`
+3. read `GEAR_OVERHAUL_AUDIT.md`
+4. read `STORY_CANON.md`
+5. read `WORLD_LORE_BIBLE.md`
+6. read `GAME_CONTENT_CATALOG.md`
+7. do not redo Content Pack II, Story Expansion I, Difficulty/Constraint Unlock, or Content Pack III
+8. active default work is **GEAR OVERHAUL**, starting from the first incomplete Gear phase
+9. preserve max 3 random Options, seven Option rarities, Option Lv1–100, no new Option currency, and the brute-force route
+10. do not add a new mastery weapon family before the Weapon × Job/Fusion × archetype audit
+11. preserve Lv99,999, Item Power 10,000, SD-4 deferral, no rotating challenges, no extra Home route/currency
+12. preserve mobile command safety, startup dependency guards, MutationObserver idempotence and save compatibility
