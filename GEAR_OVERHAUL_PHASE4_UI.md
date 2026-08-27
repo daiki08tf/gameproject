@@ -1,10 +1,10 @@
 # Blade Vale — Gear Overhaul Phase 4: Equipment UI 3.x
 
-> Status: **ACTIVE / Phase 4A selected-item detail**
+> Status: **ACTIVE / Phase 4B compact list**
 
 ## Goal
 
-Reorganize Equipment around a compact mobile-first information hierarchy inspired by the previously discussed reference layout:
+Reorganize Equipment around a compact mobile-first hierarchy:
 
 1. category / equipped-slot selection
 2. compact item list
@@ -19,45 +19,46 @@ Do not pixel-copy another game. Reuse the information architecture only.
 - Preserve the existing Equipment screen, filters, Smart Loot, equip actions, lock/favorite and inline Option Fusion.
 - Random Options remain max 3.
 - FIXED IDENTITY must never be visually mixed into the three random Option rows.
-- Avoid returning to giant long-form item cards for every item in the list.
-- Mobile-first: selected detail may sit below the list; wide layouts may use list-left/detail-right.
+- The item list is for scanning/selection; long explanations belong in selected detail.
+- Mobile-first: selected detail sits below the list; wide layouts may use list-left/detail-right.
 
-## Phase 4A — Selected detail foundation
+## Phase 4A — Selected detail foundation ✅
 
-Implemented on `gear-overhaul-phase4a-equipment-detail`:
+Merged in PR #242.
 
-- `js/screens/equipment4.js` adds a non-destructive presentation layer on top of the existing Equipment renderer.
-- Existing row order/filter/equip/Fusion logic remains authoritative.
-- Tapping a list row selects it for detail without stealing button clicks.
-- Detail shows:
-  - selected item name / rarity
-  - equipment slot
-  - Item Power / Greater count
-  - base stats
-  - weapon type
-  - current-job weapon compatibility
-  - compact build tags derived from Option categories
-  - FIXED IDENTITY block
-  - max-three Option rows
-  - Option rarity-authored name
-  - Option Lv / EXP / MASTER
-  - current-equipped base-stat delta
-- `css/equipment4.css` keeps mobile single-column and switches to a two-column list/detail layout on wider screens.
-- The layer is loaded through the already-live Gear Overhaul compatibility patch so `main.js` does not need another screen route.
+- non-destructive presentation layer on top of the existing Equipment renderer
+- item-row tap selects detail without stealing button clicks
+- detail shows rarity / slot / IP / Greater / base stats / weapon type
+- current-job weapon compatibility and compact build tags
+- FIXED IDENTITY block
+- max-three Option rows with rarity name / Lv / EXP / MASTER
+- current-equipped base-stat delta
+- mobile single-column and wide two-column layout
 
-## Phase 4B — List compaction
+## Phase 4B — List compaction 🔄
 
-Next:
+Current branch `gear-overhaul-phase4b-list-compaction`:
 
-- reduce each inventory list row to a compact scan line
-- keep only the most important list-level signals: name / rarity / IP / Option quality summary / lock state
-- move long descriptions, full Option text and build explanations into selected detail
-- ensure very long weapon names do not create large row height
-- preserve one-tap equip and material protection actions
+- hide list-level full Affix/Option blocks, special lines and duplicate comparison prose
+- keep long information in selected detail
+- each list row gets compact scan badges:
+  - IP
+  - OP count
+  - highest Option rarity
+  - Greater count
+  - FIXED count
+  - lock / KEEP state
+- long names use ellipsis instead of increasing row height
+- normal stat prose is hidden in list rows; disabled items keep a short lock reason
+- favorite / lock controls collapse to icon-scale buttons with accessible labels
+- inline Fusion action shortens to `OP育成`
+- equip / unequip remains one tap
 
 ## Phase 4C — Detail actions
 
-Move the most common actions into the selected-detail footer without duplicating state logic:
+Next:
+
+Move the most common actions into selected-detail footer without duplicating state rules:
 
 - equip / unequip
 - favorite
@@ -65,15 +66,14 @@ Move the most common actions into the selected-detail footer without duplicating
 - Option Fusion entry
 - sell / dispose only when safe and already supported by existing item rules
 
-The existing row actions remain fallback until the detail actions are proven stable.
+Keep row actions as fallback until detail actions are proven stable.
 
 ## Phase 4D — Filters / polish
 
 - compact category/filter bar
 - Option-aware sort/filter handoff toward Smart Loot 4.0
-- selected row highlight
-- sticky detail on wide layout
-- test mobile overflow and long-name regressions
+- mobile overflow and long-name regression pass
+- selected row/detail synchronization polish
 
 ## Acceptance target
 

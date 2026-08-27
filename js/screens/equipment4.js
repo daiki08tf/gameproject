@@ -1,4 +1,4 @@
-/* Gear Overhaul Phase 4A — compact list + selected-item detail layer */
+/* Gear Overhaul Phase 4 — compact list + selected-item detail layer */
 import { state } from '../state.js';
 import { getItem, powerScore, RARITY } from '../data/equipment.js';
 import { AFFIX_RARITY_COLOR } from '../data/affixes.js';
@@ -164,6 +164,57 @@ function renderDetail() {
     <div class="equipment4-action-hint">装備・ロック・お気に入り・OPTION育成は上の一覧行から操作できます。</div>`;
 }
 
+function rowSummaryHtml(id, p) {
+  const parts = [];
+  if (p?.itemPower) parts.push(`<span>IP${p.itemPower}</span>`);
+  if (p?.affixes?.length) parts.push(`<span>OP${Math.min(3, p.affixes.length)}/3</span>`);
+  if (p?.highestAffixRarity) parts.push(`<span>${String(p.highestAffixRarity).toUpperCase()}</span>`);
+  if (p?.greaterCount) parts.push(`<span>★${p.greaterCount}</span>`);
+  if (p?.fixedIdentities?.length) parts.push(`<span>FIXED${p.fixedIdentities.length}</span>`);
+  if (state.isItemLocked?.(id)) parts.push('<span>🔒</span>');
+  if (state.isItemFavorite?.(id)) parts.push('<span>★KEEP</span>');
+  return parts.join('');
+}
+
+function compactRow(row, id) {
+  if (!row || !id) return;
+  row.classList.add('equipment4-compact-row');
+  const p = presentationFor(id);
+  const main = row.querySelector('.pick-main');
+  const itemName = main?.querySelector('.item-name');
+  if (itemName && !main.querySelector('.equipment4-row-summary')) {
+    const summary = document.createElement('div');
+    summary.className = 'equipment4-row-summary';
+    summary.innerHTML = rowSummaryHtml(id, p);
+    itemName.insertAdjacentElement('afterend', summary);
+  } else if (main?.querySelector('.equipment4-row-summary')) {
+    main.querySelector('.equipment4-row-summary').innerHTML = rowSummaryHtml(id, p);
+  }
+
+  const equipButton = row.querySelector('[data-action="equip"], [data-action="unequip"]');
+  const disabledEquip = !!equipButton?.disabled;
+  const statLine = main?.querySelector('.item-stats');
+  if (statLine) statLine.classList.toggle('equipment4-keep-lock-reason', disabledEquip);
+
+  for (const button of row.querySelectorAll('.equip-inline-actions button')) {
+    if (button.textContent.includes('お気に入り')) {
+      const on = state.isItemFavorite?.(id);
+      button.textContent = on ? '★' : '☆';
+      button.title = on ? 'お気に入り解除' : 'お気に入り登録';
+      button.setAttribute('aria-label', button.title);
+    } else if (button.textContent.includes('ロック')) {
+      const on = state.isItemLocked?.(id);
+      button.textContent = on ? '🔓' : '🔒';
+      button.title = on ? 'ロック解除' : 'ロックする';
+      button.setAttribute('aria-label', button.title);
+    }
+  }
+  for (const button of row.querySelectorAll('.option-fusion-actions button')) {
+    if (button.textContent === 'OPTION育成') button.textContent = 'OP育成';
+    else if (button.textContent === 'OPTION育成を閉じる') button.textContent = 'OP育成を閉じる';
+  }
+}
+
 function decorateRows() {
   if (decorating) return;
   const picker = document.getElementById('equipPicker');
@@ -171,11 +222,13 @@ function decorateRows() {
   decorating = true;
   try {
     const ids = currentRowIds();
+    if (ids.length && (!selectedDetailItemId || !ids.includes(selectedDetailItemId))) selectedDetailItemId = ids[0];
     const rows = [...picker.querySelectorAll(':scope > .pick-row')];
     rows.forEach((row, index) => {
       const id = ids[index];
       if (!id) return;
       row.dataset.equipment4ItemId = id;
+      compactRow(row, id);
       row.classList.toggle('equipment4-selected-row', id === selectedDetailItemId);
       if (row.dataset.equipment4Bound === '1') return;
       row.dataset.equipment4Bound = '1';
@@ -209,4 +262,4 @@ if (typeof document !== 'undefined') {
   else installEquipment4();
 }
 
-export { installEquipment4, renderDetail as renderEquipment4Detail };
+export { installEquipment4, renderDetail as renderEquipment4Detail, compactRow as compactEquipment4Row };
