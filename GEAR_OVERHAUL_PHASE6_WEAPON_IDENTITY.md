@@ -1,6 +1,6 @@
 # Gear Overhaul Phase 6 — Weapon Identity
 
-Status: **Phase 6A ✅ / Phase 6B ACTIVE — existing 8 families / 24 archetypes only**
+Status: **Phase 6A ✅ / Phase 6B ✅ / Phase 6C ACTIVE — existing 8 families / 24 archetypes only**
 
 ## Goal
 
@@ -18,8 +18,6 @@ No new currency, progression root, Home button, daily/weekly loop, or weapon fam
 
 ## 6A — Family + Archetype combat identity ✅
 
-Each mastery family now has a canonical loop:
-
 | Family | Combat loop |
 |---|---|
 | 剣 | 安定・崩し・反撃 |
@@ -31,65 +29,60 @@ Each mastery family now has a canonical loop:
 | 楽器 | 戦律・自己強化・テンポ |
 | 錫杖 | 聖光・弱体・持久戦 |
 
-The 24 existing archetypes specialize the already-existing Weapon Techniques. Examples:
-
-- 大剣: higher packet power, higher MP burden.
-- 刀: added crit bonus.
-- 戦斧 / 弩: stronger armor penetration.
-- 大斧 / 暗殺刃: low-HP execution windows.
-- 魔導書 / 笛: stronger MP efficiency.
-- 短弓 / 双短剣 / 爪: extra hit opportunities while roughly preserving raw packet total.
-- セスタス / 聖杖: sustain-oriented temporary buffs.
-- 戦鼓: offensive tempo buffs.
-
-The key balance rule is: **fast archetypes gain proc opportunities, not a free multiplicative DPS explosion**.
+All 24 existing Equipment 3.0 archetypes specialize the existing Weapon Techniques. Fast archetypes gain proc opportunities while roughly preserving raw packet total; heavy archetypes bias toward packet power; resource/sustain archetypes change MP or temporary buffs.
 
 PR #249 establishes this layer.
 
-## 6B — Three-technique mini rotations 🔄
+## 6B — Three-technique mini rotations ✅
 
-The existing Lv1 / Lv100 / Lv350 Weapon Techniques now form a soft three-step chain:
+The existing Lv1 / Lv100 / Lv350 Weapon Techniques form a soft three-step chain:
 
 `Opener → Setup → Finisher`
 
 - no visible meter or saved resource
-- the chain exists only on the active `BattleEngine`
+- chain state exists only on the active `BattleEngine`
 - Job skills and normal attacks can be woven between weapon techniques
-- using Weapon Techniques in the intended order earns family-specific bonuses
-- wrong order simply loses the chain bonus; it never blocks the command
+- intended order earns family-specific bonuses
+- wrong order only loses the bonus; it never blocks a command
 
-Family payoffs remain distinct:
+PR #250 establishes this layer. Its duplicate validation job passed on rerun with no gameplay change, confirming the original one-off CI failure was transient.
 
-| Family | Setup payoff | Finisher payoff |
-|---|---|---|
-| 剣 | stronger DEF break | power + crit |
-| 斧 | penetration + break | heavier execution |
-| 杖 | cheaper setup spell | stronger efficient nova |
-| 弓 | extra penetration | precision power + crit |
-| 短剣 | stronger DoT | crit + execution |
-| 拳具 | stronger slow/break | extra proc hit without runaway raw packet damage |
-| 楽器 | stronger tempo buff | larger finale buff package |
-| 錫杖 | added weaken | stronger holy hit + regeneration |
+## 6C — Job × Weapon × Option build lanes 🔄
 
-This is a **soft reward**, not a mandatory rotation. Brute-force and mixed Job/Weapon builds remain valid.
+Every family now has **three authored credible build routes** made only from live Option families. These routes are descriptive data, not hidden combat bonuses.
+
+| Family | Route A | Route B | Route C |
+|---|---|---|---|
+| 剣 | 鉄壁反撃 | 剣閃会心 | 不屈の剣 |
+| 斧 | 破甲巨斧 | 巨獣狩り | 断頭処刑 |
+| 杖 | 純魔導 | 魔力循環 | 反響詠唱 |
+| 弓 | 先制狙撃 | 巨獣狙撃 | 五月雨 |
+| 短剣 | 毒心暗殺 | 会心連刃 | 死線暗殺 |
+| 拳具 | 千撃連環 | 不倒拳 | 会心拳 |
+| 楽器 | 高速戦律 | 循環演奏 | 英雄奏者 |
+| 錫杖 | 聖域持久 | 魔導防壁 | 審判術 |
+
+Permanent rule: **one weapon family must not collapse into one mandatory Option package**. Regression coverage requires three distinct routes, broad Option-family coverage, and no universal package shared by all routes.
+
+`js/data/weaponBuildSynergy.js` is reusable authored content for later Equipment/Codex guidance, Unique design, Smart Loot presets, and high-difficulty loot placement. It does not modify damage or stats.
 
 ## Runtime contract
 
-`BattleEngine` still derives the equipped weapon from the existing `state.data.equipped.weapon` slot. The weapon's existing `weaponArchetype` metadata is passed into `weaponTechniquesFor(...)`.
+`BattleEngine` derives the equipped weapon from the existing `state.data.equipped.weapon` slot. Existing `weaponArchetype` metadata specializes Weapon Techniques.
 
-Calling `weaponTechniquesFor(type, level)` without an archetype remains backward compatible and returns the canonical base techniques.
+Calling `weaponTechniquesFor(type, level)` without an archetype remains backward compatible and returns canonical base techniques.
 
 Weapon-chain state is encounter-local (`BattleEngine._weaponTechniqueChain`) and is not written to saves.
 
 ## Next
 
-### Phase 6C — Job + Option synergy
-
-Verify each family has multiple credible builds across Basic/Fusion Jobs and Option bias. Avoid one mandatory Option package per weapon. Add authored synergy guidance only where it corresponds to real combat behavior.
-
 ### Phase 6D — Balance / presentation / closeout
 
-Run comparative combat checks, expose concise identity text in existing Equipment/Codex presentation, update audits, then decide whether Phase 7 needs any genuinely new weapon family.
+- run comparative checks across all 8 families / 24 archetypes
+- ensure rapid-hit, heavy, execution, sustain and resource identities have bounded outputs
+- expose concise family/archetype/build identity through an existing Equipment/Codex presentation surface only
+- update Gear audit / roadmap and close Phase 6
+- make an explicit Phase 7 go/no-go decision for genuinely new weapon families
 
 ## Permanent gate for Phase 7
 
