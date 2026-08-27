@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Phase 5: Smart Loot 4.0
 
-> Status: **ACTIVE / Phase 5B protection rules**
+> Status: **ACTIVE / Phase 5C synergy filter decision**
 
 ## Goal
 
@@ -18,55 +18,59 @@ Make long farming sessions manageable without hiding valuable Fusion material an
 
 ## Phase 5A — All-slot Option filters ✅ COMPLETE
 
-Implemented on `gear-overhaul-phase5a-option-filters`:
-
 - `optionQuery`
 - `minOptionRarity`
 - `minOptionLevel`
 - legacy `affixQuery` migrates into `optionQuery` and remains mirrored for compatibility
-- detailed IP / Greater / Legendary / Curse / Option conditions now apply to all equipment slots
+- detailed IP / Greater / Legendary / Curse / Option conditions apply to all equipment slots
 - `weaponType` remains weapon-only
 - one Option row must satisfy query + rarity + Lv together
-- compact controls are injected into the existing expandable 詳細 panel
+- compact controls live inside the existing expandable 詳細 panel
 - player-facing legacy `Affix` search is hidden in favor of `Option検索`
 - active Option conditions contribute to the existing `⚙ 詳細(n)` badge
-- mobile layout keeps Option controls compact
-- no new route or screen
-
-Default values preserve old behavior:
-
-```text
-optionQuery = ""
-minOptionRarity = any
-minOptionLevel = 0
-```
+- mobile layout stays compact
 
 Regression coverage:
-
 - `tests/gear-overhaul-phase5a-option-filters.test.js`
 - `tests/gear-overhaul-phase5a-option-filter-ui.test.js`
 
-## Phase 5B — Protection rules 🔄 NEXT
+## Phase 5B — Protection rules ✅ COMPLETE
 
-Audit automatic protection wording and controls around:
+Automatic protection is now explicit and compact:
 
-- Legendary Power
-- Curse
-- Greater threshold
-- Ancient Option
-- Option Lv80+
-- optional Option text rule
+- Legendary Power — default ON
+- Curse — default ON
+- Greater — default `2+`
+- Ancient Option — default ON
+- Option Lv80+ — default ON
+- optional Option text match — default OFF / blank
 
-Protection should prevent accidental destruction, not hoard every useful material automatically.
+Design decisions:
 
-## Phase 5C — Useful synergy filters
+- Ancient and Lv80+ protection are independent toggles.
+- `Rare–Mythic / Lv79以下` does **not** auto-lock from Fusion-material protection alone.
+- no new currency or material inventory; unwanted gear remains the Fusion material.
+- old `protectFusionMaterials=false` saves migrate to both split Option protections OFF.
+- legacy auto-lock `affixQuery` migrates to `autoLock.optionQuery` while remaining mirrored for compatibility.
+- existing optional IP protection remains available; Phase 5B does not remove old saves/features.
+- player-facing protection wording now distinguishes `Legendary Power`, `Curse`, `Ancient Option`, and `Option Lv`.
 
-Only if farming tests justify them:
+Regression coverage:
+- `tests/gear-overhaul-phase5b-protection.test.js`
+
+## Phase 5C — Useful synergy filters 🔄 ACTIVE
+
+Only add if farming behavior justifies them:
 
 - 2+ desired Option families/categories
-- useful build-tag combinations
+- useful compact build-tag combinations
 
-Avoid a giant Boolean rule builder.
+Acceptance gate:
+- must solve a real farming scan problem not already covered by Option search / rarity / Lv
+- must fit the existing detailed panel without becoming a Boolean rule editor
+- must not auto-hide ordinary Fusion material by default
+
+If the gate is not met, skip directly to Phase 5D closeout.
 
 ## Phase 5D — Closeout
 
