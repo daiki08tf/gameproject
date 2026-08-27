@@ -7,6 +7,22 @@ const RARITY_LABEL = {
   legendary: 'Legendary', mythic: 'Mythic', ancient: 'Ancient',
 };
 
+function ensureStyle() {
+  if (typeof document === 'undefined' || document.getElementById('smartLoot4Style')) return;
+  const style = document.createElement('style');
+  style.id = 'smartLoot4Style';
+  style.textContent = `
+    #equipmentScreen .smartloot4-option-filters{display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));align-items:end;gap:6px;width:100%;padding:7px 8px;border:1px solid rgba(242,201,76,.18);border-radius:8px;background:rgba(242,201,76,.045)}
+    #equipmentScreen .smartloot4-title{font-size:9px;letter-spacing:1px;color:var(--accent);align-self:center;white-space:nowrap}
+    #equipmentScreen .smartloot4-field{display:grid!important;gap:3px!important;min-width:0;font-size:9px!important}
+    #equipmentScreen .smartloot4-field>span{opacity:.62;white-space:nowrap}
+    #equipmentScreen .smartloot4-field input,#equipmentScreen .smartloot4-field select{width:100%!important;max-width:none!important;min-width:0;padding:5px 6px;font-size:10px!important;background:rgba(0,0,0,.25);color:inherit;border:1px solid rgba(255,255,255,.12);border-radius:5px}
+    #equipmentScreen .smartloot4-hint{grid-column:2/-1;font-size:8px!important;line-height:1.35}
+    @media(max-width:560px){#equipmentScreen .smartloot4-option-filters{grid-template-columns:1fr 1fr}#equipmentScreen .smartloot4-title{grid-column:1/-1}#equipmentScreen .smartloot4-field:first-of-type{grid-column:1/-1}#equipmentScreen .smartloot4-hint{grid-column:1/-1}}
+  `;
+  document.head.appendChild(style);
+}
+
 function field(label, control) {
   const wrap = document.createElement('label');
   wrap.className = 'smartloot4-field';
@@ -58,6 +74,7 @@ function levelInput(value, rerender) {
 
 export function decorateSmartLoot4Filters(rerender = () => {}) {
   if (typeof document === 'undefined') return;
+  ensureStyle();
   const advanced = document.querySelector('#lootFilterRow .loot-filter-advanced');
   if (!advanced || advanced.querySelector('[data-smartloot4-option-filters]')) return;
 
