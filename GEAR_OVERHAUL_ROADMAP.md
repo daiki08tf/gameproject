@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **ACTIVE / Phase 3 Existing-system consolidation**
+> Status: **ACTIVE / Phase 3B Reroll identity**
 >
 > Gear Overhaul continues to take priority over further Deep Survey expansion. High-difficulty content becomes more valuable after the loot loop itself is worth farming.
 
@@ -88,40 +88,42 @@ Implemented:
 - Smart Loot protects Ancient or Lv80+ valuable Fusion materials across equipment slots
 - no new currency / Home button / parallel inventory
 
-Merged Phase 2 PRs:
-
-- #235 — Phase 2A core/runtime
-- #236 — Phase 2B inline Fusion UI
-- #237 — Phase 2C tuning, milestones and Smart Loot protection
+Merged Phase 2 PRs: #235 / #236 / #237.
 
 ## Phase 3 — Existing-system consolidation 🔄 ACTIVE
 
 Goal: **fewer independent power axes, deeper loot decisions**.
 
-### Phase 3A — Temper / Greater consolidation 🔄
+### Phase 3A — Temper / Greater consolidation ✅
 
-Decision:
+Merged in PR #238.
 
-- **Temper is retired for Option 4.0 gear.** Option values are authoritative from `rarity + Option Lv`; a second ±10% numeric reroll is redundant.
-- **Greater remains, but as a drop-only chase identity for Option 4.0.** A naturally dropped Greater Option keeps its existing 1.5x identity.
-- **Crafted Greater Ascend is retired for Option 4.0.** If Greater can always be forged, the jackpot drop loses meaning.
-- Legacy pre-Option4 saved Affixes retain compatibility behavior where practical.
-- Existing dropped Greater Option4 gear is never stripped.
+- Temper retired for Option 4.0 because Option values are authoritative from `rarity + Option Lv`.
+- Greater remains as a drop-only chase identity for Option 4.0.
+- crafted Greater Ascend retired for Option 4.0.
+- naturally dropped Greater Option4 gear remains intact.
+- legacy pre-Option4 saved Affixes keep compatibility behavior where practical.
+- Blacksmith communicates `値＝Option Lv` and `★ドロップ限定` instead of exposing dead growth axes.
 
-### Phase 3B — Reroll identity
+### Phase 3B — Reroll identity 🔄
 
-Keep reroll only because it answers a distinct question: **change the Option family**.
+Reroll exists for one distinct reason: **change the Option family**.
 
-Target rules:
+Rules being implemented:
 
-- rerolled Option starts fresh; it must not inherit the replaced Option's Lv/EXP
-- reroll must not create Greater
-- rarity/family generation must obey current slot/weapon bias and rarity floors
-- no direct choice from the whole catalog unless a later cost/balance design explicitly justifies it
+- rerolled Option always starts at **Lv1 / EXP0**
+- replaced Option Lv/EXP never transfers
+- reroll cannot create or inherit Greater
+- old Temper/baseRoll metadata is stripped
+- resulting `roll` is recalculated from the new Option rarity + Lv1 curve
+- reroll remains random and respects the existing generator/bias instead of becoming a full catalog picker
+- UI calls it `Option再抽選` and warns that growth restarts
+
+Armor/accessory reroll generalization is not silently invented here; the existing Blacksmith 3.0 reroll path remains weapon-instance scoped until a deliberate all-slot crafting pass.
 
 ### Phase 3C — Legendary / Curse / special identity
 
-Preserve these separately from ordinary random Options unless audit proves otherwise:
+Preserve separately from ordinary random Options unless audit proves otherwise:
 
 - Legendary Effect
 - Curse package
@@ -131,14 +133,12 @@ They change item/playstyle identity rather than merely adding another numeric Op
 
 ### Phase 3D — crafting/UI cleanup
 
-Blacksmith should clearly communicate:
+Final pass after 3B/3C:
 
-- `値＝Option Lv` for Option4 numeric growth
-- `★Greater = ドロップ限定`
+- no obsolete-looking active buttons
+- clear Option wording instead of legacy Affix wording where user-facing
 - reroll = family replacement
 - Legendary extraction/imprint = special identity management
-
-Do not leave dead buttons that look usable.
 
 ## Weapon expansion rule
 
@@ -159,14 +159,15 @@ Merged:
 - #235 — Phase 2A Fusion core
 - #236 — Phase 2B Fusion UI
 - #237 — Phase 2C tuning / milestones / material protection
+- #238 — Phase 3A Temper / Greater consolidation
 
-Current Phase 3A branch:
+Current Phase 3B branch:
 
-- compatibility patch blocks Temper on Option4 gear
-- compatibility patch blocks Greater Ascend on Option4 gear
-- naturally dropped existing Greater remains intact
-- Blacksmith buttons are relabeled/disabled to explain Option4 authority
-- reroll remains available and will be finalized in Phase 3B
+- Reroll result normalized to Option4
+- Lv1 / EXP0 reset enforced
+- Greater/Temper metadata cannot transfer
+- authoritative Lv1 value recalculated
+- UI wording changed to `Option再抽選`
 - regression coverage added
 
 ## Work phases
@@ -206,4 +207,4 @@ Read before continuing:
 14. `js/patches/equipment3Blacksmith.js`
 15. `js/screens/equipmentFusion.js`
 
-Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity by leveling, restore numeric Temper on Option4, or make Greater freely craftable without deliberately revisiting this roadmap.
+Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity by leveling, restore numeric Temper on Option4, make Greater freely craftable, or let reroll inherit old Option Lv/EXP.
