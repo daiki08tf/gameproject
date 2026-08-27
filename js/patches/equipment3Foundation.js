@@ -9,6 +9,7 @@
 import { state } from '../state.js';
 import { getItem, baseItemId } from '../data/equipment.js';
 import { describeAffix } from '../data/affixes.js';
+import '../data/options4RarityFloors.js';
 import { optionCountRange, optionFromAffix, applyAuthoredOptionValue, optionDisplayLabel } from '../data/options4.js';
 import {
   itemPowerForDrop,
