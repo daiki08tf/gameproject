@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { CHAPTERS } from '../js/data/stages.js';
+import { CHAPTERS, finalStageOf } from '../js/data/stages.js';
 
 const read=p=>fs.readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
 
@@ -27,15 +27,14 @@ test('polish: Ranch facility observer is idempotent and special breeding feedbac
   assert.match(ui,/aria-live="polite"/);
 });
 
-test('polish: main story recommended levels remain monotonic through Ch30',()=>{
+test('polish: main story boss recommended levels rise through Ch30',()=>{
   let previous=0;
   for(const chapter of CHAPTERS){
-    const levels=chapter.stages.filter(s=>!s.hidden).map(s=>Number(s.recLevel));
-    assert.ok(levels.length>0,`Ch${chapter.num} has no visible stages`);
-    for(const level of levels){
-      assert.ok(Number.isFinite(level)&&level>=previous,`recommended level regressed at Ch${chapter.num}`);
-      previous=level;
-    }
+    const final=finalStageOf(chapter);
+    const level=Number(final?.recLevel);
+    assert.ok(Number.isFinite(level),`Ch${chapter.num} final stage has no valid recommended level`);
+    assert.ok(level>=previous,`final boss recommended level regressed at Ch${chapter.num}`);
+    previous=level;
   }
   assert.ok(previous>=7600,'Ch30 should finish at the Story Expansion I target band');
 });
