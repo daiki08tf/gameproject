@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { CP3_DEEP_SURVEYS, buildDeepSurveyStage } from '../js/data/postCp3DeepSurvey.js';
-import { explorationProgressFor } from '../js/data/exploration1.js';
+import { CP3_DEEP_SURVEYS, buildDeepSurveyStage, deepSurveyUnlocked } from '../js/data/postCp3DeepSurvey.js';
+import { EXPLORATION_SITES } from '../js/data/exploration1.js';
 import { buildSecretRealmStage } from '../js/data/secretRealms.js';
 
 const read=p=>fs.readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
@@ -16,12 +16,16 @@ test('post-CP3: Deep Survey adds exactly three authored high-difficulty regions'
 
 test('post-CP3: Deep Survey is gated by existing CP3 discoveries, not Abyss depth',()=>{
   const def=CP3_DEEP_SURVEYS[0];
-  const site={...def,discoverDepth:0,clueDepth:0,fragmentSources:[],fragmentsRequired:0,finalGoal:false};
-  const hidden=explorationProgressFor(site,99999,{}, {discoveries:{}});
-  assert.equal(hidden.state,'hidden');
+  assert.equal(deepSurveyUnlocked(def,{}),false);
   const discoveries=Object.fromEntries(def.unlockDiscoveries.map(id=>[id,{cleared:true}]));
-  const open=explorationProgressFor(site,0,{}, {discoveries});
-  assert.equal(open.unlocked,true);
+  assert.equal(deepSurveyUnlocked(def,discoveries),true);
+});
+
+test('post-CP3: canonical Exploration 1.0 registry remains unchanged',()=>{
+  assert.equal(EXPLORATION_SITES.some(site=>site.postCp3DeepSurvey),false);
+  const runtime=read('js/patches/exploration1Core.js');
+  assert.match(runtime,/ALL_EXPLORATION_SITES/);
+  assert.match(runtime,/deepSurveyUnlocked/);
 });
 
 test('post-CP3: all Deep Survey stages are Lv99,999/IP10,000 gauntlets with an apex',()=>{
@@ -45,9 +49,9 @@ test('post-CP3: each region has materially different live challenge pressure',()
   assert.ok(ash.enemyHpMult>=1.30,'ash should carry vitality pressure');
   assert.ok(ash.healMult<=0.50,'ash should carry drought pressure');
   assert.ok(ninth.enemyAtkMult>=1.40,'ninth should carry onslaught pressure');
-  assert.ok(ninth.abyssChallengeRewards.eliteBonus>=2,'ninth should carry elite pressure');
+  assert.ok(ninth.eliteThreatBonus>=2,'ninth should carry elite pressure');
   assert.ok(root.enemyHpMult>=1.30&&root.healMult<=0.50,'root should demand long-fight resource control');
-  assert.ok(root.abyssChallengeRewards.bossTechniqueBonus>=1,'root apex should carry boss-technique pressure');
+  assert.ok(root.bossTechniqueBonus>=1,'root apex should carry boss-technique pressure');
 });
 
 test('post-CP3: Deep Survey reuses Secret Realm routing and does not create a parallel mode',()=>{
