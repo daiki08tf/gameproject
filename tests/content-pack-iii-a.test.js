@@ -45,3 +45,18 @@ test('CP3 A keeps Modern World identification restrained',()=>{
   assert.doesNotMatch(text,/東京|日本|Tokyo|Japan/i);
   assert.match(text,/生活|電子音|外部|観測/);
 });
+
+test('CP3 A is bootstrapped without a new Home route',()=>{
+  const home=fs.readFileSync(new URL('../js/patches/homeNavigation.js',import.meta.url),'utf8');
+  assert.match(home,/import '\.\/contentPackIIIA\.js';/);
+  assert.doesNotMatch(home,/goContentPackIII/);
+});
+
+test('human-readable content catalog and lore bible remain part of the repository',()=>{
+  const catalog=fs.readFileSync(new URL('../GAME_CONTENT_CATALOG.md',import.meta.url),'utf8');
+  const lore=fs.readFileSync(new URL('../WORLD_LORE_BIBLE.md',import.meta.url),'utf8');
+  assert.match(catalog,/外界照合者オブザーバ/);
+  assert.match(catalog,/Content Pack III A/);
+  assert.match(lore,/Seven Keys \/ Eighth Key/);
+  assert.match(lore,/you cannot reconstruct a battle you have never observed/i);
+});
