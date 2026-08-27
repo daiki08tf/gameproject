@@ -25,6 +25,13 @@ Preferred rhythm:
 11. Appending story chapters must not silently move already-live endgame unlock gates.
 12. Significant named content must update `GAME_CONTENT_CATALOG.md`; canon changes must update `WORLD_LORE_BIBLE.md` / `STORY_CANON.md` as appropriate.
 
+### System-sprawl guardrails
+
+- **Do not add a new currency merely to separate a content pack.** Reuse existing progression/economy when it fits.
+- **Avoid new Home buttons.** Add content inside existing Adventure / World / Codex / Ranch / Equipment / Job / Settlement surfaces first.
+- Prefer **systems talking to each other** over parallel one-off systems.
+- Keep these as practical development guardrails, not release bureaucracy.
+
 ## Completed foundation
 
 | Area | Status |
@@ -110,7 +117,7 @@ Target one large batch:
 
 Preferred mystery direction:
 - reply marks are acknowledgments/targeting responses, not ordinary writing
-- returned lightning and memory roots share a timing signature
+- returned lightning and memory roots share the same timing signature
 - living memory can preserve information that machine/infrastructure records cannot
 
 ### C — Final integration
