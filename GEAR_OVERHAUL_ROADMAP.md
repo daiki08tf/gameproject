@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **ACTIVE / Phase 3B Reroll identity**
+> Status: **ACTIVE / Phase 3C Fixed Identity**
 >
 > Gear Overhaul continues to take priority over further Deep Survey expansion. High-difficulty content becomes more valuable after the loot loop itself is worth farming.
 
@@ -20,7 +20,7 @@ High-difficulty mechanics should therefore be soft checks rather than hard build
 ## Permanent Gear rules
 
 1. Random Options are capped at **3 per item**.
-2. Named / Unique fixed effects are separate from the 3 random Option slots.
+2. Unique / Legendary / Curse fixed identities are **separate from the 3 random Option slots**.
 3. Option rarity remains seven tiers: `common / uncommon / rare / epic / legendary / mythic / ancient`.
 4. Option Lv is persistent **1–100** and rarity never auto-promotes from leveling.
 5. Same-family unwanted equipment can be consumed for Option EXP; no new currency.
@@ -38,8 +38,10 @@ Equipment Base
   - base stats
   - weapon family / archetype when applicable
 
-Fixed Identity (Named / Unique only)
-  - fixed effect(s)
+FIXED IDENTITY (outside random Option cap)
+  - Unique fixed identity, when item.unique
+  - Legendary Power, when rolled/imprinted
+  - Curse, when rolled
 
 Random OPTION (max 3)
   - family
@@ -53,7 +55,8 @@ Example:
 
 ```text
 神話・断界の大剣 +146
-固有: Finisher時にDEFの一部を無視
+【固有】Finisher時にDEFの一部を無視
+《固定能力：雷神の心臓》会心時に追撃
 
 OPTION
 - 覇力 Lv63
@@ -105,40 +108,48 @@ Merged in PR #238.
 - legacy pre-Option4 saved Affixes keep compatibility behavior where practical.
 - Blacksmith communicates `値＝Option Lv` and `★ドロップ限定` instead of exposing dead growth axes.
 
-### Phase 3B — Reroll identity 🔄
+### Phase 3B — Reroll identity ✅
+
+Merged in PR #239.
 
 Reroll exists for one distinct reason: **change the Option family**.
-
-Rules being implemented:
 
 - rerolled Option always starts at **Lv1 / EXP0**
 - replaced Option Lv/EXP never transfers
 - reroll cannot create or inherit Greater
 - old Temper/baseRoll metadata is stripped
-- resulting `roll` is recalculated from the new Option rarity + Lv1 curve
-- reroll remains random and respects the existing generator/bias instead of becoming a full catalog picker
+- resulting value is recalculated from the new Option rarity + Lv1 curve
+- reroll remains random through the existing generator/bias
 - UI calls it `Option再抽選` and warns that growth restarts
 
-Armor/accessory reroll generalization is not silently invented here; the existing Blacksmith 3.0 reroll path remains weapon-instance scoped until a deliberate all-slot crafting pass.
+Armor/accessory reroll generalization remains deferred to a deliberate all-slot crafting pass.
 
-### Phase 3C — Legendary / Curse / special identity
+### Phase 3C — Legendary / Curse / Unique fixed identity 🔄
 
-Preserve separately from ordinary random Options unless audit proves otherwise:
+Decision: these are **FIXED IDENTITY**, not random Options.
 
-- Legendary Effect
-- Curse package
-- Unique fixed identity
+- `Unique` — item-authored fixed identity/effects; immutable through ordinary Option operations.
+- `Legendary Power` — extra fixed playstyle effect; may be moved only through the existing extract/imprint flow.
+- `Curse` — fixed tradeoff package; not an Option family and not Option-Fusion eligible.
+- none of these consumes one of the three random Option slots.
+- none gains Option Lv or Option EXP.
+- none can be used as same-family Option Fusion material.
+- shared presentation exposes them through `fixedIdentities[]`, while ordinary random Options remain in `affixes[]` for save/runtime compatibility.
 
-They change item/playstyle identity rather than merely adding another numeric Option.
+Phase 3C implementation files:
+- `js/data/equipmentFixedIdentity.js`
+- `js/data/equipment3Presentation.js`
+- `tests/gear-overhaul-phase3c-fixed-identity.test.js`
 
 ### Phase 3D — crafting/UI cleanup
 
-Final pass after 3B/3C:
+Final pass after 3C:
 
 - no obsolete-looking active buttons
-- clear Option wording instead of legacy Affix wording where user-facing
+- clear `Option` wording instead of legacy `Affix` wording where user-facing
 - reroll = family replacement
-- Legendary extraction/imprint = special identity management
+- Legendary extraction/imprint = fixed-identity management
+- Unique/Curse clearly read as fixed identity, not Option rows
 
 ## Weapon expansion rule
 
@@ -160,14 +171,15 @@ Merged:
 - #236 — Phase 2B Fusion UI
 - #237 — Phase 2C tuning / milestones / material protection
 - #238 — Phase 3A Temper / Greater consolidation
+- #239 — Phase 3B Option reroll identity
 
-Current Phase 3B branch:
+Current Phase 3C branch:
 
-- Reroll result normalized to Option4
-- Lv1 / EXP0 reset enforced
-- Greater/Temper metadata cannot transfer
-- authoritative Lv1 value recalculated
-- UI wording changed to `Option再抽選`
+- explicit FIXED IDENTITY data model
+- Unique / Legendary / Curse separated from random Option presentation
+- fixed identities do not consume the max-three Option cap
+- fixed identities are not Option Fusion targets/materials
+- Legendary Power remains the only mutable fixed identity via extract/imprint
 - regression coverage added
 
 ## Work phases
@@ -199,12 +211,14 @@ Read before continuing:
 6. `GEAR_OVERHAUL_PHASE2_FUSION.md`
 7. `js/data/options4.js`
 8. `js/data/options4Fusion.js`
-9. `js/data/equipment3Greater.js`
-10. `js/data/equipment3Crafting.js`
-11. `js/data/equipment3SmartLoot.js`
-12. `js/patches/options4Fusion.js`
-13. `js/patches/gearOverhaulCraftingConsolidation.js`
-14. `js/patches/equipment3Blacksmith.js`
-15. `js/screens/equipmentFusion.js`
+9. `js/data/equipmentFixedIdentity.js`
+10. `js/data/equipment3Legendary.js`
+11. `js/data/equipment3Greater.js`
+12. `js/data/equipment3Crafting.js`
+13. `js/data/equipment3SmartLoot.js`
+14. `js/patches/options4Fusion.js`
+15. `js/patches/gearOverhaulCraftingConsolidation.js`
+16. `js/patches/equipment3Blacksmith.js`
+17. `js/screens/equipmentFusion.js`
 
-Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity by leveling, restore numeric Temper on Option4, make Greater freely craftable, or let reroll inherit old Option Lv/EXP.
+Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity by leveling, restore numeric Temper on Option4, make Greater freely craftable, let reroll inherit old Option Lv/EXP, or mix FIXED IDENTITY into the three random Option slots.
