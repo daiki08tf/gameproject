@@ -6,6 +6,7 @@
    ============================================================ */
 import { AFFIXES, describeAffix } from './affixes.js';
 import { EQUIPMENT3_AFFIX_SLOTS, itemPowerForDrop, affixTierForItemPower, generatedEquipmentName } from './equipment3.js';
+import { optionFromAffix } from './options4.js';
 import { applyItemPowerAffixQuality } from './equipment3AffixQuality.js';
 import { applyGreaterAffixes } from './equipment3Greater.js';
 import { rollLegendaryPackage, getLegendaryEffect, getCursedAffix } from './equipment3Legendary.js';
@@ -64,7 +65,7 @@ function chooseAffixIdentities(item, count, itemPower, instanceId) {
     }
     usedIds.add(picked.id);
     if (picked.def.exclusiveGroup) usedGroups.add(picked.def.exclusiveGroup);
-    out.push({ id: picked.id, rarity: 'common', roll: 0 });
+    out.push(optionFromAffix({ id: picked.id, rarity: 'common', roll: 0 }));
   }
   return out;
 }
@@ -89,7 +90,8 @@ export function buildGearInstance(item, ctx = {}, instanceId = '') {
     itemPower,
     affixTier: affixTierForItemPower(itemPower),
     affixes: [],
-    equipment3GearVersion: 2,
+    equipment3GearVersion: 3,
+    optionMetadataVersion: 1,
   };
 
   inst.affixes = chooseAffixIdentities(item, affixCount(item, instanceId), itemPower, instanceId);
