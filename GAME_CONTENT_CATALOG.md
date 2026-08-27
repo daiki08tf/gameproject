@@ -18,6 +18,7 @@
 | CP2 rumors / encounters / routes | `js/data/contentPackIIAB.js` |
 | CP2 chains / bosses / companions | `js/data/contentPackIICD.js` |
 | CP3 observation reflux | `js/data/contentPackIIIA.js` |
+| CP3 convergence / bosses / companions / rewards | `js/data/contentPackIIIB.js` |
 | Story meaning / canon | `STORY_CANON.md`, `WORLD_LORE_BIBLE.md` |
 
 ## 2. Story chapter enemy index
@@ -168,39 +169,67 @@ Special hybrids:
 Unlocked only after **Ch30 / 30-8** is cleared.
 
 ### 灰燼の外縁 cluster
-Rumors:
-- 動き続ける焼影
-- 灰に刻まれた返信印
-
-Hidden encounter:
-- 残照追跡体・AFTERIMAGE
-
-Hidden route:
-- 返信炉床
+Rumors: 動き続ける焼影 / 灰に刻まれた返信印
+- Hidden Encounter: 残照追跡体・AFTERIMAGE
+- Hidden Route: 返信炉床
 
 ### 天雷墓標群 cluster
-Rumors:
-- 戻ってくる落雷
-- 第九照準線
-
-Hidden encounter:
-- 帰還雷標・BACKTRACE
-
-Hidden route:
-- 第九照準廊
+Rumors: 戻ってくる落雷 / 第九照準線
+- Hidden Encounter: 帰還雷標・BACKTRACE
+- Hidden Route: 第九照準廊
 
 ### 虚花の庭園 cluster
-Rumors:
-- 知らない生活を咲かせる花
-- 根脈からの返答
+Rumors: 知らない生活を咲かせる花 / 根脈からの返答
+- Hidden Encounter: 外記憶花・OFFWORLD BLOOM
+- Hidden Route: 異記憶根室
 
-Hidden encounter:
-- 外記憶花・OFFWORLD BLOOM
+## 8. Content Pack III B — multi-region convergence
 
-Hidden route:
-- 異記憶根室
+### Secret Chains
+- **返信印の正体** — 返信炉床 → 第九照準廊
+- **返送周期の一致** — 第九照準廊 → 異記憶根室 → ACK-WARDEN
+- **生きた記憶だけが残したもの** — 異記憶根室 → RETURN-CLOCK → CINDER-REPLY
 
-## 8. Difficulty / challenge unlock index
+### Hidden Bosses
+- 応答照準守・ACK-WARDEN
+- 返灰獣・CINDER-REPLY
+- 帰雷時計・RETURN-CLOCK
+- 受信根母・ROOT-RECEIVER
+- 生体記録核・LIVING-ARCHIVE
+
+### Secret companions
+- 返信猟犬 — breaker
+- 返灰小獣 — attacker
+- 帰雷灯 — speed
+- 異記憶芽 — support
+- 記録蛾 — specialist
+- 境界反響種 — specialist
+
+Special breeding:
+- 返信猟犬 × 帰雷灯 → 照準雷犬
+- 異記憶芽 × 記録蛾 → 生体記録花
+- 返灰小獣 × 境界反響種 → 逆流灰種獣
+
+### Unique / Relic rewards
+- 返信守の盾
+- 受理照準鏡
+- 返灰外殻
+- 逆流刻印
+- 帰雷コイル
+- 第九歩法輪
+- 異記憶樹皮
+- 外音の種子
+- 生体記録冠
+- 空白記録板
+- 返答王冠
+- 境界反響核
+
+### Lore fragments
+- 返信は文字ではない
+- 同じ返送周期
+- 記録できない記録
+
+## 9. Difficulty / challenge unlock index
 
 - Normal — start
 - 鋼鉄の誓約 — Ch5 clear + target stage first clear
@@ -210,7 +239,7 @@ Hidden route:
 
 Narrative interpretation is documented in `WORLD_LORE_BIBLE.md`.
 
-## 9. Maintenance rule
+## 10. Maintenance rule
 
 Whenever a PR adds or renames a significant:
 - story chapter

@@ -6,7 +6,7 @@
 
 ## Design rule
 
-CP3 must deepen old places instead of opening a parallel game mode.
+CP3 deepens old places instead of opening a parallel game mode.
 
 ```text
 Ch30 response
@@ -24,9 +24,9 @@ Use existing Adventure / regional exploration / Rumor Notebook / Codex / Ranch /
 
 No new Home route, currency, save root, daily/weekly loop or mandatory side-content gate.
 
-## A — Observation Reflux Clusters ✅ IMPLEMENTED
+## A — Observation Reflux Clusters ✅ COMPLETE
 
-Three initial post-Ch30 clusters:
+Three post-Ch30 clusters:
 
 ### 灰燼の外縁
 - 噂：動き続ける焼影
@@ -53,41 +53,69 @@ Rules:
 - CP3 anomalies are transformed local ecology / infrastructure / memory, not casual alien invasions.
 - Japan / Tokyo remains unidentified.
 
-## B — Multi-region Convergence ← NEXT
+## B — Multi-region Convergence ✅ COMPLETE
 
-Turn the three routes into 2–3 authored secret chains with different structures.
+Three authored Secret Chains:
 
-Preferred chain patterns:
-- **Ash → Thunder:** reply mark is identified as a targeting acknowledgment rather than writing.
-- **Thunder → Garden:** outbound lightning and memory roots share the same returned timing signature.
-- **Garden → Ash / external record:** living memory preserves a fragment that infrastructure could not.
+1. **返信印の正体**
+   - 返信炉床 → 第九照準廊
+   - conclusion: reply marks are acknowledgement / targeting responses, not ordinary writing.
 
-Deliver in one large batch:
-- 2–3 Secret Chains
-- 4–6 Hidden Boss / elite encounters
-- 5–8 secret/recruitable companions or variants
-- deterministic special breeding where ecology supports it
-- ~10–16 meaningful Unique / Relic rewards
-- Codex ecology entries and persistent Lore fragments
+2. **返送周期の一致**
+   - 第九照準廊 → 異記憶根室 → ACK-WARDEN
+   - conclusion: returned lightning, roots and ash are local translations of one returned observation pulse.
 
-Boss conditional Hidden Drops remain deferred. Discovery + clear should produce deterministic signature rewards where appropriate.
+3. **生きた記憶だけが残したもの**
+   - 異記憶根室 → RETURN-CLOCK → CINDER-REPLY
+   - conclusion: living ecology preserves an observation interval missing from machine/infrastructure records.
+   - unresolved: deliberate deletion vs information machines cannot record.
 
-## C — Integration / Density
+Implemented:
+- 3 Secret Chains
+- 5 Hidden Bosses
+- 6 secret companions
+- 3 deterministic special-breeding outcomes
+- 12 fixed Unique / Relic rewards
+- 5 Codex ecology entries
+- 3 persistent Lore fragments
 
-Final CP3 pass:
-- close every route and chain; no dead clues
-- compact `NEXT` guidance in existing Rumor Notebook
-- Codex habitat / ecology text
-- old-region revisit density audit
-- reward/build identity audit
-- Challenge / REMATCH+ compatibility
-- save compatibility
-- startup/import-order regression
-- MutationObserver idempotence
-- mobile battle command safety
-- update `GAME_CONTENT_CATALOG.md` and `WORLD_LORE_BIBLE.md`
+Hidden Bosses:
+- 応答照準守・ACK-WARDEN
+- 返灰獣・CINDER-REPLY
+- 帰雷時計・RETURN-CLOCK
+- 受信根母・ROOT-RECEIVER
+- 生体記録核・LIVING-ARCHIVE
 
-If B is cohesive enough, C may be folded into the same large PR rather than becoming a micro-phase.
+Secret companions:
+- 返信猟犬
+- 返灰小獣
+- 帰雷灯
+- 異記憶芽
+- 記録蛾
+- 境界反響種
+
+Special breeding:
+- 返信猟犬 × 帰雷灯 → 照準雷犬
+- 異記憶芽 × 記録蛾 → 生体記録花
+- 返灰小獣 × 境界反響種 → 逆流灰種獣
+
+Boss conditional Hidden Drops remain deferred. Signature rewards are deterministic after authored boss clears.
+
+## C — Integration / Density ✅ FOLDED INTO B
+
+Completed in the same batch:
+- every CP3-A route now feeds an authored chain
+- compact `NEXT` guidance reuses the existing Rumor Notebook
+- Codex habitat / ecology text added for CP3-B bosses
+- CP2 + CP3 Lore share the existing `世界断片` disclosure
+- no new MutationObserver; existing idempotence guard remains authoritative
+- one CP3-B authored boss maximum per run
+- bosses stay queued follow-ups, preserving the initial battle-command safety envelope
+- canonical equipment catalog resolves all 12 reward IDs
+- Ranch special breeding wraps the existing breeding-egg flow instead of replacing it
+- save data remains under existing companion / equipment / `world2.discoveries` roots
+- startup boot order explicitly loads CP3-A before CP3-B
+- automated CP3-B regression coverage added
 
 ## Human-readable documentation contract
 
@@ -108,3 +136,9 @@ Exact numeric combat values stay in code rather than being duplicated in documen
 - SD-4 conditional Boss hidden drops remain deferred.
 - Modern World identity remains restrained.
 - mobile command safety, startup dependency guards and MutationObserver convergence are release-blocking regressions.
+
+## Status
+
+**✅ CONTENT PACK III COMPLETE**
+
+Next work should be play/tune/system polish or the next story expansion when the existing content has earned it; do not invent a new parallel progression layer by default.

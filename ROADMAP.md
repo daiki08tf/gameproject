@@ -1,8 +1,8 @@
 # Blade Vale — Official Roadmap
 
-> **Current:** Core/Foundation ✅ / System Deepening ✅ / Content Pack II ✅ / Story Expansion I ✅ / Difficulty + Constraint Unlock ✅ / **Content Pack III A ✅**
+> **Current:** Core/Foundation ✅ / System Deepening ✅ / Content Pack II ✅ / Story Expansion I ✅ / Difficulty + Constraint Unlock ✅ / **Content Pack III ✅**
 >
-> **NEXT:** **Content Pack III B — Multi-region Convergence**.
+> **NEXT:** **PLAY / TUNE / SYSTEM & UI POLISH** before the next story expansion.
 
 Blade Vale is a personal evolving text-command hack-and-slash RPG.
 
@@ -49,6 +49,7 @@ Preferred rhythm:
 | Story Expansion I — Ch26–30 | ✅ |
 | Difficulty / Constraint Unlock redesign | ✅ |
 | Content Pack III A — Observation Reflux | ✅ |
+| Content Pack III B/C — Multi-region Convergence + Integration | ✅ |
 
 ## Story Expansion I — COMPLETE
 
@@ -79,77 +80,96 @@ See `STORY_CANON.md` and `WORLD_LORE_BIBLE.md`.
 
 All non-Normal conditions also require the target stage to have been cleared once. Runtime enforces the lock; it is not UI-only.
 
-## Content Pack III
+## Content Pack III — COMPLETE
 
 Full handoff: `CONTENT_PACK_III_ROADMAP.md`.
 
 ### A — Observation Reflux ✅
 
-After Ch30, returned observation begins altering previously explored regions.
+After Ch30, returned observation alters previously explored regions.
 
 Implemented:
-- 6 new rumors
+- 6 rumors
 - 3 low-frequency Hidden Encounters
 - 3 Hidden Routes
 - clusters in Ch21 / Ch23 / Ch24
 - Ch30 completion gate
 - existing `world2.discoveries`, Rumor Notebook and Text Battle only
 - no new Home route / currency / save root
-- hidden encounters are added as one follow-up encounter, preserving the mobile command safety envelope
 
 Clusters:
 - 灰燼の外縁 → 残照追跡体・AFTERIMAGE → 返信炉床
 - 天雷墓標群 → 帰還雷標・BACKTRACE → 第九照準廊
 - 虚花の庭園 → 外記憶花・OFFWORLD BLOOM → 異記憶根室
 
-### B — Multi-region Convergence ← NEXT
+### B — Multi-region Convergence ✅
 
-Use the three CP3-A routes as inputs to larger authored chains.
+Implemented as one cohesive batch:
+- 3 multi-region Secret Chains
+- 5 Hidden Bosses
+- 6 secret companions
+- 3 deterministic special-breeding outcomes
+- 12 fixed Unique / Relic rewards
+- Codex ecology
+- 3 persistent Lore fragments
 
-Target one large batch:
-- 2–3 multi-region Secret Chains
-- 4–6 Hidden Boss / elite encounters
-- 5–8 secret/recruitable companions or variants
-- deterministic special breeding where it makes ecological sense
-- ~10–16 meaningful Unique / Relic rewards
-- Codex ecology and persistent Lore fragments
-- deterministic signature rewards; SD-4 conditional hidden drops remain deferred
-
-Preferred mystery direction:
+New confirmed lore:
 - reply marks are acknowledgments/targeting responses, not ordinary writing
-- returned lightning and memory roots share the same timing signature
-- living memory can preserve information that machine/infrastructure records cannot
+- returned lightning, memory roots and ash share the same returned timing signature
+- living memory can preserve information that machine/infrastructure records do not contain
+- whether that missing interval was deliberately deleted or is intrinsically machine-unrecordable remains unresolved
 
-### C — Final integration
+### C — Final integration ✅ folded into B
 
-May be folded into B if cohesive:
-- close all clues/routes
-- compact `NEXT` guidance
-- Challenge / REMATCH+ compatibility
-- save/startup/import-order audit
-- MutationObserver convergence
-- mobile battle command regression
-- documentation refresh
+Completed:
+- all three CP3-A routes feed authored chains
+- compact `NEXT` guidance reuses Rumor Notebook
+- CP2 + CP3 Lore share the existing Codex `世界断片` disclosure
+- one CP3-B authored boss maximum per run, queued as a follow-up encounter
+- canonical equipment registration for all CP3 rewards
+- Ranch special breeding reuses the existing egg/breeding pipeline
+- save/startup/import-order safety retained
+- no new MutationObserver; existing idempotence guard retained
+- mobile battle command regression remains release-blocking
+- human-readable content/lore documentation refreshed
 
 ## Human-readable data references
 
 - `GAME_CONTENT_CATALOG.md` — enemy/Boss/event/companion/hidden-content index
 - `WORLD_LORE_BIBLE.md` — detailed setting, chronology, terminology and unresolved mysteries
 - `STORY_CANON.md` — high-level narrative guardrails
-- `CONTENT_PACK_III_ROADMAP.md` — current horizontal-pack handoff
+- `CONTENT_PACK_III_ROADMAP.md` — CP3 implementation/history
+- `CONTENT_PACK_III_B_NOTES.md` — compact CP3-B implementation handoff
 
 Exact numeric stats remain in code.
 
-## After Content Pack III
+## NEXT — Play / Tune / Polish
+
+Before adding Ch31+ by default, use the enlarged game and tighten what already exists.
+
+Preferred batch:
+- actual progression / difficulty sweep across early, mid, Ch21–30 and Lv99,999 endgame
+- equipment reward identity / power audit, especially CP2/CP3 Unique and Relic rewards
+- Ranch discoverability and breeding clarity
+- Rumor / Codex `NEXT` readability and duplicate-density audit
+- mobile scroll / tap / battle-command sweep
+- Home / Adventure density review without adding top-level buttons
+- save / startup / long-session regression checks
+
+If play reveals that another story arc is already earned, then plan Story Expansion II from the unresolved questions in `WORLD_LORE_BIBLE.md` rather than revealing Japan/Tokyo by default.
+
+## Development rhythm
 
 ```text
-CONTENT PACK III B/C
+CONTENT PACK III ✅
       ↓
-SYSTEM / UI POLISH AS NEEDED
+PLAY / TUNE / POLISH
       ↓
-PLAY / TUNE / DEEPEN
+FIX / DEEPEN EXISTING SYSTEMS
       ↓
 NEXT STORY EXPANSION WHEN EARNED
+      ↓
+HORIZONTAL CONTENT AGAIN
       ↺
 ```
 
@@ -161,7 +181,7 @@ For a new ChatGPT / Claude Code session:
 3. read `WORLD_LORE_BIBLE.md`
 4. read `GAME_CONTENT_CATALOG.md`
 5. read `CONTENT_PACK_III_ROADMAP.md`
-6. do not redo Content Pack II, Story Expansion I, Difficulty/Constraint Unlock, or CP3-A
-7. next work is **Content Pack III B — Multi-region Convergence**
+6. do not redo Content Pack II, Story Expansion I, Difficulty/Constraint Unlock, or Content Pack III
+7. next default work is **PLAY / TUNE / SYSTEM & UI POLISH**
 8. preserve Lv99,999, SD-4 deferral, no rotating challenges, no extra Home route/currency
 9. preserve mobile command safety, startup dependency guards, MutationObserver idempotence and save compatibility

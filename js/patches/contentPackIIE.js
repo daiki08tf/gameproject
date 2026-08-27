@@ -67,7 +67,7 @@ function decorateNotebook(){
     const rec=byName.get(title);if(!rec?.nextAction)return;
     const line=document.createElement('div');line.className='hint cp2e-next';line.textContent=`NEXT — ${rec.nextAction}`;card.appendChild(line);
   });
-  const lore=state.cp2LoreFragments();
+  const lore=state.worldLoreFragments?.()||state.cp2LoreFragments();
   const existingLore=box.querySelector('[data-cp2e-lore]');
   // Rebuilding this block unconditionally on every call is itself a childList
   // mutation inside #monsterCodexContent, which this function's own
