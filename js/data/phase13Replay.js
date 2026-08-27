@@ -9,6 +9,26 @@ export const PHASE13_CHALLENGES=Object.freeze([
   {id:'boss_rematch_plus',name:'REMATCH+',desc:'再戦Boss強化：HP+35% / ATK+25% / DEF+15% / SPD+8% / 報酬+40%',enemyHp:1.35,enemyAtk:1.25,enemyDef:1.15,enemySpd:1.08,healMult:.80,rewardMult:1.40,rematch:true},
 ]);
 
+// Challenge conditions are learned through the story instead of being exposed at Lv1.
+// A target stage must also be cleared once before any non-normal condition can be applied,
+// keeping first-time story play clean and making the system explicitly about replay/records.
+export const PHASE13_CHALLENGE_UNLOCKS=Object.freeze({
+  none:Object.freeze({chapter:0,capability:'通常戦闘',requiresStageClear:false}),
+  iron_oath:Object.freeze({chapter:5,capability:'戦闘記録',requiresStageClear:true}),
+  glass_route:Object.freeze({chapter:10,capability:'上級戦闘記録',requiresStageClear:true}),
+  break_trial:Object.freeze({chapter:19,capability:'境界条件',requiresStageClear:true}),
+  boss_rematch_plus:Object.freeze({chapter:25,capability:'観測条件',requiresStageClear:true,bossOnly:true}),
+});
+
+export function phase13ChallengeAvailability(challengeId,{clearedChapter=0,stageCleared=false,bossLike=false}={}){
+  const challenge=phase13Challenge(challengeId),rule=PHASE13_CHALLENGE_UNLOCKS[challenge.id]||PHASE13_CHALLENGE_UNLOCKS.none;
+  if(challenge.id==='none')return {available:true,challenge,rule,reason:null};
+  if(Number(clearedChapter)<rule.chapter)return {available:false,challenge,rule,reason:`第${rule.chapter}章クリアで${rule.capability}を解放`};
+  if(rule.requiresStageClear&&!stageCleared)return {available:false,challenge,rule,reason:'このステージを一度クリアすると使用可能'};
+  if(rule.bossOnly&&!bossLike)return {available:false,challenge,rule,reason:'Boss / 異界の再戦でのみ使用可能'};
+  return {available:true,challenge,rule,reason:null};
+}
+
 export const PHASE13_BUILD_FEATS=Object.freeze([
   {id:'artifactless',name:'無装具攻略',desc:'Boss/異界をArtifactなしで撃破。'},
   {id:'shieldless',name:'背水攻略',desc:'Boss/異界を盾なしで撃破。'},

@@ -1,8 +1,8 @@
 # Blade Vale — Official Roadmap
 
-> **Current:** Core/Foundation ✅ / System Deepening ✅ / Content Pack II ✅ / **Story Expansion I (Ch26–30) ✅ COMPLETE**
+> **Current:** Core/Foundation ✅ / System Deepening ✅ / Content Pack II ✅ / Story Expansion I ✅ / **Difficulty + Constraint Unlock redesign ✅ COMPLETE**
 >
-> **NEXT:** **Difficulty / Constraint Unlock redesign** → Content Pack III.
+> **NEXT:** **Content Pack III** → System / UI polish as needed → Play / tune / deepen.
 
 Blade Vale is a personal evolving text-command hack-and-slash RPG. The preferred rhythm is:
 
@@ -44,6 +44,7 @@ Blade Vale is a personal evolving text-command hack-and-slash RPG. The preferred
 | System Deepening Pack A–C | ✅ |
 | Content Pack II A–E | ✅ |
 | Story Expansion I — Ch26–30 | ✅ |
+| Difficulty / Constraint Unlock redesign | ✅ |
 
 ## Content Pack II — COMPLETE
 
@@ -118,26 +119,45 @@ Story Expansion I also delivers:
 - Abyss unlock remains based on Ch1–25 and is not silently pushed back
 - final boss encounter density remains inside the permanent mobile battle safety envelope
 
-## NEXT — Difficulty / Constraint Unlock redesign
+## Difficulty / Constraint Unlock redesign — COMPLETE
 
-Current problem: stage difficulty and challenge constraints can appear available before the story has established why the player can alter combat conditions.
+The existing Phase 13 Challenge layer now grows out of story knowledge instead of appearing fully formed at the start of the game.
 
-Direction already chosen:
-- Normal remains available from the beginning
-- higher difficulty tiers unlock through story progression
-- individual stages may additionally require a first clear before higher tiers are selectable there
-- challenge constraints unlock later as in-world **battle-record / boundary-condition / observation-condition** capabilities
-- advanced/multiple constraints arrive only after the player has learned enough about the boundary/observation systems
-- connect challenge clears to existing Personal Records / Prestige Titles / Build Feats / REMATCH+ rather than a new currency or screen
-- locked options should be hidden or compactly explained so early-game UI stays simple
+| Condition | Story unlock | In-world capability | Target rule |
+|---|---:|---|---|
+| Normal | Start | 通常戦闘 | always available |
+| 鋼鉄の誓約 | Ch5 clear | 戦闘記録 | target must be cleared once |
+| 硝子の進軍 | Ch10 clear | 上級戦闘記録 | target must be cleared once |
+| 破砕試練 | Ch19 clear | 境界条件 | target must be cleared once |
+| REMATCH+ | Ch25 clear | 観測条件 | cleared Boss / Raid / Secret Realm only |
 
-Exact unlock milestones must be derived from the current difficulty/constraint implementation before changing behavior.
+Delivered:
+- first-time story clears stay on Normal; optional conditions are explicitly replay tools
+- unlocks are derived from existing canonical chapter-boss clears, so old saves inherit them automatically
+- unavailable conditions are enforced in runtime, not merely hidden in UI
+- early game shows no Challenge block before the first capability is learned
+- an uncleared target shows only one compact first-clear hint after challenges exist globally
+- cleared targets show only currently usable conditions; future locked buttons do not clutter the row
+- challenge clears still feed the existing Personal Records / Prestige Titles / Build Feats / REMATCH+ systems
+- the fixed Combat3 difficulty rebalance remains internal combat balance and is not turned into a duplicate player-facing difficulty tier
+- no new Home route, screen, currency, rotating schedule or save root
+
+## NEXT — Content Pack III
+
+The next horizontal pack should build on the now-complete Story Expansion I and replay unlock layer rather than opening another top-level system.
+
+Direction:
+- add new detours that emerge from existing regions, Rumor / Codex knowledge and external-observation fallout
+- use Ch26–30 discoveries as optional leads without making the main story a prerequisite for unrelated older-region content
+- let selected late-game locations support Challenge / REMATCH replay naturally after their first clear
+- keep new Unique / Relic / companion rewards build-defining or collectible rather than universally mandatory
+- continue feeding Secret Chains, ecology, Lore, Ranch and Codex through existing surfaces
+- preserve the restrained external-world mystery; no casual Japan/Tokyo reveal
+- inspect existing content density before deciding the exact number of locations/enemies/bosses instead of treating quotas as mandatory
 
 ## After that
 
 ```text
-DIFFICULTY + CONSTRAINT UNLOCK REDESIGN
-      ↓
 CONTENT PACK III
       ↓
 SYSTEM / UI POLISH AS NEEDED
@@ -152,8 +172,8 @@ For a new ChatGPT / Claude Code session:
 1. read this file
 2. read `STORY_CANON.md`
 3. read `CONTENT_PACK_II_ROADMAP.md`
-4. do **not** redo Content Pack II A–E or Story Expansion I Ch26–30
-5. next work is **Difficulty / Constraint Unlock redesign**
+4. do **not** redo Content Pack II A–E, Story Expansion I Ch26–30 or the Difficulty / Constraint Unlock redesign
+5. next work is **Content Pack III**
 6. preserve Lv99,999, SD-4 deferral, no rotating challenges, no extra Home route/currency
 7. preserve the permanent mobile command regression, startup dependency guards, MutationObserver idempotence and save compatibility
 8. inspect existing code/tests before adding parallel systems
