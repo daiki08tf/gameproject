@@ -1,20 +1,12 @@
 # Gear Overhaul Phase 6 — Weapon Identity
 
-Status: **Phase 6A ✅ / Phase 6B ✅ / Phase 6C ACTIVE — existing 8 families / 24 archetypes only**
+Status: **COMPLETE — Phase 6A / 6B / 6C / 6D ✅**
 
 ## Goal
 
-Make the equipped weapon change **how the player fights**, not only the size of ATK/MAG/SPD/CRIT numbers.
+Make the equipped weapon change **how the player fights**, not only the size of ATK/MAG/SPD/CRIT numbers, while deepening the existing 8 families / 24 archetypes instead of creating another progression system.
 
-Phase 6 deliberately deepens the existing systems:
-
-- 8 mastery families remain the compatibility root.
-- 24 Equipment 3.0 archetypes remain the loot identity layer.
-- 24 existing Combat 2.0 Weapon Techniques remain the active-skill layer.
-- Job / Fusion Job weapon affinity remains unchanged.
-- Option 4.0 remains the random-build layer.
-
-No new currency, progression root, Home button, daily/weekly loop, or weapon family is introduced here.
+No new currency, progression root, Home button, daily/weekly loop, or weapon family was introduced.
 
 ## 6A — Family + Archetype combat identity ✅
 
@@ -29,27 +21,27 @@ No new currency, progression root, Home button, daily/weekly loop, or weapon fam
 | 楽器 | 戦律・自己強化・テンポ |
 | 錫杖 | 聖光・弱体・持久戦 |
 
-All 24 existing Equipment 3.0 archetypes specialize the existing Weapon Techniques. Fast archetypes gain proc opportunities while roughly preserving raw packet total; heavy archetypes bias toward packet power; resource/sustain archetypes change MP or temporary buffs.
+All 24 Equipment 3.0 archetypes specialize the existing Weapon Techniques. Fast archetypes gain proc opportunities while roughly preserving raw packet total; heavy archetypes bias toward packet power; resource/sustain archetypes change MP or temporary buffs.
 
 PR #249 establishes this layer.
 
 ## 6B — Three-technique mini rotations ✅
 
-The existing Lv1 / Lv100 / Lv350 Weapon Techniques form a soft three-step chain:
+The existing Lv1 / Lv100 / Lv350 Weapon Techniques form a soft chain:
 
 `Opener → Setup → Finisher`
 
 - no visible meter or saved resource
 - chain state exists only on the active `BattleEngine`
-- Job skills and normal attacks can be woven between weapon techniques
+- Job skills and normal attacks can be woven between steps
 - intended order earns family-specific bonuses
 - wrong order only loses the bonus; it never blocks a command
 
-PR #250 establishes this layer. Its duplicate validation job passed on rerun with no gameplay change, confirming the original one-off CI failure was transient.
+PR #250 establishes this layer. A duplicate validation failure passed on rerun with no code change, confirming a transient CI failure rather than a gameplay defect.
 
-## 6C — Job × Weapon × Option build lanes 🔄
+## 6C — Job × Weapon × Option build lanes ✅
 
-Every family now has **three authored credible build routes** made only from live Option families. These routes are descriptive data, not hidden combat bonuses.
+Every family has **three authored credible build routes** made only from live Option families. They are descriptive content, not hidden combat bonuses.
 
 | Family | Route A | Route B | Route C |
 |---|---|---|---|
@@ -62,35 +54,56 @@ Every family now has **three authored credible build routes** made only from liv
 | 楽器 | 高速戦律 | 循環演奏 | 英雄奏者 |
 | 錫杖 | 聖域持久 | 魔導防壁 | 審判術 |
 
-Permanent rule: **one weapon family must not collapse into one mandatory Option package**. Regression coverage requires three distinct routes, broad Option-family coverage, and no universal package shared by all routes.
+Permanent rule: **one weapon family must not collapse into one mandatory Option package**.
 
-`js/data/weaponBuildSynergy.js` is reusable authored content for later Equipment/Codex guidance, Unique design, Smart Loot presets, and high-difficulty loot placement. It does not modify damage or stats.
+PR #251 establishes `js/data/weaponBuildSynergy.js`, which can later feed Unique design, Loot placement, Codex guidance or Smart Loot presets without duplicating build logic.
+
+## 6D — Balance / closeout ✅
+
+Regression gates now run every family/archetype through its specialized techniques and earned Setup/Finisher bonuses.
+
+Current closeout bounds:
+
+- raw technique packet ratio: `0.85–1.35×` of canonical technique
+- total technique hits: `<= 7`
+- technique-added Crit: `<= 60`
+- technique Armor Pen: `<= 0.50`
+- technique Weaken: `<= 0.40`
+- technique MP cost: `1–30`
+- execution multiplier: `<= 2.0×`
+- execution threshold: `<= 40% HP`
+
+Rapid-hit archetypes (`短弓 / 双短剣 / 爪`) additionally remain capped to roughly `<= 1.05×` raw packet output from their archetype specialization; their reward is proc opportunity rather than free burst damage.
+
+Visual presentation expansion is deliberately deferred while the project prioritizes gameplay/content. All identity/build metadata is already reusable by existing screens later.
+
+## Phase 7 decision — NO-GO for new weapon families
+
+**Do not add a new mastery family now.** The current 24 archetypes already cover several names that would otherwise be mistaken for missing weapon families, including `大剣 / 魔導書 / 双短剣 / 弩`.
+
+A future spear, gun, scythe, etc. remains possible only if it passes all gates:
+
+1. does not duplicate one of the current 24 archetypes,
+2. creates a distinct combat loop,
+3. has credible Basic/Fusion Job coverage,
+4. has a distinct Option bias,
+5. supports multiple Named/Unique weapons,
+6. adds more value than deepening the current family set.
+
+Re-evaluate after Unique 2.0 exposes real design gaps; do not add a family merely for variety.
 
 ## Runtime contract
 
-`BattleEngine` derives the equipped weapon from the existing `state.data.equipped.weapon` slot. Existing `weaponArchetype` metadata specializes Weapon Techniques.
+- equipped weapon still comes from `state.data.equipped.weapon`
+- existing `weaponArchetype` metadata specializes Weapon Techniques
+- `weaponTechniquesFor(type, level)` remains backward compatible without an archetype
+- weapon-chain state is encounter-local and never written to saves
+- build lanes do not alter stats or damage
 
-Calling `weaponTechniquesFor(type, level)` without an archetype remains backward compatible and returns canonical base techniques.
+## Next — Phase 8 Unique 2.0
 
-Weapon-chain state is encounter-local (`BattleEngine._weaponTechniqueChain`) and is not written to saves.
+Use the completed Weapon Identity + Option 4.0 foundation to author gameplay-changing Named/Unique equipment:
 
-## Next
+`Unique FIXED identity + up to 3 random Options`
 
-### Phase 6D — Balance / presentation / closeout
-
-- run comparative checks across all 8 families / 24 archetypes
-- ensure rapid-hit, heavy, execution, sustain and resource identities have bounded outputs
-- expose concise family/archetype/build identity through an existing Equipment/Codex presentation surface only
-- update Gear audit / roadmap and close Phase 6
-- make an explicit Phase 7 go/no-go decision for genuinely new weapon families
-
-## Permanent gate for Phase 7
-
-Do **not** add spear, gun, scythe, etc. merely for variety. A new family must:
-
-1. not duplicate one of the existing 24 archetypes,
-2. have a distinct combat loop,
-3. have credible job coverage,
-4. have a distinct Option bias,
-5. support multiple Named/Unique weapons,
-6. add more value than deepening the current family set.
+Duplicates must remain valuable because their random Options / Option rarity / Option Lv can differ and unwanted copies can feed Option Fusion.
