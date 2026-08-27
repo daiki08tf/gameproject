@@ -1,5 +1,5 @@
 /* Phase 9.2+ — Monster Expansion
-   Chapter 21–25 and Machine World enemies receive authored combat identities.
+   Chapter 21–30 and Machine World enemies receive authored combat identities.
    Only Combat 3-supported skill kinds are used so these profiles execute through the existing AI runtime. */
 
 export const PHASE9_ENEMY_COMBAT = Object.freeze({
@@ -28,6 +28,32 @@ export const PHASE9_ENEMY_COMBAT = Object.freeze({
   ch25_tank:{role:'guardian',skill:{name:'七鍵封鎖陣',kind:'guardAll',defPct:.66,turns:2,chance:.47}},
   ch25_midboss:{role:'caster',skill:{name:'零式観測破棄',kind:'mpDrain',mpPct:.25,chance:.48}},
   ch25_branchboss:{role:'frontline',skill:{name:'無銘王の断界',kind:'power',power:2.18,chance:.49}},
+
+  ch26_normal:{role:'frontline',skill:{name:'零外断ち',kind:'power',power:2.12,chance:.47}},
+  ch26_fast:{role:'skirmisher',skill:{name:'逸脱位相跳躍',kind:'multi',power:.98,hits:3,chance:.47}},
+  ch26_tank:{role:'guardian',skill:{name:'規格外封鎖陣',kind:'guardAll',defPct:.68,turns:2,chance:.48}},
+  ch26_midboss:{role:'caster',skill:{name:'鍵外権限剥離',kind:'mpDrain',mpPct:.25,chance:.49}},
+  ch26_branchboss:{role:'caster',skill:{name:'欠番座標固定',kind:'slow',power:.30,turns:2,chance:.50}},
+  ch27_normal:{role:'caster',skill:{name:'遠信同期ずれ',kind:'slow',power:.28,turns:2,chance:.48}},
+  ch27_fast:{role:'support',skill:{name:'走査光同期',kind:'hasteAll',spdPct:.26,turns:2,chance:.49}},
+  ch27_tank:{role:'guardian',skill:{name:'受信殻防壁',kind:'guardAll',defPct:.70,turns:2,chance:.49}},
+  ch27_midboss:{role:'skirmisher',skill:{name:'残響零連射',kind:'multi',power:1.00,hits:3,chance:.50}},
+  ch27_branchboss:{role:'caster',skill:{name:'無音受信',kind:'mpDrain',mpPct:.26,chance:.51}},
+  ch28_normal:{role:'caster',skill:{name:'監査権限剥離',kind:'mpDrain',mpPct:.27,chance:.50}},
+  ch28_fast:{role:'support',skill:{name:'照合加速命令',kind:'hasteAll',spdPct:.28,turns:2,chance:.50}},
+  ch28_tank:{role:'guardian',skill:{name:'権限壁展開',kind:'guardAll',defPct:.72,turns:2,chance:.51}},
+  ch28_midboss:{role:'support',skill:{name:'検証修復',kind:'healAlly',healPct:.22,chance:.52}},
+  ch28_branchboss:{role:'caster',skill:{name:'設計補助抑制',kind:'weakenAtk',power:.24,turns:2,chance:.52}},
+  ch29_normal:{role:'frontline',skill:{name:'逆観測断ち',kind:'power',power:2.22,chance:.51}},
+  ch29_fast:{role:'skirmisher',skill:{name:'焦点跳躍連刃',kind:'multi',power:1.03,hits:3,chance:.52}},
+  ch29_tank:{role:'guardian',skill:{name:'二重視差障壁',kind:'guardAll',defPct:.74,turns:2,chance:.52}},
+  ch29_midboss:{role:'caster',skill:{name:'第八焦点固定',kind:'slow',power:.32,turns:2,chance:.53}},
+  ch29_branchboss:{role:'frontline',skill:{name:'外向門断',kind:'power',power:2.30,chance:.54}},
+  ch30_normal:{role:'caster',skill:{name:'外部照合剥離',kind:'mpDrain',mpPct:.30,chance:.53}},
+  ch30_fast:{role:'skirmisher',skill:{name:'応答走査連撃',kind:'multi',power:1.06,hits:3,chance:.54}},
+  ch30_tank:{role:'guardian',skill:{name:'観測隔壁展開',kind:'guardAll',defPct:.76,turns:2,chance:.54}},
+  ch30_midboss:{role:'support',skill:{name:'双方向再照合',kind:'healAlly',healPct:.24,chance:.55}},
+  ch30_branchboss:{role:'caster',skill:{name:'無名観測破',kind:'power',power:2.38,chance:.56}},
 
   machine_scout:{role:'skirmisher',skill:{name:'光学予測連射',kind:'multi',power:1.02,hits:3,chance:.50}},
   machine_drone:{role:'caster',skill:{name:'演算阻害パルス',kind:'mpDrain',mpPct:.27,chance:.50}},
