@@ -6,6 +6,7 @@ import { canonicalOptionFamilyId, normalizeOptionLevel, OPTION_LEVEL_MAX } from 
 import { optionFusionPreview, applyOptionFusionXp } from '../data/options4Fusion.js';
 import { clearInstanceData } from './weaponInstanceFoundation.js';
 import { clearGearInstanceData } from './equipment3GearFoundation.js';
+import './gearOverhaulCraftingConsolidation.js';
 
 function optionAt(target, index) {
   const i = Math.floor(Number(index));
