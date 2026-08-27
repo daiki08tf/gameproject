@@ -1,8 +1,14 @@
-/* Gear Overhaul Phase 3A — consolidate legacy crafting around Option 4.0 */
+/* Gear Overhaul Phase 3 — consolidate legacy crafting around Option 4.0 */
 import { state } from '../state.js';
+import { optionFromAffix, applyAuthoredOptionValue, canonicalOptionFamilyId } from '../data/options4.js';
+import { refreshInstanceName } from './equipment3Blacksmith.js';
+
+function instanceFor(instanceId) {
+  return state.data.weaponInstances?.[instanceId] || state.data.gearInstances?.[instanceId] || null;
+}
 
 function optionAt(instanceId, index) {
-  const inst = state.data.weaponInstances?.[instanceId] || state.data.gearInstances?.[instanceId];
+  const inst = instanceFor(instanceId);
   return inst?.affixes?.[Math.floor(Number(index))] || null;
 }
 
@@ -26,22 +32,41 @@ if (previousAscend) {
   };
 }
 
+function normalizeRerolledOption(instanceId, index, rawOption) {
+  const inst = instanceFor(instanceId);
+  if (!inst || !rawOption?.id) return rawOption;
+  const clean = { ...rawOption };
+  clean.familyId = canonicalOptionFamilyId(clean.familyId || clean.id);
+  clean.level = 1;
+  clean.xp = 0;
+  clean.greater = false;
+  clean.greaterEvaluated = true;
+  clean.forgedReroll = true;
+  delete clean.baseRoll;
+  delete clean.temperBaseRoll;
+  delete clean.forgedGreater;
+  const option4 = optionFromAffix(clean, { level: 1, xp: 0 });
+  return applyAuthoredOptionValue(option4, {
+    itemPower: inst.itemPower || 1,
+    ctx: {},
+    key: `${instanceId}:reroll:${index}:${option4.familyId}`,
+    initializeLevel: false,
+  });
+}
+
 const previousReroll = state.equipment3RerollAffix?.bind(state);
 if (previousReroll) {
   state.equipment3RerollAffix = function gearOverhaulReroll(instanceId, index) {
     const result = previousReroll(instanceId, index);
     if (!result) return result;
+    const inst = instanceFor(instanceId);
     const option = optionAt(instanceId, index);
-    if (!isOption4(option)) return result;
-    option.level = 1;
-    option.xp = 0;
-    option.greater = false;
-    option.greaterEvaluated = true;
-    delete option.baseRoll;
-    delete option.temperBaseRoll;
-    delete option.forgedGreater;
+    if (!inst || !option) return result;
+    const normalized = normalizeRerolledOption(instanceId, index, option);
+    inst.affixes[Math.floor(Number(index))] = normalized;
+    if (this.data.weaponInstances?.[instanceId]) refreshInstanceName(instanceId);
     this.save();
-    return option;
+    return normalized;
   };
 }
 
@@ -61,6 +86,12 @@ function decorateCraftingButtons() {
       button.title = 'Option 4.0のGreaterはドロップ限定です';
     }
   }
+  for (const button of root.querySelectorAll('[data-e3act="reroll"]')) {
+    const option = optionAt(button.dataset.id, button.dataset.index);
+    if (!option) continue;
+    button.textContent = 'Option再抽選';
+    button.title = 'Option系統を入れ替えます。新しいOptionはLv1・EXP0から育成します';
+  }
 }
 
 if (typeof document !== 'undefined') {
@@ -75,4 +106,4 @@ if (typeof document !== 'undefined') {
   else install();
 }
 
-export { isOption4 as isOption4CraftingOption, decorateCraftingButtons };
+export { isOption4 as isOption4CraftingOption, normalizeRerolledOption, decorateCraftingButtons };
