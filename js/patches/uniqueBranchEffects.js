@@ -39,13 +39,13 @@ chainMethod(state, 'getStats', (originalGetStats) => function getStatsWithUnique
 const originalInit=BattleEngine.prototype.init;
 if(originalInit){
   BattleEngine.prototype.init=function uniqueBranchInit(...args){
-    const r=originalInit.apply(this,args); this._uniqueBranchEffects=activeBranches(); return r;
+    const r=originalInit.apply(this,args); this._uniqueBranchEffects=activeBranches(); this._uniqueKillMomentumStacks=0; return r;
   };
 }
 const originalStart=BattleEngine.prototype.start;
 if(originalStart){
   BattleEngine.prototype.start=function uniqueBranchStart(...args){
-    const r=originalStart.apply(this,args); this._uniqueBranchEffects=activeBranches(); return r;
+    const r=originalStart.apply(this,args); this._uniqueBranchEffects=activeBranches(); this._uniqueKillMomentumStacks=0; return r;
   };
 }
 
@@ -62,9 +62,29 @@ BattleEngine.prototype.calculateDamage=function uniqueBranchDamage(atk,target,op
   for(const e of effects(this,'executeDamage')) if(target?.boss&&target.maxHp>0&&target.hp/target.maxHp<=e.threshold) mult*=1+e.power;
   for(const e of effects(this,'mpReserveDamage')) if(mpRatio>=e.threshold) mult*=1+e.power;
   if(this._uniqueNoRepeatStacks>0) for(const e of effects(this,'noRepeatDamage')) mult*=1+e.power*this._uniqueNoRepeatStacks;
+  for(const e of effects(this,'strongKillMomentum')){
+    const stacks=Math.min(Number(e.maxStacks)||5,Math.max(0,Number(this._uniqueKillMomentumStacks)||0));
+    if(stacks>0) mult*=1+(Number(e.power)||0)*stacks;
+  }
   out.damage=Math.max(1,Math.round(out.damage*mult));
   return out;
 };
+
+// Tyrant: each kill builds momentum for the rest of the encounter. Elite/boss-like
+// kills count double, so the branch is useful in normal waves but rewards hunting
+// stronger targets. At the authored 6% x 5 cap this tops out at +30% damage.
+const originalGrantKillRewards=BattleEngine.prototype._grantKillRewards;
+if(originalGrantKillRewards){
+  BattleEngine.prototype._grantKillRewards=function uniqueBranchKillMomentum(enemy){
+    const result=originalGrantKillRewards.apply(this,arguments);
+    for(const e of effects(this,'strongKillMomentum')){
+      const max=Math.max(1,Number(e.maxStacks)||5);
+      const strong=!!(enemy?.boss||enemy?.elite||enemy?.cp3HiddenBoss||enemy?.phase12RareSpawn);
+      this._uniqueKillMomentumStacks=Math.min(max,(Number(this._uniqueKillMomentumStacks)||0)+(strong?2:1));
+    }
+    return result;
+  };
+}
 
 // ---------- Guard branches ----------
 const originalEnemyDamage=BattleEngine.prototype._enemyAttackDamage;
