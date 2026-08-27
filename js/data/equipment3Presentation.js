@@ -3,6 +3,7 @@ import { itemPowerBand } from './equipment3.js';
 import { describeAffix, AFFIX_RARITY_LABEL, affixRarityIndex } from './affixes.js';
 import { optionDisplayLabel } from './options4.js';
 import { getLegendaryEffect, getCursedAffix } from './equipment3Legendary.js';
+import { fixedEquipmentIdentities, fixedIdentitySummary } from './equipmentFixedIdentity.js';
 import { loot3EndgameChase } from './loot3EndgameChase.js';
 
 function lootQuality(item, inst, affixes, { legendary, curse, greaterCount, itemPower }) {
@@ -30,7 +31,8 @@ export function equipment3Presentation(item, inst = null) {
   if (!item) return null;
   if (!inst) {
     const q=lootQuality(item,null,[],{legendary:null,curse:null,greaterCount:0,itemPower:0});
-    const base={name:item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,itemPower:null,tier:null,band:null,greaterCount:0,affixes:[],legendary:null,curse:null,...q};
+    const fixedIdentities = fixedEquipmentIdentities(item, null);
+    const base={name:item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,itemPower:null,tier:null,band:null,greaterCount:0,affixes:[],fixedIdentities,legendary:null,curse:null,...q};
     return {...base,chase:loot3EndgameChase(item,base)};
   }
   const itemPower = Math.max(1, Math.floor(Number(inst.itemPower) || 1));
@@ -39,6 +41,7 @@ export function equipment3Presentation(item, inst = null) {
   const greaterCount = Math.max(0, Math.floor(Number(inst.greaterAffixCount) || 0));
   const legendary = getLegendaryEffect(inst.legendaryEffectId);
   const curse = getCursedAffix(inst.curseId);
+  const fixedIdentities = fixedEquipmentIdentities(item, inst);
   const affixes = (inst.affixes || []).map((a) => {
     const d = describeAffix(a);
     return {
@@ -56,7 +59,7 @@ export function equipment3Presentation(item, inst = null) {
     };
   });
   const q=lootQuality(item,inst,affixes,{legendary,curse,greaterCount,itemPower});
-  const base={name:inst.displayName||item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,itemPower,tier,band,greaterCount,affixes,legendary,curse,...q};
+  const base={name:inst.displayName||item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,itemPower,tier,band,greaterCount,affixes,fixedIdentities,legendary,curse,...q};
   return {...base,chase:loot3EndgameChase(item,base)};
 }
 
@@ -81,8 +84,7 @@ export function equipment3SpecialLines(p) {
     const keepReasons=(p.reasons||[]).filter(r=>/UNIQUE|SET|BUILD|ANCIENT|GREATER|LEGENDARY/.test(r)).slice(0,3);
     lines.push(`【KEEP候補】${keepReasons.length?keepReasons.join(' / '):(p.chase?.tier?.label||'狙い撃ちドロップ')}`);
   }
-  if (p.legendary) lines.push(`《${p.legendary.name}》 ${p.legendary.desc}`);
-  if (p.curse) lines.push(`【呪：${p.curse.name}】 ${p.curse.desc}`);
+  for (const identity of p.fixedIdentities || []) lines.push(fixedIdentitySummary(identity));
   return lines;
 }
 
