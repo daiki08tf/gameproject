@@ -109,9 +109,10 @@ function renderAdvancedLootFilter(row, filter) {
   panel.appendChild(makeFilterField('Curseのみ', makeCheckbox(filter.cursedOnly, (value) => {
     state.updateLootFilter3({ cursedOnly: value }); renderEquipment();
   })));
-  panel.appendChild(makeFilterField('Affix', makeTextInput(filter.affixQuery, '名前・効果で検索', (value) => {
-    state.updateLootFilter3({ affixQuery: value }); renderEquipment();
-  })));
+  // Phase 5D: the legacy Affix search field is retired in favor of the Phase 5A
+  // Option検索 field (smartLoot4EquipmentUi.js), which now covers query + rarity
+  // + Lv together. affixQuery/optionQuery normalization stays in
+  // equipment3SmartLoot.js for old-save compatibility.
 
   const resetBtn = document.createElement('button');
   resetBtn.className = 'inline-btn';
@@ -132,21 +133,13 @@ function renderAdvancedLootFilter(row, filter) {
   smart.appendChild(makeFilterField('ON', makeCheckbox(filter.autoLock.enabled, (value) => {
     state.updateLootFilter3({ autoLock: { enabled: value } }); renderEquipment();
   })));
-  smart.appendChild(makeFilterField('Legendary', makeCheckbox(filter.autoLock.legendary, (value) => {
-    state.updateLootFilter3({ autoLock: { legendary: value } }); renderEquipment();
-  })));
-  smart.appendChild(makeFilterField('Curse', makeCheckbox(filter.autoLock.cursed, (value) => {
-    state.updateLootFilter3({ autoLock: { cursed: value } }); renderEquipment();
-  })));
-  smart.appendChild(makeFilterField('Greater', makeSelect(filter.autoLock.minGreater, [['0', 'OFF'], ['1', '1個以上'], ['2', '2個以上'], ['3', '3個']], (value) => {
-    state.updateLootFilter3({ autoLock: { minGreater: Number(value) } }); renderEquipment();
-  })));
   smart.appendChild(makeFilterField('IP', makeNumberInput(filter.autoLock.minItemPower, 10000, (value) => {
     state.updateLootFilter3({ autoLock: { minItemPower: value } }); renderEquipment();
   })));
-  smart.appendChild(makeFilterField('Affix', makeTextInput(filter.autoLock.affixQuery, '一致で自動ロック', (value) => {
-    state.updateLootFilter3({ autoLock: { affixQuery: value } }); renderEquipment();
-  })));
+  // Phase 5D: Legendary / Curse / Greater / Affix moved into the Phase 5B
+  // PROTECT panel (smartLoot4EquipmentUi.js decorateProtectionControls), which
+  // also adds the independent Ancient Option / Option Lv80+ / Option text
+  // rules. Only ON and IP remain here as plain fields.
 
   const applyBtn = document.createElement('button');
   applyBtn.className = 'inline-btn';

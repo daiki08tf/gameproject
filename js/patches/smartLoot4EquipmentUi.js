@@ -136,38 +136,15 @@ function syncAdvancedBadge(filter) {
   button.classList.toggle('active', total > 0);
 }
 
-function hideLegacyVisibleAffixField(advanced) {
-  for (const label of advanced.querySelectorAll(':scope > label')) {
-    const first = label.querySelector(':scope > span')?.textContent?.trim();
-    if (first === 'Affix') {
-      label.hidden = true;
-      label.dataset.smartloot4LegacyAffix = '1';
-    }
-  }
-}
-
 function findSmartPanel(advanced) {
   return [...advanced.querySelectorAll(':scope > div')].find((node) =>
     [...node.querySelectorAll(':scope > strong')].some((strong) => strong.textContent.includes('Smart Loot 自動保護'))
   ) || null;
 }
 
-function hideLegacyProtectionFields(smart) {
-  if (!smart) return;
-  const replaced = new Set(['Legendary', 'Curse', 'Greater', 'Affix']);
-  for (const label of smart.querySelectorAll(':scope > label')) {
-    const first = label.querySelector(':scope > span')?.textContent?.trim();
-    if (replaced.has(first)) {
-      label.hidden = true;
-      label.dataset.smartloot4LegacyProtection = '1';
-    }
-  }
-}
-
 function decorateProtectionControls(advanced, filter, rerender) {
   const smart = findSmartPanel(advanced);
   if (!smart) return;
-  hideLegacyProtectionFields(smart);
   if (smart.querySelector('[data-smartloot4-protection]')) return;
 
   const rule = filter.autoLock || {};
@@ -210,7 +187,6 @@ export function decorateSmartLoot4Filters(rerender = () => {}) {
 
   const advanced = document.querySelector('#lootFilterRow .loot-filter-advanced');
   if (!advanced) return;
-  hideLegacyVisibleAffixField(advanced);
 
   if (!advanced.querySelector('[data-smartloot4-option-filters]')) {
     const box = document.createElement('div');
