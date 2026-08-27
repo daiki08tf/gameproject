@@ -1,28 +1,28 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **ACTIVE / Phase 4 Equipment UI 3.x**
+> Status: **ACTIVE / Phase 5 Smart Loot 4.0**
 >
-> Gear Overhaul continues to take priority over further Deep Survey expansion. High-difficulty content becomes more valuable after the loot loop itself is worth farming.
+> Gear Overhaul continues to take priority over further Deep Survey expansion. The loot loop should be worth farming before more high-difficulty content is layered on top.
 
 ## Core philosophy
 
 ### No Single Correct Build
 
-Blade Vale must support two equally valid routes:
+Blade Vale supports two equally valid routes:
 
 1. **Build route** — understand mechanics, combine job / weapon / Option synergies, and clear content earlier with lower raw stats.
 2. **Brute-force route** — keep farming, feed duplicate Options, raise Option Lv, stack offense / defense / sustain, and eventually overpower most encounters.
 
 > **「知らん、火力と耐久で押し切る」も正しい攻略法。**
 
-High-difficulty mechanics should therefore be soft checks rather than hard build gates wherever possible.
+High-difficulty mechanics should normally be soft checks rather than hard build gates.
 
 ## Permanent Gear rules
 
 1. Random Options are capped at **3 per item**.
-2. Unique / Legendary / Curse fixed identities are **separate from the 3 random Option slots**.
-3. Option rarity remains seven tiers: `common / uncommon / rare / epic / legendary / mythic / ancient`.
-4. Option Lv is persistent **1–100** and rarity never auto-promotes from leveling.
+2. Unique / Legendary / Curse fixed identities are separate from the 3 random Option slots.
+3. Option rarity remains `common / uncommon / rare / epic / legendary / mythic / ancient`.
+4. Option Lv is persistent **1–100**; rarity never auto-promotes from leveling.
 5. Same-family unwanted equipment can be consumed for Option EXP; no new currency.
 6. Lv25 / 50 / 75 / 100 are visible mastery checkpoints; Lv100 is **MASTER**.
 7. Existing saves must not be destructively rerolled or trimmed.
@@ -36,12 +36,12 @@ Equipment Base
   - equipment rarity
   - Item Power
   - base stats
-  - weapon family / archetype when applicable
+  - weapon family / archetype
 
 FIXED IDENTITY (outside random Option cap)
-  - Unique fixed identity, when item.unique
-  - Legendary Power, when rolled/imprinted
-  - Curse, when rolled
+  - Unique fixed identity
+  - Legendary Power
+  - Curse
 
 Random OPTION (max 3)
   - family
@@ -51,122 +51,129 @@ Random OPTION (max 3)
   - resulting value
 ```
 
-Example:
-
-```text
-神話・断界の大剣 +146
-【固有】Finisher時にDEFの一部を無視
-《固定能力：雷神の心臓》会心時に追撃
-
-OPTION
-- 覇力 Lv63
-- 神眼 Lv41
-- 吸命 Lv72
-```
-
-## Option rarity identity
-
-Rarity is communicated through the Option name itself. Example ATK ladder:
+Example ATK rarity ladder:
 
 `怪力 → 剛力 → 豪腕 → 鬼力 → 覇力 → 神力 → 天威`
 
-All canonical families have authored rarity-name ladders and Lv curves.
+## Completed phases
 
-## Phase 2 — Option Fusion ✅ COMPLETE
+### Phase 0 — Audit ✅
+
+- 8 mastery weapon families / 24 archetypes
+- 15 basic jobs / 105 Fusion Jobs
+- legacy Affix catalog audited and canonical Option families documented
+- weapon/job compatibility audited before any weapon-family expansion
+
+Docs:
+- `GEAR_OVERHAUL_AUDIT.md`
+- `GEAR_OVERHAUL_OPTION_CATALOG.md`
+- `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`
+
+### Phase 1 — Option 4.0 ✅
+
+- max 3 random Options
+- seven rarity identities
+- stable `familyId / rarity / level / xp`
+- authored rarity-name ladders and Lv1–100 value curves
+- source/IP starting Option Lv
+- rarity + Option Lv authoritative values
+- old saved gear preserved without destructive trimming/reroll
+
+Key PRs: #229 / #230 / #231 / #234.
+
+### Phase 2 — Option Fusion ✅
 
 Full handoff: `GEAR_OVERHAUL_PHASE2_FUSION.md`.
 
-Implemented:
-- same canonical family equipment-as-material Fusion
+- same-family equipment-as-material Fusion
 - deterministic Option EXP
-- 100 / 80 / 60 / 40 / 20% rarity-gap efficiency
-- material rarity and material Lv affect EXP yield
+- rarity-gap efficiency 100 / 80 / 60 / 40 / 20%
 - nonlinear ~62k total Lv1→100 curve
-- low-rarity material remains useful
-- Lv25 / 50 / 75 / 100 milestone reporting
-- Lv100 MASTER feedback
-- locked / favorite / equipped / same-item protection
-- inline existing-Equipment-screen UI
-- Smart Loot protects Ancient or Lv80+ valuable Fusion materials across equipment slots
-- no new currency / Home button / parallel inventory
+- low-rarity materials remain useful
+- Lv25 / 50 / 75 / 100 milestones and MASTER
+- lock / favorite / equipped / same-item protection
+- inline Equipment-screen Fusion UI
+- Ancient or Lv80+ material protected by Smart Loot
 
-Merged Phase 2 PRs: #235 / #236 / #237.
+Key PRs: #235 / #236 / #237.
 
-## Phase 3 — Existing-system consolidation ✅ COMPLETE
+### Phase 3 — Existing-system consolidation ✅
 
-Goal achieved: **fewer independent power axes, deeper loot decisions**.
+- numeric Temper retired for Option4
+- Greater remains **drop-only** for Option4
+- crafted Greater Ascend retired for Option4
+- reroll = Option-family replacement, always Lv1 / EXP0
+- Unique / Legendary Power / Curse formalized as **FIXED IDENTITY** outside random Options/Fusion
+- Legendary Power remains movable only through extract/imprint
+- Blacksmith wording cleaned around live Option4 concepts
 
-### Phase 3A — Temper / Greater consolidation ✅
-Merged in PR #238.
+Key PRs: #238 / #239 / #240 / #241.
 
-- Temper retired for Option 4.0 because values are authoritative from `rarity + Option Lv`.
-- Greater remains a drop-only chase identity for Option 4.0.
-- crafted Greater Ascend retired for Option 4.0.
-- naturally dropped Greater Option4 gear remains intact.
-- legacy pre-Option4 saved Affixes keep compatibility behavior where practical.
+### Phase 4 — Equipment UI 3.x ✅
 
-### Phase 3B — Reroll identity ✅
-Merged in PR #239.
+Full handoff: `GEAR_OVERHAUL_PHASE4_UI.md`.
 
-- reroll changes **Option family**, not numeric quality.
-- rerolled Option starts at Lv1 / EXP0.
-- replaced Option Lv/EXP and Greater never transfer.
-- old Temper/baseRoll metadata is stripped.
-- value is recalculated from new rarity + Lv1.
-- reroll remains random through existing generator/bias.
+- selected-item detail layout
+- mobile single-column / wide list-left-detail-right layout
+- compact inventory rows instead of repeated giant item cards
+- FIXED IDENTITY separated from max-three Options
+- Option Lv / EXP / MASTER visible in detail
+- current-equipped comparison / job compatibility / build tags
+- selected-detail equip / KEEP / lock / OP育成 actions relay existing safe logic
+- six equipped slots compacted to 3×2 category grid
+- normal filters compacted to one horizontal strip
+- advanced filters consume vertical space only when opened
 
-### Phase 3C — Fixed Identity ✅
-Merged in PR #240.
+Key PRs: #242 / #243 / #244 / Phase 4D closeout PR.
 
-- `Unique`, `Legendary Power`, and `Curse` are explicit **FIXED IDENTITY** layers.
-- none consumes one of the three random Option slots.
-- none gains Option Lv / EXP or participates in Option Fusion.
-- Unique and Curse are immutable through ordinary Option operations.
-- Legendary Power alone remains movable through extract/imprint.
-- shared presentation exposes fixed identity separately from random `affixes[]` compatibility data.
+## Phase 5 — Smart Loot 4.0 🔄 ACTIVE
 
-### Phase 3D — Crafting/UI cleanup ✅
-Current branch / PR.
+Goal: make long farming sessions manageable without hiding useful Fusion material or turning Equipment back into a giant form.
 
-Player-facing Blacksmith now communicates only the live Option 4.0 model:
-- `Option育成` = deterministic numeric growth
-- `Option再抽選` = family replacement, Lv1 restart
-- `★Greater` = drop-only jackpot identity
-- Legendary extraction/imprint = **fixed ability management**
-- obsolete `数値再鍛錬` / forged-Greater presentation removed from the Option4 flow
-- `Affixなし` -> `Optionなし`
-- `鍛冶屋3.0` -> `Option鍛造`
+### Phase 5A — All-slot Option filters
 
-## Phase 4 — Equipment UI 3.x 🔄 ACTIVE
+Add compact player-facing filters for:
 
-Goal: compact mobile-first **item list + selected-item detail** layout.
+- Option family / text query
+- minimum Option rarity
+- minimum Option Lv
+- current slot already selected by Equipment category
 
-Required information architecture:
-- equipment category tabs
-- compact item list
-- selected-item detail visible without excessive scrolling
-- equipment rarity / Item Power / weapon or armor type
-- base stats
-- FIXED IDENTITY block
-- exactly up to 3 random Option rows
-- Option rarity-authored name + Lv + EXP progress
-- current-equipped comparison
-- job/weapon compatibility and compact build tags
-- lock / favorite / equip / sell / Option Fusion actions near the selected item
-- preserve filters and Smart Loot without turning the screen into another giant panel
+Unlike old Equipment 3.0 details, these rules must work consistently for weapon / shield / head / body / accessory.
 
-Do not pixel-copy another game's UI; reuse the reference layout idea only.
+### Phase 5B — Protection rules
+
+Keep existing automatic protection for:
+
+- Ancient Option
+- Option Lv80+
+- Legendary Power / Curse / high-value Greater conditions already protected by Smart Loot
+
+Add Option-aware protection only where it prevents accidental loss; ordinary mid-tier same-family material must stay feedable.
+
+### Phase 5C — Useful synergy filters
+
+Only add filters that reduce farming burden, e.g.:
+
+- contains 2+ desired Option families/categories
+- build-tag combination
+
+Do **not** create a giant Boolean filter builder.
+
+### Phase 5D — UI / migration closeout
+
+- `Affix` player-facing wording -> `Option` where appropriate
+- preserve old save filter fields through normalization
+- test all slots and mobile filter footprint
+- no new screen or save root
 
 ## Later phases
 
-### Phase 5 — Smart Loot 4.0
-Player-facing filtering around Option family / rarity / Lv / synergy while preserving useful Fusion materials.
-
 ### Phase 6 — Weapon Identity audit/upgrade
-Strengthen the existing 24 archetypes first.
+Strengthen the existing 24 archetypes before adding mastery families.
 
 ### Phase 7 — Weapon Expansion decision
-Only add mastery families that pass the documented job/archetype gate.
+Only add weapon families that pass the documented job/archetype gate.
 
 ### Phase 8 — Unique 2.0
 Fixed Unique identity + up to 3 random Options; duplicate copies remain worth farming.
@@ -176,43 +183,42 @@ Give Abyss / Rift / Nemesis / Secret Realm / Deep Survey distinct farming purpos
 
 ## Implementation checkpoint — 2026-08-27
 
-Merged:
-- #229 — audit/docs + Option compatibility + Fusion weapon metadata
-- #230 — max-3 new weapon Options
-- #231 — `familyId / rarity / level / xp` persistence
-- #234 — Phase 1 complete: canonical rarity identities and Lv curves
-- #235 — Phase 2A Fusion core
-- #236 — Phase 2B Fusion UI
-- #237 — Phase 2C tuning / milestones / material protection
-- #238 — Phase 3A Temper / Greater consolidation
-- #239 — Phase 3B Option reroll identity
-- #240 — Phase 3C FIXED IDENTITY separation
+Merged through:
+- #229–#231 Option foundation
+- #234 Phase 1 closeout
+- #235–#237 Option Fusion
+- #238–#241 consolidation / Fixed Identity / Blacksmith cleanup
+- #242 Phase 4A selected detail
+- #243 Phase 4B compact list
+- #244 Phase 4C detail actions
 
-Current Phase 3D branch:
-- obsolete Blacksmith wording removed from Option4 flow
-- live operations relabeled around Option / Greater / Fixed Identity concepts
-- regression coverage added
-- after green CI + merge, **Phase 3 is complete and Phase 4 is active**
+Current Phase 4D closeout branch:
+- compact 3×2 slot/category navigation
+- horizontal normal filter strip
+- reduced Equipment header footprint
+- advanced filter panel remains explicit/expandable
+- after green CI + merge, **Phase 4 is complete and Phase 5 is active**
 
 ## AI handoff
 
 Read before continuing:
+
 1. `ROADMAP.md`
 2. `GEAR_OVERHAUL_ROADMAP.md`
 3. `GEAR_OVERHAUL_AUDIT.md`
 4. `GEAR_OVERHAUL_OPTION_CATALOG.md`
 5. `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`
 6. `GEAR_OVERHAUL_PHASE2_FUSION.md`
-7. `js/data/options4.js`
-8. `js/data/options4Fusion.js`
-9. `js/data/equipmentFixedIdentity.js`
-10. `js/data/equipment3Legendary.js`
-11. `js/data/equipment3Greater.js`
-12. `js/data/equipment3Crafting.js`
-13. `js/data/equipment3SmartLoot.js`
-14. `js/patches/options4Fusion.js`
-15. `js/patches/gearOverhaulCraftingConsolidation.js`
-16. `js/patches/equipment3Blacksmith.js`
-17. `js/screens/equipmentFusion.js`
+7. `GEAR_OVERHAUL_PHASE4_UI.md`
+8. `js/data/options4.js`
+9. `js/data/options4Fusion.js`
+10. `js/data/equipmentFixedIdentity.js`
+11. `js/data/equipment3SmartLoot.js`
+12. `js/patches/options4Fusion.js`
+13. `js/patches/equipment3SmartLoot.js`
+14. `js/patches/gearOverhaulCraftingConsolidation.js`
+15. `js/screens/equipmentFusion.js`
+16. `js/screens/equipment4.js`
+17. `css/equipment4.css`
 
-Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity by leveling, restore numeric Temper on Option4, make Greater freely craftable, let reroll inherit old Option Lv/EXP, or mix FIXED IDENTITY into the three random Option slots.
+Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity by leveling, restore numeric Temper on Option4, make Greater freely craftable, let reroll inherit old Option Lv/EXP, mix FIXED IDENTITY into random Options, or re-expand the Equipment list into repeated long cards.
