@@ -1,7 +1,13 @@
 /* Blade Vale UI Foundation 3.0 — Home */
 #homeScreen{
   gap:10px;
-  overflow:hidden;
+  /* An expanded growth/base/records hub panel can push total content taller
+     than the viewport minus the fixed .ui-primary-nav bar's reserved space.
+     With overflow:hidden the excess wasn't just invisible — the bottom nav
+     bar visually and functionally sat on top of it, silently redirecting
+     taps meant for the hidden buttons (e.g. 転生の祭壇) to whatever nav item
+     happened to be underneath. Let the whole screen scroll instead. */
+  overflow-y:auto;
 }
 
 #homeScreen .topbar{

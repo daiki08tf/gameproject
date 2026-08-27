@@ -132,7 +132,14 @@ function syncAdvancedBadge(filter) {
   const baseCount = Math.max(0, currentTotal - previousOptionCount);
   const total = baseCount + optionCount;
   button.dataset.smartloot4Count = String(optionCount);
-  button.textContent = `⚙ 詳細${total ? ` (${total})` : ''}`;
+  // textContent assignment replaces the button's children unconditionally,
+  // even to an identical string, which is a childList mutation on a direct
+  // child of #lootFilterRow — exactly what decorateSmartLoot4Filters' own
+  // filterObserver watches (childList:true, subtree:true). Writing it on
+  // every call retriggers that observer forever. Only write when the label
+  // would actually change.
+  const nextText = `⚙ 詳細${total ? ` (${total})` : ''}`;
+  if (button.textContent !== nextText) button.textContent = nextText;
   button.classList.toggle('active', total > 0);
 }
 
