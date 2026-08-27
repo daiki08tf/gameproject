@@ -89,7 +89,7 @@ import { renderHome } from './screens/home.js';
 import { renderChapterSelect } from './screens/chapterSelect.js';
 import { renderStageSelect, renderStageConfirm, getSelectedBlessingId } from './screens/stageSelect.js';
 import { renderAbyssList, initAbyssTabs } from './screens/abyss.js';
-import { renderEquipment, autoEquipBest } from './screens/equipment.js';
+import { renderEquipment, autoEquipBest } from './screens/equipmentFusion.js';
 import { renderWeaponCodex, initWeaponCodexTabs } from './screens/weaponCodex.js';
 import { renderJobs } from './screens/jobs.js';
 import { renderBlacksmith, initBlacksmithTabs } from './screens/blacksmith.js';
