@@ -4,7 +4,6 @@ import { getItem, powerScore, RARITY } from '../data/equipment.js';
 import { AFFIX_RARITY_COLOR } from '../data/affixes.js';
 import { equipment3Presentation } from '../data/equipment3Presentation.js';
 import { optionXpToNext } from '../data/options4Fusion.js';
-import { renderEquipment as renderFusionEquipment, autoEquipBest as autoEquipBestFusion } from './equipmentFusion.js';
 
 const SLOT_BASE_TYPE = { weapon: 'weapon', shield: 'shield', head: 'head', body: 'body', accessory1: 'accessory', accessory2: 'accessory' };
 const SLOT_LABEL = { weapon: '武器', shield: '盾', head: '頭', body: '胴', accessory1: 'アクセ1', accessory2: 'アクセ2', accessory: 'アクセサリ' };
@@ -110,7 +109,6 @@ function renderDetail() {
 
   const id = selectedDetailItemId;
   const item = getItem(id);
-  const inst = state.equipmentInstance?.(id) || null;
   const p = presentationFor(id);
   if (!item || !p) return;
 
@@ -194,22 +192,21 @@ function decorateRows() {
   }
 }
 
-function ensureObserver() {
-  const picker = document.getElementById('equipPicker');
-  if (!picker || observer) return;
-  observer = new MutationObserver(() => queueMicrotask(decorateRows));
-  observer.observe(picker, { childList: true });
-}
-
-export function renderEquipment() {
+function installEquipment4() {
+  if (typeof document === 'undefined') return;
   ensureStyle();
-  renderFusionEquipment();
-  ensureObserver();
+  const picker = document.getElementById('equipPicker');
+  if (!picker) return;
+  if (!observer) {
+    observer = new MutationObserver(() => queueMicrotask(decorateRows));
+    observer.observe(picker, { childList: true });
+  }
   decorateRows();
 }
 
-export function autoEquipBest() {
-  autoEquipBestFusion();
-  ensureObserver();
-  decorateRows();
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', installEquipment4, { once: true });
+  else installEquipment4();
 }
+
+export { installEquipment4, renderDetail as renderEquipment4Detail };
