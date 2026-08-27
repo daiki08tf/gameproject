@@ -9,7 +9,7 @@
 import { state } from '../state.js';
 import { getItem, baseItemId } from '../data/equipment.js';
 import { describeAffix } from '../data/affixes.js';
-import { optionCountRange } from '../data/options4.js';
+import { optionCountRange, optionFromAffix } from '../data/options4.js';
 import {
   itemPowerForDrop,
   affixTierForItemPower,
@@ -40,6 +40,18 @@ function capNewWeaponOptions(inst, item) {
   inst.affixes = inst.affixes.slice(0, max);
   inst.optionCountVersion = 1;
   return true;
+}
+
+function attachNewWeaponOptionMetadata(inst) {
+  if (!inst || !Array.isArray(inst.affixes)) return false;
+  let changed = false;
+  inst.affixes = inst.affixes.map((affix) => {
+    if (affix?.optionSchemaVersion === 1 && affix?.familyId && Number.isFinite(affix?.level)) return affix;
+    changed = true;
+    return optionFromAffix(affix);
+  });
+  if (changed) inst.optionMetadataVersion = 1;
+  return changed;
 }
 
 function enrichInstance(instanceId, ctx = {}) {
@@ -125,6 +137,7 @@ state.addItem = function equipment3AddItem(itemId, qty = 1, dropCtx = null) {
       const id = `${base}#${seq}`;
       const inst = this.data.weaponInstances?.[id];
       if (capNewWeaponOptions(inst, item)) changed = true;
+      if (attachNewWeaponOptionMetadata(inst)) changed = true;
       if (enrichInstance(id, dropCtx || {})) changed = true;
     }
   }
@@ -155,4 +168,11 @@ state.weaponRollItemPower = function weaponRollItemPower(itemId) {
 
 backfillEquipment3Instances();
 
-export { enrichInstance, backfillEquipment3Instances, repairNextInstanceSeq, canonicalDisplayName, capNewWeaponOptions };
+export {
+  enrichInstance,
+  backfillEquipment3Instances,
+  repairNextInstanceSeq,
+  canonicalDisplayName,
+  capNewWeaponOptions,
+  attachNewWeaponOptionMetadata,
+};
