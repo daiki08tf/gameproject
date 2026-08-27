@@ -9,7 +9,7 @@
    ============================================================ */
 import './progression3StoryExpansion.js';
 import { state } from '../state.js';
-import { CHAPTERS } from '../data/stages.js';
+import { CHAPTERS, finalStageOf } from '../data/stages.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
 import { cumulativeCharacterExpToLevel } from '../data/progression.js';
 
@@ -77,5 +77,10 @@ function applyOuterStoryProgression(){
   const applied=OUTER_STORY_LEVEL_ROADMAP.map(applyEntry).filter(Boolean);
   state.progression3OuterStory={min:3000,max:7600,onePassTargetShare:ONE_PASS_TARGET_SHARE,applied};
   if(state.levelRoadmap99999)state.levelRoadmap99999.outerStory=OUTER_STORY_LEVEL_ROADMAP;
+  // Abyss 1F is canonically Lv3,000. Unlock it at the Ch20 fork instead of
+  // forcing the player through a now-higher-level Ch21–25 route first.
+  state.isAbyssUnlocked=function outerStoryAbyssGate(){
+    return CHAPTERS.filter(ch=>ch.num<=20).every(ch=>this.isStageCleared(finalStageOf(ch).id));
+  };
 }
 applyOuterStoryProgression();
