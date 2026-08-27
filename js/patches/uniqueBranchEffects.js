@@ -72,7 +72,7 @@ BattleEngine.prototype.calculateDamage=function uniqueBranchDamage(atk,target,op
 
 // Tyrant: each kill builds momentum for the rest of the encounter. Elite/boss-like
 // kills count double, so the branch is useful in normal waves but rewards hunting
-// stronger targets. At the authored 6% x 5 cap this tops out at +30% damage.
+// stronger targets. At the authored 12% x 5 cap this tops out at +60% damage.
 const originalGrantKillRewards=BattleEngine.prototype._grantKillRewards;
 if(originalGrantKillRewards){
   BattleEngine.prototype._grantKillRewards=function uniqueBranchKillMomentum(enemy){
