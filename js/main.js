@@ -20,6 +20,7 @@ import './patches/equipment3Greater.js';
 import './patches/equipment3Legendary.js';
 import './patches/equipment3Blacksmith.js';
 import './patches/equipment3GearFoundation.js';
+import './patches/options4Fusion.js';
 import './patches/equipment3UniqueGearSafety.js';
 import './patches/equipment3SetBonuses.js';
 import './patches/equipment3SmartLoot.js';
