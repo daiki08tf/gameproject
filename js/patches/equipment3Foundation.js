@@ -1,15 +1,16 @@
 /* ============================================================
    Equipment 3.0 E1-E2 compatibility layer
    - persists Item Power on weapon instances
-   - derives Affix Tier from Item Power
-   - generates readable Prefix/Suffix names from existing Affix categories
-   - backfills old weapon instances without rerolling any Affix
+   - derives Option tier from Item Power
+   - generates readable rarity-name + Lv presentation
+   - backfills old weapon instances without rerolling any Option
    - repairs persisted instance metadata without changing rolled outcomes
    ============================================================ */
 import { state } from '../state.js';
 import { getItem, baseItemId } from '../data/equipment.js';
 import { describeAffix } from '../data/affixes.js';
-import { optionCountRange, optionFromAffix, applyAuthoredOptionValue } from '../data/options4.js';
+import '../data/options4RarityFloors.js';
+import { optionCountRange, optionFromAffix, applyAuthoredOptionValue, optionDisplayLabel } from '../data/options4.js';
 import {
   itemPowerForDrop,
   affixTierForItemPower,
@@ -19,7 +20,10 @@ import {
 import { getLegendaryEffect, getCursedAffix } from '../data/equipment3Legendary.js';
 
 function canonicalDisplayName(item, inst) {
-  const descriptions = (inst.affixes || []).map(describeAffix);
+  const descriptions = (inst.affixes || []).map((a) => {
+    const d = describeAffix(a);
+    return { ...d, name: optionDisplayLabel(a, d.name) };
+  });
   const generated = generatedEquipmentName(item.name, descriptions);
   const greaterCount = (inst.affixes || []).filter((a) => !!a?.greater).length;
   const tags = [];
@@ -44,8 +48,8 @@ function attachNewWeaponOptionMetadata(inst, ctx = {}, instanceId = '') {
   let changed = false;
   const itemPower = Math.max(1, Math.floor(Number(inst.itemPower) || 1));
   inst.affixes = inst.affixes.map((affix, index) => {
-    const alreadyAuthored = affix?.optionValueVersion === 1;
-    if (alreadyAuthored) return affix;
+    const alreadyCurrent = affix?.optionValueVersion === 2;
+    if (alreadyCurrent) return affix;
     const base = optionFromAffix(affix);
     const next = applyAuthoredOptionValue(base, {
       itemPower,
@@ -57,8 +61,8 @@ function attachNewWeaponOptionMetadata(inst, ctx = {}, instanceId = '') {
     return next;
   });
   if (changed) {
-    inst.optionMetadataVersion = 2;
-    inst.optionValueAuthorityVersion = 1;
+    inst.optionMetadataVersion = 3;
+    inst.optionValueAuthorityVersion = 2;
   }
   return changed;
 }
@@ -138,10 +142,8 @@ state.addItem = function equipment3AddItem(itemId, qty = 1, dropCtx = null) {
       const id = `${base}#${seq}`;
       const inst = this.data.weaponInstances?.[id];
       if (capNewWeaponOptions(inst, item)) changed = true;
-      // Item Power must exist before we seed Option Lv/value from progression.
       if (enrichInstance(id, dropCtx || {})) changed = true;
       if (attachNewWeaponOptionMetadata(inst, dropCtx || {}, id)) changed = true;
-      // Refresh derived display metadata after the Option value pass.
       if (enrichInstance(id, dropCtx || {})) changed = true;
     }
   }

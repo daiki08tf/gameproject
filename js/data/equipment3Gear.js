@@ -1,12 +1,12 @@
 /* ============================================================
    Equipment 3.0 — Armor / Accessory foundation
    ------------------------------------------------------------
-   Non-weapon equipment gets per-drop instances with Item Power, Affix Tier,
-   slot-biased Affixes, Greater rolls and the shared Legendary/Curse packages.
+   Non-weapon equipment gets per-drop instances with Item Power, Option rarity,
+   Option Lv, slot-biased identities, Greater rolls and shared special packages.
    ============================================================ */
 import { AFFIXES, describeAffix } from './affixes.js';
 import { EQUIPMENT3_AFFIX_SLOTS, itemPowerForDrop, affixTierForItemPower, generatedEquipmentName } from './equipment3.js';
-import { optionFromAffix } from './options4.js';
+import { optionFromAffix, applyAuthoredOptionValue, optionDisplayLabel } from './options4.js';
 import { applyItemPowerAffixQuality } from './equipment3AffixQuality.js';
 import { applyGreaterAffixes } from './equipment3Greater.js';
 import { rollLegendaryPackage, getLegendaryEffect, getCursedAffix } from './equipment3Legendary.js';
@@ -71,7 +71,10 @@ function chooseAffixIdentities(item, count, itemPower, instanceId) {
 }
 
 function canonicalGearName(item, inst) {
-  const descriptions = (inst.affixes || []).map(describeAffix);
+  const descriptions = (inst.affixes || []).map((a) => {
+    const d = describeAffix(a);
+    return { ...d, name: optionDisplayLabel(a, d.name) };
+  });
   const generated = generatedEquipmentName(item.name, descriptions);
   const tags = [];
   const legendary = getLegendaryEffect(inst.legendaryEffectId);
@@ -90,15 +93,21 @@ export function buildGearInstance(item, ctx = {}, instanceId = '') {
     itemPower,
     affixTier: affixTierForItemPower(itemPower),
     affixes: [],
-    equipment3GearVersion: 3,
-    optionMetadataVersion: 1,
+    equipment3GearVersion: 4,
+    optionMetadataVersion: 3,
+    optionValueAuthorityVersion: 2,
   };
 
   inst.affixes = chooseAffixIdentities(item, affixCount(item, instanceId), itemPower, instanceId);
   applyItemPowerAffixQuality(inst, ctx, instanceId);
   const greater = applyGreaterAffixes(inst.affixes, itemPower, ctx, instanceId);
-  inst.affixes = greater.affixes;
-  inst.greaterAffixCount = greater.greaterCount;
+  inst.affixes = greater.affixes.map((affix, index) => applyAuthoredOptionValue(affix, {
+    itemPower,
+    ctx,
+    key: `${instanceId}:${affix.familyId || affix.id}:${index}:${itemPower}`,
+    initializeLevel: true,
+  }));
+  inst.greaterAffixCount = inst.affixes.filter((a) => !!a.greater).length;
 
   const special = rollLegendaryPackage(item, itemPower, ctx, instanceId);
   inst.legendaryEffectId = special.legendaryEffectId;
