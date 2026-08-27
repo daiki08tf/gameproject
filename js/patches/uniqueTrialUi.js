@@ -1,5 +1,6 @@
 import { state } from '../state.js';
 import { getItem } from '../data/equipment.js';
+import './buildReadabilityUi.js';
 
 function equippedUniqueIds(){
   return Object.values(state.data.equipped||{}).filter(id=>id&&state.getUniqueTrialProgress?.(id));
@@ -35,6 +36,8 @@ function buildPanel(){
       const title=document.createElement('div'); title.className='item-stats'; title.textContent='— 分岐試練 —'; box.appendChild(title);
       for(const br of state.uniqueBranchAvailability(id)){
         const row=document.createElement('div'); row.className='item-stats';
+        row.dataset.uniqueBranchItem=id;
+        row.dataset.uniqueBranchId=br.id;
         const req=br.requirements.map(r=>`${(p.counts[r.event]||0)>=r.target?'✓':'□'} ${r.event} ${Math.min(r.target,p.counts[r.event]||0)}/${r.target}`).join(' / ');
         row.innerHTML=`<strong>${br.ready?'✨':'🔒'} ${br.name}</strong> — ${br.hint}<br>${req}`;
         if(br.ready){ const btn=document.createElement('button');btn.textContent=`${br.name}へ進化`;btn.addEventListener('click',()=>{state.chooseUniqueBranch(id,br.id);buildPanel();});row.appendChild(btn); }
