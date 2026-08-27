@@ -1,8 +1,8 @@
 # Blade Vale — Official Roadmap
 
-> **Current:** Core/Foundation ✅ / System Deepening ✅ / Content Pack II ✅ / **Story Expansion I — Part A (Ch26–29) ✅ IMPLEMENTED**
+> **Current:** Core/Foundation ✅ / System Deepening ✅ / Content Pack II ✅ / **Story Expansion I (Ch26–30) ✅ COMPLETE**
 >
-> **NEXT:** **Story Expansion I — Part B: Ch30 + full integration** → Difficulty / Constraint Unlock redesign → Content Pack III.
+> **NEXT:** **Difficulty / Constraint Unlock redesign** → Content Pack III.
 
 Blade Vale is a personal evolving text-command hack-and-slash RPG. The preferred rhythm is:
 
@@ -43,7 +43,7 @@ Blade Vale is a personal evolving text-command hack-and-slash RPG. The preferred
 | Automated integrity audit | ✅ |
 | System Deepening Pack A–C | ✅ |
 | Content Pack II A–E | ✅ |
-| Story Expansion I Part A — Ch26–29 | ✅ |
+| Story Expansion I — Ch26–30 | ✅ |
 
 ## Content Pack II — COMPLETE
 
@@ -74,54 +74,51 @@ Delivered:
 - all progress remains in existing `world2.discoveries`
 - no new Home route, screen, currency or save root
 
-## Story Expansion I — Part A COMPLETE (Ch26–29)
+## Story Expansion I — COMPLETE (Ch26–30)
 
-Implemented as one large vertical batch through the existing expanded-chapter pipeline.
+Implemented through the existing expanded-chapter, Adventure, Equipment, regional exploration and Text Battle story pipelines.
 
 ### Ch26 — 零外接続域
-- continues directly from the Boundary Throne
-- the Eighth Key is reclassified from an “eighth member” to an **exception connection** outside the seven-key management architecture
+- the Eighth Key is reclassified from an “eighth member” to an exception connection outside the seven-key management architecture
 - a weak external verification signal is recovered
 
 ### Ch27 — 遠信残響帯
-- follows the external signal through ordered lights, tall silhouettes, metallic periodic vibration and thin luminous surfaces
-- strongly suggests an inhabited artificial civilization without naming its location
+- ordered lights, tall silhouettes, metallic periodic vibration and thin luminous surfaces suggest an inhabited artificial civilization
 - no Japan/Tokyo confirmation
 
 ### Ch28 — 機界監査層
-- MOTHER is identified as an operational management system
-- ARCHITECT is identified as a design/repair system
+- MOTHER is an operational management system
+- ARCHITECT is a design/repair system
 - neither holds world-creation authority
-- Machine World decisions were themselves reported to an external observation route
+- Machine World decisions were themselves externally observed
 
 ### Ch29 — 逆観測門
 - Seven Keys = internal world-layer control system
 - Eighth Key = external connection point bypassing that control system
-- observation is bidirectional
-- the unknown external side returns one clear response, but the gate itself remains closed for Ch30
+- observation becomes bidirectional
+- the external side returns a clear response
 
-Part A also adds:
-- 4 expanded regions
-- 32 main stages + 4 optional branches
-- normal / fast / tank / midboss / boss / branchboss sets for each chapter
-- chapter equipment and named rewards through the existing equipment generator
+### Ch30 — 外部観測核
+- follows the returned response to the closest known external observation node
+- confirms that the previously separate sensory clues come from one inhabited civilization
+- confirms the external side can recognize and answer Blade Vale
+- confirms MOTHER/ARCHITECT never controlled the connection origin
+- leaves location name, connection reason and original connector unresolved
+- final boss: **外界照合者オブザーバ**, an examiner/guardian rather than a simple evil invader
+
+Story Expansion I also delivers:
+- Ch26–30 as 40 main stages + 5 optional branches
+- normal / fast / tank / midboss / boss / branchboss sets through existing enemy generation
+- chapter equipment and named rewards through existing equipment generation
 - regional field rules and exploration events
-- regional hierarchy entries for both Ch21–25 and Ch26–29
-- regression guard so Story Expansion does not silently move the existing Abyss unlock gate
+- `逆観測域` as the existing regional surface for Ch26–30
+- canonical arc mapping in `storyCanon.js`
+- compact mandatory story beats inside the existing battle log
+- no new Home route, screen, currency or save root
+- Abyss unlock remains based on Ch1–25 and is not silently pushed back
+- final boss encounter density remains inside the permanent mobile battle safety envelope
 
-## NEXT — Story Expansion I Part B (Ch30 + integration)
-
-One final large Story Expansion batch:
-- Ch30 climax region and final boss for this arc
-- reveal why the connection is being prevented, without forcing the guardian to be simply evil
-- briefly expose stronger external-world sensory evidence after the climax
-- keep Japan/Tokyo unnamed unless the story deliberately earns that reveal later
-- integrate Ch26–30 with CP2 Rumor / Lore / Codex context without making optional content mandatory
-- audit Ch26–30 stage/reward/difficulty continuity
-- full save / startup / MutationObserver / mobile battle regression sweep
-- close Story Expansion I and prepare Content Pack III
-
-## Immediately after Story Expansion I — Difficulty / Constraint Unlock redesign
+## NEXT — Difficulty / Constraint Unlock redesign
 
 Current problem: stage difficulty and challenge constraints can appear available before the story has established why the player can alter combat conditions.
 
@@ -134,13 +131,11 @@ Direction already chosen:
 - connect challenge clears to existing Personal Records / Prestige Titles / Build Feats / REMATCH+ rather than a new currency or screen
 - locked options should be hidden or compactly explained so early-game UI stays simple
 
-Exact unlock milestones will be inspected against the current difficulty/constraint implementation after Story Expansion I Part B is merged.
+Exact unlock milestones must be derived from the current difficulty/constraint implementation before changing behavior.
 
 ## After that
 
 ```text
-STORY EXPANSION I — Part B / Ch30
-      ↓
 DIFFICULTY + CONSTRAINT UNLOCK REDESIGN
       ↓
 CONTENT PACK III
@@ -157,9 +152,8 @@ For a new ChatGPT / Claude Code session:
 1. read this file
 2. read `STORY_CANON.md`
 3. read `CONTENT_PACK_II_ROADMAP.md`
-4. do **not** redo Content Pack II A–E or Story Expansion I Ch26–29
-5. next story work is **Story Expansion I Part B — Ch30 + full integration**
-6. after Story Expansion I, immediately perform the **Difficulty / Constraint Unlock redesign** described above
-7. preserve Lv99,999, SD-4 deferral, no rotating challenges, no extra Home route/currency
-8. preserve the permanent mobile command regression, startup dependency guards, MutationObserver idempotence and save compatibility
-9. inspect existing code/tests before adding parallel systems
+4. do **not** redo Content Pack II A–E or Story Expansion I Ch26–30
+5. next work is **Difficulty / Constraint Unlock redesign**
+6. preserve Lv99,999, SD-4 deferral, no rotating challenges, no extra Home route/currency
+7. preserve the permanent mobile command regression, startup dependency guards, MutationObserver idempotence and save compatibility
+8. inspect existing code/tests before adding parallel systems
