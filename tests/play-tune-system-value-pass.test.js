@@ -30,10 +30,10 @@ test('polish 3: companion species inheritance honors supplied RNG',()=>{
 });
 
 test('polish 3: Tyrant Unique branch has a bounded live kill-momentum runtime',()=>{
-  const tyrant=uniqueBranchEffect('uq_ashen_reaver','tyrant');
+  const tyrant=uniqueBranchEffect('uq_regicide','tyrant');
   const momentum=tyrant?.effects?.find(e=>e.kind==='strongKillMomentum');
   assert.ok(momentum,'Tyrant branch needs authored momentum');
-  assert.equal(momentum.power,.06);
+  assert.equal(momentum.power,.12);
   assert.equal(momentum.maxStacks,5);
   const src=read('js/patches/uniqueBranchEffects.js');
   assert.match(src,/_uniqueKillMomentumStacks/);
