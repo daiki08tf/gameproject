@@ -15,22 +15,55 @@ import {
   optionValueAtLevel,
 } from './options4.js';
 
-export const OPTION_FUSION_SCHEMA_VERSION = 1;
+export const OPTION_FUSION_SCHEMA_VERSION = 2;
+export const OPTION_MILESTONES = Object.freeze([25, 50, 75, 100]);
 
+// Phase 2C tuning: the original values proved too stingy for a 68+ family loot
+// pool. Same-family drops should create visible deterministic progress while
+// Lv80-100 still remains a real grind. Low-rarity materials are useful because
+// rarity-gap efficiency is applied after these base values.
 export const OPTION_MATERIAL_BASE_XP = Object.freeze({
-  common: 18,
-  uncommon: 24,
-  rare: 32,
-  epic: 44,
-  legendary: 60,
-  mythic: 82,
-  ancient: 110,
+  common: 36,
+  uncommon: 48,
+  rare: 68,
+  epic: 96,
+  legendary: 136,
+  mythic: 190,
+  ancient: 270,
 });
 
 export function optionXpToNext(level) {
   const lv = normalizeOptionLevel(level);
   if (lv >= OPTION_LEVEL_MAX) return 0;
   return Math.round(30 + lv * 6 + Math.pow(lv, 1.35) * 1.4);
+}
+
+export function optionXpBetween(startLevel, endLevel = OPTION_LEVEL_MAX) {
+  const start = normalizeOptionLevel(startLevel);
+  const end = normalizeOptionLevel(endLevel);
+  if (end <= start) return 0;
+  let total = 0;
+  for (let lv = start; lv < end; lv += 1) total += optionXpToNext(lv);
+  return total;
+}
+
+export function optionMilestoneState(level) {
+  const lv = normalizeOptionLevel(level);
+  const reached = OPTION_MILESTONES.filter((mark) => lv >= mark);
+  const next = OPTION_MILESTONES.find((mark) => lv < mark) || null;
+  return {
+    level: lv,
+    reached,
+    next,
+    mastered: lv >= OPTION_LEVEL_MAX,
+    label: lv >= OPTION_LEVEL_MAX ? 'MASTER' : (reached.length ? `M${reached.at(-1)}` : null),
+  };
+}
+
+export function optionMilestonesCrossed(beforeLevel, afterLevel) {
+  const before = normalizeOptionLevel(beforeLevel);
+  const after = normalizeOptionLevel(afterLevel);
+  return OPTION_MILESTONES.filter((mark) => before < mark && after >= mark);
 }
 
 export function sameOptionFamily(a, b) {
@@ -68,6 +101,7 @@ export function optionFusionPreview(targetOption, materialOption) {
     afterLevel: after.level,
     afterXp: after.xp,
     levelsGained: after.level - beforeLevel,
+    milestones: optionMilestonesCrossed(beforeLevel, after.level),
     capped: after.level >= OPTION_LEVEL_MAX,
   };
 }

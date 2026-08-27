@@ -1,5 +1,5 @@
 /* ============================================================
-   Gear Overhaul Phase 2B — inline Option Fusion UI
+   Gear Overhaul Phase 2B/C — inline Option Fusion UI
    ------------------------------------------------------------
    Wraps the existing Equipment screen instead of creating another route.
    Base Equipment rendering remains authoritative; a MutationObserver only
@@ -9,7 +9,7 @@ import { state } from '../state.js';
 import { getItem, powerScore } from '../data/equipment.js';
 import { AFFIX_RARITY_COLOR } from '../data/affixes.js';
 import { equipment3Presentation } from '../data/equipment3Presentation.js';
-import { optionXpToNext } from '../data/options4Fusion.js';
+import { optionXpToNext, optionMilestoneState, optionXpBetween } from '../data/options4Fusion.js';
 import { Audio_ } from '../audio.js';
 import { renderEquipment as renderBaseEquipment, autoEquipBest as autoEquipBestBase } from './equipment.js';
 
@@ -66,6 +66,15 @@ function refreshEquipment() {
   queueMicrotask(() => decorateFusionRows());
 }
 
+function milestoneText(option) {
+  const stateInfo = optionMilestoneState(option.level ?? 1);
+  if (stateInfo.mastered) return '★ MASTER';
+  const next = stateInfo.next;
+  const remaining = next ? Math.max(0, optionXpBetween(option.level ?? 1, next) - Math.max(0, option.xp || 0)) : 0;
+  const reached = stateInfo.label ? ` / ${stateInfo.label}` : '';
+  return `${reached}${next ? ` / 次 Lv${next}まで約${remaining}EXP` : ''}`;
+}
+
 function targetPanel(itemId, inst, p) {
   const panel = document.createElement('div');
   panel.className = 'option-fusion-panel';
@@ -73,7 +82,7 @@ function targetPanel(itemId, inst, p) {
 
   const head = document.createElement('div');
   head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;';
-  head.innerHTML = '<strong>OPTION FUSION</strong><span class="hint">同系統Optionを持つ装備を素材化</span>';
+  head.innerHTML = '<strong>OPTION FUSION</strong><span class="hint">同系統Optionを持つ装備を素材化 / Lv25・50・75・100が節目</span>';
   panel.appendChild(head);
 
   inst.affixes.forEach((option, index) => {
@@ -84,9 +93,9 @@ function targetPanel(itemId, inst, p) {
     const needed = optionXpToNext(option.level ?? 1);
     const xpText = (option.level ?? 1) >= 100 ? 'MAX' : `EXP ${Math.max(0, option.xp || 0)}/${needed}`;
     const color = AFFIX_RARITY_COLOR[option.rarity] || 'inherit';
-    text.innerHTML = `<span style="color:${color}">${shown?.greater ? '★ ' : ''}${shown?.name || option.familyId || option.id}</span> <span class="hint">${xpText}</span>`;
+    text.innerHTML = `<span style="color:${color}">${shown?.greater ? '★ ' : ''}${shown?.name || option.familyId || option.id}</span> <span class="hint">${xpText}${milestoneText(option)}</span>`;
     const selected = fusionTargetOptionIndex === index;
-    row.append(text, compactButton(selected ? '素材を選択中' : ((option.level ?? 1) >= 100 ? 'Lv100' : 'このOptionを育成'), () => {
+    row.append(text, compactButton(selected ? '素材を選択中' : ((option.level ?? 1) >= 100 ? 'MASTER' : 'このOptionを育成'), () => {
       Audio_.tap();
       fusionTargetOptionIndex = selected ? null : index;
       fusionMessage = '';
@@ -99,21 +108,25 @@ function targetPanel(itemId, inst, p) {
     const materialBox = document.createElement('div');
     materialBox.style.cssText = 'display:grid;gap:5px;padding:4px 0 4px 10px;';
     if (!materials.length) {
-      materialBox.innerHTML = '<div class="hint">同じOption系統を持つ、未ロック・未お気に入り・未装備の素材がありません。</div>';
+      materialBox.innerHTML = '<div class="hint">同じOption系統を持つ、未ロック・未お気に入り・未装備の素材がありません。高レア/Lv80+素材はSmart Lootで自動保護される場合があります。</div>';
     } else {
       for (const material of materials.slice(0, 8)) {
         const line = document.createElement('div');
         line.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;';
         const label = document.createElement('span');
         const efficiency = Math.round(material.efficiency * 100);
-        label.innerHTML = `${displayName(material.materialItemId)} <span class="hint">${material.materialRarity} Lv${material.materialLevel} / +${material.xp} EXP (${efficiency}%)</span>`;
+        const milestonePreview = material.milestones?.length ? ` → Lv${material.milestones.join('/')}到達` : '';
+        label.innerHTML = `${displayName(material.materialItemId)} <span class="hint">${material.materialRarity} Lv${material.materialLevel} / +${material.xp} EXP (${efficiency}%)${milestonePreview}</span>`;
         const fuseBtn = compactButton('融合', () => {
           Audio_.tap();
           const ok = typeof globalThis.confirm !== 'function' || globalThis.confirm(`${displayName(material.materialItemId)} を素材として消費します。よろしいですか？`);
           if (!ok) return;
           const result = state.fuseEquipmentOption(itemId, index, material.materialItemId, material.materialOptionIndex);
+          const milestone = result.ok && result.milestones?.length
+            ? ` / ★ Lv${result.milestones.join('・')} MILESTONE${result.level >= 100 ? ' / MASTER' : ''}`
+            : '';
           fusionMessage = result.ok
-            ? `${shown?.name || option.familyId}：+${result.xp} EXP → Lv${result.level}`
+            ? `${shown?.name || option.familyId}：+${result.xp} EXP → Lv${result.level}${milestone}`
             : `Fusionできませんでした (${result.reason || 'unknown'})`;
           refreshEquipment();
         });
