@@ -39,8 +39,10 @@ state.phase13RecordFor=function(stageId){return data().records[stageId]||null;};
 state.phase13Titles=function(){return PHASE13_TITLES.map(t=>({...t,unlocked:data().titles.includes(t.id)}));};
 state.phase13ClearedStoryChapter=()=>clearedStoryChapter();
 state.phase13ChallengeAvailability=(stageOrId,id)=>challengeAvailability(stageOrId,id);
-state.phase13SelectedChallenge=function(stageId){
-  const requested=selectedChallenges.get(stageId)||'none',availability=challengeAvailability(stageId,requested);
+state.phase13SelectedChallenge=function(stageOrId){
+  const stageId=typeof stageOrId==='string'?stageOrId:stageOrId?.id;
+  if(!stageId)return phase13Challenge('none');
+  const requested=selectedChallenges.get(stageId)||'none',availability=challengeAvailability(stageOrId,requested);
   if(!availability.available){selectedChallenges.delete(stageId);return phase13Challenge('none');}
   return availability.challenge;
 };
@@ -52,7 +54,7 @@ export function selectPhase13Challenge(stageOrId,id){
   selectedChallenges.set(stageId,availability.available?availability.challenge.id:'none');
   return availability.available;
 }
-export function selectedPhase13Challenge(stageId){return state.phase13SelectedChallenge(stageId);}
+export function selectedPhase13Challenge(stageOrId){return state.phase13SelectedChallenge(stageOrId);}
 
 state.phase13RecordClear=function(stage,metrics={}){
   const d=data(),id=stage.id,prev=d.records[id]||{clears:0,challengeClears:0,rematchClears:0,bestTurns:null,maxDamage:0,bestHpPct:0};
@@ -90,7 +92,7 @@ export function renderPhase13ChallengePicker(stage){
     const locked=document.createElement('div');locked.className='hint';locked.textContent='このステージを一度クリアすると、解放済みの戦闘条件を適用できます。';wrap.appendChild(locked);anchor.after(wrap);return;
   }
   const choices=PHASE13_CHALLENGES.filter(c=>challengeAvailability(stage,c.id).available);
-  const current=selectedPhase13Challenge(stage.id);
+  const current=selectedPhase13Challenge(stage);
   const sub=document.createElement('div');sub.className='hint';sub.textContent='再戦用。物語で得た戦闘記録・境界条件・観測条件を適用する。';wrap.appendChild(sub);
   const row=document.createElement('div');row.style.cssText='display:flex;gap:5px;overflow-x:auto;padding-top:6px';
   for(const c of choices){const b=document.createElement('button');b.className=c.id===current.id?'btn-main':'btn-sub';b.style.flex='0 0 auto';b.textContent=c.name;b.title=c.desc;b.addEventListener('click',()=>{selectPhase13Challenge(stage,c.id);renderPhase13ChallengePicker(stage);});row.appendChild(b);}wrap.appendChild(row);
@@ -111,7 +113,7 @@ function injectRareHunt(engine){
 }
 function initEngine(engine){
   if(engine._phase13)return engine._phase13;
-  const challenge=selectedPhase13Challenge(engine.stage.id);
+  const challenge=selectedPhase13Challenge(engine.stage);
   engine._phase13={challenge,turns:0,maxDamage:0,finished:false,rareHunt:null};
   engine.stage={...engine.stage,healMult:(engine.stage.healMult||1)*(challenge.healMult||1)};
   engine._phase13.rareHunt=injectRareHunt(engine);
