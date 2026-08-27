@@ -11,6 +11,7 @@ import { AFFIX_RARITY_COLOR } from '../data/affixes.js';
 import { equipment3Presentation } from '../data/equipment3Presentation.js';
 import { optionXpToNext, optionMilestoneState, optionXpBetween } from '../data/options4Fusion.js';
 import { Audio_ } from '../audio.js';
+import { decorateSmartLoot4Filters } from '../patches/smartLoot4EquipmentUi.js';
 import { renderEquipment as renderBaseEquipment, autoEquipBest as autoEquipBestBase } from './equipment.js';
 
 const SLOT_BASE_TYPE = { weapon: 'weapon', shield: 'shield', head: 'head', body: 'body', accessory1: 'accessory', accessory2: 'accessory' };
@@ -18,6 +19,7 @@ let fusionOpenItemId = null;
 let fusionTargetOptionIndex = null;
 let fusionMessage = '';
 let observer = null;
+let filterObserver = null;
 let decorating = false;
 
 function presentationFor(id) {
@@ -61,9 +63,16 @@ function compactButton(label, onClick, disabled = false) {
   return btn;
 }
 
+function decorateSmartLootFilters() {
+  decorateSmartLoot4Filters(refreshEquipment);
+}
+
 function refreshEquipment() {
   renderBaseEquipment();
-  queueMicrotask(() => decorateFusionRows());
+  queueMicrotask(() => {
+    decorateFusionRows();
+    decorateSmartLootFilters();
+  });
 }
 
 function milestoneText(option) {
@@ -191,19 +200,27 @@ function decorateFusionRows() {
 
 function ensureObserver() {
   const picker = document.getElementById('equipPicker');
-  if (!picker || observer) return;
-  observer = new MutationObserver(() => queueMicrotask(() => decorateFusionRows()));
-  observer.observe(picker, { childList: true });
+  if (picker && !observer) {
+    observer = new MutationObserver(() => queueMicrotask(() => decorateFusionRows()));
+    observer.observe(picker, { childList: true });
+  }
+  const filterRow = document.getElementById('lootFilterRow');
+  if (filterRow && !filterObserver) {
+    filterObserver = new MutationObserver(() => queueMicrotask(() => decorateSmartLootFilters()));
+    filterObserver.observe(filterRow, { childList: true, subtree: true });
+  }
 }
 
 export function renderEquipment() {
   renderBaseEquipment();
   ensureObserver();
   decorateFusionRows();
+  decorateSmartLootFilters();
 }
 
 export function autoEquipBest() {
   autoEquipBestBase();
   ensureObserver();
   decorateFusionRows();
+  decorateSmartLootFilters();
 }
