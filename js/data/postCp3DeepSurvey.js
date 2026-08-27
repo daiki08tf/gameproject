@@ -55,6 +55,11 @@ export const CP3_DEEP_SURVEYS = Object.freeze([
 ]);
 
 export function deepSurveyByRealmId(realmId){return CP3_DEEP_SURVEYS.find(x=>x.realmId===realmId)||null;}
+export function deepSurveyById(id){return CP3_DEEP_SURVEYS.find(x=>x.id===id)||null;}
+export function deepSurveyUnlocked(defOrId,discoveries={}){
+  const def=typeof defOrId==='string'?(deepSurveyById(defOrId)||deepSurveyByRealmId(defOrId)):defOrId;
+  return !!def&&(def.unlockDiscoveries||[]).every(id=>Boolean(discoveries[id]));
+}
 
 export function deepSurveyExplorationSites(){
   return CP3_DEEP_SURVEYS.map(def=>({
