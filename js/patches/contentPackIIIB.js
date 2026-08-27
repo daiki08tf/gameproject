@@ -34,6 +34,10 @@ function syncChains(){
 }
 state.cp3SecretChains=function(){return syncChains();};
 state.cp3LoreFragments=function(){syncChains();return Object.entries(world().discoveries).filter(([,v])=>v?.contentPackIII&&v?.loreFragment).map(([id,v])=>({id,...v}));};
+state.worldLoreFragments=function(){
+  const merged=[...(this.cp2LoreFragments?.()||[]),...this.cp3LoreFragments()];
+  return [...new Map(merged.map(x=>[x.id,x])).values()];
+};
 
 function registerBoss(id,def){
   if(ENEMY_TYPES[id])return true;
