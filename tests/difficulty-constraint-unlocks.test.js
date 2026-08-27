@@ -45,6 +45,8 @@ test('runtime enforces locks rather than merely hiding buttons',()=>{
   assert.match(src,/selectedChallenges\.delete\(stageId\)/);
   assert.match(src,/state\.isStageCleared/);
   assert.match(src,/finalStageOf/);
+  assert.match(src,/selectedPhase13Challenge\(engine\.stage\)/);
+  assert.match(src,/selectedPhase13Challenge\(stage\)/);
 });
 
 test('early-game confirm UI stays clean and future conditions are not listed as disabled clutter',()=>{
