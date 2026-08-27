@@ -2,9 +2,9 @@
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
-import { CHAPTERS } from '../data/stages.js';
+import { CHAPTERS,finalStageOf } from '../data/stages.js';
 import { buildSecretRealmStage } from '../data/secretRealms.js';
-import { PHASE13_CHALLENGES,PHASE13_TITLES,phase13Challenge,phase13BuildFeatIds,phase13RareHunt } from '../data/phase13Replay.js';
+import { PHASE13_CHALLENGES,PHASE13_CHALLENGE_UNLOCKS,PHASE13_TITLES,phase13Challenge,phase13ChallengeAvailability,phase13BuildFeatIds,phase13RareHunt } from '../data/phase13Replay.js';
 
 const selectedChallenges=new Map();
 const bossLike=stage=>Boolean(stage?.boss||stage?.raid||stage?.secretRealm);
@@ -17,13 +17,41 @@ function data(){
 }
 function addUnique(list,id){if(list.includes(id))return false;list.push(id);return true;}
 function unlockTitle(d,id,newTitles){if(addUnique(d.titles,id)){const t=PHASE13_TITLES.find(x=>x.id===id);if(t)newTitles.push(t);}}
+function storyStageById(id){for(const chapter of CHAPTERS)for(const stage of chapter.stages||[])if(stage.id===id)return stage;return null;}
+function stageById(id){
+  const story=storyStageById(id);if(story)return story;
+  for(const site of state.explorationSites||[]){if(!site.realm)continue;const stage=buildSecretRealmStage(site.realm.id);if(stage?.id===id)return stage;}
+  return null;
+}
+function clearedStoryChapter(){
+  let highest=0;
+  for(const chapter of CHAPTERS){const final=finalStageOf(chapter);if(final?.id&&state.isStageCleared?.(final.id))highest=Math.max(highest,chapter.num);}
+  return highest;
+}
+function challengeAvailability(stageOrId,challengeId){
+  const stage=typeof stageOrId==='string'?stageById(stageOrId):stageOrId;
+  const stageId=typeof stageOrId==='string'?stageOrId:stageOrId?.id;
+  return phase13ChallengeAvailability(challengeId,{clearedChapter:clearedStoryChapter(),stageCleared:Boolean(stageId&&state.isStageCleared?.(stageId)),bossLike:bossLike(stage)});
+}
 
 state.phase13Data=()=>data();
 state.phase13RecordFor=function(stageId){return data().records[stageId]||null;};
 state.phase13Titles=function(){return PHASE13_TITLES.map(t=>({...t,unlocked:data().titles.includes(t.id)}));};
-state.phase13SelectedChallenge=function(stageId){return phase13Challenge(selectedChallenges.get(stageId)||'none');};
+state.phase13ClearedStoryChapter=()=>clearedStoryChapter();
+state.phase13ChallengeAvailability=(stageOrId,id)=>challengeAvailability(stageOrId,id);
+state.phase13SelectedChallenge=function(stageId){
+  const requested=selectedChallenges.get(stageId)||'none',availability=challengeAvailability(stageId,requested);
+  if(!availability.available){selectedChallenges.delete(stageId);return phase13Challenge('none');}
+  return availability.challenge;
+};
 
-export function selectPhase13Challenge(stageId,id){selectedChallenges.set(stageId,phase13Challenge(id).id);}
+export function selectPhase13Challenge(stageOrId,id){
+  const stageId=typeof stageOrId==='string'?stageOrId:stageOrId?.id;
+  if(!stageId)return false;
+  const availability=challengeAvailability(stageOrId,id);
+  selectedChallenges.set(stageId,availability.available?availability.challenge.id:'none');
+  return availability.available;
+}
 export function selectedPhase13Challenge(stageId){return state.phase13SelectedChallenge(stageId);}
 
 state.phase13RecordClear=function(stage,metrics={}){
@@ -52,16 +80,24 @@ state.phase13RecordClear=function(stage,metrics={}){
 export function renderPhase13ChallengePicker(stage){
   document.getElementById('phase13ChallengePicker')?.remove();
   const anchor=document.getElementById('confirmModifiers');if(!anchor||!stage)return;
+  const clearedChapter=clearedStoryChapter();
+  const globallyUnlocked=PHASE13_CHALLENGES.filter(c=>c.id!=='none'&&clearedChapter>=(PHASE13_CHALLENGE_UNLOCKS[c.id]?.chapter??Infinity));
+  if(!globallyUnlocked.length)return;
   const wrap=document.createElement('div');wrap.id='phase13ChallengePicker';wrap.className='forge-card';wrap.style.marginTop='8px';
-  const current=selectedPhase13Challenge(stage.id);
-  const canRematch=Boolean(state.isStageCleared?.(stage.id)&&bossLike(stage));
-  const choices=PHASE13_CHALLENGES.filter(x=>!x.rematch||canRematch);
   const title=document.createElement('div');title.className='forge-card-name';title.textContent='CHALLENGE';wrap.appendChild(title);
-  const sub=document.createElement('div');sub.className='hint';sub.textContent='任意。難しくするほど既存EXP / Gold / Dropが増える。';wrap.appendChild(sub);
+  const stageCleared=Boolean(state.isStageCleared?.(stage.id));
+  if(!stageCleared){
+    const locked=document.createElement('div');locked.className='hint';locked.textContent='このステージを一度クリアすると、解放済みの戦闘条件を適用できます。';wrap.appendChild(locked);anchor.after(wrap);return;
+  }
+  const choices=PHASE13_CHALLENGES.filter(c=>challengeAvailability(stage,c.id).available);
+  const current=selectedPhase13Challenge(stage.id);
+  const sub=document.createElement('div');sub.className='hint';sub.textContent='再戦用。物語で得た戦闘記録・境界条件・観測条件を適用する。';wrap.appendChild(sub);
   const row=document.createElement('div');row.style.cssText='display:flex;gap:5px;overflow-x:auto;padding-top:6px';
-  for(const c of choices){const b=document.createElement('button');b.className=c.id===current.id?'btn-main':'btn-sub';b.style.flex='0 0 auto';b.textContent=c.name;b.title=c.desc;b.addEventListener('click',()=>{selectPhase13Challenge(stage.id,c.id);renderPhase13ChallengePicker(stage);});row.appendChild(b);}wrap.appendChild(row);
+  for(const c of choices){const b=document.createElement('button');b.className=c.id===current.id?'btn-main':'btn-sub';b.style.flex='0 0 auto';b.textContent=c.name;b.title=c.desc;b.addEventListener('click',()=>{selectPhase13Challenge(stage,c.id);renderPhase13ChallengePicker(stage);});row.appendChild(b);}wrap.appendChild(row);
   const desc=document.createElement('div');desc.className='rec';desc.style.marginTop='5px';desc.textContent=current.desc;wrap.appendChild(desc);
   const rec=state.phase13RecordFor(stage.id);if(rec){const line=document.createElement('div');line.className='hint';line.style.marginTop='5px';line.textContent=`記録: 最少 ${rec.bestTurns??'-'} turn / 最大 ${Number(rec.maxDamage||0).toLocaleString()} dmg / Challenge ${rec.challengeClears||0}勝`;wrap.appendChild(line);}
+  const next=PHASE13_CHALLENGES.find(c=>c.id!=='none'&&clearedChapter<(PHASE13_CHALLENGE_UNLOCKS[c.id]?.chapter??0));
+  if(next){const rule=PHASE13_CHALLENGE_UNLOCKS[next.id],line=document.createElement('div');line.className='hint';line.style.marginTop='5px';line.textContent=`次の条件: 第${rule.chapter}章クリアで${rule.capability}`;wrap.appendChild(line);}
   anchor.after(wrap);
 }
 
