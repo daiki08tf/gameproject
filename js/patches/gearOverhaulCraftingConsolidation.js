@@ -70,10 +70,17 @@ if (previousReroll) {
   };
 }
 
+function replaceText(node, before, after) {
+  if (!node?.textContent?.includes(before)) return false;
+  node.textContent = node.textContent.replace(before, after);
+  return true;
+}
+
 function decorateCraftingButtons() {
   if (typeof document === 'undefined') return;
   const root = document.getElementById('blacksmithContent');
   if (!root) return;
+
   for (const button of root.querySelectorAll('[data-e3act="temper"], [data-e3act="greater"]')) {
     const option = optionAt(button.dataset.id, button.dataset.index);
     if (!isOption4(option)) continue;
@@ -86,11 +93,38 @@ function decorateCraftingButtons() {
       button.title = 'Option 4.0のGreaterはドロップ限定です';
     }
   }
+
   for (const button of root.querySelectorAll('[data-e3act="reroll"]')) {
     const option = optionAt(button.dataset.id, button.dataset.index);
     if (!option) continue;
     button.textContent = 'Option再抽選';
     button.title = 'Option系統を入れ替えます。新しいOptionはLv1・EXP0から育成します';
+  }
+
+  for (const button of root.querySelectorAll('[data-e3act="extract"]')) {
+    if (button.textContent.includes('効果を抽出')) button.textContent = button.textContent.replace('効果を抽出', '固定能力を抽出');
+    button.title = 'Legendary Powerを固定能力ストックへ抽出します';
+  }
+  for (const button of root.querySelectorAll('[data-e3act="imprint"]')) {
+    if (!button.textContent.includes('固定能力')) button.textContent = `固定能力：${button.textContent}`;
+    button.title = 'ストック済みLegendary Powerを固定能力として刻印します';
+  }
+
+  for (const title of root.querySelectorAll('.forge-card-name')) {
+    if (title.textContent.trim() === '⚒️ 鍛冶屋3.0') title.textContent = '⚒️ Option鍛造';
+  }
+  for (const hint of root.querySelectorAll('.hint')) {
+    if (hint.textContent.trim() === 'Affixなし') hint.textContent = 'Optionなし';
+  }
+  for (const line of root.querySelectorAll('.forge-card-sub')) {
+    if (line.textContent.includes('数値再鍛錬：')) {
+      line.textContent = '育成：装備画面のOPTION育成 ／ 1枠変更：Option再抽選 ／ ★Greater：ドロップ限定';
+      continue;
+    }
+    if (line.textContent.includes('Legendary Effect：')) replaceText(line, 'Legendary Effect：', '固定能力（Legendary Power）：');
+    if (line.textContent.includes('1枠だけ厳選できるので')) {
+      line.textContent = line.textContent.replace('1枠だけ厳選できるので、神個体の残り1枠を育てられます。', 'Option再抽選は系統だけを入れ替え、育成はLv1から。数値育成は装備画面のOPTION育成で行います。');
+    }
   }
 }
 
