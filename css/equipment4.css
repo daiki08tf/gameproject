@@ -1,10 +1,55 @@
-/* Gear Overhaul Phase 4A — compact selected-item detail */
+/* Gear Overhaul Phase 4 — compact Equipment list + selected detail */
 #equipmentScreen .equip-layout { gap: 10px; }
-#equipmentScreen .equip-picker { gap: 6px; }
-#equipmentScreen .equip-picker > .pick-row { padding: 8px 10px; }
+#equipmentScreen .equip-picker { gap: 5px; }
+#equipmentScreen .equip-picker > .pick-row { padding: 7px 9px; }
 #equipmentScreen .equip-picker > .pick-row.equipment4-selected-row {
   border-color: rgba(242,201,76,.78);
   background: rgba(242,201,76,.08);
+}
+
+/* Phase 4B: the list is for scanning; long prose belongs in selected detail. */
+#equipmentScreen .equip-picker > .equipment4-compact-row .item-name {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#equipmentScreen .equip-picker > .equipment4-compact-row .item-stats:not(.equipment4-keep-lock-reason),
+#equipmentScreen .equip-picker > .equipment4-compact-row .eq3-meta,
+#equipmentScreen .equip-picker > .equipment4-compact-row .affix-block,
+#equipmentScreen .equip-picker > .equipment4-compact-row .eq3-special-line,
+#equipmentScreen .equip-picker > .equipment4-compact-row .compare-line {
+  display: none;
+}
+#equipmentScreen .equip-picker > .equipment4-compact-row .item-stats.equipment4-keep-lock-reason {
+  font-size: 10px;
+  line-height: 1.25;
+  max-height: 2.5em;
+  overflow: hidden;
+  opacity: .7;
+}
+#equipmentScreen .equip-picker > .equipment4-compact-row .equip-inline-actions {
+  gap: 4px;
+}
+#equipmentScreen .equip-picker > .equipment4-compact-row .equip-inline-actions .inline-btn,
+#equipmentScreen .equip-picker > .equipment4-compact-row > button {
+  padding: 5px 7px;
+  min-width: 30px;
+}
+.equipment4-row-summary {
+  display:flex;
+  flex-wrap:wrap;
+  gap:3px;
+  margin-top:3px;
+}
+.equipment4-row-summary span {
+  font-size:8px;
+  line-height:1;
+  padding:3px 5px;
+  border-radius:999px;
+  background:rgba(255,255,255,.075);
+  color:rgba(255,255,255,.7);
+  border:1px solid rgba(255,255,255,.07);
 }
 
 .equipment4-detail {
