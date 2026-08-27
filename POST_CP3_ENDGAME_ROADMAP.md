@@ -23,21 +23,23 @@ CP3 hidden routes become reusable post-cap high-difficulty exploration targets a
 - Unlock: ACK-WARDEN + CINDER-REPLY defeated.
 - Combat target: durability / guard-counter / sustain.
 - Pressure: enemy HP +30%, healing -50% plus the deterministic Abyss-depth environment.
-- Baseline: Lv99,999 / IP10,000, post-cap depth 3200 combat scale.
+- Baseline: Lv99,999 / IP10,000, post-cap depth 3201 combat scale.
 
 ### 2. 第九照準廊・深層観測
 
 - Unlock: RETURN-CLOCK defeated.
 - Combat target: speed / first strike / burst.
 - Pressure: enemy ATK +40%, Elite threat +2 plus the deterministic Abyss-depth environment.
-- Baseline: Lv99,999 / IP10,000, post-cap depth 3600 combat scale.
+- Baseline: Lv99,999 / IP10,000, post-cap depth 3601 combat scale.
 
 ### 3. 異記憶根室・深層観測
 
 - Unlock: ROOT-RECEIVER + LIVING-ARCHIVE defeated.
 - Combat target: sustain / magic / action rotation.
 - Pressure: enemy HP +30%, healing -50%, Boss technique +1 plus the deterministic Abyss-depth environment.
-- Baseline: Lv99,999 / IP10,000, post-cap depth 4200 combat scale.
+- Baseline: Lv99,999 / IP10,000, post-cap depth 4201 combat scale.
+
+The non-boss template depths are intentional: each Deep Survey keeps the full normal / fast / tank gauntlet, then appends a final apex enemy instead of collapsing into a normal Abyss boss-floor encounter.
 
 ### Integration
 
