@@ -59,7 +59,10 @@ test('Smart Loot protects only genuinely valuable Fusion materials by default an
   const highLevelInst = { affixes: [option('hp_pct', 'rare', 82)] };
   const ordinaryInst = { affixes: [option('hp_pct', 'rare', 45)] };
 
-  assert.ok(smartLootReasons(armor, ancientInst, filter).some((r) => r.startsWith('Fusion素材:')));
-  assert.ok(smartLootReasons(armor, highLevelInst, filter).some((r) => r.startsWith('Fusion素材:')));
+  // Phase 5B renamed these player-facing reasons from the old `Fusion素材:${rarity|level}`
+  // wording to explicit `Ancient Option` / `Option Lv${n}` labels (see
+  // tests/gear-overhaul-phase5b-protection.test.js). Assert on the new wording.
+  assert.ok(smartLootReasons(armor, ancientInst, filter).includes('Ancient Option'));
+  assert.ok(smartLootReasons(armor, highLevelInst, filter).some((r) => r.startsWith('Option Lv')));
   assert.deepEqual(smartLootReasons(armor, ordinaryInst, filter), []);
 });
