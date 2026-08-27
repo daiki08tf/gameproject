@@ -4,6 +4,7 @@
    Existing equipment stats and Affix combat effects remain authoritative;
    this layer adds a long-term loot-quality axis from story into Lv99,999.
    ============================================================ */
+import { OPTION_COUNT_BY_EQUIPMENT_RARITY } from './options4.js';
 
 export const ITEM_POWER_MAX = 10000;
 
@@ -41,13 +42,9 @@ export const ITEM_POWER_BANDS = Object.freeze([
   { id: 'terminal', label: '終焉装備', min: 8000, max: ITEM_POWER_MAX },
 ]);
 
-export const EQUIPMENT3_AFFIX_SLOTS = Object.freeze({
-  normal: [0, 1],
-  rare: [1, 2],
-  epic: [2, 3],
-  legendary: [3, 4],
-  mythic: [4, 5],
-});
+// Gear Overhaul Option 4.0 makes one canonical count table authoritative for
+// both weapons and armor/accessories. Keep the old export name for compatibility.
+export const EQUIPMENT3_AFFIX_SLOTS = OPTION_COUNT_BY_EQUIPMENT_RARITY;
 
 export const AFFIX_NAME_PARTS = Object.freeze({
   OFFENSE: { prefix: '猛攻の', suffix: '・破軍' },
