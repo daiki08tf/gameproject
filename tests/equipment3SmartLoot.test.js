@@ -60,11 +60,12 @@ test('Phase 5 Smart Loot detailed filters apply to armor/accessories too while w
 test('Smart Loot defaults protect build-defining or rare-risk weapon rolls', () => {
   const filter = normalizeLootFilter3({ minRarity: 'normal' });
   const reasons = smartLootReasons(weapon, jackpot, filter);
-  assert.ok(reasons.includes('Legendary Effect'));
+  assert.ok(reasons.includes('Legendary Power'));
   assert.ok(reasons.some((r) => r.startsWith('Greater×')));
   assert.equal(shouldAutoLockEquipment(weapon, jackpot, filter), true);
 
   const cursed = { ...jackpot, legendaryEffectId: null, greaterAffixCount: 0, curseId: 'curse_test' };
+  assert.ok(smartLootReasons(weapon, cursed, filter).includes('Curse'));
   assert.equal(shouldAutoLockEquipment(weapon, cursed, filter), true);
 
   const ordinary = { ...jackpot, legendaryEffectId: null, greaterAffixCount: 0, curseId: null };
