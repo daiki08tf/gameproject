@@ -138,18 +138,33 @@ Key hidden bosses:
 - 重記司書・PALIMPSEST
 - 双方向観測体・PARALLAX
 
-## 10. Content Pack III premise
+## 10. Content Pack III — observation reflux
 
 After Ch30, observation is no longer one-way. The returned signal begins to **reflux into already explored regions**.
 
-Important rule: CP3 anomalies are not simply aliens appearing everywhere. In the first clusters, existing local beings, infrastructure and memories are changed by returned observation.
+Important rule: CP3 anomalies are not simply aliens appearing everywhere. Existing local beings, infrastructure and memories are changed by returned observation.
 
 Initial clusters:
 - **灰燼の外縁** — delayed / moving burned shadows and reply marks
 - **天雷墓標群** — ancient anti-intrusion lightning begins tracing outbound/returned signals
 - **虚花の庭園** — memory roots reproduce sounds from an unknown inhabited environment
 
-This lets old regions gain new meaning without invalidating their original stories.
+### CP3-B confirmed findings
+
+1. **返信印は文字ではない。**
+   - 灰面の矩形印と第九照準線は同じ応答規則を持つ。
+   - もっとも妥当な解釈は、こちらの観測開始を受理して対象を再照準する acknowledgement / targeting response。
+   - つまり外側は接触を少なくとも機械的に認識している。
+
+2. **雷・根脈・灰の逆流は同一の返送周期を共有する。**
+   - 地域ごとに別現象へ見えていたものは、一つの返答を各媒体が別形式へ翻訳した結果と考えられる。
+
+3. **生きた媒体だけが保持する情報がある。**
+   - 機械・境界インフラの照合記録には欠落した観測区間がある。
+   - 一方、根・灰・変質した生態系にはその区間の痕跡が残る。
+   - 現時点では「誰かが意図的に削除した」のか「機械には記録できない性質」なのか判別できない。
+
+These findings deepen the mystery but do **not** identify the external civilization or explain why Blade Vale is observed.
 
 ## 11. Modern-world restraint
 
@@ -175,6 +190,8 @@ These are intentionally unresolved and must not be accidentally answered in side
 5. Was the connection intentional, accidental, experimental or protective?
 6. Are all world layers naturally occurring, constructed, reconstructed, or a mixture?
 7. What happened during previous world reconstructions seen in frozen/archival records?
+8. Why is part of the returned observation missing from machine/infrastructure records?
+9. Was that interval deleted deliberately, or is it intrinsically unrecordable by those systems?
 
 ## 13. Writing rules
 
