@@ -12,7 +12,7 @@ export const CP3_DEEP_SURVEYS = Object.freeze([
     realmId:'secret-cp3-deep-ash',
     realmName:'返信炉床・深層観測',
     discoveredName:'返信炉床のさらに下へ続く保守孔',
-    depth:3200,
+    depth:3201,
     role:'耐久・反撃ビルド向け',
     ruleName:'返灰圧縮層',
     rule:'敵HP+30% / 回復量-50%。受け切る耐久、ガード反撃、吸収維持が強い。',
@@ -27,7 +27,7 @@ export const CP3_DEEP_SURVEYS = Object.freeze([
     realmId:'secret-cp3-deep-ninth',
     realmName:'第九照準廊・深層観測',
     discoveredName:'第九照準線が折れ込む高速観測路',
-    depth:3600,
+    depth:3601,
     role:'速度・先手・瞬間火力ビルド向け',
     ruleName:'再照準加速域',
     rule:'敵ATK+40% / Elite脅威+2。長引くほど危険で、速度・先手・短期決着の価値が高い。',
@@ -42,7 +42,7 @@ export const CP3_DEEP_SURVEYS = Object.freeze([
     realmId:'secret-cp3-deep-root',
     realmName:'異記憶根室・深層観測',
     discoveredName:'生体記録層の外側へ伸びる根脈',
-    depth:4200,
+    depth:4201,
     role:'継戦・魔法・行動ローテーション向け',
     ruleName:'生体記録圧',
     rule:'敵HP+30% / 回復量-50% / Boss固有技+1。資源管理と複数手段を回す長期戦向け。',
@@ -85,14 +85,16 @@ export function buildDeepSurveyStage(realmId){
   const base=buildAbyssStage(def.depth,[],{challengeIds:def.challengeIds});
   const bossId=`abyss_${def.depth}_boss`;
   const waves=[...(base.waves||[]).map(w=>({...w}))];
-  // Post-cap exploration is a gauntlet, then one clear apex answer.
-  if(!waves.some(w=>w.type===bossId))waves.push({type:bossId,count:1,interval:0,deepSurveyApex:true});
+  // Choose non-boss template depths so the full normal/fast/tank gauntlet is preserved,
+  // then append one authored apex answer at the end.
+  waves.push({type:bossId,count:1,interval:0,deepSurveyApex:true});
   return{
     ...base,
     id:def.realmId,
     name:`深層観測・${def.realmName.replace('・深層観測','')}`,
     recLevel:99999,
     itemPowerTarget:10000,
+    boss:true,
     isAbyss:false,
     abyssDepth:null,
     abyssRoute:null,
