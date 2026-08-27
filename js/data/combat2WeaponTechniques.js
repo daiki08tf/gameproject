@@ -1,9 +1,12 @@
 /* ============================================================
    Combat 2.0 — Weapon techniques
    ------------------------------------------------------------
-   Learned from the equipped weapon family, independent of Job. This gives the
-   weapon itself a combat identity and lets Job + Weapon combinations diverge.
+   Learned from the equipped weapon family, independent of Job. Phase 6 keeps
+   the existing 24 techniques but lets the equipped Equipment 3.0 archetype
+   specialize them, so weapon choice changes the combat loop without adding a
+   second skill/progression system.
    ============================================================ */
+import { weaponArchetypeTechniqueProfile } from './weaponIdentity.js';
 
 const T = (id, name, weaponType, unlockLevel, extra) => Object.freeze({
   id, name, weaponType, unlockLevel, type: 'damage', target: 'enemy',
@@ -45,7 +48,67 @@ export const COMBAT2_WEAPON_TECHNIQUES = Object.freeze([
   T('wtech_rod_judgment', '天罰光輪', 'rod', 350, { magic: true, element: 'light', target: 'allEnemies', power: 4.7, mpCost: 18, cooldownTurns: 2, selfBuff: { regenAdd: 0.025, turns: 3 } }),
 ]);
 
-export function weaponTechniquesFor(weaponType, characterLevel = 1) {
+const round3 = (v) => Math.round(Number(v || 0) * 1000) / 1000;
+
+function mergeSelfBuff(base = null, add = null) {
+  if (!add) return base ? { ...base } : null;
+  const out = { ...(base || {}) };
+  for (const [key, value] of Object.entries(add)) {
+    if (key === 'turns') out.turns = Math.max(Number(out.turns) || 0, Number(value) || 0);
+    else out[key] = round3((Number(out[key]) || 0) + (Number(value) || 0));
+  }
+  return out;
+}
+
+/**
+ * Returns an encounter-local technique copy specialized by the equipped
+ * Equipment 3.0 archetype. Base definitions stay immutable for saves/tests.
+ */
+export function specializeWeaponTechnique(technique, archetypeId = null) {
+  const profile = weaponArchetypeTechniqueProfile(archetypeId);
+  if (!technique || !profile || profile.family !== technique.weaponType) return technique;
+
+  const out = { ...technique };
+  const baseHits = Math.max(1, Math.floor(Number(technique.hits) || 1));
+  const nextHits = Math.max(1, baseHits + Math.floor(Number(profile.hitDelta) || 0));
+  const powerMult = Number(profile.powerMult) || 1;
+  // Extra-hit profiles preserve roughly the same raw packet total; the reward
+  // is more Trigger/crit/DoT opportunities rather than free huge DPS.
+  out.power = round3((Number(technique.power) || 0) * powerMult * baseHits / nextHits);
+  if (nextHits !== baseHits || technique.hits) out.hits = nextHits;
+
+  if (profile.mpCostMult) out.mpCost = Math.max(1, Math.round((Number(technique.mpCost) || 0) * profile.mpCostMult));
+  if (profile.critBonusAdd) out.critBonus = round3((Number(technique.critBonus) || 0) + profile.critBonusAdd);
+  if (profile.armorPenAdd) out.armorPenBonus = round3((Number(technique.armorPenBonus) || 0) + profile.armorPenAdd);
+
+  if (profile.weakenPctAdd) {
+    out.weaken = technique.weaken
+      ? { ...technique.weaken, pct: round3((Number(technique.weaken.pct) || 0) + profile.weakenPctAdd) }
+      : { stat: 'def', pct: round3(profile.weakenPctAdd), turns: 2 };
+  }
+
+  if (profile.execution) {
+    const existing = technique.targetBonus?.when === 'lowHp' ? technique.targetBonus : null;
+    out.targetBonus = existing
+      ? {
+          ...existing,
+          hpThreshold: Math.max(Number(existing.hpThreshold) || 0, Number(profile.execution.hpThreshold) || 0),
+          power: round3((Number(existing.power) || 1) * (Number(profile.execution.power) || 1)),
+        }
+      : { when:'lowHp', hpThreshold:profile.execution.hpThreshold, power:profile.execution.power };
+  }
+
+  const selfBuff = mergeSelfBuff(technique.selfBuff, profile.selfBuffAdd);
+  if (selfBuff) out.selfBuff = selfBuff;
+
+  out.weaponArchetypeId = archetypeId;
+  out.weaponArchetypeSpecialty = profile.specialty;
+  out.baseTechniqueId = technique.id;
+  return out;
+}
+
+export function weaponTechniquesFor(weaponType, characterLevel = 1, archetypeId = null) {
   const lv = Math.max(1, Math.floor(Number(characterLevel) || 1));
-  return COMBAT2_WEAPON_TECHNIQUES.filter((t) => t.weaponType === weaponType && lv >= t.unlockLevel);
+  const unlocked = COMBAT2_WEAPON_TECHNIQUES.filter((t) => t.weaponType === weaponType && lv >= t.unlockLevel);
+  return archetypeId ? unlocked.map((t) => specializeWeaponTechnique(t, archetypeId)) : unlocked;
 }
