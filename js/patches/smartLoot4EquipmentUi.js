@@ -47,14 +47,19 @@ function optionQueryInput(value, rerender) {
 
 function raritySelect(value, rerender) {
   const select = document.createElement('select');
-  select.appendChild(new Option('指定なし', 'all'));
+  select.appendChild(new Option('指定なし', 'any'));
   for (const rarity of OPTION_RARITY) select.appendChild(new Option(RARITY_LABEL[rarity] || rarity, rarity));
-  select.value = value || 'all';
+  select.value = value || 'any';
+  inputFallback(select, 'any');
   select.addEventListener('change', () => {
     state.updateLootFilter3({ minOptionRarity: select.value });
     rerender();
   });
   return select;
+}
+
+function inputFallback(select, fallback) {
+  if (![...select.options].some(option => option.value === select.value)) select.value = fallback;
 }
 
 function levelInput(value, rerender) {
@@ -72,14 +77,47 @@ function levelInput(value, rerender) {
   return input;
 }
 
+function activeOptionFilterCount(filter) {
+  return [!!filter.optionQuery, filter.minOptionRarity && filter.minOptionRarity !== 'any', Number(filter.minOptionLevel) > 0].filter(Boolean).length;
+}
+
+function syncAdvancedBadge(filter) {
+  const row = document.getElementById('lootFilterRow');
+  if (!row) return;
+  const button = [...row.querySelectorAll(':scope > .tab-btn')].find(btn => btn.textContent.startsWith('⚙ 詳細'));
+  if (!button) return;
+  const optionCount = activeOptionFilterCount(filter);
+  const baseMatch = button.textContent.match(/\((\d+)\)/);
+  const currentTotal = baseMatch ? Number(baseMatch[1]) : 0;
+  const previousOptionCount = Number(button.dataset.smartloot4Count || 0);
+  const baseCount = Math.max(0, currentTotal - previousOptionCount);
+  const total = baseCount + optionCount;
+  button.dataset.smartloot4Count = String(optionCount);
+  button.textContent = `⚙ 詳細${total ? ` (${total})` : ''}`;
+  button.classList.toggle('active', total > 0);
+}
+
+function hideLegacyVisibleAffixField(advanced) {
+  for (const label of advanced.querySelectorAll(':scope > label')) {
+    const first = label.querySelector(':scope > span')?.textContent?.trim();
+    if (first === 'Affix') {
+      label.hidden = true;
+      label.dataset.smartloot4LegacyAffix = '1';
+    }
+  }
+}
+
 export function decorateSmartLoot4Filters(rerender = () => {}) {
   if (typeof document === 'undefined') return;
   ensureStyle();
-  const advanced = document.querySelector('#lootFilterRow .loot-filter-advanced');
-  if (!advanced || advanced.querySelector('[data-smartloot4-option-filters]')) return;
-
   const filter = state.getLootFilter3?.();
   if (!filter) return;
+  syncAdvancedBadge(filter);
+
+  const advanced = document.querySelector('#lootFilterRow .loot-filter-advanced');
+  if (!advanced) return;
+  hideLegacyVisibleAffixField(advanced);
+  if (advanced.querySelector('[data-smartloot4-option-filters]')) return;
 
   const box = document.createElement('div');
   box.dataset.smartloot4OptionFilters = '1';
@@ -90,7 +128,7 @@ export function decorateSmartLoot4Filters(rerender = () => {}) {
   title.className = 'smartloot4-title';
   box.appendChild(title);
   box.appendChild(field('Option検索', optionQueryInput(filter.optionQuery || filter.affixQuery || '', rerender)));
-  box.appendChild(field('最低Optionレア', raritySelect(filter.minOptionRarity || 'all', rerender)));
+  box.appendChild(field('最低Optionレア', raritySelect(filter.minOptionRarity || 'any', rerender)));
   box.appendChild(field('最低Option Lv', levelInput(filter.minOptionLevel || 0, rerender)));
 
   const hint = document.createElement('span');
