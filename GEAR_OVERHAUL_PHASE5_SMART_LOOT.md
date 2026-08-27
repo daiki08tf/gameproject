@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Phase 5: Smart Loot 4.0
 
-> Status: **ACTIVE / Phase 5C synergy filter decision**
+> Status: **COMPLETE**
 
 ## Goal
 
@@ -58,27 +58,29 @@ Design decisions:
 Regression coverage:
 - `tests/gear-overhaul-phase5b-protection.test.js`
 
-## Phase 5C — Useful synergy filters 🔄 ACTIVE
+## Phase 5C — Useful synergy filters ⛔ SKIPPED
 
-Only add if farming behavior justifies them:
+Acceptance gate (unmet):
+- must solve a real farming scan problem not already covered by Option search / rarity / Lv — **not met**: one Option row already satisfies query + rarity + Lv together per slot, and scanning twice for a second desired family is not a practical bottleneck given Phase 4's already-compact list
+- must fit the existing detailed panel without becoming a Boolean rule editor — a 2+ family filter would need either a second query row or rule combinators, risking exactly the Boolean editor this phase is meant to avoid
+- must not auto-hide ordinary Fusion material by default — moot, not built
 
-- 2+ desired Option families/categories
-- useful compact build-tag combinations
+Decision: skip directly to Phase 5D closeout, per this doc's own escape hatch.
 
-Acceptance gate:
-- must solve a real farming scan problem not already covered by Option search / rarity / Lv
-- must fit the existing detailed panel without becoming a Boolean rule editor
-- must not auto-hide ordinary Fusion material by default
+## Phase 5D — Closeout ✅ COMPLETE
 
-If the gate is not met, skip directly to Phase 5D closeout.
+- removed the legacy visible `Affix` search field from `js/screens/equipment.js` at the source, instead of hiding it at runtime — `Option検索` (Phase 5A) already covers the same query
+- removed the legacy `Legendary` / `Curse` / `Greater` / `Affix` auto-lock fields from `equipment.js` at the source — the Phase 5B PROTECT panel already replaces all four (plus Ancient Option / Option Lv80+ / Option text match)
+- deleted the now-dead `hideLegacyVisibleAffixField` and `hideLegacyProtectionFields` runtime patch functions from `js/patches/smartLoot4EquipmentUi.js`
+- `state.data.lootFilter3` migration in `normalizeLootFilter3()` is untouched — old saves with only `affixQuery` / `protectFusionMaterials` still normalize correctly (regression-tested)
+- Temper retirement was already completed in Phase 3 (`gearOverhaulCraftingConsolidation.js`); out of scope here
+- `js/screens/status.js`'s stat-breakdown `Affix` label is a distinct internal accounting category (base/equipment/job/Affix contribution), not the loot-filter search field — deliberately left alone as a separate, broader terminology decision
 
-## Phase 5D — Closeout
+Regression coverage:
+- `tests/gear-overhaul-phase5d-closeout.test.js`
+- updated `tests/gear-overhaul-phase5a-option-filter-ui.test.js` (asserts the field is gone, not hidden)
 
-- remaining player-facing `Affix` wording cleanup
-- all-slot tests
-- mobile filter footprint
-- migration tests
-- then advance to Phase 6 Weapon Identity
+**Phase 5 Smart Loot 4.0 is COMPLETE.** Next: Phase 6 — existing weapon identity strengthening (8 weapon types / 24 sub-archetypes / job coverage). No new weapon types yet.
 
 ## Handoff files
 

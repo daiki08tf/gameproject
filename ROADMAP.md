@@ -192,19 +192,19 @@ Current phases:
 | Gear phase | Status |
 |---|---|
 | 0A System inventory | ✅ |
-| 0B 77-Affix audit | 🔄 |
-| 0C Weapon × Job/Fusion × 24 archetype audit | NEXT |
-| 1 Option 4.0 canonical data model | queued |
-| 2 Option Fusion / duplicate feeding | queued |
-| 3 Greater/Temper/random-roll consolidation | queued |
-| 4 Equipment UI compact redesign | queued |
-| 5 Smart Loot 4.0 | queued |
-| 6 Existing weapon identity strengthening | queued |
-| 7 New weapon-family decision | gated by audit |
+| 0B 77-Affix audit | ✅ |
+| 0C Weapon × Job/Fusion × 24 archetype audit | ✅ |
+| 1 Option 4.0 canonical data model | ✅ |
+| 2 Option Fusion / duplicate feeding | ✅ |
+| 3 Greater/Temper/random-roll consolidation | ✅ |
+| 4 Equipment UI compact redesign | ✅ |
+| 5 Smart Loot 4.0 | ✅ (5C skipped — gate not met, see `GEAR_OVERHAUL_PHASE5_SMART_LOOT.md`) |
+| 6 Existing weapon identity strengthening | 🔄 NEXT |
+| 7 New weapon-family decision | gated by Phase 6 |
 | 8 Unique 2.0 | queued |
 | 9 Loot distribution + return to endgame content | queued |
 
-Do not add new mastery weapon families before Phase 0C. Equipment 3.0 already contains 24 archetypes including 大剣 / 刀 / 魔導書 / 双短剣 / 弩 / 大斧 etc.
+Do not add new mastery weapon families before Phase 6 closes. Equipment 3.0 already contains 24 archetypes including 大剣 / 刀 / 魔導書 / 双短剣 / 弩 / 大斧 etc.
 
 See `GEAR_OVERHAUL_ROADMAP.md` and `GEAR_OVERHAUL_AUDIT.md` before modifying gear code.
 

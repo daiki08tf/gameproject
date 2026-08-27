@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **ACTIVE / Phase 5C Smart Loot synergy decision**
+> Status: **Phase 5 Smart Loot 4.0 COMPLETE — starting Phase 6 Weapon Identity**
 >
 > Gear Overhaul continues to take priority over further Deep Survey expansion. The loot loop should be worth farming before more high-difficulty content is layered on top.
 
@@ -97,7 +97,7 @@ Key PRs: #238 / #239 / #240 / #241.
 
 Key PRs: #242 / #243 / #244 / #245.
 
-## Phase 5 — Smart Loot 4.0 🔄 ACTIVE
+## Phase 5 — Smart Loot 4.0 ✅ COMPLETE
 
 ### Phase 5A — All-slot Option filters ✅
 
@@ -130,19 +130,28 @@ Ancient and Lv80+ are independently toggleable. Ordinary `Rare–Mythic / Lv79�
 
 Full handoff: `GEAR_OVERHAUL_PHASE5_SMART_LOOT.md`.
 
-### Phase 5C — Useful synergy filters 🔄 ACTIVE
+### Phase 5C — Useful synergy filters ⛔ SKIPPED (gate not met)
 
-Only add if farming tests justify them:
-- 2+ desired Option families/categories
-- compact build-tag combinations
+Decision: do not build 2+ desired Option family / build-tag combination filtering.
 
-Do not build a giant Boolean filter editor. If existing Option query / rarity / Lv already solve the practical scan problem, skip directly to 5D.
+Reasoning:
+- Phase 5A's single-Option `optionQuery + minOptionRarity + minOptionLevel` already lets a player scan for "one Option that satisfies query, rarity, and Lv together" per slot. A player who wants two specific families can already run the scan twice (there is no long farming session where doing so is impractical, since Equipment's list is already compact per Phase 4).
+- No farming/scan problem was identified that Option search / rarity / Lv leaves unsolved. The acceptance gate ("must solve a real farming scan problem not already covered by Option search / rarity / Lv") is not met.
+- A 2+ family combination filter would need either a second query row or a Boolean editor, which the roadmap explicitly rules out ("Do not build a giant Boolean filter editor").
 
-### Phase 5D — Closeout
+Per this doc's own escape hatch ("If the gate is not met, skip directly to 5D"), Phase 5C did not add new UI or filter fields.
 
-- remaining player-facing `Affix` wording cleanup
-- migration/all-slot/mobile regression pass
-- then advance to Phase 6 Weapon Identity
+### Phase 5D — Closeout ✅
+
+- removed the legacy visible Affix search field from `equipment.js` at the source (was hidden at runtime via `hideLegacyVisibleAffixField`; Option検索 already covers the same query)
+- removed the legacy Legendary / Curse / Greater / Affix auto-lock fields from `equipment.js` at the source (were hidden at runtime via `hideLegacyProtectionFields`; the Phase 5B PROTECT panel already replaces all four, plus Ancient/Lv80+/Option-match)
+- deleted both now-unused runtime hide functions from `smartLoot4EquipmentUi.js`
+- `state.data.lootFilter3` migration (`affixQuery`→`optionQuery`, `protectFusionMaterials`→split flags) is untouched — old saves still normalize correctly
+- regression coverage: `tests/gear-overhaul-phase5d-closeout.test.js` (removed-field assertions + old-save migration smoke test)
+- Temper retirement was already handled in Phase 3 (`gearOverhaulCraftingConsolidation.js`); out of Phase 5 scope, left untouched
+- `js/screens/status.js`'s stat-breakdown `Affix` label (an internal accounting category distinct from the loot-filter search field) was deliberately left as-is — renaming it is a broader terminology decision outside Phase 5's loot-filter scope
+
+Advancing to Phase 6 Weapon Identity.
 
 ## Later phases
 
@@ -160,20 +169,21 @@ Give Abyss / Rift / Nemesis / Secret Realm / Deep Survey distinct farming purpos
 
 ## Implementation checkpoint — 2026-08-27
 
-Merged through #246:
+Merged through #247:
 - #229–#231 Option foundation
 - #234 Phase 1 closeout
 - #235–#237 Option Fusion
 - #238–#241 consolidation / Fixed Identity / Blacksmith cleanup
 - #242–#245 Equipment UI 3.x
 - #246 Phase 5A all-slot Option filters
+- #247 Phase 5B protection rules (squash merge SHA `50e217b`)
 
-Current Phase 5B branch:
-- explicit protection controls for Legendary Power / Curse / Greater / Ancient / Lv80+ / Option text
-- independent Ancient and high-Level Option toggles
-- legacy protection migration
-- ordinary mid-tier Fusion material remains unlocked by default
-- after green CI + merge, evaluate Phase 5C acceptance gate
+Phase 5 Smart Loot 4.0 is now COMPLETE (this checkpoint, on top of #247):
+- Phase 5C: evaluated and skipped — acceptance gate not met, reasoning recorded above
+- Phase 5D: legacy Affix-labeled fields removed from `equipment.js` at the source (no more runtime hide patch), regression coverage added, old-save migration reconfirmed
+- 818/818 tests green
+
+Next: Phase 6 — strengthen the existing 8 weapon types / 24 sub-archetypes and their job coverage. Do not add new weapon types yet.
 
 ## AI handoff
 
