@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Phase 5: Smart Loot 4.0
 
-> Status: **ACTIVE / Phase 5A all-slot Option filter core**
+> Status: **ACTIVE / Phase 5B protection rules**
 
 ## Goal
 
@@ -16,9 +16,9 @@ Make long farming sessions manageable without hiding valuable Fusion material an
 - Ancient / Lv80+ Fusion material protection remains active by default
 - ordinary mid-tier material must stay feedable
 
-## Phase 5A — All-slot Option filters
+## Phase 5A — All-slot Option filters ✅ COMPLETE
 
-Current branch `gear-overhaul-phase5a-option-filters` adds the data contract:
+Implemented on `gear-overhaul-phase5a-option-filters`:
 
 - `optionQuery`
 - `minOptionRarity`
@@ -26,8 +26,14 @@ Current branch `gear-overhaul-phase5a-option-filters` adds the data contract:
 - legacy `affixQuery` migrates into `optionQuery` and remains mirrored for compatibility
 - detailed IP / Greater / Legendary / Curse / Option conditions now apply to all equipment slots
 - `weaponType` remains weapon-only
+- one Option row must satisfy query + rarity + Lv together
+- compact controls are injected into the existing expandable 詳細 panel
+- player-facing legacy `Affix` search is hidden in favor of `Option検索`
+- active Option conditions contribute to the existing `⚙ 詳細(n)` badge
+- mobile layout keeps Option controls compact
+- no new route or screen
 
-Default values intentionally preserve old behavior:
+Default values preserve old behavior:
 
 ```text
 optionQuery = ""
@@ -35,20 +41,12 @@ minOptionRarity = any
 minOptionLevel = 0
 ```
 
-Regression coverage verifies armor/accessory filtering and same-Option matching semantics.
+Regression coverage:
 
-### Phase 5A2 — Compact filter controls
+- `tests/gear-overhaul-phase5a-option-filters.test.js`
+- `tests/gear-overhaul-phase5a-option-filter-ui.test.js`
 
-Next UI slice:
-
-- rename player-facing `Affix` search to `Option`
-- expose Option search, minimum rarity and minimum Lv inside the existing expandable 詳細 panel
-- keep normal filter strip compact
-- count active Option filters in the existing 詳細 badge
-
-Do not add another top-level filter panel.
-
-## Phase 5B — Protection rules
+## Phase 5B — Protection rules 🔄 NEXT
 
 Audit automatic protection wording and controls around:
 
@@ -72,7 +70,7 @@ Avoid a giant Boolean rule builder.
 
 ## Phase 5D — Closeout
 
-- player-facing `Affix` wording cleanup
+- remaining player-facing `Affix` wording cleanup
 - all-slot tests
 - mobile filter footprint
 - migration tests
@@ -84,5 +82,7 @@ Avoid a giant Boolean rule builder.
 - `GEAR_OVERHAUL_PHASE4_UI.md`
 - `js/data/equipment3SmartLoot.js`
 - `js/patches/equipment3SmartLoot.js`
+- `js/patches/smartLoot4EquipmentUi.js`
 - `js/screens/equipment.js`
+- `js/screens/equipmentFusion.js`
 - `css/equipment4.css`
