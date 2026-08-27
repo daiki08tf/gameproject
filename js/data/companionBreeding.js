@@ -21,10 +21,10 @@ for (const def of Object.values(HYBRIDS)) {
 }
 
 function pairKey(a,b){return [a,b].sort().join('+');}
-export function breedingSpecies(parentA,parentB){
+export function breedingSpecies(parentA,parentB,rng=Math.random){
   if(!parentA||!parentB)return null;
   if(parentA===parentB)return parentA;
-  return HYBRIDS[pairKey(parentA,parentB)]?.id || (Math.random()<.5?parentA:parentB);
+  return HYBRIDS[pairKey(parentA,parentB)]?.id || (rng()<.5?parentA:parentB);
 }
 
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}

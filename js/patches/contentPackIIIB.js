@@ -96,15 +96,33 @@ TextBattleScreen.prototype._revealNextGroupIfNeeded=function cp3BReveal(){
 };
 
 const HYBRID_CHAIN=Object.freeze({cp3_target_hound:'reply_target',cp3_reflux_beast:'returned_pulse',cp3_living_bloom:'living_archive'});
+function resolvedHybridFor(a,b){
+  if(!a||!b)return null;
+  const aSpecies=a.instance.baseSpeciesId||a.instance.speciesId,bSpecies=b.instance.baseSpeciesId||b.instance.speciesId;
+  const hybrid=cp3HybridFor(aSpecies,bSpecies);if(!hybrid)return null;
+  const required=HYBRID_CHAIN[hybrid.id];
+  return required&&chainState(CP3_SECRET_CHAINS[required]).resolved?hybrid:null;
+}
 if(state.createBreedingEgg&&!state.createBreedingEgg.__cp3b){
   const previous=state.createBreedingEgg.bind(state);
   const wrapped=function cp3BBreeding(aId,bId,rng=Math.random){
-    const a=this.getCompanion?.(aId),b=this.getCompanion?.(bId);const hybrid=a&&b?cp3HybridFor(a.instance.speciesId,b.instance.speciesId):null;
+    const a=this.getCompanion?.(aId),b=this.getCompanion?.(bId),hybrid=resolvedHybridFor(a,b);
     const result=previous(aId,bId,rng);if(!result?.ok||!hybrid)return result;
-    const required=HYBRID_CHAIN[hybrid.id],resolved=required&&chainState(CP3_SECRET_CHAINS[required]).resolved;if(!resolved)return result;
     const egg=this.data.ranchEggs?.find(x=>x.id===result.eggId);if(!egg)return result;
     egg.speciesId=hybrid.id;egg.origin='cp3SpecialBreeding';result.speciesId=hybrid.id;result.cp3SpecialHybrid=hybrid.id;this.save();return result;
   };wrapped.__cp3b=true;state.createBreedingEgg=wrapped;
+}
+if(state.breedCompanions&&!state.breedCompanions.__cp3b){
+  const previous=state.breedCompanions.bind(state);
+  const wrapped=function cp3BDirectBreeding(aId,bId,rng=Math.random){
+    const a=this.getCompanion?.(aId),b=this.getCompanion?.(bId),hybrid=resolvedHybridFor(a,b);
+    const result=previous(aId,bId,rng);if(!result?.ok||!hybrid)return result;
+    const child=this.data.companionInstances?.[result.childId];if(!child)return result;
+    child.speciesId=hybrid.id;child.baseSpeciesId=hybrid.id;child.origin='cp3SpecialBreeding';
+    this.data.companionCodex??={};this.data.companionCodex[hybrid.id]=true;
+    result.speciesId=hybrid.id;result.child=this.getCompanion?.(result.childId)||result.child;result.cp3SpecialHybrid=hybrid.id;
+    this.save();return result;
+  };wrapped.__cp3b=true;state.breedCompanions=wrapped;
 }
 
 if(state.codexFieldGuide&&!state.codexFieldGuide.__cp3b){
