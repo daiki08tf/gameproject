@@ -1,6 +1,6 @@
 # Gear Overhaul Phase 6 — Weapon Identity
 
-Status: **Phase 6A ACTIVE — existing 8 families / 24 archetypes only**
+Status: **Phase 6A ✅ / Phase 6B ACTIVE — existing 8 families / 24 archetypes only**
 
 ## Goal
 
@@ -16,7 +16,7 @@ Phase 6 deliberately deepens the existing systems:
 
 No new currency, progression root, Home button, daily/weekly loop, or weapon family is introduced here.
 
-## 6A — Family + Archetype combat identity
+## 6A — Family + Archetype combat identity ✅
 
 Each mastery family now has a canonical loop:
 
@@ -44,21 +44,48 @@ The 24 existing archetypes specialize the already-existing Weapon Techniques. Ex
 
 The key balance rule is: **fast archetypes gain proc opportunities, not a free multiplicative DPS explosion**.
 
+PR #249 establishes this layer.
+
+## 6B — Three-technique mini rotations 🔄
+
+The existing Lv1 / Lv100 / Lv350 Weapon Techniques now form a soft three-step chain:
+
+`Opener → Setup → Finisher`
+
+- no visible meter or saved resource
+- the chain exists only on the active `BattleEngine`
+- Job skills and normal attacks can be woven between weapon techniques
+- using Weapon Techniques in the intended order earns family-specific bonuses
+- wrong order simply loses the chain bonus; it never blocks the command
+
+Family payoffs remain distinct:
+
+| Family | Setup payoff | Finisher payoff |
+|---|---|---|
+| 剣 | stronger DEF break | power + crit |
+| 斧 | penetration + break | heavier execution |
+| 杖 | cheaper setup spell | stronger efficient nova |
+| 弓 | extra penetration | precision power + crit |
+| 短剣 | stronger DoT | crit + execution |
+| 拳具 | stronger slow/break | extra proc hit without runaway raw packet damage |
+| 楽器 | stronger tempo buff | larger finale buff package |
+| 錫杖 | added weaken | stronger holy hit + regeneration |
+
+This is a **soft reward**, not a mandatory rotation. Brute-force and mixed Job/Weapon builds remain valid.
+
 ## Runtime contract
 
 `BattleEngine` still derives the equipped weapon from the existing `state.data.equipped.weapon` slot. The weapon's existing `weaponArchetype` metadata is passed into `weaponTechniquesFor(...)`.
 
 Calling `weaponTechniquesFor(type, level)` without an archetype remains backward compatible and returns the canonical base techniques.
 
+Weapon-chain state is encounter-local (`BattleEngine._weaponTechniqueChain`) and is not written to saves.
+
 ## Next
-
-### Phase 6B — Technique differentiation / mastery payoff
-
-Deepen the three techniques per family so the Lv1 / Lv100 / Lv350 unlocks form a deliberate mini-rotation instead of three independent buttons. Reuse current cooldown, MP, buff, weaken, DoT and hit systems.
 
 ### Phase 6C — Job + Option synergy
 
-Verify each family has multiple credible builds across Basic/Fusion Jobs and Option bias. Avoid one mandatory Option package per weapon.
+Verify each family has multiple credible builds across Basic/Fusion Jobs and Option bias. Avoid one mandatory Option package per weapon. Add authored synergy guidance only where it corresponds to real combat behavior.
 
 ### Phase 6D — Balance / presentation / closeout
 
