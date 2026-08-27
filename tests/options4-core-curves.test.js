@@ -51,18 +51,19 @@ test('Phase 1D writes authored core value into the legacy roll field for combat 
   );
   assert.equal(out.familyId, 'def_pct');
   assert.equal(out.optionSchemaVersion, 1);
-  assert.equal(out.optionValueVersion, 1);
+  assert.equal(out.optionValueVersion, 2);
   assert.ok(out.level > 1 && out.level < 100, out.level);
   assert.equal(out.roll, optionValueAtLevel('def_pct', 'legendary', out.level));
 });
 
-test('non-authored families remain on legacy roll until their curve is deliberately migrated', () => {
+test('Phase 1 complete migrates sustain families to rarity + Lv authority too', () => {
   const out = applyAuthoredOptionValue(
     { id:'lifesteal', rarity:'rare', roll:4.25 },
-    { itemPower:9000, ctx:{ boss:true }, key:'legacy-test', initializeLevel:true },
+    { itemPower:9000, ctx:{ boss:true }, key:'sustain-test', initializeLevel:true },
   );
   assert.equal(out.familyId, 'lifesteal');
-  assert.equal(out.roll, 4.25);
   assert.ok(out.level > 1 && out.level < 100);
-  assert.equal(out.optionValueVersion, undefined);
+  assert.equal(out.optionValueVersion, 2);
+  assert.equal(out.roll, optionValueAtLevel('lifesteal', 'rare', out.level));
+  assert.notEqual(out.roll, 4.25);
 });
