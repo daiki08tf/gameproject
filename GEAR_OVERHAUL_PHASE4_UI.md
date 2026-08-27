@@ -1,98 +1,100 @@
 # Blade Vale — Gear Overhaul Phase 4: Equipment UI 3.x
 
-> Status: **ACTIVE / Phase 4C detail actions**
+> Status: **COMPLETE / Phase 4A–4D**
 
 ## Goal
 
-Reorganize Equipment around a compact mobile-first hierarchy:
+Equipment is now organized around a compact mobile-first hierarchy:
 
-1. category / equipped-slot selection
+1. compact equipment-slot/category selection
 2. compact item list
 3. selected-item detail
 4. nearby actions
 
-Do not pixel-copy another game. Reuse the information architecture only.
+The reference layout was used only as information-architecture inspiration; Blade Vale keeps its own UI and existing Equipment route.
 
 ## Permanent UI rules
 
-- Do not add a new Home button or separate inventory route.
-- Preserve the existing Equipment screen, filters, Smart Loot, equip actions, lock/favorite and inline Option Fusion.
-- Random Options remain max 3.
-- FIXED IDENTITY must never be visually mixed into the three random Option rows.
-- The item list is for scanning/selection; long explanations belong in selected detail.
-- Mobile-first: selected detail sits below the list; wide layouts may use list-left/detail-right.
-- New detail actions must reuse existing state/safety logic rather than duplicate it.
+- no new Home button or separate inventory route
+- preserve filters, Smart Loot, equip actions, lock/favorite and Option Fusion
+- random Options remain max 3
+- FIXED IDENTITY is visually separate from random Options
+- list = scan/select; detail = read/compare/grow
+- mobile first; wide layout may use list-left/detail-right
+- detail actions reuse existing authoritative state/safety logic
 
 ## Phase 4A — Selected detail foundation ✅
 
 Merged in PR #242.
 
-- non-destructive presentation layer on top of the existing Equipment renderer
-- item-row tap selects detail without stealing button clicks
-- detail shows rarity / slot / IP / Greater / base stats / weapon type
-- current-job weapon compatibility and compact build tags
-- FIXED IDENTITY block
-- max-three Option rows with rarity name / Lv / EXP / MASTER
+- selected item detail without replacing the existing renderer
+- rarity / slot / IP / Greater / base stats / weapon type
+- current-job compatibility and build tags
+- FIXED IDENTITY
+- max-three Option rows with Lv / EXP / MASTER
 - current-equipped base-stat delta
-- mobile single-column and wide two-column layout
+- mobile single-column / wide two-column layout
 
 ## Phase 4B — List compaction ✅
 
 Merged in PR #243.
 
-- full Option blocks, special prose and duplicate comparison prose removed from compact list rows
-- list-level scan badges: IP / OP count / highest Option rarity / Greater / FIXED / lock / KEEP
-- long names ellipsized
-- normal stat prose hidden in list; disabled items keep a short lock reason
-- favorite / lock controls collapsed to accessible icon-scale buttons
-- Fusion action shortened to `OP育成`
-- equip / unequip remains one tap
+- removed repeated long Option/special/compare prose from list rows
+- compact badges: IP / OP count / highest rarity / Greater / FIXED / lock / KEEP
+- long-name ellipsis
+- compact favorite / lock / OP育成 actions
+- disabled gear retains only a short lock reason
 
-## Phase 4C — Detail actions 🔄
+## Phase 4C — Detail actions ✅
 
-Current branch `gear-overhaul-phase4c-detail-actions`:
+Merged in PR #244.
 
 Selected detail footer exposes:
 
 - equip / unequip
-- KEEP favorite toggle
-- lock / protection toggle
-- OP育成 entry
+- KEEP favorite
+- lock / protection
+- OP育成
 
-Important implementation rule: **the detail footer does not call state mutation APIs directly**.
+These controls relay to the existing list-row actions instead of directly mutating state, preserving the original equip restrictions, protection rules, Fusion safety and rerender behavior.
 
-Instead it locates the already-authoritative selected list row and relays the click to its existing action button. Therefore:
+Sell/dispose remains intentionally outside this detail footer until a safe existing disposal path is deliberately reused.
 
-- equip restrictions remain identical
-- favorite / lock behavior remains identical
-- Fusion material / protection rules remain identical
-- existing rerender paths remain authoritative
-- disabled state is mirrored into detail controls
+## Phase 4D — Navigation / mobile polish ✅
 
-Row actions remain available as fallback during Phase 4.
+Current closeout branch:
 
-Sell/dispose is not invented here; it remains deferred until an existing safe disposal rule can be reused without bypassing lock/favorite/equipped protection.
+- six equipped slots become a compact 3×2 category grid
+- long equipped names are ellipsized
+- normal loot filters remain one horizontal scroll strip
+- advanced filters use vertical space only when explicitly opened
+- Equipment header controls are reduced for narrow screens
+- list/detail content gets more viewport space
+- regression coverage protects compact slot/filter behavior
 
-## Phase 4D — Filters / polish
+After green CI + merge, Phase 4 is complete and **Phase 5 Smart Loot 4.0 becomes active**.
 
-Next:
+## Acceptance result
 
-- compact category/filter bar
-- reduce advanced-filter vertical footprint
-- selected row/detail synchronization polish
-- mobile overflow and long-name regression pass
-- prepare Option-aware filtering handoff to Smart Loot 4.0
+The Equipment screen now makes these answers available without several giant repeated item cards:
 
-## Acceptance target
+- what item is selected
+- whether it improves current equipment
+- which effects are FIXED IDENTITY
+- what the three Options are and how far they are trained
+- whether the weapon fits the current job/build
+- whether the item can be equipped, protected or grown
 
-The player should be able to answer these without scrolling through several large cards:
+## Next — Phase 5 Smart Loot 4.0
 
-- What item am I looking at?
-- Is it stronger than what I have equipped?
-- What is its fixed identity?
-- What are its three Options and their levels?
-- Does it fit my current job/build?
-- Can I equip, protect or grow it from here?
+Add player-facing Option-aware search/filtering without turning the Equipment screen back into a giant form:
+
+- Option family
+- minimum Option rarity
+- minimum Option Lv
+- useful combination/synergy filters only where they reduce farming burden
+- preserve Ancient / Lv80+ material protection
+- expand all-slot behavior consistently
 
 ## Handoff
 
