@@ -19,6 +19,7 @@
 | CP2 chains / bosses / companions | `js/data/contentPackIICD.js` |
 | CP3 observation reflux | `js/data/contentPackIIIA.js` |
 | CP3 convergence / bosses / companions / rewards | `js/data/contentPackIIIB.js` |
+| Post-CP3 Deep Survey | `js/data/postCp3DeepSurvey.js` |
 | Story meaning / canon | `STORY_CANON.md`, `WORLD_LORE_BIBLE.md` |
 
 ## 2. Story chapter enemy index
@@ -229,7 +230,17 @@ Special breeding:
 - 同じ返送周期
 - 記録できない記録
 
-## 9. Difficulty / challenge unlock index
+## 9. Post-CP3 Endgame I — Deep Survey
+
+Reusable Lv99,999 / IP10,000 high-difficulty exploration targets. They appear through the existing Exploration / Secret Realm surface and use CP3 boss-clear discoveries as their only unlock keys.
+
+- **返信炉床・深層観測** — ACK-WARDEN + CINDER-REPLY clear / durability, guard-counter and sustain target.
+- **第九照準廊・深層観測** — RETURN-CLOCK clear / speed, first-strike and burst target.
+- **異記憶根室・深層観測** — ROOT-RECEIVER + LIVING-ARCHIVE clear / sustain, magic and action-rotation target.
+
+The detailed continuation plan is in `POST_CP3_ENDGAME_ROADMAP.md`.
+
+## 10. Difficulty / challenge unlock index
 
 - Normal — start
 - 鋼鉄の誓約 — Ch5 clear + target stage first clear
@@ -239,7 +250,7 @@ Special breeding:
 
 Narrative interpretation is documented in `WORLD_LORE_BIBLE.md`.
 
-## 10. Maintenance rule
+## 11. Maintenance rule
 
 Whenever a PR adds or renames a significant:
 - story chapter
