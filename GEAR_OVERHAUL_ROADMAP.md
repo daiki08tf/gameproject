@@ -1,39 +1,37 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **ACTIVE / Phase 1 Option 4.0 foundation**
+> Status: **ACTIVE / Phase 2 Option Fusion**
 >
-> This roadmap temporarily takes priority over further Deep Survey expansion. The reason is simple: high-difficulty content is more valuable after the loot loop itself becomes the main attraction.
+> Gear Overhaul continues to take priority over further Deep Survey expansion. High-difficulty content becomes more valuable after the loot loop itself is worth farming.
 
 ## Core philosophy
 
 ### No Single Correct Build
 
-Blade Vale must support both of these equally legitimate routes:
+Blade Vale must support two equally valid routes:
 
-1. **Build route** — understand mechanics, combine job/weapon/affix synergies, and clear content earlier with lower raw stats.
-2. **Brute-force route** — keep farming, feed duplicate options, raise Option Lv, stack raw offense/defense/sustain, and eventually win through accumulated power.
-
-The second route is intentional, not an exploit.
+1. **Build route** — understand mechanics, combine job / weapon / Option synergies, and clear content earlier with lower raw stats.
+2. **Brute-force route** — keep farming, feed duplicate Options, raise Option Lv, stack offense / defense / sustain, and eventually overpower most encounters.
 
 > **「知らん、火力と耐久で押し切る」も正しい攻略法。**
 
-Design consequence: high-difficulty mechanics should normally be **soft checks**, not hard gates. Counterplay should make fights dramatically easier, but extreme investment should still be able to overpower most encounters.
+High-difficulty mechanics should therefore be soft checks rather than hard build gates wherever possible.
 
 ## Permanent Gear rules
 
-1. Random options are capped at **3 per item**.
-2. Named / Unique fixed effects are **separate from the 3 random option slots**.
-3. Option rarity remains a separate axis from equipment rarity.
+1. Random Options are capped at **3 per item**.
+2. Named / Unique fixed effects are **separate from the 3 random Option slots**.
+3. Option rarity is separate from equipment rarity.
 4. Option rarity remains seven tiers: `common / uncommon / rare / epic / legendary / mythic / ancient`.
-5. Options gain persistent **Option Lv 1–100**.
-6. Higher option rarity means a stronger Lv1 baseline and stronger per-level growth.
-7. The same option family can be fed from unwanted weapon/armor/accessory drops to gain Option EXP.
-8. Do not add a new currency for Option leveling. The consumed equipment itself is the material.
-9. Low-rarity duplicate options must remain useful as reduced-efficiency EXP material for the same family.
-10. Higher rarity must still matter as a drop. Option leveling does **not** automatically promote rarity.
+5. Options have persistent **Option Lv 1–100**.
+6. Higher Option rarity means a stronger baseline and stronger per-level growth.
+7. Same-family Options on unwanted equipment can be consumed for Option EXP.
+8. Option leveling uses **no new currency**. The consumed equipment itself is the material.
+9. Low-rarity same-family materials remain useful at reduced efficiency.
+10. Option leveling does **not** promote rarity.
 11. A session without a jackpot drop should still create deterministic progress through Option EXP.
-12. Existing Lv cap 99,999 and Item Power cap 10,000 remain unchanged.
-13. Preserve save compatibility where practical; migrations must be explicit and tested.
+12. Character Lv cap remains 99,999 and Item Power cap remains 10,000.
+13. Existing saves must not be destructively rerolled or trimmed during migration.
 14. Do not add a new Home button, parallel inventory, daily/weekly loop, or FOMO system.
 
 ## Target item model
@@ -52,6 +50,7 @@ Random OPTION (max 3)
   - option family
   - option rarity
   - Option Lv 1–100
+  - Option EXP
   - resulting effect value
 ```
 
@@ -69,25 +68,25 @@ OPTION
 
 ## Option rarity identity
 
-The option name should communicate rarity instead of merely appending a color label.
+Rarity is communicated through the Option name itself rather than only a label/color.
 
 Example family — ATK%:
 
-| Option rarity | Example display name | Meaning |
-|---|---|---|
-| Common | 怪力 | basic raw offense |
-| Uncommon | 剛力 | stronger raw offense |
-| Rare | 豪腕 | advanced raw offense |
-| Epic | 鬼力 | high-tier raw offense |
-| Legendary | 覇力 | endgame offense |
-| Mythic | 神力 | extreme offense |
-| Ancient | 天威 | chase-tier offense |
+| Option rarity | Display name |
+|---|---|
+| Common | 怪力 |
+| Uncommon | 剛力 |
+| Rare | 豪腕 |
+| Epic | 鬼力 |
+| Legendary | 覇力 |
+| Mythic | 神力 |
+| Ancient | 天威 |
 
-Exact names and values are authored per family during Option 4.0 implementation. The important rule is that rarity is mechanically meaningful: higher rarity starts stronger and scales harder per Option Lv.
+All canonical families now have authored rarity-name ladders and Lv curves.
 
 ## Option Lv 1–100
 
-Target progression bands:
+Progression bands:
 
 - Lv1–20: fast / ordinary play
 - Lv21–40: normal investment
@@ -95,26 +94,24 @@ Target progression bands:
 - Lv61–80: endgame farming
 - Lv81–100: extreme mastery / brute-force route
 
-Milestone feedback is planned at Lv25 / 50 / 75 / 100. Milestones should be noticeable but must not make Lv100 mandatory for intended-build clears.
-
-### Balance target
-
-- A well-matched build should normally clear authored high difficulty with roughly mid-level options.
-- A poorly matched but heavily invested build should still be able to clear by pushing important options toward Lv80–100.
-- Knowledge saves time; time can compensate for imperfect knowledge.
+Milestone bonuses exist at Lv25 / 50 / 75 / 100. Lv100 is a chase target, not a requirement for intended-build clears.
 
 ## Fusion / Option EXP
 
-Preferred rule:
+Implemented rule:
 
-- Consume equipment containing the **same option family**.
-- Matching family grants Option EXP to the selected option.
-- Same/higher rarity material is more efficient; lower rarity remains useful at reduced efficiency.
-- Material item's unrelated options are lost with the item.
-- Option rarity does not automatically upgrade through EXP.
-- Option Lv caps at 100.
+- Select a target item and target Option.
+- Consume another equipment instance containing the **same canonical Option family**.
+- Matching material grants deterministic Option EXP.
+- Material Option rarity and material Option Lv affect EXP yield.
+- Same/higher rarity uses full efficiency; lower rarity remains useful.
+- Material item's unrelated Options are lost with the item.
+- Option rarity never auto-upgrades through Fusion.
+- Option Lv hard-caps at 100.
+- Locked, favorite, equipped, same-item, and invalid materials are blocked.
+- Material candidates are sorted by useful EXP and UI only shows a compact top slice.
 
-Initial efficiency target to tune later:
+Efficiency table:
 
 | Material rarity gap | EXP efficiency |
 |---|---:|
@@ -124,33 +121,33 @@ Initial efficiency target to tune later:
 | -3 tiers | 40% |
 | -4 or worse | 20% |
 
-Exact EXP curve is deliberately deferred until current drop density and inventory flow are measured.
+Current EXP curve lives in `js/data/options4Fusion.js` and should be tuned later against real drop density rather than replaced with a second progression system.
 
 ## Existing-system consolidation
 
-Equipment 3.0 already contains Item Power, Affix rarity, weapon archetypes, armor/accessory Affixes, Greater Affix, Legendary/Curse packages, Temper, Smart Loot and crafting.
+Equipment 3.0 already contains Item Power, Option/Affix rarity, weapon archetypes, armor/accessory Options, Greater, Legendary/Curse packages, Temper, Smart Loot and crafting.
 
-The overhaul must **reuse and simplify**, not stack another independent layer on top.
+The overhaul must **reuse and simplify**, not stack another independent layer.
 
 ### Keep
 
 - Item Power 1–10,000
 - equipment rarity
-- seven option rarities
+- seven Option rarities
 - existing combat effect plumbing
-- slot-biased option pools
+- slot-biased Option pools
 - weapon archetype identities
 - Named / Unique fixed effects
 - Smart Loot concept
 
 ### Convert / review
 
-- current 4–5 Affix endgame counts -> max 3
-- random roll width -> largely absorbed into rarity + Option Lv
-- Greater Affix -> redesign/merge with new Option progression instead of keeping an extra opaque multiplier axis
+- old 4–5 random Affix endgame counts -> max 3 new Options
+- random roll width -> rarity + Option Lv authority
+- Greater -> review whether it remains a useful separate axis
 - Temper -> redefine around the new Option model or retire if redundant
-- current Affix naming -> option-family rarity names
-- current weapon-only Smart Loot details -> all equipment slots
+- old Affix wording -> Option wording
+- weapon-centric Smart Loot -> all equipment slots
 
 ### Preserve separately unless explicitly redesigned
 
@@ -158,21 +155,21 @@ The overhaul must **reuse and simplify**, not stack another independent layer on
 - Curse package
 - Unique fixed identity
 
-These are fixed/special identity layers, not ordinary random Option slots.
+These are special identity layers, not ordinary random Option slots.
 
 ## Weapon expansion rule
 
-Do **not** add a new mastery weapon family merely because a fantasy weapon sounds cool.
+Do **not** add a ninth mastery family only because a fantasy weapon sounds cool.
 
-A candidate new weapon family must pass all of these:
+A candidate family must pass all of these:
 
 1. Multiple jobs can plausibly use it.
 2. It has a gameplay identity not already covered by an existing family/archetype.
-3. It supports distinct option weighting.
+3. It supports distinct Option weighting.
 4. It has room for Named/Unique items.
 5. It does not invalidate old mastery/save assumptions.
 
-Current Equipment 3.0 already provides 24 sub-archetypes across the 8 mastery families, including 大剣 / 刀 / 魔導書 / 双短剣 / 弩 / 大斧 etc. These must be audited before adding any ninth mastery family.
+Current Equipment 3.0 already provides 24 sub-archetypes across 8 mastery families, including 大剣 / 刀 / 魔導書 / 双短剣 / 弩 / 大斧. Strengthen those first.
 
 ## Implementation checkpoint — 2026-08-27
 
@@ -180,48 +177,43 @@ Merged foundation work:
 
 - PR #229 — audit/docs + Option 4.0 compatibility foundation + Fusion `weapons[]` metadata + armor/accessory max-3 Options
 - PR #230 — new weapon drops normalized to max 3 Options while legacy saved 4–5 Affix weapons remain untouched
-- PR #231 — new weapon/armor/accessory Options persist `familyId / rarity / level / xp`; existing `roll` remains authoritative during migration
+- PR #231 — new weapon/armor/accessory Options persist `familyId / rarity / level / xp`
+- PR #234 — **Phase 1 complete**: all canonical Option families receive rarity identity, Lv1–100 curves, rarity floors, canonical family aliases and authoritative rarity+Lv values
+- PR #235 — **Phase 2A complete**: deterministic Option EXP core/runtime, equipment-as-material consumption, Lv100 cap, alias-aware family matching, lock/favorite/equipped protection
 
-Current live data contract for **new drops**:
+Current new-drop Option contract:
 
 ```text
 optionSchemaVersion: 1
-familyId: stable Affix/Option family ID
+familyId: canonical Option family ID
 rarity: common..ancient
-level: 1 (Phase 1 bridge default)
-xp: 0
-roll: existing combat value, still authoritative for now
+level: source/IP-derived starting Lv
+xp: persistent Option EXP progress
+roll: derived from rarity + Option Lv for authored families
+optionValueVersion: 2
 ```
 
-This is deliberately staged. The next Phase 1 step is to replace raw roll-band authority with authored **rarity + Option Lv value curves**, then define drop-time starting Option Lv ranges before Option Fusion is enabled.
+Phase 2B adds the usable Equipment-screen Fusion flow without a new screen or Home route.
 
 ## Work phases
 
 ### Phase 0A — System inventory ✅
-
-Document the live gear architecture and overlapping systems.
 
 Confirmed:
 - 8 mastery weapon families
 - 24 weapon archetypes
 - 15 basic jobs
 - 105 Fusion Jobs
-- 77 current Affixes
-- armor/accessory Affix generation already exists
-- seven Affix rarities already exist
-- existing Item Power / Greater / Legendary / Curse / Temper / Smart Loot layers exist
+- 77 legacy Affix IDs feeding the canonical Option catalog
+- armor/accessory random Option generation
+- seven Option rarities
+- Item Power / Greater / Legendary / Curse / Temper / Smart Loot layers
 
-### Phase 0B — Affix audit 🔄
+### Phase 0B — Affix / Option audit ✅
 
-First-pass family audit is documented in `GEAR_OVERHAUL_AUDIT.md`. Exact 77-ID migration/value-curve mapping remains in progress.
+Migration and consolidation are documented in `GEAR_OVERHAUL_AUDIT.md` and `GEAR_OVERHAUL_OPTION_CATALOG.md`.
 
-Classification vocabulary:
-- KEEP
-- RENAME
-- MERGE
-- RARE-LOCK
-- BUILD
-- REVIEW
+Duplicate concepts are preserved by old ID but grouped through canonical `familyId` aliases instead of destructive save migration.
 
 ### Phase 0C — Weapon × Job audit ✅
 
@@ -230,41 +222,54 @@ Audit completed in `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`.
 Key result:
 - current 8 mastery families / 24 archetypes are sufficient for now
 - no new mastery family is justified yet
-- generated Fusion jobs previously inherited only the first canonical parent weapon
-- compatibility foundation now exposes all parent affinities through `job.weapons[]` while retaining legacy `job.weapon`
+- Fusion jobs preserve all parent affinities through `job.weapons[]` while keeping legacy `job.weapon`
 
-New mastery families remain gated until this model is fully consumed by affinity/UI callers.
-
-### Phase 1 — Option 4.0 foundation 🔄
+### Phase 1 — Option 4.0 foundation ✅
 
 Completed:
 - max 3 random Options on new weapon/armor/accessory drops
-- Option family metadata
-- seven-rarity compatibility
-- Lv1–100 schema bounds
-- `familyId / level / xp` persisted on new drops
-- old `roll` retained as compatibility combat value
-- legacy saved weapon Affixes are not destructively trimmed
+- stable family metadata and aliases
+- seven rarity identities
+- Lv1–100 schema and source/IP starting Lv
+- authored value curves for canonical families
+- rarity floors for unusual utility / trigger / build families
+- rarity + Option Lv authoritative combat values
+- generated/presentation naming as `<rarity-authored name> LvXX`
+- old save IDs preserved; legacy saved gear is not rerolled or trimmed
 
-Remaining:
-- exact 77-family migration table
-- authored rarity display-name ladders beyond the ATK example
-- curve classes per family
-- rarity + Option Lv -> authoritative value calculation
-- drop-time starting Option Lv distribution by source/IP
-- explicit migration policy for old saved options if/when value authority moves
+### Phase 2 — Option Fusion 🔄 ACTIVE
 
-No fusion UI yet; first make drops and application stable.
+#### Phase 2A — Core/runtime ✅
 
-### Phase 2 — Option Fusion
+Completed:
+- `optionXpToNext()` progression
+- material EXP based on family / rarity / material Lv
+- 100/80/60/40/20% rarity-gap efficiency
+- same-family alias matching
+- deterministic level-up and roll recalculation
+- Lv100 hard cap
+- equipment instance consumption
+- lock / favorite / equipped / same-item protection
+- no new currency / save root
 
-Implement equipment-as-material Option EXP:
-- select target item/option
-- consume unwanted item with matching family
-- gain EXP
-- level up deterministically
-- no new currency
-- lock/favorite protection required
+#### Phase 2B — Equipment UI 🔄
+
+Current target:
+- inline `OPTION育成` disclosure on existing equipment rows
+- target Option selection
+- compact matching-material list
+- EXP preview / efficiency display
+- explicit destructive-use confirmation
+- rerender target level/value after Fusion
+- no separate Fusion inventory or Home button
+
+#### Phase 2C — Tuning / UX closeout
+
+After UI is stable:
+- tune XP curve using real drop density
+- add clearer milestone feedback at Lv25/50/75/100 if needed
+- verify high-IP unwanted drops remain valuable without trivializing Lv100
+- verify Smart Loot does not accidentally hide desirable Fusion material
 
 ### Phase 3 — Existing-system consolidation
 
@@ -279,13 +284,14 @@ Goal: fewer axes, deeper decisions.
 
 ### Phase 4 — Equipment UI 3.x
 
-Move toward compact inventory + selected-item detail layout.
+Move toward the compact list + selected-item detail layout.
 
 Required readability:
 - base stats
 - fixed Unique effect
-- exactly up to 3 Option rows
-- rarity-colored option name + Lv
+- up to 3 Option rows
+- rarity-colored Option name + Lv
+- Option EXP progress
 - current-equipped delta
 - compact build tags
 - lock / equip / material protection
@@ -294,19 +300,19 @@ Required readability:
 ### Phase 5 — Smart Loot 4.0
 
 Extend filter/auto-lock to all equipment slots and new Option data:
-- option family query
-- minimum option rarity
+- Option family query
+- minimum Option rarity
 - minimum Option Lv
-- 3-option synergy filters where useful
-- preserve valuable fusion materials
+- synergy filters where useful
+- preserve valuable Fusion materials
 
 ### Phase 6 — Weapon Identity audit/upgrade
 
-Strengthen the existing 24 archetypes before adding families.
+Strengthen the existing 24 archetypes before adding mastery families.
 
 ### Phase 7 — Weapon Expansion decision
 
-Only add new mastery weapon families that pass the audit. Candidate ideas are not commitments.
+Only add new mastery weapon families that pass the documented gate.
 
 ### Phase 8 — Unique 2.0
 
@@ -328,14 +334,18 @@ Any ChatGPT / Claude Code session working on Gear Overhaul must read:
 1. `ROADMAP.md`
 2. `GEAR_OVERHAUL_ROADMAP.md`
 3. `GEAR_OVERHAUL_AUDIT.md`
-4. `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`
-5. `js/data/options4.js`
-6. `js/data/affixes.js`
-7. `js/data/equipment3.js`
-8. `js/data/equipment3Gear.js`
-9. `js/data/equipment3Archetypes.js`
-10. `js/data/equipment3AffixQuality.js`
-11. `js/data/equipment3Crafting.js`
-12. `js/data/equipment3SmartLoot.js`
+4. `GEAR_OVERHAUL_OPTION_CATALOG.md`
+5. `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`
+6. `js/data/options4.js`
+7. `js/data/options4Fusion.js`
+8. `js/data/affixes.js`
+9. `js/data/equipment3.js`
+10. `js/data/equipment3Gear.js`
+11. `js/data/equipment3Archetypes.js`
+12. `js/data/equipment3AffixQuality.js`
+13. `js/data/equipment3Crafting.js`
+14. `js/data/equipment3SmartLoot.js`
+15. `js/patches/options4Fusion.js`
+16. `js/screens/equipmentFusion.js`
 
 Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity by leveling, or add weapon families before the documented weapon/job/archetype gate is deliberately revisited.
