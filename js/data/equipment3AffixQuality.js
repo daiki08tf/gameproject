@@ -1,20 +1,17 @@
 /* ============================================================
-   Equipment 3.0 — Item Power -> base Affix quality bridge
+   Equipment 3.0 — Item Power -> Option quality bridge
    ------------------------------------------------------------
-   E9 already scales Item Power through the Abyss, while Greater/Legendary
-   packages also use that IP. Base Affix rarity historically still depended on
-   depth and capped early. This module makes the rolled instance IP authoritative
-   for Affix rarity/roll quality without changing Affix identities or counts.
+   Keeps the existing seven-rarity distribution, while Gear Overhaul Phase 1
+   gives authored core families a drop-time Option Lv and makes rarity + level
+   authoritative for their value. Non-authored families keep legacy roll bands.
    ============================================================ */
 import { AFFIXES, AFFIX_RARITY, affixRarityIndex } from './affixes.js';
+import { applyAuthoredOptionValue } from './options4.js';
 
 const ITEM_POWER_MIN_ENDGAME = 1000;
 const ITEM_POWER_MAX = 10000;
 const GREATER_MULT = 1.5;
 
-// Same seven roll bands used by the base Affix system. Kept here intentionally:
-// this bridge runs after the original roll and must remap the value into the
-// selected rarity band while preserving Greater's 1.5x relationship.
 const SCALE = Object.freeze({
   big: [[2, 4], [4, 6], [6, 9], [9, 13], [13, 17], [17, 22], [22, 28]],
   medium: [[1, 2], [2, 3], [3, 4.5], [4.5, 6.5], [6.5, 9], [9, 12], [12, 16]],
@@ -27,8 +24,6 @@ const BASE_RARITY_WEIGHT = Object.freeze({
   common: 100, uncommon: 55, rare: 26, epic: 11, legendary: 4, mythic: 1.2, ancient: 0.3,
 });
 
-// Negative values suppress low rarity as IP rises; positive values increase the
-// high-rarity tail. At IP10000 Ancient is farmable but still distinctly uncommon.
 const IP_RARITY_SLOPE = Object.freeze({
   common: -2.2,
   uncommon: -1.4,
@@ -53,13 +48,9 @@ function hashUnit(text) {
 
 export function affixQualityProgress(itemPower, ctx = {}) {
   const ip = clamp(Math.floor(Number(itemPower) || 1), 1, ITEM_POWER_MAX);
-  // Story gear stays close to the original distribution. Abyss IP1000 is the
-  // baseline and IP10000 reaches progress=1.
   let p = ip <= ITEM_POWER_MIN_ENDGAME
     ? 0
     : (ip - ITEM_POWER_MIN_ENDGAME) / (ITEM_POWER_MAX - ITEM_POWER_MIN_ENDGAME);
-
-  // Same-IP premium sources get a modest quality nudge, not a guaranteed tier.
   if (ctx.elite) p += 0.025;
   if (ctx.boss) p += 0.05;
   if (ctx.ex) p += 0.07;
@@ -115,16 +106,23 @@ export function applyItemPowerAffixQuality(inst, ctx = {}, instanceId = '') {
     const key = `${instanceId}:${affix.id}:${index}:${itemPower}`;
     const rarity = pickRarity(itemPower, ctx, key, def.minRarity || null);
     const rolled = rollForRarity(def, rarity, key, !!affix.greater);
-    const next = {
+    const legacyNext = {
       ...affix,
       rarity,
       ...(rolled == null ? {} : { roll: rolled }),
     };
-    if (next.rarity !== affix.rarity || next.roll !== affix.roll) changed = true;
+    const next = applyAuthoredOptionValue(legacyNext, {
+      itemPower,
+      ctx,
+      key,
+      initializeLevel: true,
+    });
+    if (next.rarity !== affix.rarity || next.roll !== affix.roll || next.level !== affix.level) changed = true;
     return next;
   });
 
   inst.affixes.sort((a, b) => affixRarityIndex(b.rarity) - affixRarityIndex(a.rarity));
-  inst.affixQualityVersion = 1;
+  inst.affixQualityVersion = 2;
+  inst.optionValueAuthorityVersion = 1;
   return changed;
 }
