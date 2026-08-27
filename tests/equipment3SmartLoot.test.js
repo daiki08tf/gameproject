@@ -15,7 +15,7 @@ const jackpot = {
   greaterAffixCount: 2,
   legendaryEffectId: 'legend_test',
   curseId: null,
-  affixes: [{ id: 'atk_pct', rarity: 'legendary', roll: 0.2 }],
+  affixes: [{ id: 'atk_pct', familyId: 'atk_pct', rarity: 'legendary', level: 40, roll: 0.2 }],
 };
 
 test('Loot Filter 3.0 normalizes legacy rarity-only saves', () => {
@@ -24,6 +24,9 @@ test('Loot Filter 3.0 normalizes legacy rarity-only saves', () => {
   assert.equal(filter.minItemPower, 0);
   assert.equal(filter.minGreater, 0);
   assert.equal(filter.weaponType, 'all');
+  assert.equal(filter.optionQuery, '');
+  assert.equal(filter.minOptionRarity, 'any');
+  assert.equal(filter.minOptionLevel, 0);
   assert.equal(filter.autoLock.enabled, true);
   assert.equal(filter.autoLock.legendary, true);
   assert.equal(filter.autoLock.cursed, true);
@@ -44,9 +47,14 @@ test('advanced weapon filters can combine IP, Greater, Legendary and weapon type
   assert.equal(equipment3FilterMatches(weapon, { ...jackpot, legendaryEffectId: null }, filter), false);
 });
 
-test('weapon-only advanced filters do not hide armor and accessories', () => {
-  const filter = normalizeLootFilter3({ minRarity: 'rare', minItemPower: 9000, legendaryOnly: true });
-  assert.equal(equipment3FilterMatches(armor, null, filter), true);
+test('Phase 5 Smart Loot detailed filters apply to armor/accessories too while weapon type remains weapon-only', () => {
+  const filter = normalizeLootFilter3({ minRarity: 'rare', minItemPower: 4000, legendaryOnly: true });
+  assert.equal(equipment3FilterMatches(armor, jackpot, filter), true);
+  assert.equal(equipment3FilterMatches(armor, { ...jackpot, itemPower: 3999 }, filter), false);
+  assert.equal(equipment3FilterMatches(armor, null, filter), false);
+
+  const weaponTypeFilter = normalizeLootFilter3({ minRarity: 'rare', weaponType: 'sword' });
+  assert.equal(equipment3FilterMatches(armor, jackpot, weaponTypeFilter), true);
 });
 
 test('Smart Loot defaults protect build-defining or rare-risk weapon rolls', () => {
