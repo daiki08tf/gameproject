@@ -1,6 +1,7 @@
 /* Equipment 3.0 / Loot 3.0 — shared presentation + quality model */
 import { itemPowerBand } from './equipment3.js';
 import { describeAffix, AFFIX_RARITY_LABEL, affixRarityIndex } from './affixes.js';
+import { optionDisplayLabel } from './options4.js';
 import { getLegendaryEffect, getCursedAffix } from './equipment3Legendary.js';
 import { loot3EndgameChase } from './loot3EndgameChase.js';
 
@@ -14,9 +15,9 @@ function lootQuality(item, inst, affixes, { legendary, curse, greaterCount, item
   if (curse) reasons.push('CURSED');
   if (greaterCount >= 2) reasons.push(`GREATER ×${greaterCount}`);
   else if (greaterCount === 1) reasons.push('GREATER');
-  if (highest === 'ancient') reasons.push('ANCIENT AFFIX');
-  else if (highest === 'mythic') reasons.push('MYTHIC AFFIX');
-  else if (highest === 'legendary') reasons.push('LEGENDARY AFFIX');
+  if (highest === 'ancient') reasons.push('ANCIENT OPTION');
+  else if (highest === 'mythic') reasons.push('MYTHIC OPTION');
+  else if (highest === 'legendary') reasons.push('LEGENDARY OPTION');
   if (buildCount) reasons.push(buildCount > 1 ? `BUILD ×${buildCount}` : 'BUILD');
   if (item.isCodexWeapon) reasons.push('CODEX');
   let quality = 'standard';
@@ -38,7 +39,22 @@ export function equipment3Presentation(item, inst = null) {
   const greaterCount = Math.max(0, Math.floor(Number(inst.greaterAffixCount) || 0));
   const legendary = getLegendaryEffect(inst.legendaryEffectId);
   const curse = getCursedAffix(inst.curseId);
-  const affixes = (inst.affixes || []).map((a) => {const d=describeAffix(a);return{id:a.id,name:d.name,desc:d.desc,category:d.category,rarity:a.rarity,rarityLabel:AFFIX_RARITY_LABEL[a.rarity]||a.rarity,greater:!!a.greater,roll:a.roll};});
+  const affixes = (inst.affixes || []).map((a) => {
+    const d = describeAffix(a);
+    return {
+      id: a.id,
+      familyId: a.familyId || a.id,
+      name: optionDisplayLabel(a, d.name),
+      desc: d.desc,
+      category: d.category,
+      rarity: a.rarity,
+      rarityLabel: AFFIX_RARITY_LABEL[a.rarity] || a.rarity,
+      level: Number.isFinite(a.level) ? a.level : null,
+      xp: Number.isFinite(a.xp) ? a.xp : 0,
+      greater: !!a.greater,
+      roll: a.roll,
+    };
+  });
   const q=lootQuality(item,inst,affixes,{legendary,curse,greaterCount,itemPower});
   const base={name:inst.displayName||item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,itemPower,tier,band,greaterCount,affixes,legendary,curse,...q};
   return {...base,chase:loot3EndgameChase(item,base)};
