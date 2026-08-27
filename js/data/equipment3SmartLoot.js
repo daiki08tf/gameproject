@@ -24,8 +24,14 @@ export const DEFAULT_LOOT_FILTER_3 = Object.freeze({
     cursed: true,
     minGreater: 2,
     minItemPower: 0,
+    // Legacy name kept for save/API compatibility; optionQuery is canonical UI.
     affixQuery: '',
+    optionQuery: '',
+    // Legacy master switch remains readable. Phase 5B splits the two valuable
+    // Fusion-material cases so players can keep Ancient and Lv80+ independently.
     protectFusionMaterials: true,
+    protectAncientOption: true,
+    protectHighLevelOption: true,
     minOptionRarity: 'ancient',
     minOptionLevel: 80,
   }),
@@ -54,6 +60,14 @@ function normalizeVisibleOptionRarity(value) {
 export function normalizeLootFilter3(raw = {}) {
   const auto = raw?.autoLock || {};
   const migratedQuery = text(raw?.optionQuery || raw?.affixQuery);
+  const migratedAutoQuery = text(auto?.optionQuery || auto?.affixQuery);
+  const legacyFusionProtection = auto.protectFusionMaterials !== false;
+  const protectAncientOption = auto.protectAncientOption == null
+    ? legacyFusionProtection
+    : auto.protectAncientOption !== false;
+  const protectHighLevelOption = auto.protectHighLevelOption == null
+    ? legacyFusionProtection
+    : auto.protectHighLevelOption !== false;
   return {
     minRarity: raw?.minRarity || DEFAULT_LOOT_FILTER_3.minRarity,
     minItemPower: intInRange(raw?.minItemPower, 0, 10000, 0),
@@ -71,8 +85,11 @@ export function normalizeLootFilter3(raw = {}) {
       cursed: auto.cursed !== false,
       minGreater: intInRange(auto.minGreater, 0, 3, DEFAULT_LOOT_FILTER_3.autoLock.minGreater),
       minItemPower: intInRange(auto.minItemPower, 0, 10000, 0),
-      affixQuery: text(auto.affixQuery),
-      protectFusionMaterials: auto.protectFusionMaterials !== false,
+      affixQuery: migratedAutoQuery,
+      optionQuery: migratedAutoQuery,
+      protectFusionMaterials: protectAncientOption || protectHighLevelOption,
+      protectAncientOption,
+      protectHighLevelOption,
       minOptionRarity: normalizeOptionRarityFloor(auto.minOptionRarity),
       minOptionLevel: intInRange(auto.minOptionLevel, 1, 100, DEFAULT_LOOT_FILTER_3.autoLock.minOptionLevel),
     },
@@ -138,15 +155,19 @@ export function equipment3FilterMatches(item, inst = null, rawFilter = {}) {
 }
 
 function fusionMaterialReasons(inst, rule) {
-  if (!rule.protectFusionMaterials || !inst?.affixes?.length) return [];
+  if (!inst?.affixes?.length) return [];
   const minRarityIndex = OPTION_RARITY.indexOf(normalizeOptionRarityFloor(rule.minOptionRarity));
   const minLevel = intInRange(rule.minOptionLevel, 1, 100, 80);
   const reasons = [];
   for (const option of inst.affixes) {
     const rarity = normalizeOptionRarity(option.rarity);
     const level = normalizeOptionLevel(option.level ?? 1);
-    if (OPTION_RARITY.indexOf(rarity) >= minRarityIndex) reasons.push(`Fusion素材:${rarity}`);
-    if (level >= minLevel) reasons.push(`Fusion素材:Lv${level}`);
+    if (rule.protectAncientOption && OPTION_RARITY.indexOf(rarity) >= minRarityIndex) {
+      reasons.push('Ancient Option');
+    }
+    if (rule.protectHighLevelOption && level >= minLevel) {
+      reasons.push(`Option Lv${level}`);
+    }
   }
   return [...new Set(reasons)];
 }
@@ -164,7 +185,7 @@ export function smartLootReasons(item, inst = null, rawFilter = {}) {
   if (rule.cursed && inst.curseId) reasons.push('Curse');
   if (rule.minGreater > 0 && greater >= rule.minGreater) reasons.push(`Greater×${greater}`);
   if (rule.minItemPower > 0 && ip >= rule.minItemPower) reasons.push(`IP${ip}`);
-  if (rule.affixQuery && matchesAffixQuery(inst, rule.affixQuery)) reasons.push(`Option:${rule.affixQuery}`);
+  if (rule.optionQuery && matchesAffixQuery(inst, rule.optionQuery)) reasons.push(`Option一致:${rule.optionQuery}`);
   reasons.push(...fusionMaterialReasons(inst, rule));
   return [...new Set(reasons)];
 }

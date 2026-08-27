@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **ACTIVE / Phase 5B Smart Loot protection rules**
+> Status: **ACTIVE / Phase 5C Smart Loot synergy decision**
 >
 > Gear Overhaul continues to take priority over further Deep Survey expansion. The loot loop should be worth farming before more high-difficulty content is layered on top.
 
@@ -113,28 +113,30 @@ Key PRs: #242 / #243 / #244 / #245.
 - active Option conditions contribute to `⚙ 詳細(n)`
 - no new screen / route / save root
 
+Key PR: #246.
+
+### Phase 5B — Protection rules ✅
+
+Automatic protection is deliberately narrow:
+
+- Legendary Power: default ON
+- Curse: default ON
+- Greater: default 2+
+- Ancient Option: default ON
+- Option Lv80+: default ON
+- optional Option text match: default OFF
+
+Ancient and Lv80+ are independently toggleable. Ordinary `Rare–Mythic / Lv79以下` material remains feedable. Legacy `protectFusionMaterials=false` disables both split Fusion-material protections after migration.
+
 Full handoff: `GEAR_OVERHAUL_PHASE5_SMART_LOOT.md`.
 
-### Phase 5B — Protection rules 🔄 ACTIVE
-
-Audit and tune automatic protection around:
-
-- Legendary Power
-- Curse
-- Greater threshold
-- Ancient Option
-- Option Lv80+
-- optional Option text rule
-
-Goal: prevent accidental destruction without auto-locking every useful mid-tier Fusion material.
-
-### Phase 5C — Useful synergy filters
+### Phase 5C — Useful synergy filters 🔄 ACTIVE
 
 Only add if farming tests justify them:
 - 2+ desired Option families/categories
 - compact build-tag combinations
 
-Do not build a giant Boolean filter editor.
+Do not build a giant Boolean filter editor. If existing Option query / rarity / Lv already solve the practical scan problem, skip directly to 5D.
 
 ### Phase 5D — Closeout
 
@@ -158,19 +160,20 @@ Give Abyss / Rift / Nemesis / Secret Realm / Deep Survey distinct farming purpos
 
 ## Implementation checkpoint — 2026-08-27
 
-Merged through #245:
+Merged through #246:
 - #229–#231 Option foundation
 - #234 Phase 1 closeout
 - #235–#237 Option Fusion
 - #238–#241 consolidation / Fixed Identity / Blacksmith cleanup
 - #242–#245 Equipment UI 3.x
+- #246 Phase 5A all-slot Option filters
 
-Current Phase 5A branch:
-- all-slot Option-aware filter data contract
-- compact Option filter UI
-- legacy Affix query migration
-- regression coverage for data and UI
-- after green CI + merge, proceed to Phase 5B protection tuning
+Current Phase 5B branch:
+- explicit protection controls for Legendary Power / Curse / Greater / Ancient / Lv80+ / Option text
+- independent Ancient and high-Level Option toggles
+- legacy protection migration
+- ordinary mid-tier Fusion material remains unlocked by default
+- after green CI + merge, evaluate Phase 5C acceptance gate
 
 ## AI handoff
 
