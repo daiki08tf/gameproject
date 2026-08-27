@@ -9,6 +9,7 @@
 import { state } from '../state.js';
 import { getItem, baseItemId } from '../data/equipment.js';
 import { describeAffix } from '../data/affixes.js';
+import { optionCountRange } from '../data/options4.js';
 import {
   itemPowerForDrop,
   affixTierForItemPower,
@@ -27,6 +28,18 @@ function canonicalDisplayName(item, inst) {
   if (legendary) tags.push(`《${legendary.name}》`);
   if (curse) tags.push(`【呪:${curse.name}】`);
   return `${greaterCount ? `${'★'.repeat(greaterCount)} ` : ''}${generated}${tags.length ? ` ${tags.join(' ')}` : ''}`;
+}
+
+function capNewWeaponOptions(inst, item) {
+  if (!inst || !item || item.slot !== 'weapon' || !Array.isArray(inst.affixes)) return false;
+  const [, max] = optionCountRange(item.rarity);
+  if (inst.affixes.length <= max) return false;
+  // Phase 1 compatibility migration: the legacy generator may still roll 4–5
+  // Affixes internally. New drops are normalized immediately to the approved
+  // max-three Option model. Existing saved weapons are intentionally untouched.
+  inst.affixes = inst.affixes.slice(0, max);
+  inst.optionCountVersion = 1;
+  return true;
 }
 
 function enrichInstance(instanceId, ctx = {}) {
@@ -110,6 +123,8 @@ state.addItem = function equipment3AddItem(itemId, qty = 1, dropCtx = null) {
     const base = baseItemId(itemId);
     for (let seq = beforeSeq; seq < afterSeq; seq++) {
       const id = `${base}#${seq}`;
+      const inst = this.data.weaponInstances?.[id];
+      if (capNewWeaponOptions(inst, item)) changed = true;
       if (enrichInstance(id, dropCtx || {})) changed = true;
     }
   }
@@ -140,4 +155,4 @@ state.weaponRollItemPower = function weaponRollItemPower(itemId) {
 
 backfillEquipment3Instances();
 
-export { enrichInstance, backfillEquipment3Instances, repairNextInstanceSeq, canonicalDisplayName };
+export { enrichInstance, backfillEquipment3Instances, repairNextInstanceSeq, canonicalDisplayName, capNewWeaponOptions };
