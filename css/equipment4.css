@@ -106,7 +106,32 @@
 .equipment4-compare { font-size:10px; display:flex; flex-wrap:wrap; gap:7px; }
 .equipment4-equipped { color:var(--xp-color); font-weight:bold; }
 .equipment4-muted { font-size:10px; opacity:.5; }
-.equipment4-action-hint { font-size:9px; opacity:.45; line-height:1.4; border-top:1px solid rgba(255,255,255,.07); padding-top:6px; }
+.equipment4-detail-actions {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:5px;
+  padding-top:4px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.equipment4-detail-actions button {
+  min-width:0;
+  padding:7px 5px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:7px;
+  background:rgba(255,255,255,.08);
+  color:inherit;
+  font-size:10px;
+  font-weight:bold;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.equipment4-detail-actions button:disabled { opacity:.3; }
+.equipment4-action-hint { font-size:9px; opacity:.45; line-height:1.4; padding-top:2px; }
+
+@media (max-width: 420px) {
+  .equipment4-detail-actions { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
 
 @media (min-width: 760px) {
   #equipmentScreen .equip-layout {

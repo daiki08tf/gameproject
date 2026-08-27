@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Phase 4: Equipment UI 3.x
 
-> Status: **ACTIVE / Phase 4B compact list**
+> Status: **ACTIVE / Phase 4C detail actions**
 
 ## Goal
 
@@ -21,6 +21,7 @@ Do not pixel-copy another game. Reuse the information architecture only.
 - FIXED IDENTITY must never be visually mixed into the three random Option rows.
 - The item list is for scanning/selection; long explanations belong in selected detail.
 - Mobile-first: selected detail sits below the list; wide layouts may use list-left/detail-right.
+- New detail actions must reuse existing state/safety logic rather than duplicate it.
 
 ## Phase 4A — Selected detail foundation ✅
 
@@ -35,45 +36,52 @@ Merged in PR #242.
 - current-equipped base-stat delta
 - mobile single-column and wide two-column layout
 
-## Phase 4B — List compaction 🔄
+## Phase 4B — List compaction ✅
 
-Current branch `gear-overhaul-phase4b-list-compaction`:
+Merged in PR #243.
 
-- hide list-level full Affix/Option blocks, special lines and duplicate comparison prose
-- keep long information in selected detail
-- each list row gets compact scan badges:
-  - IP
-  - OP count
-  - highest Option rarity
-  - Greater count
-  - FIXED count
-  - lock / KEEP state
-- long names use ellipsis instead of increasing row height
-- normal stat prose is hidden in list rows; disabled items keep a short lock reason
-- favorite / lock controls collapse to icon-scale buttons with accessible labels
-- inline Fusion action shortens to `OP育成`
+- full Option blocks, special prose and duplicate comparison prose removed from compact list rows
+- list-level scan badges: IP / OP count / highest Option rarity / Greater / FIXED / lock / KEEP
+- long names ellipsized
+- normal stat prose hidden in list; disabled items keep a short lock reason
+- favorite / lock controls collapsed to accessible icon-scale buttons
+- Fusion action shortened to `OP育成`
 - equip / unequip remains one tap
 
-## Phase 4C — Detail actions
+## Phase 4C — Detail actions 🔄
 
-Next:
+Current branch `gear-overhaul-phase4c-detail-actions`:
 
-Move the most common actions into selected-detail footer without duplicating state rules:
+Selected detail footer exposes:
 
 - equip / unequip
-- favorite
-- lock
-- Option Fusion entry
-- sell / dispose only when safe and already supported by existing item rules
+- KEEP favorite toggle
+- lock / protection toggle
+- OP育成 entry
 
-Keep row actions as fallback until detail actions are proven stable.
+Important implementation rule: **the detail footer does not call state mutation APIs directly**.
+
+Instead it locates the already-authoritative selected list row and relays the click to its existing action button. Therefore:
+
+- equip restrictions remain identical
+- favorite / lock behavior remains identical
+- Fusion material / protection rules remain identical
+- existing rerender paths remain authoritative
+- disabled state is mirrored into detail controls
+
+Row actions remain available as fallback during Phase 4.
+
+Sell/dispose is not invented here; it remains deferred until an existing safe disposal rule can be reused without bypassing lock/favorite/equipped protection.
 
 ## Phase 4D — Filters / polish
 
+Next:
+
 - compact category/filter bar
-- Option-aware sort/filter handoff toward Smart Loot 4.0
-- mobile overflow and long-name regression pass
+- reduce advanced-filter vertical footprint
 - selected row/detail synchronization polish
+- mobile overflow and long-name regression pass
+- prepare Option-aware filtering handoff to Smart Loot 4.0
 
 ## Acceptance target
 

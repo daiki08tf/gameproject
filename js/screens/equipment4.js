@@ -96,6 +96,33 @@ function ensureDetailPanel() {
   return panel;
 }
 
+function rowForItem(id) {
+  return [...document.querySelectorAll('#equipPicker > .pick-row')].find(row => row.dataset.equipment4ItemId === id) || null;
+}
+
+function relayDetailAction(id, selector) {
+  const row = rowForItem(id);
+  const source = row?.querySelector(selector);
+  if (!source || source.disabled) return false;
+  source.click();
+  return true;
+}
+
+function wireDetailActions(panel, id, currentId) {
+  if (!panel) return;
+  const relay = (action, selector) => {
+    const button = panel.querySelector(`[data-e4act="${action}"]`);
+    if (!button) return;
+    const source = rowForItem(id)?.querySelector(selector);
+    button.disabled = !source || !!source.disabled;
+    button.addEventListener('click', () => relayDetailAction(id, selector));
+  };
+  relay('equip', currentId === id ? '[data-action="unequip"]' : '[data-action="equip"]');
+  relay('favorite', '.equip-inline-actions button[aria-label^="お気に入り"]');
+  relay('lock', '.equip-inline-actions button[aria-label*="ロック"]');
+  relay('fusion', '.option-fusion-actions button');
+}
+
 function renderDetail() {
   const panel = ensureDetailPanel();
   if (!panel) return;
@@ -119,6 +146,11 @@ function renderDetail() {
   const tags = buildTags(p);
   const compatibility = compatibilityText(item);
   const rarityColor = RARITY[item.rarity]?.color || 'inherit';
+  const favorite = !!state.isItemFavorite?.(id);
+  const locked = !!state.isItemLocked?.(id);
+  const sourceRow = rowForItem(id);
+  const equipSource = sourceRow?.querySelector(currentId === id ? '[data-action="unequip"]' : '[data-action="equip"]');
+  const fusionSource = sourceRow?.querySelector('.option-fusion-actions button');
 
   const fixedHtml = (p.fixedIdentities || []).map(identity => `
     <div class="equipment4-fixed equipment4-fixed-${identity.kind}">
@@ -161,7 +193,14 @@ function renderDetail() {
     <div class="equipment4-option-list">${optionHtml}</div>
     <div class="equipment4-section-title">現在装備との差</div>
     <div class="equipment4-compare">${compareHtml}</div>
-    <div class="equipment4-action-hint">装備・ロック・お気に入り・OPTION育成は上の一覧行から操作できます。</div>`;
+    <div class="equipment4-detail-actions">
+      <button data-e4act="equip" ${!equipSource || equipSource.disabled ? 'disabled' : ''}>${currentId === id ? '外す' : '装備'}</button>
+      <button data-e4act="favorite">${favorite ? '★ KEEP' : '☆ KEEP'}</button>
+      <button data-e4act="lock">${locked ? '🔓 解除' : '🔒 保護'}</button>
+      <button data-e4act="fusion" ${!fusionSource ? 'disabled' : ''}>OP育成</button>
+    </div>
+    <div class="equipment4-action-hint">DETAILの操作は既存一覧ボタンへ中継されるため、装備可否・保護・Fusionの安全判定は従来ロジックをそのまま使います。</div>`;
+  wireDetailActions(panel, id, currentId);
 }
 
 function rowSummaryHtml(id, p) {
@@ -262,4 +301,4 @@ if (typeof document !== 'undefined') {
   else installEquipment4();
 }
 
-export { installEquipment4, renderDetail as renderEquipment4Detail, compactRow as compactEquipment4Row };
+export { installEquipment4, renderDetail as renderEquipment4Detail, compactRow as compactEquipment4Row, relayDetailAction };
