@@ -1,0 +1,80 @@
+/* Gear Overhaul Phase 4A — compact selected-item detail */
+#equipmentScreen .equip-layout { gap: 10px; }
+#equipmentScreen .equip-picker { gap: 6px; }
+#equipmentScreen .equip-picker > .pick-row { padding: 8px 10px; }
+#equipmentScreen .equip-picker > .pick-row.equipment4-selected-row {
+  border-color: rgba(242,201,76,.78);
+  background: rgba(242,201,76,.08);
+}
+
+.equipment4-detail {
+  background: rgba(8,8,14,.92);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+  margin-top: 2px;
+}
+.equipment4-empty { font-size: 12px; opacity: .65; text-align: center; padding: 12px; }
+.equipment4-detail-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.equipment4-detail-head h3 { margin:2px 0 0; font-size:17px; line-height:1.25; }
+.equipment4-kicker { font-size:9px; letter-spacing:1.6px; opacity:.5; font-weight:bold; }
+.equipment4-badges { display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
+.equipment4-badges span, .equipment4-tags span {
+  font-size:10px;
+  padding:3px 6px;
+  border-radius:999px;
+  background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.1);
+}
+.equipment4-base, .equipment4-compat { font-size:11px; opacity:.8; line-height:1.5; }
+.equipment4-compat { color:var(--accent); }
+.equipment4-tags { display:flex; flex-wrap:wrap; gap:4px; }
+.equipment4-section-title { font-size:10px; letter-spacing:1px; opacity:.58; margin-top:3px; font-weight:bold; }
+.equipment4-section-title small { font-size:9px; opacity:.8; }
+.equipment4-fixed-list, .equipment4-option-list { display:grid; gap:6px; }
+.equipment4-fixed {
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;
+  padding:7px 8px;
+  background:rgba(255,255,255,.035);
+}
+.equipment4-fixed-unique { border-color:rgba(255,110,199,.35); }
+.equipment4-fixed-legendary { border-color:rgba(242,201,76,.35); }
+.equipment4-fixed-curse { border-color:rgba(230,66,90,.42); }
+.equipment4-fixed-label { font-size:9px; opacity:.58; letter-spacing:.7px; }
+.equipment4-fixed-name { font-size:12px; font-weight:bold; margin-top:1px; }
+.equipment4-fixed-desc { font-size:10px; opacity:.72; line-height:1.45; margin-top:2px; }
+.equipment4-option {
+  border-left:3px solid rgba(255,255,255,.3);
+  border-radius:7px;
+  background:rgba(255,255,255,.035);
+  padding:7px 8px;
+}
+.equipment4-option-head { display:flex; justify-content:space-between; gap:8px; align-items:center; font-size:11px; }
+.equipment4-option-head strong { font-size:12px; }
+.equipment4-option-desc { font-size:10px; opacity:.7; margin-top:2px; }
+.equipment4-xp { height:3px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden; margin-top:5px; }
+.equipment4-xp span { display:block; height:100%; background:var(--accent); }
+.equipment4-option-exp { font-size:9px; opacity:.5; text-align:right; margin-top:2px; }
+.equipment4-compare { font-size:10px; display:flex; flex-wrap:wrap; gap:7px; }
+.equipment4-equipped { color:var(--xp-color); font-weight:bold; }
+.equipment4-muted { font-size:10px; opacity:.5; }
+.equipment4-action-hint { font-size:9px; opacity:.45; line-height:1.4; border-top:1px solid rgba(255,255,255,.07); padding-top:6px; }
+
+@media (min-width: 760px) {
+  #equipmentScreen .equip-layout {
+    display:grid;
+    grid-template-columns:minmax(280px, .9fr) minmax(360px, 1.1fr);
+    grid-template-areas:
+      "paper detail"
+      "filter detail"
+      "list detail";
+    align-items:start;
+  }
+  #equipmentScreen .paperdoll { grid-area:paper; }
+  #equipmentScreen #lootFilterRow { grid-area:filter; }
+  #equipmentScreen #equipPicker { grid-area:list; }
+  #equipmentScreen #equipmentSelectedDetail { grid-area:detail; position:sticky; top:0; }
+}
