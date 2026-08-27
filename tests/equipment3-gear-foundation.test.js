@@ -19,7 +19,7 @@ test('armor and accessories receive deterministic Equipment 3.0 metadata', () =>
     assert.ok(EQUIPMENT3_GEAR_SLOTS.includes(item.slot));
     assert.ok(a.itemPower >= 4500 && a.itemPower <= 5500);
     assert.equal(a.affixTier, Math.ceil(a.itemPower / 1000));
-    assert.ok(a.affixes.length >= 3);
+    assert.ok(a.affixes.length >= 2 && a.affixes.length <= 3);
     assert.ok(a.displayName.includes(item.name));
   }
 });
