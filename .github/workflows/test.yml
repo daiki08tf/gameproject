@@ -1,10 +1,10 @@
 name: Blade Vale Tests
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
+  push:
+    branches:
+      - main
 
 jobs:
   test:
@@ -12,18 +12,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
+
       - name: Syntax check
         run: npm run test:syntax
+
       - name: Regression tests
-        shell: bash
-        run: |
-          set +e
-          npm test > /tmp/blade-vale-test.log 2>&1
-          status=$?
-          grep -n -B 10 -A 40 '^not ok' /tmp/blade-vale-test.log || true
-          tail -n 20 /tmp/blade-vale-test.log
-          exit $status
+        run: npm test
