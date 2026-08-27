@@ -3,6 +3,7 @@
    ============================================================ */
 import { rarityIndex } from './equipment.js';
 import { describeAffix } from './affixes.js';
+import { OPTION_RARITY, normalizeOptionLevel, normalizeOptionRarity } from './options4.js';
 
 export const DEFAULT_LOOT_FILTER_3 = Object.freeze({
   minRarity: 'normal',
@@ -19,6 +20,9 @@ export const DEFAULT_LOOT_FILTER_3 = Object.freeze({
     minGreater: 2,
     minItemPower: 0,
     affixQuery: '',
+    protectFusionMaterials: true,
+    minOptionRarity: 'ancient',
+    minOptionLevel: 80,
   }),
 });
 
@@ -30,6 +34,11 @@ function intInRange(value, min, max, fallback = 0) {
 
 function text(value) {
   return String(value ?? '').trim();
+}
+
+function normalizeOptionRarityFloor(value) {
+  const rarity = normalizeOptionRarity(value || DEFAULT_LOOT_FILTER_3.autoLock.minOptionRarity);
+  return OPTION_RARITY.includes(rarity) ? rarity : DEFAULT_LOOT_FILTER_3.autoLock.minOptionRarity;
 }
 
 export function normalizeLootFilter3(raw = {}) {
@@ -49,6 +58,9 @@ export function normalizeLootFilter3(raw = {}) {
       minGreater: intInRange(auto.minGreater, 0, 3, DEFAULT_LOOT_FILTER_3.autoLock.minGreater),
       minItemPower: intInRange(auto.minItemPower, 0, 10000, 0),
       affixQuery: text(auto.affixQuery),
+      protectFusionMaterials: auto.protectFusionMaterials !== false,
+      minOptionRarity: normalizeOptionRarityFloor(auto.minOptionRarity),
+      minOptionLevel: intInRange(auto.minOptionLevel, 1, 100, DEFAULT_LOOT_FILTER_3.autoLock.minOptionLevel),
     },
   };
 }
@@ -57,7 +69,7 @@ function affixHaystack(inst) {
   const values = [];
   for (const affix of inst?.affixes || []) {
     const d = describeAffix(affix);
-    values.push(affix.id, d?.name, d?.desc);
+    values.push(affix.id, affix.familyId, d?.name, d?.desc);
   }
   return values.filter(Boolean).join(' ').toLowerCase();
 }
@@ -95,10 +107,24 @@ export function equipment3FilterMatches(item, inst = null, rawFilter = {}) {
   return true;
 }
 
+function fusionMaterialReasons(inst, rule) {
+  if (!rule.protectFusionMaterials || !inst?.affixes?.length) return [];
+  const minRarityIndex = OPTION_RARITY.indexOf(normalizeOptionRarityFloor(rule.minOptionRarity));
+  const minLevel = intInRange(rule.minOptionLevel, 1, 100, 80);
+  const reasons = [];
+  for (const option of inst.affixes) {
+    const rarity = normalizeOptionRarity(option.rarity);
+    const level = normalizeOptionLevel(option.level ?? 1);
+    if (OPTION_RARITY.indexOf(rarity) >= minRarityIndex) reasons.push(`Fusion素材:${rarity}`);
+    if (level >= minLevel) reasons.push(`Fusion素材:Lv${level}`);
+  }
+  return [...new Set(reasons)];
+}
+
 export function smartLootReasons(item, inst = null, rawFilter = {}) {
   const filter = normalizeLootFilter3(rawFilter);
   const rule = filter.autoLock;
-  if (!rule.enabled || !item || item.slot !== 'weapon' || !inst) return [];
+  if (!rule.enabled || !item || !inst) return [];
 
   const reasons = [];
   const greater = Math.max(0, Math.floor(Number(inst.greaterAffixCount) || 0));
@@ -108,8 +134,9 @@ export function smartLootReasons(item, inst = null, rawFilter = {}) {
   if (rule.cursed && inst.curseId) reasons.push('Cursed Affix');
   if (rule.minGreater > 0 && greater >= rule.minGreater) reasons.push(`Greater×${greater}`);
   if (rule.minItemPower > 0 && ip >= rule.minItemPower) reasons.push(`IP${ip}`);
-  if (rule.affixQuery && matchesAffixQuery(inst, rule.affixQuery)) reasons.push(`Affix:${rule.affixQuery}`);
-  return reasons;
+  if (rule.affixQuery && matchesAffixQuery(inst, rule.affixQuery)) reasons.push(`Option:${rule.affixQuery}`);
+  reasons.push(...fusionMaterialReasons(inst, rule));
+  return [...new Set(reasons)];
 }
 
 export function shouldAutoLockEquipment(item, inst = null, rawFilter = {}) {
