@@ -3,6 +3,7 @@ import { state } from '../state.js';
 import { optionFromAffix, applyAuthoredOptionValue, canonicalOptionFamilyId } from '../data/options4.js';
 import { refreshInstanceName } from './equipment3Blacksmith.js';
 import '../screens/equipment4.js';
+import { setTextIfChanged } from './domSafety.js';
 
 function instanceFor(instanceId) {
   return state.data.weaponInstances?.[instanceId] || state.data.gearInstances?.[instanceId] || null;
@@ -86,22 +87,22 @@ function decorateCraftingButtons() {
   // an identical string — which is a childList mutation on the button, itself
   // inside the #blacksmithContent subtree this function's own MutationObserver
   // watches below. Setting it on every call (regardless of whether the label
-  // already matches) retriggers that observer forever. Only assign when the
-  // label would actually change.
+  // already matches) retriggers that observer forever. setTextIfChanged only
+  // assigns when the label would actually change.
   for (const button of root.querySelectorAll('[data-e3act="temper"], [data-e3act="greater"]')) {
     const option = optionAt(button.dataset.id, button.dataset.index);
     if (!isOption4(option)) continue;
     button.disabled = true;
     const label = button.dataset.e3act === 'temper' ? '値＝Option Lv' : (option.greater ? '★Greater' : '★ドロップ限定');
     const title = button.dataset.e3act === 'temper' ? 'Option 4.0では数値はレアリティとOption Lvから決まります' : 'Option 4.0のGreaterはドロップ限定です';
-    if (button.textContent !== label) button.textContent = label;
+    setTextIfChanged(button, label);
     button.title = title;
   }
 
   for (const button of root.querySelectorAll('[data-e3act="reroll"]')) {
     const option = optionAt(button.dataset.id, button.dataset.index);
     if (!option) continue;
-    if (button.textContent !== 'Option再抽選') button.textContent = 'Option再抽選';
+    setTextIfChanged(button, 'Option再抽選');
     button.title = 'Option系統を入れ替えます。新しいOptionはLv1・EXP0から育成します';
   }
 

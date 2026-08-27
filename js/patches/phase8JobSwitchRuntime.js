@@ -2,8 +2,8 @@
 import { state } from '../state.js';
 import { getJob as legacyGetJob, computeStats as legacyComputeStats, TIERS } from '../data/jobs.js';
 import { getJob, isUnlocked, computeStats } from '../data/jobsPhase8.js';
+import { chainMethod } from './patchUtils.js';
 
-const previousGetStats = state.getStats.bind(state);
 Object.defineProperty(state, 'currentJob', { configurable:true, get(){ return getJob(this.data.currentJobId); } });
 
 state.canSwitchTo = function phase8CanSwitchTo(jobId){ return isUnlocked(jobId, this.masteredSet()); };
@@ -17,7 +17,7 @@ state.changeJob = function phase8ChangeJob(jobId){
   this.save(); return {ok:true};
 };
 
-state.getStats = function phase8FusionStats(){
+chainMethod(state, 'getStats', (previousGetStats) => function phase8FusionStats(){
   const jobId=this.currentJobId, legacy=legacyGetJob(jobId);
   if(legacy) return previousGetStats();
   const job=getJob(jobId);
@@ -34,16 +34,15 @@ state.getStats = function phase8FusionStats(){
   }
   if(Number.isFinite(fusionBase.critPct)&&Number.isFinite(parentBase.critPct)) stats.critPct=Math.max(0,stats.critPct+(fusionBase.critPct-parentBase.critPct));
   return stats;
-};
+});
 
 state.phase8JobRuntimeStatus=function(){const current=getJob(this.currentJobId);return{currentJobId:this.currentJobId,isFusionJob:!!current?.isFusionJob,fusionCount:105,tier:current?.tier||null,masteryLv:current?TIERS[current.tier]?.masteryLv:null};};
 
 queueMicrotask(()=>{
   if(typeof state.setActiveFusion!=='function') return;
-  const activate=state.setActiveFusion.bind(state);
-  state.setActiveFusion=function phase8ActivateFusion(fusionId){
+  chainMethod(state, 'setActiveFusion', (activate) => function phase8ActivateFusion(fusionId){
     const ok=activate(fusionId); if(!ok||!fusionId?.startsWith('fusion_')) return ok;
     if(!this.data.jobs[fusionId]) this.data.jobs[fusionId]={level:1,exp:0};
     this.data.currentJobId=fusionId; this.save(); return true;
-  };
+  });
 });

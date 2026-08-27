@@ -23,9 +23,11 @@ test('the Equipment advanced-filter badge must not rewrite its own textContent u
   // this function is invoked from filterObserver (MutationObserver with
   // subtree:true on #lootFilterRow) — so writing it unconditionally retriggers
   // that same observer forever, freezing the tab as soon as the Equipment
-  // screen opens. It must only write when the label actually changes.
+  // screen opens. It must only write when the label actually changes, via
+  // domSafety.js's setTextIfChanged rather than a raw assignment.
   const fn = smartLootUi.match(/function syncAdvancedBadge[\s\S]*?\n\}/)?.[0] || '';
   assert.ok(fn, 'syncAdvancedBadge function not found');
   assert.doesNotMatch(fn, /^\s*button\.textContent\s*=/m);
-  assert.match(fn, /if\s*\(\s*button\.textContent\s*!==\s*\w+\s*\)\s*button\.textContent\s*=/);
+  assert.match(fn, /setTextIfChanged\(button,\s*\w+\)/);
+  assert.match(smartLootUi, /import\s*\{[^}]*setTextIfChanged[^}]*\}\s*from\s*'\.\/domSafety\.js'/);
 });

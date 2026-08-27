@@ -14,8 +14,9 @@
    the "outermost" original at that point) with no single place
    documenting it. A bug already shipped from a variant of this
    pattern (a MutationObserver in inheritanceBalanceUi.js rewriting
-   its own observed subtree caused an infinite loop) — see git
-   history for the fix.
+   its own observed subtree caused an infinite loop) — see
+   docs/MUTATION_OBSERVER_SAFETY.md and js/patches/domSafety.js for
+   the full writeup and the shared fix.
 
    chainMethod() does not change that ordering or behavior at all —
    it is the exact same "capture, then reassign" shape, just

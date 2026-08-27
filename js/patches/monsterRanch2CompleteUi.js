@@ -1,5 +1,6 @@
 /* Monster Ranch 2.0 — advanced facility UI */
 import { state } from '../state.js';
+import { ensureInserted } from './domSafety.js';
 function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');}
 function companions(){return state.companionList?.()||[];}
 function optionList(){return companions().map(c=>`<option value="${esc(c.id)}">${esc(c.instance.nickname||c.species.name)} Lv.${c.instance.level}</option>`).join('');}
@@ -9,6 +10,7 @@ function render(){const root=document.getElementById('companionContent');if(!roo
 // the observer would retrigger the observer forever and hang the tab before
 // the page even finishes loading. The observer only needs to reinsert the
 // panel after something else (e.g. renderMonsterRanch()'s innerHTML replace)
-// wipes it out, so it must no-op once the panel is already present.
-function ensureInserted(){if(!document.getElementById('ranch2Advanced'))render();}
-if(typeof MutationObserver!=='undefined'){const root=document.getElementById('companionContent');if(root)new MutationObserver(()=>queueMicrotask(ensureInserted)).observe(root,{childList:true});}queueMicrotask(render);
+// wipes it out, so ensureInserted() (from domSafety.js) no-ops once the
+// panel is already present.
+function reinsertIfMissing(){ensureInserted(()=>document.getElementById('ranch2Advanced'),render);}
+if(typeof MutationObserver!=='undefined'){const root=document.getElementById('companionContent');if(root)new MutationObserver(()=>queueMicrotask(reinsertIfMissing)).observe(root,{childList:true});}queueMicrotask(render);

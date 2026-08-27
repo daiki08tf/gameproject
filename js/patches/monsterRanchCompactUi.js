@@ -3,6 +3,7 @@
    Adds tabbed Ranch navigation and progressive disclosure without
    changing Ranch progression, breeding, training or expedition logic.
    ============================================================ */
+import { appendIfDetached } from './domSafety.js';
 
 const TABS = [
   ['companions', '仲間'],
@@ -119,9 +120,9 @@ function foldBondIntoDetails(card){
   // appendChild() re-queues a childList mutation (remove+insert) even when the
   // node is already body's last child, and this function runs from the
   // MutationObserver watching this same subtree (childList:true) below — so
-  // calling it unconditionally retriggers the observer forever. Only move the
-  // node when it isn't already where it belongs.
-  if(bond&&body&&bond.parentElement!==body) body.appendChild(bond);
+  // calling it unconditionally retriggers the observer forever.
+  // appendIfDetached() only moves the node when it isn't already there.
+  if(bond&&body) appendIfDetached(body,bond);
 }
 
 function filterCompanions(root){
