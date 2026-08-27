@@ -1,6 +1,5 @@
 /* Exploration 1.0 — discoveries are revealed in stages instead of a flat unlock list. */
 import { expandedExplorationSites } from './secretRealmExpansion.js';
-import { deepSurveyExplorationSites } from './postCp3DeepSurvey.js';
 
 const BASE_SITES = [
   {
@@ -43,12 +42,10 @@ const BASE_SITES = [
   },
 ];
 
-export const EXPLORATION_SITES = Object.freeze([...BASE_SITES, ...expandedExplorationSites(), ...deepSurveyExplorationSites()]);
+export const EXPLORATION_SITES = Object.freeze([...BASE_SITES, ...expandedExplorationSites()]);
 export function explorationSite(id){ return EXPLORATION_SITES.find(x=>x.id===id)||null; }
-export function explorationProgressFor(site, bestDepth, saved={}, context={}){
+export function explorationProgressFor(site, bestDepth, saved={}){
   const best=Math.max(0,Math.floor(Number(bestDepth)||0));
-  const discoveries=context.discoveries||{};
-  if(site.unlockDiscoveries?.length&&!site.unlockDiscoveries.every(id=>discoveries[id]))return { state:'hidden', fragments:0, inspected:false, unlocked:false };
   if(best<site.discoverDepth) return { state:'hidden', fragments:0, inspected:false, unlocked:false };
   const fragments=(site.fragmentSources||[]).filter(d=>best>=d).length;
   const inspected=Boolean(saved.inspected) || best>=site.clueDepth;
