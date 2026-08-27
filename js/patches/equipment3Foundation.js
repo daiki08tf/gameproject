@@ -9,7 +9,7 @@
 import { state } from '../state.js';
 import { getItem, baseItemId } from '../data/equipment.js';
 import { describeAffix } from '../data/affixes.js';
-import { optionCountRange, optionFromAffix } from '../data/options4.js';
+import { optionCountRange, optionFromAffix, applyAuthoredOptionValue } from '../data/options4.js';
 import {
   itemPowerForDrop,
   affixTierForItemPower,
@@ -34,23 +34,32 @@ function capNewWeaponOptions(inst, item) {
   if (!inst || !item || item.slot !== 'weapon' || !Array.isArray(inst.affixes)) return false;
   const [, max] = optionCountRange(item.rarity);
   if (inst.affixes.length <= max) return false;
-  // Phase 1 compatibility migration: the legacy generator may still roll 4–5
-  // Affixes internally. New drops are normalized immediately to the approved
-  // max-three Option model. Existing saved weapons are intentionally untouched.
   inst.affixes = inst.affixes.slice(0, max);
   inst.optionCountVersion = 1;
   return true;
 }
 
-function attachNewWeaponOptionMetadata(inst) {
+function attachNewWeaponOptionMetadata(inst, ctx = {}, instanceId = '') {
   if (!inst || !Array.isArray(inst.affixes)) return false;
   let changed = false;
-  inst.affixes = inst.affixes.map((affix) => {
-    if (affix?.optionSchemaVersion === 1 && affix?.familyId && Number.isFinite(affix?.level)) return affix;
-    changed = true;
-    return optionFromAffix(affix);
+  const itemPower = Math.max(1, Math.floor(Number(inst.itemPower) || 1));
+  inst.affixes = inst.affixes.map((affix, index) => {
+    const alreadyAuthored = affix?.optionValueVersion === 1;
+    if (alreadyAuthored) return affix;
+    const base = optionFromAffix(affix);
+    const next = applyAuthoredOptionValue(base, {
+      itemPower,
+      ctx,
+      key: `${instanceId}:${base?.familyId || base?.id}:${index}:${itemPower}`,
+      initializeLevel: true,
+    });
+    if (next !== affix) changed = true;
+    return next;
   });
-  if (changed) inst.optionMetadataVersion = 1;
+  if (changed) {
+    inst.optionMetadataVersion = 2;
+    inst.optionValueAuthorityVersion = 1;
+  }
   return changed;
 }
 
@@ -75,18 +84,12 @@ function enrichInstance(instanceId, ctx = {}) {
     changed = true;
   }
 
-  // greaterAffixCount is derived data. Crafting and old migrations can leave the
-  // cached number stale; Smart Loot and presentation both read it, so repair it
-  // from the actual Affix flags on load without rerolling anything.
   const actualGreaterCount = inst.affixes.filter((a) => !!a?.greater).length;
   if (inst.greaterAffixCount !== actualGreaterCount) {
     inst.greaterAffixCount = actualGreaterCount;
     changed = true;
   }
 
-  // E1 used to rebuild displayName from Prefix/Suffix only on every page load,
-  // stripping the persisted ★ / Legendary / Curse tags that E3/E4 had added.
-  // Reconstruct the full canonical name from saved fields instead.
   const displayName = canonicalDisplayName(item, inst);
   if (inst.displayName !== displayName) {
     inst.displayName = displayName;
@@ -122,8 +125,6 @@ function backfillEquipment3Instances() {
 
 const previousAddItem = state.addItem.bind(state);
 state.addItem = function equipment3AddItem(itemId, qty = 1, dropCtx = null) {
-  // Guard against a restored/edited save whose next sequence counter points at an
-  // already existing instance. Repair before the base addItem() allocates ids.
   repairNextInstanceSeq();
   const beforeSeq = Math.max(1, Math.floor(Number(this.data.nextInstanceSeq) || 1));
   const item = getItem(itemId);
@@ -137,7 +138,10 @@ state.addItem = function equipment3AddItem(itemId, qty = 1, dropCtx = null) {
       const id = `${base}#${seq}`;
       const inst = this.data.weaponInstances?.[id];
       if (capNewWeaponOptions(inst, item)) changed = true;
-      if (attachNewWeaponOptionMetadata(inst)) changed = true;
+      // Item Power must exist before we seed Option Lv/value from progression.
+      if (enrichInstance(id, dropCtx || {})) changed = true;
+      if (attachNewWeaponOptionMetadata(inst, dropCtx || {}, id)) changed = true;
+      // Refresh derived display metadata after the Option value pass.
       if (enrichInstance(id, dropCtx || {})) changed = true;
     }
   }
