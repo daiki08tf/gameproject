@@ -14,14 +14,18 @@ function ensure(){
 }
 ensure();
 
+function explorationContext(){return {discoveries:state.data.world2?.discoveries||{}};}
+
 state.explorationSites=EXPLORATION_SITES;
 state.explorationSite=function(id){ return explorationSite(id); };
 state.explorationProgress=function(id){
   ensure(); const site=explorationSite(id); if(!site) return null;
-  return explorationProgressFor(site,this.data.abyssBestDepth,this.data.exploration[id]);
+  return explorationProgressFor(site,this.data.abyssBestDepth,this.data.exploration[id],explorationContext());
 };
 state.inspectExplorationSite=function(id){
-  ensure(); const site=explorationSite(id); if(!site || this.data.abyssBestDepth<site.discoverDepth) return false;
+  ensure(); const site=explorationSite(id); if(!site) return false;
+  const progress=explorationProgressFor(site,this.data.abyssBestDepth,this.data.exploration[id],explorationContext());
+  if(progress.state==='hidden')return false;
   this.data.exploration[id].inspected=true; this.save(); return true;
 };
 state.unlockedSecretRealms=function(){
