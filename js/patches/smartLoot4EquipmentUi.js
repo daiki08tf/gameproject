@@ -1,0 +1,85 @@
+/* Gear Overhaul Phase 5A — Option-aware Equipment filter controls */
+import { state } from '../state.js';
+import { OPTION_RARITY } from '../data/options4.js';
+
+const RARITY_LABEL = {
+  common: 'Common', uncommon: 'Uncommon', rare: 'Rare', epic: 'Epic',
+  legendary: 'Legendary', mythic: 'Mythic', ancient: 'Ancient',
+};
+
+function field(label, control) {
+  const wrap = document.createElement('label');
+  wrap.className = 'smartloot4-field';
+  const text = document.createElement('span');
+  text.textContent = label;
+  wrap.append(text, control);
+  return wrap;
+}
+
+function optionQueryInput(value, rerender) {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = value || '';
+  input.placeholder = '例：天威 / atk_pct / Boss';
+  input.className = 'smartloot4-query';
+  input.addEventListener('change', () => {
+    state.updateLootFilter3({ optionQuery: input.value });
+    rerender();
+  });
+  return input;
+}
+
+function raritySelect(value, rerender) {
+  const select = document.createElement('select');
+  select.appendChild(new Option('指定なし', 'all'));
+  for (const rarity of OPTION_RARITY) select.appendChild(new Option(RARITY_LABEL[rarity] || rarity, rarity));
+  select.value = value || 'all';
+  select.addEventListener('change', () => {
+    state.updateLootFilter3({ minOptionRarity: select.value });
+    rerender();
+  });
+  return select;
+}
+
+function levelInput(value, rerender) {
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.min = '0';
+  input.max = '100';
+  input.step = '1';
+  input.value = String(Math.max(0, Math.min(100, Number(value) || 0)));
+  input.className = 'smartloot4-level';
+  input.addEventListener('change', () => {
+    state.updateLootFilter3({ minOptionLevel: Math.max(0, Math.min(100, Math.floor(Number(input.value) || 0))) });
+    rerender();
+  });
+  return input;
+}
+
+export function decorateSmartLoot4Filters(rerender = () => {}) {
+  if (typeof document === 'undefined') return;
+  const advanced = document.querySelector('#lootFilterRow .loot-filter-advanced');
+  if (!advanced || advanced.querySelector('[data-smartloot4-option-filters]')) return;
+
+  const filter = state.getLootFilter3?.();
+  if (!filter) return;
+
+  const box = document.createElement('div');
+  box.dataset.smartloot4OptionFilters = '1';
+  box.className = 'smartloot4-option-filters';
+
+  const title = document.createElement('strong');
+  title.textContent = 'OPTION FILTER';
+  title.className = 'smartloot4-title';
+  box.appendChild(title);
+  box.appendChild(field('Option検索', optionQueryInput(filter.optionQuery || filter.affixQuery || '', rerender)));
+  box.appendChild(field('最低Optionレア', raritySelect(filter.minOptionRarity || 'all', rerender)));
+  box.appendChild(field('最低Option Lv', levelInput(filter.minOptionLevel || 0, rerender)));
+
+  const hint = document.createElement('span');
+  hint.className = 'hint smartloot4-hint';
+  hint.textContent = '検索語・レア・Lvは同じ1個のOptionがすべて満たす時だけ一致。武器・防具・アクセ共通。';
+  box.appendChild(hint);
+
+  advanced.insertBefore(box, advanced.firstChild);
+}
