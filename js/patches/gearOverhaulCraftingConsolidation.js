@@ -2,6 +2,7 @@
 import { state } from '../state.js';
 import { optionFromAffix, applyAuthoredOptionValue, canonicalOptionFamilyId } from '../data/options4.js';
 import { refreshInstanceName } from './equipment3Blacksmith.js';
+import '../screens/equipment4.js';
 
 function instanceFor(instanceId) {
   return state.data.weaponInstances?.[instanceId] || state.data.gearInstances?.[instanceId] || null;
