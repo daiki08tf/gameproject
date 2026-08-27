@@ -4,6 +4,7 @@ import { expandedRealmByStageId } from './secretRealmExpansion.js';
 import { buildWorld2KeyStage } from './world2Stages.js';
 import { world3EventStageById } from './world3EventStages.js';
 import { eighthKeyStageDef } from './phase9EighthKey.js';
+import { buildDeepSurveyStage } from './postCp3DeepSurvey.js';
 
 function scaleRealmEnemies(stage, cfg){
   const seen=new Set();
@@ -119,6 +120,8 @@ function buildEighthKeyStage(def){
 }
 
 export function buildSecretRealmStage(stageId){
+  const deep=buildDeepSurveyStage(stageId);
+  if(deep)return deep;
   const eighth=eighthKeyStageDef(stageId);
   if(eighth)return buildEighthKeyStage(eighth);
   if(stageId.startsWith('secret-worldkey-')) return buildWorld2KeyStage(stageId.slice('secret-worldkey-'.length));
