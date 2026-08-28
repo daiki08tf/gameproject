@@ -7,6 +7,7 @@ import { eighthKeyStageDef } from './phase9EighthKey.js';
 import { applyUnique2TargetFarm } from './gearOverhaulPhase9TargetFarm.js';
 import { buildDeepSurveyStage } from './postCp3DeepSurvey.js';
 import { CONVERGENCE_APEX_ID, buildConvergenceApexStage } from './postCp3ConvergenceApex.js';
+import { curateSecretRealmEncounterStage, curateDeepSurveyEncounterStage, clearEncounterPoolForAuthoredApex } from './endgameEncounters2.js';
 
 function scaleRealmEnemies(stage, cfg){
   const seen=new Set();
@@ -145,5 +146,8 @@ export function buildSecretRealmStage(stageId){
     const cfg=expandedRealmByStageId(stageId);
     stage=cfg?buildExpandedRealm(cfg):null;
   }
-  return applyUnique2TargetFarm(stage);
+  stage=applyUnique2TargetFarm(stage);
+  if(stage?.postCp3ConvergenceApex||stage?.convergenceApex)return clearEncounterPoolForAuthoredApex(stage);
+  if(stage?.postCp3DeepSurvey)return curateDeepSurveyEncounterStage(stage,ENEMY_TYPES);
+  return curateSecretRealmEncounterStage(stage,ENEMY_TYPES);
 }

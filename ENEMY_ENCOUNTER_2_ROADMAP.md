@@ -1,6 +1,6 @@
 # Enemy 2.0 / Encounter 2.0 — Implementation Roadmap
 
-Status: **E0–E7 ✅ / E8 COMPLETE CANDIDATE / E9 NEXT**
+Status: **E0–E8 ✅ / E9 COMPLETE CANDIDATE / E10 NEXT**
 
 Authoritative design: `ENEMY_ENCOUNTER_2_DESIGN.md`.
 Human-readable enemy catalog: `ENEMY_2_CONTENT_CATALOG.md`.
@@ -8,6 +8,7 @@ E5 handoff: `ENEMY_ENCOUNTER_2_E5_ENCOUNTER_PILOT.md`.
 E6 handoff: `ENEMY_ENCOUNTER_2_E6_ROLE_TEMPLATES.md`.
 E7 handoff: `ENEMY_ENCOUNTER_2_E7_RANK_VARIANTS.md`.
 E8 handoff: `ENEMY_ENCOUNTER_2_E8_STORY_MIGRATION.md`.
+E9 handoff: `ENEMY_ENCOUNTER_2_E9_ENDGAME_INTEGRATION.md`.
 
 ## Goal
 
@@ -47,9 +48,9 @@ Bosses remain authored by default.
 | E5 | optional Encounter Pool contract + Ch1 pilot | ✅ main |
 | E6 | role-first Encounter Templates | ✅ main |
 | E7 | Rare / generic Elite / environmental Variant integration | ✅ main |
-| E8 | progressive Ch1–30 migration | ✅ complete candidate |
-| E9 | curated Abyss / Rift / Secret Realm / Deep Survey integration | NEXT |
-| E10 | existing Codex discovery polish | queued |
+| E8 | progressive Ch1–30 migration | ✅ main |
+| E9 | curated Abyss / Rift / Secret Realm / Deep Survey integration | ✅ complete candidate |
+| E10 | existing Codex discovery polish | NEXT |
 
 ## E0–E4 foundation
 
@@ -83,8 +84,6 @@ Boss specs bypass template planning and existing encounter group sizes remain un
 
 ## E7 Rare / generic Elite / environmental Variant integration
 
-E7 separated ordinary-content rank semantics from historical Abyss Elite payout behavior.
-
 - generic Elite: `rank='elite'` + `genericElite=true`,
 - historical `enemy.elite` remains Abyss reward-eligible semantics,
 - Rare Enemy Lv: 115–135%,
@@ -92,11 +91,11 @@ E7 separated ordinary-content rank semantics from historical Abyss Elite payout 
 - Chapter Rare requires explicit Rare-capable metadata,
 - environmental Variants preserve species identity,
 - World Tier remains owner of its existing multipliers,
-- Bosses bypass generic rank/variant conversion.
+- Bosses bypass generic rank conversion.
 
 ## E8 Ch1–30 story migration
 
-Eligible story stages across all 30 Chapters now use Encounter Pool + role-first templates + E7 rank/variant contracts while preserving fixed `waves` as fallback.
+Eligible story stages across all 30 Chapters use Encounter Pool + role-first templates + E7 rank/variant contracts while preserving fixed `waves` as fallback.
 
 Migration rules:
 
@@ -107,21 +106,61 @@ Migration rules:
 5. every Chapter pool keeps all seven regional roles as its majority ecology,
 6. true-global slime remains available across all Chapters,
 7. additional Global Species are selected from Chapter region tags and capped to a small roster,
-8. Global Species are materialized against Chapter-local anchor stats rather than reusing Ch1 numbers,
+8. Global Species are materialized against Chapter-local anchor stats,
 9. Chapter Rare uses explicit 4% base presence with bounded World Tier influence,
-10. environmental Variant contexts now cover grassland / fire / ice / wind / poison / dark / light,
+10. environmental Variant contexts cover grassland / fire / ice / wind / poison / dark / light,
 11. no stage waves, headcounts, rewards, progression gates, save roots or currencies are rewritten.
 
-## E9 next gate
+## E9 curated endgame integration
 
-Integrate Enemy 2.0 into Abyss / Rift / Secret Realm / Deep Survey through **curated activity-specific pools**, not by copying the broad story migration.
+Enemy 2.0 now decorates dynamically generated endgame stages **after** each activity has resolved its existing difficulty/reward contract.
 
-Required boundaries:
+### Abyss
 
-- Abyss depth / route / pact / challenge scaling remains authoritative,
-- historical Abyss Elite payout semantics remain intact,
-- Rift pools strongly respect Rift element identity,
-- Secret Realm pools remain target-farm curated,
-- Deep Survey conditions and Convergence Apex remain authoritative,
-- Boss/Apex phases stay authored,
-- existing endgame reward identities must not double-count Enemy 2.0 rank/variant bonuses.
+- depth / route / Pact / Challenge / modifier scaling remains authoritative,
+- native Abyss enemies remain the pool core,
+- at most three high-level Global Species are mixed in,
+- historical `enemy.elite === true` and Abyss Shard payout remain unchanged,
+- Boss floors remain authored,
+- bounded `深淵映しの` Variant adds flavor without replacing depth scaling.
+
+### Rift
+
+- key Danger/reward/IP contracts remain authoritative,
+- native Rift enemies remain the pool core,
+- up to three Global Species are selected from the Rift element,
+- Variant presence is intentionally stronger than story content,
+- `雷光の` lightning Variant completes elemental coverage,
+- Rift Boss remains authored and excluded from pool resolution.
+
+### Secret Realm
+
+- target-farm drops/modifiers/reward profiles remain authoritative,
+- authored ordinary realm threats stay dominant,
+- Global Species mix is capped at two,
+- E9 adds no second Rare roll,
+- existing authored realm Rare waves are excluded from ordinary pool membership.
+
+### Deep Survey
+
+- Survey Conditions, encoded IDs, pressure effects and Loot3 profiles remain authoritative,
+- ordinary threats receive a narrow curated pool with at most two contextual Global Species,
+- Deep Survey Apex wave remains authored.
+
+### Convergence Apex
+
+- no Encounter Pool,
+- four authored Boss phases remain fixed: Ash → Ninth → Root → Convergence.
+
+## E10 next gate
+
+Polish the **existing Codex/discovery surfaces** for Enemy 2.0. Do not add another top-level screen.
+
+Required direction:
+
+- species discovery should remain understandable when the same species appears at many levels/activities,
+- Variant discoveries should attach to their base species/family instead of looking like unrelated enemies,
+- Rare / Elite / Boss rank should be readable without exposing internal tags,
+- Global vs regional identity should be understandable,
+- discovery should work across story and curated endgame pools,
+- existing save compatibility and Codex identity remain authoritative.

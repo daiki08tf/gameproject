@@ -1,4 +1,4 @@
-/* Enemy 2.0 E7 — Ch1 Rare / generic Elite / environmental Variant integration. */
+/* Enemy 2.0 E7–E9 — Rare / generic Elite / environmental Variant integration. */
 import './enemy2EncounterTemplates.js';
 import { BattleEngine } from '../battleEngine.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
@@ -41,7 +41,15 @@ if(!BattleEngine.prototype[SPAWN_MARK]){
   const originalSpawn=BattleEngine.prototype._spawnEnemy;
   BattleEngine.prototype._spawnEnemy=function(type){
     const enemy=originalSpawn.call(this,type);
-    if(!enemy||enemy.boss||this.stage?.isAbyss)return enemy;
+    if(!enemy||enemy.boss)return enemy;
+    if(this.stage?.isAbyss){
+      // Historical Abyss `enemy.elite` remains the reward-eligible flag. E9 only
+      // adds bounded visual/stat flavor and never converts it to generic Elite.
+      const variant=chooseEnvironmentalVariant(this.stage?.encounterPool,enemy,Math.random);
+      if(variant)applyEnvironmentalVariant(enemy,variant);
+      enemy.rank ||= enemy.elite?'elite':'common';
+      return enemy;
+    }
     if(enemy.rareIdentity)markRare(enemy,this.stage,Math.random);
     else if(enemy.genericElite)finalizeGenericEliteLevel(enemy,this.stage,Math.random);
     const variant=chooseEnvironmentalVariant(this.stage?.encounterPool,enemy,Math.random);
