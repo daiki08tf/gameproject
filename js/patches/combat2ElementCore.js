@@ -16,7 +16,16 @@ if (typeof previousPlayerTechnique === 'function') {
     if (element === 'random') element = resolveRandomElement((this.defeated || 0) + (this.player?.mp || 0) + String(techId).length);
     this._combat2ActiveElement = element;
     try {
-      return previousPlayerTechnique.call(this, kind, techId, targetId, ...rest);
+      const result=previousPlayerTechnique.call(this, kind, techId, targetId, ...rest);
+      if(element&&Array.isArray(result?.targets)){
+        for(const hit of result.targets){
+          const target=(this.enemies||[]).find(e=>e.id===hit.targetId);
+          if(!target)continue;
+          const mult=elementMultiplier(element,target),tier=affinityTier(mult);
+          hit.element=element;hit.elementMultiplier=mult;hit.affinityTier=tier;
+        }
+      }
+      return result;
     } finally {
       this._combat2ActiveElement = previous;
     }
