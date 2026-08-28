@@ -19,7 +19,6 @@ const C = (id, regionId, name, desc, effect, reward = {}) => Object.freeze({
 });
 
 export const DEEP_SURVEY_CONDITIONS = Object.freeze([
-  // 返信炉床 — durability / guard / sustain
   C('ash_pressure', 'cp3_deep_ash', '灰圧増幅',
     '敵の耐久圧が増す。長期戦を受け切る基礎耐久と継戦力を問う。',
     { enemyHpMult: 1.18 }, { targetAffixChanceAdd: 0.04, legendaryChanceAdd: 0.01 }),
@@ -31,7 +30,6 @@ export const DEEP_SURVEY_CONDITIONS = Object.freeze([
     { directPressurePerAction: 0.06, directPressureMaxStacks: 3 },
     { targetAffixChanceAdd: 0.04, legendaryChanceAdd: 0.01 }),
 
-  // 第九照準廊 — speed / burst / target priority
   C('ninth_retarget', 'cp3_deep_ninth', '再照準短縮',
     '敵の行動テンポが上がる。先手・速度・短期決着の価値が増す。',
     { enemySpeedMult: 1.18 }, { targetAffixChanceAdd: 0.04, legendaryChanceAdd: 0.01 }),
@@ -43,7 +41,6 @@ export const DEEP_SURVEY_CONDITIONS = Object.freeze([
     { longFightPressurePerRound: 0.012, longFightPressureMax: 0.18 },
     { targetAffixChanceAdd: 0.04, legendaryChanceAdd: 0.01 }),
 
-  // 異記憶根室 — resource / rotation / boss technique diversity
   C('root_saturation', 'cp3_deep_root', '記録飽和',
     '同じ行動種の反復効率が少し落ちる。別行動を挟めば即座に飽和が解ける。',
     { repeatedActionPenalty: 0.08, repeatedActionPenaltyMax: 0.16 },
@@ -79,29 +76,35 @@ export function encodeDeepSurveyConditionStageId(baseRealmId, conditionIds = [])
   return clean.length ? `${baseRealmId}${SUFFIX}${clean.join('+')}` : String(baseRealmId || '');
 }
 
-// V2 runtime selection only. It deliberately does not persist a new save field.
-// BattleEngine reconstructs the stage from the ordinary Secret Realm id and the
-// resulting encoded stage.id is recorded by the existing stage-clear system.
+// V2 selection is runtime-only. The selected condition is encoded into the
+// battle stage id immediately before TextBattle constructs BattleEngine, so the
+// ordinary stage-clear record becomes the mastery record without a new save root.
 export function setActiveDeepSurveyCondition(baseRealmId, conditionId = null) {
-  const key = String(baseRealmId || '');
+  const key = parseDeepSurveyConditionStageId(baseRealmId).baseRealmId;
   const condition = surveyCondition(conditionId);
   if (!condition) { activeSingleByRealm.delete(key); return null; }
   activeSingleByRealm.set(key, condition.id);
   return condition;
 }
 export function activeDeepSurveyCondition(baseRealmId) {
-  return surveyCondition(activeSingleByRealm.get(String(baseRealmId || '')));
+  const key = parseDeepSurveyConditionStageId(baseRealmId).baseRealmId;
+  return surveyCondition(activeSingleByRealm.get(key));
 }
 export function clearActiveDeepSurveyCondition(baseRealmId) {
-  activeSingleByRealm.delete(String(baseRealmId || ''));
+  const key = parseDeepSurveyConditionStageId(baseRealmId).baseRealmId;
+  activeSingleByRealm.delete(key);
+}
+export function stageIdForActiveDeepSurveyCondition(stageId) {
+  const parsed = parseDeepSurveyConditionStageId(stageId);
+  const active = activeDeepSurveyCondition(parsed.baseRealmId);
+  return encodeDeepSurveyConditionStageId(parsed.baseRealmId, active ? [active.id] : []);
 }
 
-export function resolveDeepSurveyConditionIds(stageId, regionId = null) {
-  const parsed = parseDeepSurveyConditionStageId(stageId);
-  if (parsed.conditionIds.length) return parsed;
-  const active = activeDeepSurveyCondition(parsed.baseRealmId);
-  if (!active || (regionId && active.regionId !== regionId)) return parsed;
-  return { baseRealmId: parsed.baseRealmId, conditionIds: [active.id] };
+// Builder resolution only trusts condition ids explicitly encoded in the id.
+// This keeps ordinary list/confirm rendering baseline; the runtime selection is
+// applied only at battle start by stageIdForActiveDeepSurveyCondition().
+export function resolveDeepSurveyConditionIds(stageId) {
+  return parseDeepSurveyConditionStageId(stageId);
 }
 
 export function conditionRewardProfile(baseProfile = {}, conditionIds = []) {
@@ -114,8 +117,6 @@ export function conditionRewardProfile(baseProfile = {}, conditionIds = []) {
   return {
     ...baseProfile,
     targetAffixChance: Math.min(targetCap, baseTarget + targetAdd),
-    // Condition contribution is capped at +4 percentage points above the
-    // region profile, independent of whatever baseline the region already owns.
     legendaryChanceAdd: Math.min(baseLegendary + 0.04, baseLegendary + legendaryAdd),
   };
 }
