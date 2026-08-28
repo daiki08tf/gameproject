@@ -1,8 +1,8 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **Phase 8 Unique 2.0 COMPLETE ✅ / Phase 9A target farms ✅ / Phase 9B activity roles ACTIVE / NEXT: 9C loop validation**
+> Status: **Gear Overhaul Phases 0–9 COMPLETE ✅ / NEXT: reconcile Deep Survey against final Gear loop**
 >
-> Gear/content depth remains the priority over further Deep Survey expansion or large visual redesigns. Make loot worth farming first, then reconnect it to high difficulty.
+> Loot identity is now the established endgame core. Further high-difficulty expansion must consume this loop rather than creating parallel progression.
 
 ## Core philosophy
 
@@ -77,7 +77,7 @@ All-slot Option search/rarity/Lv filtering, narrow protection for Legendary Powe
 ### Phase 7 — Weapon Expansion decision ⛔ NO-GO FOR NOW
 Current archetypes already cover `大剣 / 魔導書 / 双短剣 / 弩`. Add a new mastery family only after proving a non-overlapping combat loop, Job coverage, Option bias and multiple worthwhile Named/Unique designs.
 
-### Phase 8 — Unique 2.0 ✅ COMPLETE
+### Phase 8 — Unique 2.0 ✅
 
 Full handoff: `GEAR_OVERHAUL_PHASE8_UNIQUE2.md`.
 
@@ -88,53 +88,57 @@ Full handoff: `GEAR_OVERHAUL_PHASE8_UNIQUE2.md`.
 - existing `UNIQUE FIXED` detail shows authored identity name + combat-loop explanation.
 - no new equipment screen, Home button, currency or save root.
 
-## Phase 9 — Loot Distribution / Endgame Return 🔄 ACTIVE
+### Phase 9 — Loot Distribution / Endgame Return ✅ COMPLETE
 
 Full handoff: `GEAR_OVERHAUL_PHASE9_LOOT_DISTRIBUTION.md`.
 
-Purpose: make existing endgame activities answer different loot questions instead of all being generic high-level farming.
-
-### 9A — Named Unique target farms ✅
-
-The six Phase 8C Named weapons are routed through existing stage `dropTable` metadata only:
+#### 9A — Named Unique target farms ✅
 
 | Weapon | Existing target farm |
 |---|---|
 | 終王斧グリムヘッド | Abyss Armory Boss floor, depth >= 1200 |
 | 連星拳アルカ | Abyss Armory, depth >= 1800 |
-| 残光弓アステリオン | Wind / Lightning Rift |
-| 葬毒刃ミアズマ | Poison / Dark Rift |
+| 残光弓アステリオン | Wind / Lightning Rift, one 6% clear roll |
+| 葬毒刃ミアズマ | Poison / Dark Rift, one 6% clear roll |
 | 戦律器カデンツァ | Secret Realm: Inverted Library |
 | 反照錫セラフィム | Final Eighth Key |
 
-Implementation: `js/data/gearOverhaulPhase9TargetFarm.js`. PR #256.
+Implementation: `js/data/gearOverhaulPhase9TargetFarm.js`. PR #256 introduced the map; Phase 9C corrected Rift delivery after validating live `_rollDrop()` behavior.
 
-### 9B — activity-role separation 🔄 ACTIVE
+#### 9B — activity-role separation ✅
 
-Existing endgame activities now have an explicit loot-purpose contract in `js/data/endgameLootRoles.js`:
+`js/data/endgameLootRoles.js` defines explicit purposes:
 
 - **Abyss** — Option / raw-equipment repeatable chase; Armory weapon/Set/Named pressure.
 - **Rift** — Greater / Ancient / burst-quality opportunities; element-key target farms.
 - **Nemesis / EX** — rival / enemy-themed high-risk rewards and hunt-mode efficiency.
 - **Secret Realm** — authored Named / Build Identity / discovery chase.
 
-The existing Home `NEXT` guidance card reuses one compact **目的別ファーム** line. No new screen or Home button is added.
+The existing Home `NEXT` card shows one compact **目的別ファーム** line. No new screen or Home button.
 
-### NEXT: 9C — endgame loop validation
+#### 9C — loop validation ✅
 
-Validate:
+Validation covers actual stage builders, wrong-route/element exclusion, bounded Named table share, Rift one-roll-per-clear behavior, and deterministic 20,000-trial simulation around the authored 6% Rift chase rate.
+
+Permanent result:
 
 `high difficulty → target gear → evaluate max-three Options → Option Fusion/build refinement → deeper difficulty`
 
-Regression/simulation must confirm:
-- target farms stay chase rewards, not guaranteed handouts,
-- Greater / Ancient / Named signals remain distinct,
-- duplicate Named drops remain economically useful,
-- multiple Phase 6 build lanes remain credible,
-- brute-force farming remains viable,
-- no single Unique becomes a hard progression gate.
+No single Unique may become a hard progression gate. Intended builds clear earlier; extreme farming/brute force remains viable.
 
-After 9C, reconcile the paused Deep Survey branch against the finished Gear Overhaul before expanding it.
+## NEXT — Deep Survey reconciliation
+
+The paused Deep Survey work is now the next default task, but it must be reconciled against the finished Gear Overhaul first.
+
+Do **not** revive the old branch unchanged if it assumes pre-Option4 loot behavior or generic high-level rewards.
+
+Deep Survey should become:
+- the hardest **mixed chase** using existing Gear systems,
+- a place where high-Option / Greater / Named / build refinement all matter,
+- an extension of existing Secret Realm / Abyss structures,
+- not a new currency, Home button, save root, daily/weekly loop or parallel progression track.
+
+Before implementation, inspect the paused Deep Survey PR/branch and decide which parts survive the Gear Overhaul.
 
 ## AI handoff
 
@@ -148,15 +152,13 @@ Read before continuing:
 6. `GEAR_OVERHAUL_AUDIT.md`
 7. `GEAR_OVERHAUL_OPTION_CATALOG.md`
 8. `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`
-9. `GEAR_OVERHAUL_PHASE2_FUSION.md`
-10. `GEAR_OVERHAUL_PHASE4_UI.md`
-11. `js/data/gearOverhaulPhase9TargetFarm.js`
-12. `js/data/endgameLootRoles.js`
-13. `js/data/unique2IdentityLibrary.js`
-14. `js/data/uniqueEquipment.js`
-15. `js/data/equipmentFixedIdentity.js`
-16. `js/data/weaponIdentity.js`
-17. `js/data/weaponTechniqueRotation.js`
-18. `js/data/weaponBuildSynergy.js`
+9. `js/data/gearOverhaulPhase9TargetFarm.js`
+10. `js/data/endgameLootRoles.js`
+11. `js/data/unique2IdentityLibrary.js`
+12. `js/data/uniqueEquipment.js`
+13. `js/data/equipmentFixedIdentity.js`
+14. `js/data/weaponIdentity.js`
+15. `js/data/weaponTechniqueRotation.js`
+16. `js/data/weaponBuildSynergy.js`
 
 Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity, restore numeric Temper, make Greater freely craftable, let reroll inherit old Option Lv/EXP, mix FIXED identity into random Options, or add a new weapon family merely for variety.
