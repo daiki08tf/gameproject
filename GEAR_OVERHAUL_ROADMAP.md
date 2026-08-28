@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **Phase 8 Unique 2.0 ACTIVE — 8A audit complete / 8B identity library foundation complete / NEXT: 8C Named/Unique content pass**
+> Status: **Phase 8 Unique 2.0 ACTIVE — 8A audit ✅ / 8B identity library ✅ / 8C Named coverage & duplicate chase ✅ / NEXT: 8D balance & presentation**
 >
 > Gear/content depth remains the priority over further Deep Survey expansion or large visual redesigns. Make loot worth farming first, then reconnect it to high difficulty.
 
@@ -76,7 +76,7 @@ All-slot Option search/rarity/Lv filtering, narrow protection for Legendary Powe
 Full handoff: `GEAR_OVERHAUL_PHASE6_WEAPON_IDENTITY.md`.
 
 #### 6A — 8 family / 24 archetype combat identity ✅
-Existing archetypes now specialize existing Weapon Techniques rather than only changing base stats. PR #249.
+Existing archetypes specialize existing Weapon Techniques rather than only changing base stats. PR #249.
 
 #### 6B — soft three-technique rotations ✅
 Existing Lv1 / Lv100 / Lv350 Weapon Techniques form optional `Opener → Setup → Finisher` chains with family-specific rewards. No meter/save/currency; Job skills and normal attacks can be woven between. PR #250.
@@ -112,32 +112,34 @@ Unique base item
 + up to 3 random Options
 ```
 
-Duplicate Unique drops remain valuable because random Options / rarity / Option Lv can differ, and unwanted copies can still participate in Option Fusion where compatible.
+Duplicate Unique drops remain valuable because random Options / rarity / Option Lv can differ.
 
-### 8A — Unique inventory/audit ✅
-- existing architecture already correctly separates `UNIQUE FIXED` from Options
-- current Named Unique content is concentrated in accessories / swords / shields
-- repeated Boss damage / action-diversity / generic damage identities should not dominate future content
+### 8A — Unique inventory / audit ✅
+- existing architecture correctly separates `UNIQUE FIXED` from Options
+- existing content was concentrated in accessories / swords / shields
 - reuse `uniqueEquipment.js`, `equipmentFixedIdentity.js`, `equipment3Legendary.js`; no parallel Unique system
 
-### 8B — Unique identity library ✅ foundation
+### 8B — Unique identity library ✅
 - `js/data/unique2IdentityLibrary.js`
-- 8 existing weapon families covered
-- 2 authored gameplay-loop identities per family = 16 initial recipes
+- 8 current weapon families covered
+- 2 gameplay-loop identities per family = 16 recipes
 - recipes reference existing Phase 6 build lanes and live combat-effect vocabulary
-- recipe layer creates no drops/stats/currency/save root by itself
+- recipes create no drop/stat/currency/save root by themselves
 
-### NEXT: 8C — Named/Unique content pass
-- score existing Uniques by identity strength and family/slot coverage
-- upgrade weak existing Uniques first
-- add new Named/Unique items only where coverage is genuinely thin
-- bind fixed identity to existing effect vocabulary and keep it outside max-3 random Options
-- make duplicate copies desirable through Option rolls rather than duplicate-only power creep
+### 8C — Named / Unique content pass ✅
+- existing `血牙グラム` and `星詠みの杖` mapped into Unique 2.0
+- six new Mythic Named weapons fill axe / bow / dagger / knuckle / instrument / rod gaps
+- all 8 current weapon families now have at least one Named Unique weapon with explicit combat-loop identity
+- new Named weapons remain `distributionPending:true`; Phase 9 will place them in existing endgame loops
+- duplicate-copy regression verifies distinct weapon instances, max-three random Options and preserved FIXED identity
+- old saved 4–5 Option weapons remain untouched
 
-### 8D — duplicate chase / balance / presentation
-- verify duplicates remain worth farming
-- cap runaway proc/echo/extra-hit chains
-- expose concise identity text through existing item detail surfaces; no giant new screen
+### NEXT: 8D — balance / presentation
+- regression-gate proc / echo / DoT / execution / guard / Boss-specialization values
+- preserve per-action / anti-chain limits
+- surface Unique 2.0 identity name and gameplay loop in the existing compact Equipment detail
+- no new screen / Home button
+- confirm multiple Phase 6 routes remain credible per family
 
 ## Phase 9 — Loot distribution / endgame return
 
@@ -164,5 +166,6 @@ Read before continuing:
 11. `js/data/weaponIdentity.js`
 12. `js/data/weaponTechniqueRotation.js`
 13. `js/data/weaponBuildSynergy.js`
+14. `js/data/uniqueEquipment.js`
 
 Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity, restore numeric Temper, make Greater freely craftable, let reroll inherit old Option Lv/EXP, mix FIXED identity into random Options, or add a new weapon family merely for variety.
