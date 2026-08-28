@@ -1,6 +1,6 @@
 # Post-CP3 Endgame Roadmap — Reconciled after Gear Overhaul
 
-Status: **Vertical Extension V1–V6 IMPLEMENTED / automated acceptance green candidate / manual feel tuning remains**
+Status: **Vertical Extension V1–V6 IMPLEMENTED / automated acceptance green / Manual Feel Proxy A complete candidate**
 
 Gear Overhaul Phases 0–9, post-Gear Deep Survey, Survey Conditions, Convergence Apex and automated acceptance are implemented on the existing Gear/Exploration/Secret Realm stack.
 
@@ -66,7 +66,7 @@ Apex stays Lv99,999 / IP10,000 and reuses existing BattleEngine/Secret Realm/Gea
 - preferred families repeatedly provide same-family Option Fusion XP,
 - Apex remains inside existing Gear/CP3 reward rules.
 
-### V6 — readability / mobile polish — ✅ complete candidate
+### V6 — readability / mobile polish — ✅ main
 
 No systems or reward numbers are added. Existing surfaces are clarified for portrait/mobile play:
 - Survey Condition controls use a compact **2-column** button grid,
@@ -78,17 +78,29 @@ No systems or reward numbers are added. Existing surfaces are clarified for port
 - Final phase shows the currently active Ash/Ninth/Root sub-cycle,
 - no new Home button, screen or navigation route.
 
-## Remaining manual feel gate
+## Manual Feel Proxy A — complete candidate
 
-Automated implementation is complete. The remaining work is play-feel tuning only:
+Before actual-device play, the code-side feel audit now protects the most likely short-portrait failures without changing balance:
+- on portrait viewports at **720px height or below**, enemy cards gain a bounded scroll area instead of consuming all vertical space,
+- the battle log keeps a usable minimum reading area,
+- command buttons retain at least **44px** height,
+- technique lists are bounded so the player can still return to commands,
+- each Apex phase announces itself once in the battle log with its immediate gameplay pressure,
+- Final announces each Ash / Ninth / Root sub-cycle when the active pressure changes,
+- all of this is transient presentation only: no save data, reward numbers or progression rules change.
+
+Automated proxy checks live in `tests/post-cp3-manual-feel-proxy.test.js`.
+
+## Remaining actual-device feel gate
+
+The remaining checks now require real play rather than more speculative systems work:
 - are Condition buttons understandable on an actual phone,
 - do 38/42% target rates feel rewarding without feeling guaranteed,
-- are Ash/Ninth/Root pressures distinguishable without reading docs,
-- does the 4-phase Apex feel long enough to be climactic but not exhausting,
-- are Final sub-cycle changes readable during real command selection,
+- are Ash/Ninth/Root pressures distinguishable during command selection,
+- does the 4-phase Apex feel climactic without becoming exhausting,
 - does rejected loot still feel naturally useful for Option Fusion.
 
-Any adjustment after this gate should tune numbers/wording/layout only unless a concrete gameplay failure is observed.
+After this point, change numbers/wording/layout only in response to observed play unless a concrete gameplay failure is found. Do not add another vertical layer merely to keep development moving.
 
 ## Permanent guardrails
 - no new currency/save root/Home route,
