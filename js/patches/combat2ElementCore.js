@@ -2,7 +2,9 @@
    Combat 2.0 — Element runtime
    ============================================================ */
 import { BattleEngine } from '../battleEngine.js';
+import { state } from '../state.js';
 import { elementMultiplier, resolveRandomElement } from '../data/combat2Elements.js';
+import { affinityTier } from '../data/enemyAffinity2.js';
 
 const previousPlayerTechnique = BattleEngine.prototype._playerTechnique;
 if (typeof previousPlayerTechnique === 'function') {
@@ -27,16 +29,18 @@ BattleEngine.prototype.calculateDamage = function combat2ElementDamage(atk, targ
   const element = opts.element || this._combat2ActiveElement || null;
   if (!element || !target || !result) return result;
   const mult = elementMultiplier(element, target);
+  const tier=affinityTier(mult);
+  if(tier!=='neutral')state.markEnemyAffinityObserved?.(target,element,mult);
   if (mult === 1) return result;
   return {
     ...result,
     damage: Math.max(1, Math.round(result.damage * mult)),
     element,
     elementMultiplier: mult,
+    affinityTier:tier,
   };
 };
 
-// Expose a read-only helper for UI/tests and future enemy codex integration.
 BattleEngine.prototype.combat2ElementMultiplier = function combat2ElementMultiplier(element, target) {
   return elementMultiplier(element, target);
 };
