@@ -38,14 +38,16 @@ const NAME_RULES=Object.freeze([
   Object.freeze({family:'plant',re:/キノコ|茸|花|樹|胞子|根脈/}),
   Object.freeze({family:'demon',re:/デーモン|魔界|魔王|奈落|悪魔/}),
   Object.freeze({family:'spirit',re:/精霊|霊体|ウィスプ|共鳴体/}),
-  Object.freeze({family:'beast',re:/狼|獣|牙|グリフォン|ペガサス|イエティ|鳥/}),
+  Object.freeze({family:'beast',re:/狼|獣|牙|グリフォン|ペガサス|イエティ|鳥|コウモリ/}),
 ]);
 
 function clampResist(v){return Math.max(-.45,Math.min(.35,Number(v)||0));}
 
 export function enemyAffinityFamily(enemy={}){
-  const direct=enemy.affinityFamily||enemy.speciesFamily||SPECIES_FAMILY[enemy.speciesId];
-  if(direct&&ENEMY_AFFINITY_FAMILIES[direct])return direct;
+  if(enemy.affinityFamily&&ENEMY_AFFINITY_FAMILIES[enemy.affinityFamily])return enemy.affinityFamily;
+  const speciesMapped=SPECIES_FAMILY[enemy.speciesId];
+  if(speciesMapped&&ENEMY_AFFINITY_FAMILIES[speciesMapped])return speciesMapped;
+  if(enemy.speciesFamily&&ENEMY_AFFINITY_FAMILIES[enemy.speciesFamily])return enemy.speciesFamily;
   const name=String(enemy.baseName||enemy.name||'');
   for(const rule of NAME_RULES)if(rule.re.test(name))return rule.family;
   return null;
