@@ -1,4 +1,5 @@
-/* Enemy 3.0 B2 — deterministic tactical reservation policy for advanced roles. */
+/* Enemy 3.0 B2/B9 — deterministic tactical reservation policy for advanced roles. */
+import { enemy3WorldTierAiPolicy } from './enemy3WorldTierAI.js';
 
 function ratio(now,max){return max>0?now/max:1;}
 
@@ -11,6 +12,7 @@ export function enemy3TacticalContext(engine,enemy){
     role:enemy?.role||null,
     skillKind:enemy?.combat3Skill?.kind||null,
     ready:(enemy?.combat3SkillCd||0)<=0,
+    worldTierRank:engine?.worldTier?.rank||0,
     playerHpRatio:ratio(player.hp||0,player.maxHp||0),
     playerAtkBuffed:(player?.buffs?.atk?.turnsLeft||0)>0&&(player?.buffs?.atk?.mult||1)>1,
     playerAtkDebuffed:(player?.buffs?.atk?.turnsLeft||0)>0&&(player?.buffs?.atk?.mult||1)<1,
@@ -23,26 +25,19 @@ export function enemy3TacticalContext(engine,enemy){
 
 export function enemy3ShouldReserveSkill(ctx,currentReserved=false){
   if(!ctx?.ready)return false;
+  const wt=enemy3WorldTierAiPolicy(ctx?.worldTierRank);
   switch(ctx.role){
     case 'attacker':
-      // Preserve the existing random reservation normally; become decisive when
-      // the player is close to defeat instead of adding a new execution mechanic.
-      return ctx.playerHpRatio<=.35?true:!!currentReserved;
+      return ctx.playerHpRatio<=wt.attackerExecuteHp?true:!!currentReserved;
     case 'caster':
-      // Do not waste slow while an equivalent slow is already active. Punish
-      // player SPD setup by prioritising the existing slow spell.
       if(ctx.playerSpdDebuffed)return false;
-      return ctx.playerSpdBuffed?true:!!currentReserved;
+      return (ctx.playerSpdBuffed||wt.proactiveDisruption)?true:!!currentReserved;
     case 'trickster':
-      // Same contract for ATK disruption: avoid redundant refreshes, but react
-      // immediately to an active offensive buff.
       if(ctx.playerAtkDebuffed)return false;
-      return ctx.playerAtkBuffed?true:!!currentReserved;
+      return (ctx.playerAtkBuffed||wt.proactiveDisruption)?true:!!currentReserved;
     case 'support':
-      // Existing Combat 3 already picks the lowest-HP ally. B2 only decides
-      // whether healing is worth reserving; it never creates a second targeter.
-      if(!ctx.hasInjuredAlly||ctx.lowestAllyHpRatio>=.70)return false;
-      return ctx.lowestAllyHpRatio<=.40?true:!!currentReserved;
+      if(!ctx.hasInjuredAlly||ctx.lowestAllyHpRatio>=wt.supportHoldHealHp)return false;
+      return ctx.lowestAllyHpRatio<=wt.supportForceHealHp?true:!!currentReserved;
     default:return !!currentReserved;
   }
 }

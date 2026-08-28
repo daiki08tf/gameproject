@@ -1,4 +1,5 @@
-/* Enemy 3.0 B6 — bounded encounter-level role synergy. */
+/* Enemy 3.0 B6/B9 — bounded encounter-level role synergy. */
+import { enemy3WorldTierAiPolicy } from './enemy3WorldTierAI.js';
 const hpRatio=e=>e?.maxHp>0?Math.max(0,e.hp/e.maxHp):1;
 const roleId=e=>e?.combat3Role?.id||e?.role||null;
 const isSpecial=e=>!!(e?.boss||e?.elite||e?.rare||e?.rareIdentity);
@@ -20,12 +21,13 @@ export function enemy3SynergyShouldReserveSkill(engine,enemy,current=false){
   const skill=enemy.combat3Skill;
   if(!skill||(enemy.combat3SkillCd||0)>1)return current;
   const ctx=enemy3SynergyContext(engine,enemy);
+  const wt=enemy3WorldTierAiPolicy(engine?.worldTier);
 
   if(skill.kind==='guardAll'&&ctx.protectedBackliner){
     const uncovered=ctx.protectedBackliner?.combat3Buffs?.def?.turns<=0||!ctx.protectedBackliner?.combat3Buffs?.def;
     if(uncovered)return true;
   }
-  if(skill.kind==='healAlly'&&ctx.woundedAlly&&hpRatio(ctx.woundedAlly)<=.55)return true;
+  if(skill.kind==='healAlly'&&ctx.woundedAlly&&hpRatio(ctx.woundedAlly)<=wt.synergyTriageHp)return true;
   return current;
 }
 

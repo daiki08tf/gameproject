@@ -23,7 +23,7 @@ Enemy 2.0 completed enemy identity, level, encounter roles, ranks/variants, endg
 - [x] B6 — Encounter Synergy
 - [x] B7 — Boss Phase AI 2.0
 - [x] B8 — Codex Analysis 2.0
-- [ ] B9 — World Tier AI Escalation
+- [x] B9 — World Tier AI Escalation
 - [ ] B10 — Ch1–30 + Endgame Integration
 
 ## B1 scope
@@ -101,3 +101,14 @@ Observed Enemy 3.0 knowledge:
 - Inspect/analysis immediately records the current Elite/Rare identity and marks Boss phase knowledge as analyzed
 
 The existing Role / observed skill / Affinity / Enemy 2.0 ecology records remain authoritative. A supplemental `Enemy 3.0 戦術解析` panel appears inside the Monster Codex and lists only observed/analyzed tactical knowledge. These fields do not add Codex points or permanent stat bonuses.
+
+## B9 scope
+B9 reuses the existing Phase 10.1 World Tier rank only as a tactical-pressure input. World Tier's existing HP/ATK/DEF/SPD/reward/Elite chance scaling and Boss `aiHaste` remain authoritative and are not duplicated.
+
+World I preserves the exact B2/B6 decision thresholds. World II–VI progressively tighten ordinary-enemy decisions:
+- attacker execution threshold rises from 35% to 45% player HP
+- support guaranteed-heal threshold rises from 40% to 50%, while its hold threshold rises from 70% to 80%
+- encounter support-triage threshold rises from 55% to 67.5%
+- World V–VI caster/trickster proactively reserve their existing disruption skill when the corresponding debuff is not already active
+
+B9 adds no stat multiplier, reward multiplier, Elite/Rare chance, Boss timer acceleration, currency, save field or new combat action. Abyss has no active World Tier runtime and therefore keeps rank-0 Enemy 3.0 tactical behavior.
