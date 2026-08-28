@@ -19,7 +19,8 @@ export function renderEndgameGuidance(){
   const meta=storyLike
     ?`${g.recommendedWorldTierName} ・ ${g.laneId==='story_gate'?'全章ボス撃破で深淵解禁':'Lv 3,000からWorld Tier / 深淵導線へ'}`
     :`${g.recommendedWorldTierName} ・ 深淵 ${g.nextAbyssDepth}F / 推奨Lv ${g.nextAbyssLevel.toLocaleString()} / IP ${g.nextAbyssItemPower}`;
-  card.innerHTML=`<span class="endgame-guide-kicker">NEXT / Lv ${g.level.toLocaleString()}</span><strong>${g.title}</strong><span class="endgame-guide-reason">${g.reason}</span><span class="endgame-guide-meta">${meta}</span><span class="endgame-guide-reward">報酬基準 Drop ×${g.reward.drop} / Gold ×${g.reward.gold} / IP +${g.reward.itemPowerBonus}</span>`;
+  const farm=g.lootRoleSummary?`<span class="endgame-guide-farm">目的別ファーム：${g.lootRoleSummary}</span>`:'';
+  card.innerHTML=`<span class="endgame-guide-kicker">NEXT / Lv ${g.level.toLocaleString()}</span><strong>${g.title}</strong><span class="endgame-guide-reason">${g.reason}</span><span class="endgame-guide-meta">${meta}</span>${farm}<span class="endgame-guide-reward">報酬基準 Drop ×${g.reward.drop} / Gold ×${g.reward.gold} / IP +${g.reward.itemPowerBonus}</span>`;
 }
 
 queueMicrotask(renderEndgameGuidance);

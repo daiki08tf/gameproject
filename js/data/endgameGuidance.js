@@ -4,6 +4,7 @@
 import { highestWorldTier, worldTier } from './worldTiers.js';
 import { endgameRewardProfile } from './endgameRewardScaling.js';
 import { abyssRecommendedLevel, abyssTargetItemPower, abyssEraForDepth } from './abyssEndgame.js';
+import { endgameLootRolesForLevel, compactEndgameLootRoleSummary } from './endgameLootRoles.js';
 
 export const ENDGAME_ABYSS_MAX_DEPTH=3000;
 
@@ -42,11 +43,14 @@ export function buildEndgameGuidance({level=1,abyssBestDepth=0,worldTierId='norm
   if(tierBehind)reason=`${highest.name} が解禁済み。World Tierを上げてから ${lane.purpose}`;
   else if(!storyBlocked&&nemesisLevel>=5)reason=`高Lv Nemesis が成長中。弱点情報を集めつつ ${lane.purpose}`;
   else if(!storyBlocked&&lv>=3000&&best<targetDepth)reason=`現在Lvなら深淵 ${targetDepth}F 前後が進行目安。${lane.purpose}`;
+  const lootRoles=storyBlocked?[]:endgameLootRolesForLevel(lv);
   return{
     level:lv,laneId:lane.id,title:lane.label,targetButtonId:tierBehind?'goStageBtn':lane.target,reason,abyssUnlocked:Boolean(abyssUnlocked),
     activeWorldTier:tier.id,recommendedWorldTier:highest.id,recommendedWorldTierName:highest.name,
     abyssBestDepth:best,recommendedAbyssDepth:targetDepth,nextAbyssDepth:nextDepth,nextAbyssLevel:targetLevel,
     nextAbyssItemPower:targetIp,nextAbyssEra:era,nemesisLevel:Math.max(0,Number(nemesisLevel)||0),
     reward:{drop:reward.drop,gold:reward.gold,itemPowerBonus:reward.itemPowerBonus,label:reward.label},
+    lootRoles,
+    lootRoleSummary:storyBlocked?'':compactEndgameLootRoleSummary(lv),
   };
 }

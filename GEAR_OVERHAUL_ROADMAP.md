@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **Phase 8 Unique 2.0 COMPLETE ✅ / Phase 9A Named Unique target farms ACTIVE / NEXT: 9B endgame activity roles**
+> Status: **Phase 8 Unique 2.0 COMPLETE ✅ / Phase 9A target farms ✅ / Phase 9B activity roles ACTIVE / NEXT: 9C loop validation**
 >
 > Gear/content depth remains the priority over further Deep Survey expansion or large visual redesigns. Make loot worth farming first, then reconnect it to high difficulty.
 
@@ -94,7 +94,7 @@ Full handoff: `GEAR_OVERHAUL_PHASE9_LOOT_DISTRIBUTION.md`.
 
 Purpose: make existing endgame activities answer different loot questions instead of all being generic high-level farming.
 
-### 9A — Named Unique target farms 🔄 ACTIVE
+### 9A — Named Unique target farms ✅
 
 The six Phase 8C Named weapons are routed through existing stage `dropTable` metadata only:
 
@@ -107,31 +107,34 @@ The six Phase 8C Named weapons are routed through existing stage `dropTable` met
 | 戦律器カデンツァ | Secret Realm: Inverted Library |
 | 反照錫セラフィム | Final Eighth Key |
 
-Implementation: `js/data/gearOverhaulPhase9TargetFarm.js`.
+Implementation: `js/data/gearOverhaulPhase9TargetFarm.js`. PR #256.
 
-Permanent 9A rules:
-- do not directly grant these outside the existing drop engine,
-- preserve normal weapon-instance generation and max-three random Options,
-- do not duplicate every Named weapon into every endgame activity,
-- no pity currency / vendor / new activity.
+### 9B — activity-role separation 🔄 ACTIVE
 
-### NEXT: 9B — activity-role separation
+Existing endgame activities now have an explicit loot-purpose contract in `js/data/endgameLootRoles.js`:
 
-Strengthen existing roles without parallel progression:
+- **Abyss** — Option / raw-equipment repeatable chase; Armory weapon/Set/Named pressure.
+- **Rift** — Greater / Ancient / burst-quality opportunities; element-key target farms.
+- **Nemesis / EX** — rival / enemy-themed high-risk rewards and hunt-mode efficiency.
+- **Secret Realm** — authored Named / Build Identity / discovery chase.
 
-- **Abyss** — repeatable high-depth Option / raw gear chase.
-- **Rift / World Event** — Greater / Ancient / burst-quality opportunities.
-- **Nemesis / EX Bounty** — enemy-themed Named / Unique chase where authored relationships exist.
-- **Secret Realm** — authored Named / build-identity chase.
-- **Deep Survey** — hardest mixed chase after the paused branch is reconciled.
+The existing Home `NEXT` guidance card reuses one compact **目的別ファーム** line. No new screen or Home button is added.
 
-### 9C — loop validation
+### NEXT: 9C — endgame loop validation
 
 Validate:
 
 `high difficulty → target gear → evaluate max-three Options → Option Fusion/build refinement → deeper difficulty`
 
-No single Unique may become a hard progression gate. Intended builds should clear earlier; extreme farming/brute force must remain viable.
+Regression/simulation must confirm:
+- target farms stay chase rewards, not guaranteed handouts,
+- Greater / Ancient / Named signals remain distinct,
+- duplicate Named drops remain economically useful,
+- multiple Phase 6 build lanes remain credible,
+- brute-force farming remains viable,
+- no single Unique becomes a hard progression gate.
+
+After 9C, reconcile the paused Deep Survey branch against the finished Gear Overhaul before expanding it.
 
 ## AI handoff
 
@@ -148,11 +151,12 @@ Read before continuing:
 9. `GEAR_OVERHAUL_PHASE2_FUSION.md`
 10. `GEAR_OVERHAUL_PHASE4_UI.md`
 11. `js/data/gearOverhaulPhase9TargetFarm.js`
-12. `js/data/unique2IdentityLibrary.js`
-13. `js/data/uniqueEquipment.js`
-14. `js/data/equipmentFixedIdentity.js`
-15. `js/data/weaponIdentity.js`
-16. `js/data/weaponTechniqueRotation.js`
-17. `js/data/weaponBuildSynergy.js`
+12. `js/data/endgameLootRoles.js`
+13. `js/data/unique2IdentityLibrary.js`
+14. `js/data/uniqueEquipment.js`
+15. `js/data/equipmentFixedIdentity.js`
+16. `js/data/weaponIdentity.js`
+17. `js/data/weaponTechniqueRotation.js`
+18. `js/data/weaponBuildSynergy.js`
 
 Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity, restore numeric Temper, make Greater freely craftable, let reroll inherit old Option Lv/EXP, mix FIXED identity into random Options, or add a new weapon family merely for variety.
