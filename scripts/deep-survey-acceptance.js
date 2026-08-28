@@ -1,6 +1,7 @@
 import '../js/patches/combat2ElementAffixes.js';
 import { CP3_DEEP_SURVEYS, buildDeepSurveyStage } from '../js/data/postCp3DeepSurvey.js';
 import { steerRealmAffix } from '../js/patches/loot3RealmTargetFarm.js';
+import { applyItemPowerAffixQuality } from '../js/data/equipment3AffixQuality.js';
 import { OPTION_RARITY, isOption4 } from '../js/data/options4.js';
 import { optionMaterialXp } from '../js/data/options4Fusion.js';
 import { shouldAutoLockEquipment } from '../js/data/equipment3SmartLoot.js';
@@ -31,7 +32,13 @@ export function simulateDeepSurveyAcceptance(def, trials = 10000) {
 
   for (let i = 0; i < trials; i += 1) {
     const inst = blankInstance();
-    const changed = steerRealmAffix(inst, stage.loot3Profile, `${def.realmId}#accept-${i}`);
+    const id = `${def.realmId}#accept-${i}`;
+    // Runtime equipment generation assigns canonical rarity/level/value first;
+    // Loot3 regional steering then changes at most one identity and re-applies
+    // the same quality bridge. Mirror that order here so this is an acceptance
+    // test of the live path rather than a synthetic Affix-only shortcut.
+    applyItemPowerAffixQuality(inst, stage.loot3Profile, id);
+    const changed = steerRealmAffix(inst, stage.loot3Profile, id);
     inst.greaterAffixCount = inst.affixes.filter((option) => option.greater).length;
     maxOptions = Math.max(maxOptions, inst.affixes.length);
 
