@@ -1,8 +1,8 @@
 # Post-CP3 Endgame Roadmap — Reconciled after Gear Overhaul
 
-Status: **Vertical Extension ACTIVE — V1/V2/V3 merged / V4 Convergence Apex complete candidate / V5 NEXT**
+Status: **Vertical Extension ACTIVE — V1–V4 merged / V5 Acceptance complete candidate / V6 NEXT**
 
-Gear Overhaul Phases 0–9 and the post-Gear Deep Survey quantitative acceptance gate are complete. The vertical extension is active.
+Gear Overhaul Phases 0–9, post-Gear Deep Survey, Survey Conditions and Convergence Apex are implemented on the existing Gear/Exploration/Secret Realm stack.
 
 ## Deep Survey baseline
 
@@ -21,82 +21,60 @@ Baseline Option steering is 34%. Existing Exploration / Secret Realm / CP3 disco
 Authoritative design: `POST_CP3_VERTICAL_EXTENSION_DESIGN.md`.
 
 ### V1 — Condition data contract — ✅ main
-
 Exactly 3 Conditions per region, encoded into existing Secret Realm stage IDs. No new progression root.
 
 ### V2 — one-Condition integration — ✅ main
-
 - existing confirm surface only,
 - `なし` or one Condition,
 - transient BattleEngine hooks,
-- Condition clear is ordinary `recordStageResult(encodedStageId)` metadata,
+- ordinary encoded stage-clear metadata is mastery history,
 - Option steering 34% → max 38%,
-- bounded Legendary contribution,
 - no IP/rarity/Option-count change.
 
-Conditions:
-- 返信炉床: 灰圧増幅 / 乾いた傷口 / 反響打撃
-- 第九照準廊: 再照準短縮 / 精鋭連鎖 / 照準固定
-- 異記憶根室: 記録飽和 / 根脈枯渇 / 生体再演
-
-`精鋭連鎖` does not set the Abyss `enemy.elite` flag, preventing accidental Abyss Shard rewards.
-
 ### V3 — Combination Gate — ✅ main
-
-- derive mastery only from each region's 3 existing single-Condition stage-clear IDs,
-- UI shows single-clear progress `0/3 ... 3/3`,
-- at `3/3`, selection cap becomes 2 Conditions,
+- 3 single clears unlock max-two Condition selection,
 - two-Condition stage IDs encode both Condition IDs,
-- builder hard-caps at 2 even for crafted IDs,
+- builder hard-caps at 2,
 - Option steering max 42%,
-- no three-Condition progression requirement,
-- no mastery currency/rank/save root.
+- no 3-Condition progression requirement or mastery currency.
 
-### V4 — Convergence Apex — ✅ complete candidate
-
-Unlock contract:
-- all 3 baseline Deep Surveys cleared,
+### V4 — Convergence Apex — ✅ main
+Unlock:
+- all 3 baseline Deep Surveys,
 - at least 1 single-Condition clear in each region,
-- no requirement for all 9 Conditions,
-- no requirement for any two-Condition clear,
-- unlock is derived only from ordinary existing stage-clear records.
+- no all-9 or two-Condition requirement.
 
 Encounter:
-1. **Ash / endurance** — healing pressure + heavier incoming hits,
-2. **Ninth / tempo** — enemy initiative/speed pressure,
-3. **Root / rotation** — MP-cost pressure + repeated-action inefficiency,
-4. **Convergence** — Ash → Ninth → Root pressure cycles every two rounds instead of stacking all maximum penalties simultaneously.
+1. Ash / endurance,
+2. Ninth / tempo,
+3. Root / resource + rotation,
+4. Convergence cycling Ash → Ninth → Root every two rounds.
 
-Implementation rules:
-- one existing Secret Realm route,
-- first phase keeps normal encounter-entry grace; later phases continue immediately,
-- existing BattleEngine only; no second combat engine,
-- Lv99,999 / IP10,000 remains absolute,
-- existing Gear 9 target-farm wrapper remains authoritative,
-- Apex mixed chase uses all three regional Option families with 36% steering,
-- Legendary addition stays within +4 percentage points,
-- first clear reuses existing `uq_cp3_boundary_echo`,
-- repeat drops reuse existing CP3/Gear items only,
-- no Apex currency, shard, gear rarity or new Item Power cap.
+Apex stays Lv99,999 / IP10,000, reuses existing BattleEngine/Secret Realm/Gear 9 routing and existing CP3 rewards only.
 
-### V5 — Acceptance simulation — NEXT
+### V5 — Acceptance simulation — ✅ complete candidate
 
-Validate deterministically:
-- baseline / one-Condition / two-Condition target steering at 34 / 38 / 42%,
-- Greater / Legendary bounds,
-- max-three Options,
-- Smart Loot does not auto-protect all Fusion material,
-- single/two-Condition mastery routing,
-- Apex unlock from existing clear IDs,
-- Apex mixed-chase reward compatibility,
-- no new reward/save progression root.
+`npm run sim:deep-survey` now validates the entire vertical extension rather than baseline only.
 
-### V6 — polish/manual feel
+Deterministic acceptance covers:
+- baseline / one-Condition / two-Condition configured steering at **34 / 38 / 42%**,
+- observed steering within a bounded tolerance of those configured rates,
+- Convergence Apex mixed steering at **36%** and still non-guaranteed,
+- Condition Legendary contribution never more than **+4 percentage points above each region baseline**,
+- Greater evaluation at IP10,000 boss pressure using the live Greater rules,
+- Greater max-three contract,
+- new gear max-three random Options,
+- canonical Option 4.0 records only,
+- Smart Loot leaves ordinary feedable gear instead of protecting everything,
+- preferred regional families repeatedly produce positive same-family Option Fusion XP,
+- Apex uses the same bounded Gear/CP3 reward ecosystem.
 
+The acceptance suite is also wired into `node --test` through `tests/post-cp3-vertical-acceptance.test.js`.
+
+### V6 — polish/manual feel — NEXT
 Tune wording, phase readability, mobile battle pressure and reward feel only. Do not add another progression layer.
 
 ## Permanent guardrails
-
 - no new currency/save root/Home route,
 - no daily/weekly/FOMO loop,
 - no new rarity or IP cap,
@@ -109,5 +87,4 @@ Tune wording, phase readability, mobile battle pressure and reward feel only. Do
 `「知らん、火力と耐久で押し切る」も正しい攻略法。`
 
 ## Supersession
-
 Old PR #228 remains superseded. The post-Gear Deep Survey implementation, quantitative acceptance and vertical-extension design are current authority.
