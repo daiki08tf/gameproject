@@ -1,0 +1,38 @@
+# Enemy 3.0 — Behavior & Ecology Roadmap
+
+Enemy 2.0 completed enemy identity, level, encounter roles, ranks/variants, endgame integration and Codex ecology. Enemy 3.0 deepens how those enemies behave instead of adding another raw enemy-count layer.
+
+## Development rules
+- Existing Combat 2/3 contracts are authoritative.
+- Reuse existing AI/status/intent systems before adding new mechanics.
+- Authored Boss behavior always wins over generic behavior.
+- No new currency, save root or Home route.
+- Generic Elite must never leak Abyss-only `enemy.elite` reward semantics.
+- World Tier behavior escalation must not duplicate stat scaling.
+- Story progression cannot depend on random lucky encounters.
+- Save compatibility is mandatory.
+- When regression tests fail: inspect the failing assertion and existing contract first; prefer minimal implementation fixes over weakening tests.
+
+## Phases
+- [x] B0 — Current AI Audit
+- [x] B1 — Role AI 2.0 bridge
+- [ ] B2 — Targeting Logic
+- [x] B3 — Weakness / Resistance (Enemy Affinity / Weakness 2.0, PR #283)
+- [ ] B4 — Elite Affix System
+- [ ] B5 — Rare Monster Behaviors
+- [ ] B6 — Encounter Synergy
+- [ ] B7 — Boss Phase AI 2.0
+- [ ] B8 — Codex Analysis 2.0
+- [ ] B9 — World Tier AI Escalation
+- [ ] B10 — Ch1–30 + Endgame Integration
+
+## B1 scope
+Enemy 2.0 added advanced regional roles (`attacker`, `caster`, `trickster`, `support`) after the older Combat 3 enemy profiles were authored. B1 connects those role identities to the already-existing Combat 3 tactical skill engine rather than creating a second AI engine.
+
+Role bridge:
+- attacker → frontline / power attack
+- caster → caster / slow spell
+- trickster → skirmisher / ATK disruption
+- support → support / ally heal
+
+`normal`, `fast`, `tank`, Rare and Boss identities remain on their existing paths. Rare behavior is intentionally reserved for B5. Boss AI remains fully authored and bypasses the bridge.
