@@ -36,7 +36,7 @@ if(!proto[TURN_MARK]){
         if(amount>0){enemy.hp+=amount;result.rareBehaviorHeal=amount;}
       }
       if(result)result.rareBehavior={id:enemy.enemy3RareBehavior.id,name:enemy.enemy3RareBehavior.name};
-      enemy.enemy3RareFirstTurn=false;
+      if(result&&!result.frozen&&result.kind!=='stunned')enemy.enemy3RareFirstTurn=false;
     }
     return result;
   };
