@@ -1,5 +1,6 @@
 /* Gear Overhaul Phase 3C — fixed item identity model */
 import { getLegendaryEffect, getCursedAffix } from './equipment3Legendary.js';
+import { unique2IdentityById } from './unique2IdentityLibrary.js';
 
 export const FIXED_IDENTITY_KIND = Object.freeze({
   UNIQUE: 'unique',
@@ -12,11 +13,18 @@ export function fixedEquipmentIdentities(item, inst = null) {
   const out = [];
 
   if (item.unique) {
+    const authored = item.unique2IdentityId ? unique2IdentityById(item.unique2IdentityId) : null;
     out.push({
       kind: FIXED_IDENTITY_KIND.UNIQUE,
       label: 'UNIQUE FIXED',
-      name: item.name,
-      desc: item.lore || 'この装備固有の固定能力。ランダムOption枠・Option Fusionの対象外。',
+      // The equipment row already shows the item name. For Unique 2.0, use the
+      // fixed-identity name here so the compact detail tells the player what
+      // actually changes their combat loop instead of repeating the item name.
+      name: authored?.name || item.name,
+      desc: authored?.loop || item.lore || 'この装備固有の固定能力。ランダムOption枠・Option Fusionの対象外。',
+      sourceItemName: item.name,
+      identityId: authored?.id || null,
+      buildLaneIds: authored?.buildLaneIds || [],
       effects: Array.isArray(item.effects) ? item.effects : [],
       mutable: false,
       consumesOptionSlot: false,
