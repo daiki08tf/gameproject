@@ -1,5 +1,6 @@
 /* Post-Gear Deep Survey — compact annotations on existing Adventure/Secret Realm UI only. */
 import './postCp3SurveyConditionCombat.js';
+import './postCp3ConvergenceApexCombat.js';
 import { state } from '../state.js';
 import { CP3_DEEP_SURVEYS } from '../data/postCp3DeepSurvey.js';
 import { CONVERGENCE_APEX_ID } from '../data/postCp3ConvergenceApex.js';
