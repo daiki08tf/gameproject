@@ -21,7 +21,7 @@ Enemy 2.0 completed enemy identity, level, encounter roles, ranks/variants, endg
 - [x] B4 — Elite Affix System
 - [x] B5 — Rare Monster Behaviors
 - [x] B6 — Encounter Synergy
-- [ ] B7 — Boss Phase AI 2.0
+- [x] B7 — Boss Phase AI 2.0
 - [ ] B8 — Codex Analysis 2.0
 - [ ] B9 — World Tier AI Escalation
 - [ ] B10 — Ch1–30 + Endgame Integration
@@ -79,3 +79,14 @@ Encounter synergies:
 - Pack pressure — two or more ordinary enemies sharing the same `speciesId` gain +4% effective ATK.
 
 Stat synergy is capped at x1.10. Bosses, Rare identities and historical Abyss `enemy.elite` are excluded; no new skill, status, reward rule, save data or World Tier scaling is introduced.
+
+## B7 scope
+B7 deepens only the existing authored Boss phase path. Boss profiles, telegraph kinds, summon rules and damage formulas remain authoritative.
+
+Phase 2 pressure begins at the existing 50% HP transition:
+- +8% effective ATK
+- +8% effective SPD
+- every second actionable Phase 2 turn, each existing special/summon countdown above 1 advances by one extra turn
+- active telegraphs are never accelerated or replaced
+
+B7 introduces no new Boss skill, damage formula, reward rule, save data, generic Elite/Rare behavior or World Tier scaling.
