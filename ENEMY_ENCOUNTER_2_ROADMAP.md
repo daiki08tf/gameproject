@@ -1,6 +1,6 @@
 # Enemy 2.0 / Encounter 2.0 — Implementation Roadmap
 
-Status: **E0–E8 ✅ / E9 COMPLETE CANDIDATE / E10 NEXT**
+Status: **E0–E9 ✅ main / E10 COMPLETE CANDIDATE**
 
 Authoritative design: `ENEMY_ENCOUNTER_2_DESIGN.md`.
 Human-readable enemy catalog: `ENEMY_2_CONTENT_CATALOG.md`.
@@ -9,6 +9,7 @@ E6 handoff: `ENEMY_ENCOUNTER_2_E6_ROLE_TEMPLATES.md`.
 E7 handoff: `ENEMY_ENCOUNTER_2_E7_RANK_VARIANTS.md`.
 E8 handoff: `ENEMY_ENCOUNTER_2_E8_STORY_MIGRATION.md`.
 E9 handoff: `ENEMY_ENCOUNTER_2_E9_ENDGAME_INTEGRATION.md`.
+E10 handoff: `ENEMY_ENCOUNTER_2_E10_CODEX_DISCOVERY.md`.
 
 ## Goal
 
@@ -22,6 +23,8 @@ Species
 Encounter Pool
   ↓
 coherent random party
+  ↓
+existing Codex ecology discovery
 ```
 
 Bosses remain authored by default.
@@ -49,8 +52,8 @@ Bosses remain authored by default.
 | E6 | role-first Encounter Templates | ✅ main |
 | E7 | Rare / generic Elite / environmental Variant integration | ✅ main |
 | E8 | progressive Ch1–30 migration | ✅ main |
-| E9 | curated Abyss / Rift / Secret Realm / Deep Survey integration | ✅ complete candidate |
-| E10 | existing Codex discovery polish | NEXT |
+| E9 | curated Abyss / Rift / Secret Realm / Deep Survey integration | ✅ main |
+| E10 | existing Codex discovery polish | ✅ complete candidate |
 
 ## E0–E4 foundation
 
@@ -113,7 +116,7 @@ Migration rules:
 
 ## E9 curated endgame integration
 
-Enemy 2.0 now decorates dynamically generated endgame stages **after** each activity has resolved its existing difficulty/reward contract.
+Enemy 2.0 decorates dynamically generated endgame stages **after** each activity has resolved its existing difficulty/reward contract.
 
 ### Abyss
 
@@ -152,15 +155,31 @@ Enemy 2.0 now decorates dynamically generated endgame stages **after** each acti
 - no Encounter Pool,
 - four authored Boss phases remain fixed: Ash → Ninth → Root → Convergence.
 
-## E10 next gate
+## E10 Codex / discovery polish
 
-Polish the **existing Codex/discovery surfaces** for Enemy 2.0. Do not add another top-level screen.
+Enemy 2.0 discovery now lands on the **existing Monster Codex** instead of creating a parallel bestiary.
 
-Required direction:
+- existing `state.data.monsterCodex` remains the only save root,
+- ecology aggregation is stored under reserved `monsterCodex.__enemy2Ecology`,
+- Global Species materialized for different Chapters/endgame activities collapse to one species identity,
+- generated `e8_*` / `e9_*` materialization IDs no longer inflate the normal Codex completion denominator,
+- regional enemies preserve their authored identity while Variant sightings aggregate back to the base enemy,
+- observed Story / Abyss / Rift / Secret Realm / Deep Survey activity is recorded,
+- environmental Variant history is recorded,
+- RARE / generic ELITE / historical ABYSS ELITE sightings remain distinct,
+- highest encountered Enemy Lv and environment tags are recorded,
+- Bosses remain on the existing authored Codex path and are excluded from ecology aggregation,
+- actual Enemy 2.0 Rare encounters satisfy the already-existing `Rare個体` Codex milestone,
+- ecology discovery adds **zero** new Codex points or permanent bonuses.
 
-- species discovery should remain understandable when the same species appears at many levels/activities,
-- Variant discoveries should attach to their base species/family instead of looking like unrelated enemies,
-- Rare / Elite / Boss rank should be readable without exposing internal tags,
-- Global vs regional identity should be understandable,
-- discovery should work across story and curated endgame pools,
-- existing save compatibility and Codex identity remain authoritative.
+## Closeout gate
+
+E10 is the final implementation phase. Merge only when:
+
+1. legacy Codex tests remain green,
+2. E10 ecology aggregation tests remain green,
+3. generated Global Species IDs do not inflate completion,
+4. no new save root/currency/reward multiplier is introduced,
+5. full Blade Vale regression and validation workflows are green.
+
+After that merge, **Enemy 2.0 / Encounter 2.0 is implementation-complete**.
