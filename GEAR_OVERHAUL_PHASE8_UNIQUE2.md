@@ -1,6 +1,6 @@
 # Gear Overhaul Phase 8 — Unique 2.0
 
-Status: **8A audit ✅ / 8B identity library ACTIVE**
+Status: **8A audit ✅ / 8B identity library ✅ / 8C Named weapon coverage ✅ / NEXT: 8D balance & presentation**
 
 ## Goal
 
@@ -16,56 +16,30 @@ The FIXED identity remains outside Option slots and Option Fusion.
 
 ## 8A — Existing inventory audit ✅
 
-### Existing architecture
-
-The project already has the correct foundation and must reuse it:
+The project already has the correct foundation and reuses it:
 
 - `js/data/uniqueEquipment.js` — Named / bounty / secret-route Unique definitions (`unique:true`, fixed `effects`).
-- `js/data/equipmentFixedIdentity.js` — exposes Unique as `UNIQUE FIXED`, explicitly outside random Option slots and Option Fusion.
-- `js/data/equipment3Legendary.js` — reusable Legendary Power effect vocabulary and runtime-supported combat patterns.
+- `js/data/equipmentFixedIdentity.js` — exposes Unique as `UNIQUE FIXED`, outside random Option slots and Option Fusion.
+- `js/data/equipment3Legendary.js` — reusable Legendary Power effect vocabulary.
 - `js/data/uniqueBranchEffects.js` — additional existing unique-branch behavior.
-- Equipment/Option 4.0 remains the random-roll layer.
+- Equipment / Option 4.0 remains the random-roll layer.
 
-**Do not create a second Unique inventory, new rarity, new currency, or new save root.**
+No second Unique inventory, rarity, currency, or save root is introduced.
 
-### Coverage findings
+The audit found that existing Named Unique content was concentrated in accessories, swords and shields, with only limited representation of the completed Phase 6 weapon identities.
 
-Current Named Unique content is heavily concentrated in:
+## 8B — Identity library ✅
 
-- accessories,
-- swords,
-- shields,
-- broad effects such as Boss damage / action diversity / flat damage bonus.
+`js/data/unique2IdentityLibrary.js` provides authored FIXED-identity recipes for the existing eight mastery families.
 
-Only a small portion currently expresses the completed Phase 6 identities of all eight weapon families. This is the main Phase 8 content gap.
+Contract:
 
-### Identity quality findings
-
-Keep and deepen identities that change decisions, including:
-
-- guard → attack/counter,
-- spell → stored/echoed offense,
-- high-HP aggression with a tradeoff,
-- Boss specialization with a tradeoff,
-- action-diversity tempo.
-
-Upgrade or avoid repeating identities whose practical result is primarily another unconditional numeric multiplier.
-
-## 8B — Identity library 🔄
-
-`js/data/unique2IdentityLibrary.js` is the authored recipe layer for Phase 8C.
-
-Initial contract:
-
-- existing **8** mastery families only,
-- at least **2 distinct identity recipes per family**,
-- recipes use combat effect kinds already present in the live Unique / Legendary systems,
-- every recipe points to one or more existing Phase 6 build lanes,
-- recipes add no stats or damage until bound to an actual item,
-- FIXED identity never consumes a random Option slot,
-- no hidden new progression system.
-
-Initial library: **16 weapon identity recipes**.
+- 8 existing weapon families only,
+- 2 gameplay-loop identities per family = **16 initial recipes**,
+- existing live combat-effect vocabulary only,
+- every recipe references existing Phase 6 build lanes,
+- recipe data creates no drop, stat, currency, save root or hidden bonus by itself,
+- FIXED identity consumes zero random Option slots and is not Option-Fusion material.
 
 | Family | Recipe directions |
 |---|---|
@@ -78,30 +52,59 @@ Initial library: **16 weapon identity recipes**.
 | 楽器 | tempo diversity, kill sustain/resource |
 | 錫杖 | guard sustain→offense, spell echo judgment |
 
-These are reusable recipes, **not 16 newly injected drops**. Phase 8C decides which weak existing Uniques are upgraded first and where genuinely new Named items are justified.
+## 8C — Named / Unique content pass ✅
 
-## Phase 8C — next
+Existing Named weapons were reused first:
 
-1. Score existing Uniques by gameplay identity strength and family/slot coverage.
-2. Upgrade weak existing Unique weapons before adding replacements.
-3. Add Named/Unique weapons only for families with no credible existing representation.
-4. Bind each upgraded/new item to a Unique 2.0 recipe or an equally explicit fixed identity.
-5. Preserve max-3 random Options on generated instances.
-6. Keep duplicate drops desirable through differing random Options / Option rarity / Option Lv.
+- 剣: `血牙グラム` → `u2_sword_firstblood`
+- 杖: `星詠みの杖` → `u2_staff_stararm`
+
+Six previously uncovered families receive one new Mythic Named weapon each:
+
+| Family | Named Unique | FIXED identity |
+|---|---|---|
+| 斧 | 終王斧グリムヘッド | execution |
+| 弓 | 残光弓アステリオン | crit follow-up |
+| 短剣 | 葬毒刃ミアズマ | on-hit DoT |
+| 拳具 | 連星拳アルカ | crit combo |
+| 楽器 | 戦律器カデンツァ | action-diversity tempo |
+| 錫杖 | 反照錫セラフィム | guard → offense |
+
+This gives **Named Unique weapon coverage to all eight current weapon families** without adding a ninth mastery family.
+
+### Duplicate chase contract
+
+The new items deliberately reuse the existing weapon-instance pipeline:
+
+1. `state.addItem()` allocates a new `baseItemId#seq` physical weapon instance per drop.
+2. The existing Equipment 3.0 compatibility layer immediately normalizes newly generated weapon Options to the approved Option 4.0 rarity count; Mythic therefore has max 3 random Options.
+3. `getItem(instanceId)` resolves back to the Named Unique template, so its FIXED effects and `unique2IdentityId` remain intact.
+4. Existing saved legacy 4–5 Option weapons are not destructively trimmed.
+
+Regression tests generate duplicate copies of all six new weapons and verify distinct instance IDs, max-three Options, and preserved FIXED identity.
+
+### Distribution intentionally deferred
+
+The six new definitions use `distributionPending:true`. They do not invent a new drop source, mode or currency. Phase 9 will place them into existing endgame activities so target farming has clear purposes.
+
+## 8D — NEXT: balance / presentation
+
+Close Unique 2.0 before distribution:
+
+- regression-gate extra-hit / echo / DoT / execution / guard / Boss-specialization values,
+- retain per-action and anti-chain limits on proc identities,
+- expose the authored Unique identity name + gameplay loop through the existing compact Equipment detail,
+- avoid a new Unique screen or Home button,
+- confirm one Unique does not make one Phase 6 build lane mandatory.
 
 ## Balance rules
 
-- Extra attacks / echoes must retain per-action or anti-chain limits already supported by combat.
-- Execution effects must stay within the Phase 6D execution envelope.
-- Boss specialization should normally pay an opportunity cost or remain narrower than universal damage.
+- Extra attacks / echoes retain per-action or anti-chain limits already supported by combat.
+- Execution effects stay within the Phase 6D execution envelope.
+- Boss specialization normally pays an opportunity cost or remains narrower than universal damage.
 - A Unique must not make one Phase 6 build lane the only valid route for its family.
-- Brute-force stat/Option investment remains a valid alternative.
+- Brute-force stat / Option investment remains a valid alternative.
 
-## Phase 8D — later
+## Phase 9 — after 8D
 
-After the content pass:
-
-- duplicate-chase verification,
-- runaway proc/echo checks,
-- concise existing Equipment-detail presentation,
-- loot-source distribution into existing endgame activities.
+Distribute the chase gear through existing Abyss / Rift / Nemesis / Secret Realm / Deep Survey structures, with distinct farming purposes and no new currency.
