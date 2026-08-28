@@ -5,6 +5,7 @@ import { buildWorld2KeyStage } from './world2Stages.js';
 import { world3EventStageById } from './world3EventStages.js';
 import { eighthKeyStageDef } from './phase9EighthKey.js';
 import { applyUnique2TargetFarm } from './gearOverhaulPhase9TargetFarm.js';
+import { buildDeepSurveyStage } from './postCp3DeepSurvey.js';
 
 function scaleRealmEnemies(stage, cfg){
   const seen=new Set();
@@ -120,15 +121,15 @@ function buildEighthKeyStage(def){
 }
 
 export function buildSecretRealmStage(stageId){
-  let stage=null;
-  const eighth=eighthKeyStageDef(stageId);
-  if(eighth) stage=buildEighthKeyStage(eighth);
-  else if(stageId.startsWith('secret-worldkey-')) stage=buildWorld2KeyStage(stageId.slice('secret-worldkey-'.length));
-  else if(stageId.startsWith('secret-worldevent-')){
+  let stage=buildDeepSurveyStage(stageId);
+  const eighth=!stage?eighthKeyStageDef(stageId):null;
+  if(!stage&&eighth) stage=buildEighthKeyStage(eighth);
+  else if(!stage&&stageId.startsWith('secret-worldkey-')) stage=buildWorld2KeyStage(stageId.slice('secret-worldkey-'.length));
+  else if(!stage&&stageId.startsWith('secret-worldevent-')){
     const eventStage=world3EventStageById(stageId);
     stage=eventStage?{...eventStage,dropTable:[...(eventStage.dropTable||[])],waves:(eventStage.waves||[]).map(w=>({...w})),modifiers:[...(eventStage.modifiers||[])]}:null;
   }
-  else if(stageId==='secret-blood-castle'){
+  else if(!stage&&stageId==='secret-blood-castle'){
     const base=buildAbyssStage(800,[],{suppressModifiers:true});
     stage={
       ...base,id:'secret-blood-castle',name:'異界・血王城',recLevel:base.recLevel,itemPowerTarget:Math.min(10000,base.itemPowerTarget+200),
@@ -139,7 +140,7 @@ export function buildSecretRealmStage(stageId){
       modifiers:[{id:'realm_blood_thirst',name:'血の渇き',desc:'回復効果-50% ／ ドロップ率+35%'}],dropRegionTags:['dark','poison'],
     };
   }
-  else {
+  else if(!stage) {
     const cfg=expandedRealmByStageId(stageId);
     stage=cfg?buildExpandedRealm(cfg):null;
   }
