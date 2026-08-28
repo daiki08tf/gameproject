@@ -54,7 +54,7 @@ export function buildPostCp3PlayFeelProxyReport() {
   const ui = read(UI_PATH);
   const combat = read(COMBAT_PATH);
 
-  const minHeightMatch = ui.match(/min-height:(\d+)px/);
+  const minHeightMatch = ui.match(/minHeight=['"](\d+)px['"]/);
   const columnsMatch = ui.match(/grid-template-columns:repeat\((\d+),/);
 
   return {
