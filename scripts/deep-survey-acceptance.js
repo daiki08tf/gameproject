@@ -6,7 +6,9 @@ import { OPTION_RARITY, isOption4 } from '../js/data/options4.js';
 import { optionMaterialXp } from '../js/data/options4Fusion.js';
 import { shouldAutoLockEquipment } from '../js/data/equipment3SmartLoot.js';
 
-const BASE_OPTIONS = Object.freeze(['atk_pct', 'def_pct', 'hp_pct']);
+// Neutral baseline: none of these families is preferred by any Deep Survey
+// region, so every observed preferred-family hit comes from regional steering.
+const BASE_OPTIONS = Object.freeze(['atk_pct', 'evasion_pct', 'armorpen_pct']);
 const SAMPLE_ITEM = Object.freeze({ rarity: 'mythic', slot: 'weapon', weaponType: 'sword' });
 
 function blankInstance() {
