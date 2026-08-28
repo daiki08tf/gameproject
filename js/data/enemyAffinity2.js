@@ -41,7 +41,7 @@ const NAME_RULES=Object.freeze([
   Object.freeze({family:'beast',re:/狼|獣|牙|グリフォン|ペガサス|イエティ|鳥|コウモリ/}),
 ]);
 
-function clampResist(v){return Math.max(-.45,Math.min(.35,Number(v)||0));}
+function clampResist(v){const n=Math.max(-.45,Math.min(.35,Number(v)||0));return Math.round(n*1000)/1000;}
 
 export function enemyAffinityFamily(enemy={}){
   if(enemy.affinityFamily&&ENEMY_AFFINITY_FAMILIES[enemy.affinityFamily])return enemy.affinityFamily;
