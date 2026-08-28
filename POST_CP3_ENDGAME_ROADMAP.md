@@ -1,6 +1,6 @@
 # Post-CP3 Endgame Roadmap — Reconciled after Gear Overhaul
 
-Status: **Deep Survey Loop Validation ACTIVE**
+Status: **Deep Survey Quantitative Acceptance COMPLETE / Manual Feel Gate ACTIVE**
 
 Gear Overhaul Phases 0–9 are complete. Post-CP3 high difficulty consumes that finished loot loop instead of creating parallel progression.
 
@@ -31,20 +31,38 @@ It reuses:
 
 Regional Option steering is bounded at 34%; it is a bias, never a guaranteed roll. Small Legendary chance additions are capped at +3–4 percentage points.
 
-## Loop Validation — active gate
+## Quantitative Acceptance — complete
 
-The post-Gear loop is now regression-tested as:
+The post-Gear loop is exercised as:
 
 `Deep Survey → mixed gear drops → evaluate max-three Options → Option Fusion / build refinement → return deeper/faster`
 
-Automated validation must keep proving that:
+`npm run sim:deep-survey` now runs a deterministic acceptance simulation for all three regions using the live Option 4.0 quality bridge, regional steering, Smart Loot protection rules and Option Fusion XP.
+
+Automated acceptance proves that:
 - each region's 34% Option-family steering remains materially visible but non-guaranteed,
-- target steering returns canonical Option 4.0 records,
-- Greater status survives a steered Option identity,
+- every simulated Option remains canonical Option 4.0,
+- no simulated item exceeds three random Options,
+- valuable Ancient/protected outcomes remain present,
+- ordinary drops remain available as Fusion material instead of everything being auto-protected,
+- every preferred regional family repeatedly supplies positive same-family Fusion XP,
 - Deep Survey remains on the existing IP10,000 / Option / Legendary / Greater loot stack,
 - no parallel reward tier or progression root is introduced.
 
-This automated gate validates the plumbing and statistical intent. Manual feel testing still decides whether the three-region loop is deep enough to justify another vertical layer.
+This closes the quantitative/plumbing gate. It does **not** pretend to replace human play feel.
+
+## Manual Feel Gate — active
+
+Before adding any new vertical layer, play the three regions and judge:
+- whether the combat pressures feel meaningfully different,
+- whether a desired regional Option appears often enough to make target farming readable without feeling guaranteed,
+- whether rejected drops naturally feed Option Fusion,
+- whether returning after build refinement produces a noticeable faster/safer clear,
+- whether the three-region loop still feels rewarding after repeated clears.
+
+If the answer is yes, keep Deep Survey as the current apex and spend the next work on polish/balance rather than another system.
+
+If the answer is no because the loop becomes shallow after gearing, only then design a vertical extension.
 
 ## Permanent guardrails
 
@@ -60,9 +78,9 @@ This automated gate validates the plumbing and statistical intent. Manual feel t
 
 Do not automatically add Survey Conditions / Convergence Apex merely because they existed in the old pre-Gear plan.
 
-First exercise the three-region loop under the validation gate above. Only add another vertical layer if the regions prove too shallow after the Gear loop is actually played.
+The next decision is explicitly manual: **keep the three-region apex** or **justify one deeper vertical layer with observed playtest problems**.
 
-If a later expansion is justified, it must deepen the existing loop rather than add a new currency, gear tier, Home route, timed loop, or mandatory single-build gate.
+Any later expansion must deepen the existing loop rather than add a new currency, gear tier, Home route, timed loop, or mandatory single-build gate.
 
 ## Supersession
 
