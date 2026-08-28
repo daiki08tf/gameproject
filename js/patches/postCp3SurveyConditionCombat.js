@@ -53,13 +53,11 @@ if (!BattleEngine.prototype[MARK]) {
     const fx = this.stage?.deepSurveyConditionEffects;
     if (!fx) return damage;
 
-    // 反響打撃: guarding breaks the chain before damage is applied.
     if (this.player?.guarding) this._deepSurveyDirectPressureStacks = 0;
     const stacks = Math.max(0, Number(this._deepSurveyDirectPressureStacks) || 0);
     const perAction = Math.max(0, Number(fx.directPressurePerAction) || 0);
     if (stacks && perAction) damage *= 1 + stacks * perAction;
 
-    // 照準固定: round-based, bounded, no timer UI and no persisted clock.
     const perRound = Math.max(0, Number(fx.longFightPressurePerRound) || 0);
     const maxLong = Math.max(0, Number(fx.longFightPressureMax) || 0);
     if (perRound && maxLong) {
@@ -74,17 +72,19 @@ if (!BattleEngine.prototype[MARK]) {
     const fx = this.stage?.deepSurveyConditionEffects;
     if (fx) {
       const actionType = String(action?.type || '');
-      // 反響打撃 chain. Guard is an explicit reset; all actual attack command
-      // families add one bounded pressure stack.
       if (actionType === 'guard') this._deepSurveyDirectPressureStacks = 0;
       else if (['attack','skill','spell'].includes(actionType) && Number(fx.directPressurePerAction) > 0) {
         const cap = Math.max(1, Number(fx.directPressureMaxStacks) || 1);
         this._deepSurveyDirectPressureStacks = Math.min(cap, (Number(this._deepSurveyDirectPressureStacks) || 0) + 1);
       }
 
-      // 記録飽和: same action family repeats get a bounded damage penalty;
-      // switching action family immediately clears the accumulated penalty.
-      if (Number(fx.repeatedActionPenalty) > 0 && ['attack','skill','spell'].includes(actionType)) {
+      // 記録飽和: switching among attack/skill/spell or deliberately guarding
+      // breaks repetition. Guard remains useful without becoming mandatory.
+      if (actionType === 'guard' && Number(fx.repeatedActionPenalty) > 0) {
+        this._deepSurveyLastActionType = 'guard';
+        this._deepSurveyRepeatCount = 0;
+        this._deepSurveyRepeatDamagePenalty = 0;
+      } else if (Number(fx.repeatedActionPenalty) > 0 && ['attack','skill','spell'].includes(actionType)) {
         if (this._deepSurveyLastActionType === actionType) this._deepSurveyRepeatCount = (Number(this._deepSurveyRepeatCount) || 0) + 1;
         else this._deepSurveyRepeatCount = 0;
         this._deepSurveyLastActionType = actionType;
@@ -125,9 +125,6 @@ if (!BattleEngine.prototype[MARK]) {
   };
 }
 
-// Resolve the condition only when battle starts. Stage-list and confirm rendering
-// stay baseline, so choosing "なし" can always return to the ordinary Deep Survey
-// even after a previous conditioned run in the same session.
 const SCREEN_MARK = Symbol.for('bladeVale.postCp3SurveyConditionScreenStart');
 if (!TextBattleScreen.prototype[SCREEN_MARK]) {
   TextBattleScreen.prototype[SCREEN_MARK] = true;
