@@ -2,8 +2,8 @@
    敵データ定義
    第1章は既存のまま。第2章以降は chapter metadata から
    normal/fast/tank/boss を自動生成。16〜30章はmidbossも生成する。
-   Enemy 2.0 E4 adds attacker/caster/trickster/support/rare identities
-   without changing any existing fixed stage waves.
+   Enemy 2.0 E4 adds attacker/caster/trickster/support/rare identities.
+   Enemy 2.0 E5 registers only the Ch1 Global Species pilot types.
    ============================================================ */
 import { CHAPTER_SPECS, chapterMult } from './chapters.js';
 import { CHAPTER_EXPANSION_16_20 } from './chapters16to20.js';
@@ -11,6 +11,7 @@ import { CHAPTER_EXPANSION_21_25 } from './chapters21to25.js';
 import { CHAPTER_EXPANSION_26_29 } from './chapters26to29.js';
 import { CHAPTER_EXPANSION_30 } from './chapters30.js';
 import { REGIONAL_ENEMY_EXPANSION, REGIONAL_ENEMY_ROLES } from './regionalEnemies2.js';
+import { materializeGlobalSpecies } from './globalEnemySpecies.js';
 import { ENEMY_SCALING, chapterScaleMult } from './balance.js';
 
 export function hpMult(num) { return chapterScaleMult(ENEMY_SCALING.HP_BASE_MULT, ENEMY_SCALING.HP_EARLY_RATE, ENEMY_SCALING.HP_LATE_RATE, ENEMY_SCALING.PIVOT_CHAPTER, num); }
@@ -20,8 +21,6 @@ export function bossHpMult(num) { return chapterScaleMult(ENEMY_SCALING.BOSS_HP_
 const NORMAL_BASE={hp:26,atk:6,def:2,speed:95,radius:15,color:'#c9505f',xp:6,gold:4};
 const FAST_BASE={hp:14,atk:4,def:0,speed:180,radius:11,color:'#e0c94a',xp:5,gold:3};
 const TANK_BASE={hp:70,atk:11,def:5,speed:62,radius:22,color:'#8a5cd6',xp:14,gold:8};
-// E4 role identities intentionally use different stat silhouettes even before
-// dedicated behavior AI is layered in later Enemy 2.0 phases.
 const ATTACKER_BASE={hp:22,atk:10,def:1,speed:108,radius:15,color:'#d85c44',xp:8,gold:5};
 const CASTER_BASE={hp:18,atk:8,def:1,speed:102,radius:14,color:'#6f78d8',xp:9,gold:6};
 const TRICKSTER_BASE={hp:20,atk:6,def:1,speed:145,radius:13,color:'#9a63c7',xp:8,gold:6};
@@ -43,7 +42,6 @@ for(const ch of ALL_CHAPTER_SPECS){
  if(ch.branch)ENEMY_TYPES[`${ch.id}_branchboss`]=scale(BRANCH_BASE,ch.branch.enemyName,ch.num,{role:'boss',chapterId:ch.id});
 }
 
-// Ch1 predates chapter metadata but participates in the same E4 ecology catalog.
 const STORY_REGION_NUMBERS=Object.freeze({ch1:1,...Object.fromEntries(ALL_CHAPTER_SPECS.map(ch=>[ch.id,ch.num]))});
 for(const [chapterId,set] of Object.entries(REGIONAL_ENEMY_EXPANSION)){
  const num=STORY_REGION_NUMBERS[chapterId];
@@ -52,21 +50,27 @@ for(const [chapterId,set] of Object.entries(REGIONAL_ENEMY_EXPANSION)){
   const def=set[role],base=E4_ROLE_BASES[role];
   if(!def||!base)continue;
   ENEMY_TYPES[`${chapterId}_${role}`]=scale(base,def.name,num,{
-   role,
-   chapterId,
-   speciesId:`regional:${chapterId}:${role}`,
-   regional:true,
-   behaviorTags:[...(def.behaviorTags||[])],
-   rareIdentity:role==='rare',
+   role,chapterId,speciesId:`regional:${chapterId}:${role}`,regional:true,
+   behaviorTags:[...(def.behaviorTags||[])],rareIdentity:role==='rare',
   });
  }
 }
 
-// Existing chapter-1 types keep their historical IDs/stats, but gain ecology metadata
-// for the later Encounter Pool migration.
 Object.assign(ENEMY_TYPES.grunt,{role:'normal',chapterId:'ch1',speciesId:'regional:ch1:normal'});
 Object.assign(ENEMY_TYPES.fast,{role:'fast',chapterId:'ch1',speciesId:'global:bat'});
 Object.assign(ENEMY_TYPES.tank,{role:'tank',chapterId:'ch1',speciesId:'regional:ch1:tank'});
+
+// E5 pilot: materialize only globally plausible Ch1 species. This does not place
+// them into waves by itself; Ch1 encounterPool metadata decides whether they can appear.
+const CH1_GLOBAL_PILOT=Object.freeze([
+ ['ch1_global_slime','slime','grunt'],
+ ['ch1_global_goblin','goblin','ch1_attacker'],
+ ['ch1_global_wolf','wolf','fast'],
+]);
+for(const [id,speciesId,anchorId] of CH1_GLOBAL_PILOT){
+ const globalEnemy=materializeGlobalSpecies(speciesId,ENEMY_TYPES[anchorId]);
+ if(globalEnemy)ENEMY_TYPES[id]={...globalEnemy,chapterId:'ch1',encounterPilot:true};
+}
 
 const ARCHEON=ENEMY_TYPES.ch25_boss;
 ENEMY_TYPES.raid_archeon={

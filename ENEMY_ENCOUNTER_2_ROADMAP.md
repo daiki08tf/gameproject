@@ -1,9 +1,10 @@
 # Enemy 2.0 / Encounter 2.0 — Implementation Roadmap
 
-Status: **E0–E3 ✅ / E4 REGIONAL EXPANSION COMPLETE CANDIDATE / E5 NEXT**
+Status: **E0–E4 ✅ / E5 CH1 ENCOUNTER PILOT COMPLETE CANDIDATE / E6 NEXT**
 
 Authoritative design: `ENEMY_ENCOUNTER_2_DESIGN.md`.
 Human-readable enemy catalog: `ENEMY_2_CONTENT_CATALOG.md`.
+E5 handoff: `ENEMY_ENCOUNTER_2_E5_ENCOUNTER_PILOT.md`.
 
 ## Goal
 
@@ -39,9 +40,9 @@ Bosses remain authored by default.
 | E1 | visible runtime Enemy Lv foundation | ✅ main |
 | E2 | anchor-safe level-relative stat scaling | ✅ main |
 | E3 | 12 Global Species, led by true-global slime | ✅ main |
-| E4 | Ch1–30 regional expansion to 7 roles + 1 Rare | ✅ complete candidate |
-| E5 | optional Encounter Pool contract + pilot chapter | NEXT |
-| E6 | role-first Encounter Templates | queued |
+| E4 | Ch1–30 regional expansion to 7 roles + 1 Rare | ✅ main |
+| E5 | optional Encounter Pool contract + Ch1 pilot | ✅ complete candidate |
+| E6 | role-first Encounter Templates | NEXT |
 | E7 | Rare / generic Elite / environmental Variant integration | queued |
 | E8 | progressive Ch1–30 migration | queued |
 | E9 | curated Abyss / Rift / Secret Realm / Deep Survey integration | queued |
@@ -61,57 +62,63 @@ Bosses remain authored by default.
 
 `スライム / コウモリ / ゴブリン / ウルフ / スケルトン / ゴーレム / ウィスプ / 毒キノコ / 小精霊 / リザード / ミミック / 彷徨う鎧`
 
-Global Species are data candidates only until Encounter Pool rollout. Slime may appear regardless of habitat; the other species remain habitat-aware.
+Slime is true-global. Other reusable species retain habitat identity.
 
 ## E4 regional expansion
 
-Every Ch1–30 region now has:
+Every Ch1–30 region now has the existing normal / fast / tank plus new attacker / caster / trickster / support and one authored Rare.
 
-- existing normal
-- existing fast
-- existing tank
-- new attacker
-- new caster
-- new trickster
-- new support
-- one authored Rare identity
+E4 added **150 new regional identities**. Current ordinary/Rare ecology volume before Bosses/special enemies is **252 identities**.
 
-E4 adds **150 new regional identities** while keeping existing fixed waves unchanged.
+Rares remain stronger ordinary identities and deliberately do **not** set `boss` or the current Abyss-specific `elite` flag.
 
-Current ordinary/Rare ecology volume before Bosses/special enemies:
+## E5 Ch1 Encounter Pool pilot
 
-- existing regional normal/fast/tank: 90
-- new attacker/caster/trickster/support: 120
-- new Chapter Rares: 30
-- Global Species: 12
-- **total: 252 identities**
+The first live Encounter Pool is deliberately narrow:
 
-The four new ordinary roles are not name-only clones: each has a distinct base stat silhouette and stable `role`, `speciesId`, `chapterId`, and `behaviorTags`. Rare identities use the same Chapter scaling anchor, are stronger ordinary enemies, and deliberately do **not** set `boss` or `elite`.
+- `1-1` remains fully fixed as the tutorial,
+- `1-2` / `1-3` / `1-4` / `1-5` opt into `ch1-field-pilot`,
+- `1-B` remains fixed,
+- existing `waves` remain present as fallback,
+- the existing wave headcount and encounter grouping are not increased,
+- the authored `boss_orcking` type can never be replaced.
 
-E4 does not insert any of these new IDs into story waves yet.
+Pilot ordinary candidates include existing Ch1 normal/fast/tank, the four E4 ordinary roles, and actual Global Species materializations including **スライム** and **ウルフ**.
+
+E5 runtime selection is intentionally the smallest possible bridge: each non-Boss spawn in an opt-in stage can resolve to a safe weighted pool candidate, then flows through the existing Enemy Lv and Combat2 patch chain. Runtime enemies retain their ecology metadata (`role`, `speciesId`, `behaviorTags`, etc.).
+
+Safety:
+
+- no Chapter Rare in the live pool yet,
+- no generic Elite,
+- no Boss replacement,
+- no new reward table / Item Power / Option rule,
+- no new save data,
+- no enemy-count inflation,
+- deterministic pure selection helpers exist for regression tests.
+
+This means E5 proves **“re-enter the same stage and ordinary enemies may differ”** without yet trying to author coherent party formations.
 
 ## Encounter principle
 
-Randomness is role-driven rather than slot-by-slot chaos.
+Randomness must become role-driven rather than permanent slot-by-slot chaos.
 
-Initial templates remain:
+Initial template vocabulary:
 
 `mixed / pack / frontline / escort / ambush / bulwark / rare_invasion / solo_threat`
 
-The template chooses roles first; regional/global pools resolve species second.
+E5 proves the pool plumbing. **E6 is responsible for moving from individual pool swaps to coherent role-first Encounter Templates.**
 
-## E5 acceptance gate
+## E6 acceptance gate
 
-E5 introduces the first optional Encounter Pool contract and one pilot region only.
+E6 may add role-first Encounter Templates when:
 
-Required:
-
-1. a stage can opt into `encounterPool` while fixed `waves` remain valid fallback,
-2. pilot should start in an early Chapter where regressions are easy to observe,
-3. pool resolves existing regional roles plus eligible Global Species,
-4. Boss identity and Boss wave remain fixed,
-5. random encounter generation must be deterministic-testable even if runtime play uses entropy,
-6. no Rare dependency for story completion,
-7. no generic Elite implementation yet,
-8. enemy count and command reachability remain within existing mobile safety limits,
-9. no reward/currency/save-system fork.
+1. a template chooses a coherent role pattern before species resolution,
+2. Ch1 pilot can produce at least `mixed / pack / frontline / escort / ambush / bulwark`,
+3. template output never exceeds the existing encounter-group/mobile safety limits,
+4. Boss encounter remains authored and fixed,
+5. Regional Species and eligible Global Species can fill compatible role slots,
+6. Support/Caster/Trickster are not guaranteed in every encounter,
+7. Rare invasion remains deferred to E7 runtime reward/rank work,
+8. deterministic seeded generation remains testable,
+9. fixed `waves` remain fallback and no save/currency/reward fork is added.
