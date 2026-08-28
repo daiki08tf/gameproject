@@ -1,6 +1,6 @@
 # Gear Overhaul Phase 9 — Loot Distribution / Endgame Return
 
-Status: **9A Named Unique target farms ✅ / 9B activity-role separation ACTIVE / NEXT: 9C endgame loop validation**
+Status: **9A Named Unique target farms ✅ / 9B activity-role separation ✅ / 9C endgame loop validation ✅ COMPLETE**
 
 ## Goal
 
@@ -12,20 +12,22 @@ No new activity, currency, save root, pity meter, daily/weekly loop or Home butt
 
 ## Phase 9A — Named Unique target farms ✅
 
-The six Phase 8C Named weapons are distributed through existing stage metadata and the canonical `dropTable` pipeline.
+The six Phase 8C Named weapons are distributed through existing stage metadata and the canonical equipment-instance pipeline.
 
-| Named Unique | Target farm | Condition | Weight |
-|---|---|---|---:|
-| 終王斧グリムヘッド | Abyss Armory | `armory` route, Boss floor, depth >= 1200 | 0.08 |
-| 連星拳アルカ | Abyss Armory | `armory` route, depth >= 1800 | 0.07 |
-| 残光弓アステリオン | Rift | Wind / Lightning key | 0.09 |
-| 葬毒刃ミアズマ | Rift | Poison / Dark key | 0.09 |
-| 戦律器カデンツァ | Secret Realm | `secret-inverted-library` | 0.11 |
-| 反照錫セラフィム | Secret Realm | final Eighth Key stage | 0.12 |
+| Named Unique | Target farm | Condition | Delivery |
+|---|---|---|---|
+| 終王斧グリムヘッド | Abyss Armory | `armory` route, Boss floor, depth >= 1200 | dropTable weight 0.08 |
+| 連星拳アルカ | Abyss Armory | `armory` route, depth >= 1800 | dropTable weight 0.07 |
+| 残光弓アステリオン | Rift | Wind / Lightning key | one 6% roll per clear |
+| 葬毒刃ミアズマ | Rift | Poison / Dark key | one 6% roll per clear |
+| 戦律器カデンツァ | Secret Realm | `secret-inverted-library` | dropTable weight 0.11 |
+| 反照錫セラフィム | Secret Realm | final Eighth Key stage | dropTable weight 0.12 |
 
-PR #256. The six weapons still enter the normal weapon-instance pipeline, so duplicate drops keep distinct max-three Options and remain useful for Option Fusion / god-roll hunting.
+PR #256 introduced the target map. Phase 9C corrected Rift delivery after validating the live `_rollDrop()` behavior: Rift had an empty base `dropTable`, so placing one Named entry there would make every successful table roll choose that Named. Rift now performs one bounded clear roll instead of one eligible table roll per enemy.
 
-## Phase 9B — activity-role separation 🔄
+All six weapons still enter `state.addItem()` and the normal weapon-instance pipeline, so duplicate drops keep distinct max-three Options and remain useful for Option Fusion / god-roll hunting.
+
+## Phase 9B — activity-role separation ✅
 
 `js/data/endgameLootRoles.js` defines one readable loot purpose for each existing activity instead of adding another reward system:
 
@@ -36,45 +38,35 @@ PR #256. The six weapons still enter the normal weapon-instance pipeline, so dup
 | Nemesis / EX | rival / enemy-themed high-risk rewards | intel + hunt-mode efficiency |
 | Secret Realm | Named / Build Identity | authored discovery / Set chase |
 
-The existing Home `NEXT` guidance card now shows a compact **目的別ファーム** line once endgame opens. It reuses the existing card and adds no Home button or new screen.
+The existing Home `NEXT` guidance card shows one compact **目的別ファーム** line once endgame opens. It reuses the existing card and adds no Home button or new screen.
 
-This phase intentionally does **not** copy every Named weapon into Nemesis or every endgame activity. Role clarity is achieved by exposing and reusing rewards that already exist.
+This phase intentionally does **not** copy every Named weapon into Nemesis or every endgame activity.
 
-## Implementation contract
-
-`js/data/gearOverhaulPhase9TargetFarm.js` is the thin Phase 9A distribution layer.
-
-It may:
-- inspect existing stage metadata,
-- prepend a bounded Named Unique entry to the existing `dropTable`,
-- expose `stage.unique2TargetFarm` as informational metadata.
-
-`js/data/endgameLootRoles.js` is the Phase 9B guidance contract.
-
-It may:
-- describe the existing activity's loot purpose,
-- expose compact role summaries to existing UI.
-
-Neither layer may:
-- directly grant an item outside the existing drop engine,
-- reroll or trim existing saved gear,
-- change Unique FIXED identities,
-- create a new loot currency or vendor,
-- make a Named Unique universally mandatory BiS.
-
-## Phase 9C — NEXT: endgame loop validation
+## Phase 9C — endgame loop validation ✅
 
 Regression / simulation target:
 
 `high difficulty → target gear → evaluate max-three Options → Option Fusion/build refinement → deeper difficulty`
 
-Validate that:
-- each activity has a reason to exist,
-- target farms do not become guaranteed handouts,
-- Greater / Ancient / Named signals stay economically distinct,
-- duplicate Named drops remain useful rather than dead drops,
+Validation now covers:
+- actual Abyss / Rift / Secret Realm stage builders,
+- wrong-route / wrong-element exclusion,
+- low Named share inside existing Abyss / Secret Realm tables,
+- Rift Named chase as one clear roll rather than per-enemy table monopoly,
+- deterministic 20,000-trial simulation around the authored 6% Rift clear rate,
+- explicit activity-role data for Abyss / Rift / Nemesis-EX / Secret Realm,
+- existing Phase 8 duplicate-instance regression for max-three random Options.
+
+Permanent constraints:
+- target farms stay chase rewards, not guaranteed handouts,
+- Greater / Ancient / Named signals remain economically distinct,
+- duplicate Named drops remain useful,
 - brute-force farming remains viable,
-- intended builds can reach the same content earlier and more efficiently,
+- intended builds can reach content earlier and more efficiently,
 - no single Unique becomes a hard progression gate.
 
-After 9C, reconcile the paused Deep Survey branch against the finished Gear Overhaul instead of reviving an old parallel progression design.
+## Next
+
+Gear Overhaul Phases 0–9 are now closed. The next default task is to reconcile the paused Deep Survey branch against the finished Gear Overhaul before expanding it.
+
+Do not revive the old Deep Survey implementation unchanged if it assumes pre-Option4 loot behavior or generic endgame rewards. Deep Survey should become the hardest **mixed chase** built on the now-final gear loop, not a new currency or parallel progression track.
