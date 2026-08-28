@@ -1,12 +1,12 @@
 # Post-CP3 Endgame Roadmap — Reconciled after Gear Overhaul
 
-Status: **Deep Survey Reconciliation ACTIVE**
+Status: **Deep Survey Loop Validation ACTIVE**
 
-Gear Overhaul Phases 0–9 are complete. Post-CP3 high difficulty now consumes that finished loot loop instead of creating parallel progression.
+Gear Overhaul Phases 0–9 are complete. Post-CP3 high difficulty consumes that finished loot loop instead of creating parallel progression.
 
 ## Deep Survey — current implementation
 
-Three existing CP3 hidden-route conclusions become Lv99,999 / IP10,000 Secret Realm targets:
+Three existing CP3 hidden-route conclusions are Lv99,999 / IP10,000 Secret Realm targets:
 
 | Region | Combat pressure | Gear purpose |
 |---|---|---|
@@ -31,6 +31,21 @@ It reuses:
 
 Regional Option steering is bounded at 34%; it is a bias, never a guaranteed roll. Small Legendary chance additions are capped at +3–4 percentage points.
 
+## Loop Validation — active gate
+
+The post-Gear loop is now regression-tested as:
+
+`Deep Survey → mixed gear drops → evaluate max-three Options → Option Fusion / build refinement → return deeper/faster`
+
+Automated validation must keep proving that:
+- each region's 34% Option-family steering remains materially visible but non-guaranteed,
+- target steering returns canonical Option 4.0 records,
+- Greater status survives a steered Option identity,
+- Deep Survey remains on the existing IP10,000 / Option / Legendary / Greater loot stack,
+- no parallel reward tier or progression root is introduced.
+
+This automated gate validates the plumbing and statistical intent. Manual feel testing still decides whether the three-region loop is deep enough to justify another vertical layer.
+
 ## Permanent guardrails
 
 - no new currency,
@@ -45,11 +60,9 @@ Regional Option steering is bounded at 34%; it is a bias, never a guaranteed rol
 
 Do not automatically add Survey Conditions / Convergence Apex merely because they existed in the old pre-Gear plan.
 
-First playtest the three-region loop:
+First exercise the three-region loop under the validation gate above. Only add another vertical layer if the regions prove too shallow after the Gear loop is actually played.
 
-`Deep Survey → mixed gear drops → evaluate max-three Options → Option Fusion / build refinement → return deeper/faster`
-
-Only add another vertical layer if these three regions prove too shallow after the Gear loop is actually exercised.
+If a later expansion is justified, it must deepen the existing loop rather than add a new currency, gear tier, Home route, timed loop, or mandatory single-build gate.
 
 ## Supersession
 
