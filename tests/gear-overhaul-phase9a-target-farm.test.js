@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { UNIQUE2_TARGET_FARM_PROFILES, applyUnique2TargetFarm } from '../js/data/gearOverhaulPhase9TargetFarm.js';
+import { UNIQUE2_TARGET_FARM_PROFILES, applyUnique2TargetFarm, rollUnique2ClearReward } from '../js/data/gearOverhaulPhase9TargetFarm.js';
 import { buildAbyssStage } from '../js/data/abyss.js';
 import { buildRiftStage } from '../js/data/riftStages.js';
 import { buildSecretRealmStage } from '../js/data/secretRealms.js';
@@ -37,15 +37,20 @@ const baseKey = {
   dangers:[], reward:'treasure', dangerScore:0,
 };
 const windRift = buildRiftStage({ ...baseKey, id:'wind', element:'wind' });
-assert.ok(windRift.dropTable.some(x => x.itemId === 'uq_u2_asterion'));
-assert.ok(!windRift.dropTable.some(x => x.itemId === 'uq_u2_miasma'));
+assert.equal(windRift.dropTable.length,0,'Rift Named chase must not become the only per-enemy table entry');
+assert.equal(windRift.unique2TargetFarm?.[0]?.itemId,'uq_u2_asterion');
+assert.equal(windRift.unique2TargetFarm?.[0]?.mode,'clearChance');
+assert.equal(rollUnique2ClearReward(windRift,()=>0)?.itemId,'uq_u2_asterion');
+assert.equal(rollUnique2ClearReward(windRift,()=>0.99),null);
 
 const poisonRift = buildRiftStage({ ...baseKey, id:'poison', element:'poison' });
-assert.ok(poisonRift.dropTable.some(x => x.itemId === 'uq_u2_miasma'));
-assert.ok(!poisonRift.dropTable.some(x => x.itemId === 'uq_u2_asterion'));
+assert.equal(poisonRift.dropTable.length,0);
+assert.equal(poisonRift.unique2TargetFarm?.[0]?.itemId,'uq_u2_miasma');
+assert.equal(rollUnique2ClearReward(poisonRift,()=>0)?.itemId,'uq_u2_miasma');
 
 const fireRift = buildRiftStage({ ...baseKey, id:'fire', element:'fire' });
-assert.ok(!fireRift.dropTable.some(x => x.itemId === 'uq_u2_asterion' || x.itemId === 'uq_u2_miasma'));
+assert.equal(fireRift.unique2TargetFarm,undefined);
+assert.equal(rollUnique2ClearReward(fireRift,()=>0),null);
 
 const library = buildSecretRealmStage('secret-inverted-library');
 assert.ok(library, 'inverted library must exist');
@@ -59,7 +64,8 @@ const eighthFirst = buildSecretRealmStage('secret-eighth-key-1');
 assert.ok(!eighthFirst.dropTable.some(x => x.itemId === 'uq_u2_seraphim'));
 
 for (const profile of UNIQUE2_TARGET_FARM_PROFILES) {
-  assert.ok(profile.weight > 0 && profile.weight <= 0.12, `${profile.id} weight out of target-farm envelope`);
+  if(profile.mode==='dropTable') assert.ok(profile.weight > 0 && profile.weight <= 0.12, `${profile.id} weight out of target-farm envelope`);
+  if(profile.mode==='clearChance') assert.ok(profile.clearChance > 0 && profile.clearChance <= 0.08, `${profile.id} clear chance out of target-farm envelope`);
 }
 
 console.log('Gear Overhaul Phase 9A target-farm tests passed');
