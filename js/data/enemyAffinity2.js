@@ -43,6 +43,18 @@ const NAME_RULES=Object.freeze([
 
 function clampResist(v){const n=Math.max(-.45,Math.min(.35,Number(v)||0));return Math.round(n*1000)/1000;}
 
+// Combat 2.0's existing final element multiplier is bounded to this range
+// (elementMultiplier() used to clamp `1 - resist` directly to it, with no cap
+// on `resist` itself). Authored `enemy.elementResist` must stay within the
+// equivalent resist range so it can still reach the full 1.55/0.65 ends —
+// the narrower -0.45..0.35 family/variant range above is this PR's own
+// balance knob for auto-inferred affinities and must not also clamp authored
+// values, or an authored resist of e.g. -0.55/-1 gets silently weakened to a
+// 1.45 multiplier instead of the existing contract's 1.55.
+const FINAL_MULTIPLIER_RANGE=Object.freeze({min:.65,max:1.55});
+const AUTHORED_RESIST_RANGE=Object.freeze({min:1-FINAL_MULTIPLIER_RANGE.max,max:1-FINAL_MULTIPLIER_RANGE.min});
+function clampAuthoredResist(v){const n=Math.max(AUTHORED_RESIST_RANGE.min,Math.min(AUTHORED_RESIST_RANGE.max,Number(v)||0));return Math.round(n*1000)/1000;}
+
 export function enemyAffinityFamily(enemy={}){
   if(enemy.affinityFamily&&ENEMY_AFFINITY_FAMILIES[enemy.affinityFamily])return enemy.affinityFamily;
   const speciesMapped=SPECIES_FAMILY[enemy.speciesId];
@@ -61,7 +73,7 @@ export function enemyAffinityProfile(enemy={}){
   const variantMap=ENEMY_AFFINITY_VARIANTS[enemy.variantId]||{};
   for(const [element,value] of Object.entries(variantMap))result[element]=clampResist((result[element]||0)+value);
   for(const [element,value] of Object.entries(enemy.elementResist||{})){
-    if(Number.isFinite(value))result[element]=clampResist(value);
+    if(Number.isFinite(value))result[element]=clampAuthoredResist(value);
   }
   return {family,familyName:ENEMY_AFFINITY_FAMILIES[family]?.name||null,resist:result};
 }
@@ -73,7 +85,7 @@ export function enemyAffinityResist(enemy,element){
 
 export function affinityMultiplierFromResist(resist){
   if(!Number.isFinite(resist))return 1;
-  return Math.max(.65,Math.min(1.55,1-resist));
+  return Math.max(FINAL_MULTIPLIER_RANGE.min,Math.min(FINAL_MULTIPLIER_RANGE.max,1-resist));
 }
 
 export function affinityTier(mult){
