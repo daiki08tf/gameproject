@@ -4,12 +4,15 @@ import './phase9RegionalMasteryRuntime.js';
 import './phase9EighthKeyRuntime.js';
 import './phase9MachineWorldRuntime.js';
 import './postCp3DeepSurveyUi.js';
+import './postCp3ConvergenceApexCombat.js';
 import { state } from '../state.js';
 import { EXPLORATION_SITES, explorationProgressFor } from '../data/exploration1.js';
 import { deepSurveyExplorationSites, deepSurveyUnlocked } from '../data/postCp3DeepSurvey.js';
+import { convergenceApexExplorationSite, convergenceApexUnlockStatus } from '../data/postCp3ConvergenceApex.js';
 
 const DEEP_SURVEY_SITES=deepSurveyExplorationSites();
-const ALL_EXPLORATION_SITES=Object.freeze([...EXPLORATION_SITES,...DEEP_SURVEY_SITES]);
+const CONVERGENCE_APEX_SITE=convergenceApexExplorationSite();
+const ALL_EXPLORATION_SITES=Object.freeze([...EXPLORATION_SITES,...DEEP_SURVEY_SITES,CONVERGENCE_APEX_SITE]);
 const SITE_BY_ID=new Map(ALL_EXPLORATION_SITES.map(site=>[site.id,site]));
 
 function ensure(){
@@ -26,6 +29,12 @@ state.explorationProgress=function(id){
   ensure(); const site=this.explorationSite(id); if(!site) return null;
   if(site.postCp3DeepSurvey&&!deepSurveyUnlocked(site.id,this.data.world2?.discoveries||{})){
     return { state:'hidden', fragments:0, inspected:false, unlocked:false };
+  }
+  if(site.postCp3ConvergenceApex){
+    const gate=convergenceApexUnlockStatus(stageId=>this.isStageCleared(stageId));
+    if(!gate.unlocked) return { state:'hidden', fragments:0, inspected:false, unlocked:false, convergenceGate:gate };
+    const record=this.data.exploration[id]||{};
+    return { state:'unlocked', fragments:0, inspected:!!record.inspected, unlocked:true, convergenceGate:gate };
   }
   return explorationProgressFor(site,this.data.abyssBestDepth,this.data.exploration[id]);
 };

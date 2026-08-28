@@ -6,6 +6,7 @@ import { world3EventStageById } from './world3EventStages.js';
 import { eighthKeyStageDef } from './phase9EighthKey.js';
 import { applyUnique2TargetFarm } from './gearOverhaulPhase9TargetFarm.js';
 import { buildDeepSurveyStage } from './postCp3DeepSurvey.js';
+import { CONVERGENCE_APEX_ID, buildConvergenceApexStage } from './postCp3ConvergenceApex.js';
 
 function scaleRealmEnemies(stage, cfg){
   const seen=new Set();
@@ -121,7 +122,7 @@ function buildEighthKeyStage(def){
 }
 
 export function buildSecretRealmStage(stageId){
-  let stage=buildDeepSurveyStage(stageId);
+  let stage=stageId===CONVERGENCE_APEX_ID?buildConvergenceApexStage():buildDeepSurveyStage(stageId);
   const eighth=!stage?eighthKeyStageDef(stageId):null;
   if(!stage&&eighth) stage=buildEighthKeyStage(eighth);
   else if(!stage&&stageId.startsWith('secret-worldkey-')) stage=buildWorld2KeyStage(stageId.slice('secret-worldkey-'.length));
