@@ -7,6 +7,8 @@ export const ENEMY2_ACTIVITY_LABELS=Object.freeze({
   story:'Story',abyss:'Abyss',rift:'Rift',secret:'Secret Realm',survey:'Deep Survey',
 });
 
+export function isEnemy2GeneratedMaterializationId(id){return /^e[89]_/.test(String(id||''));}
+
 function addUnique(list,value){if(value&&!list.includes(value))list.push(value);}
 function cleanList(value){return Array.isArray(value)?value:[];}
 function safeLevel(enemy){const n=Number(enemy?.level??enemy?.baseLevel);return Number.isFinite(n)?Math.max(1,Math.min(99999,Math.floor(n))):0;}
