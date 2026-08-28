@@ -1,6 +1,6 @@
 # Post-CP3 Endgame Roadmap — Reconciled after Gear Overhaul
 
-Status: **Vertical Extension V1–V6 IMPLEMENTED / automated acceptance green / Manual Feel Proxy A complete candidate**
+Status: **Vertical Extension V1–V6 IMPLEMENTED / automated acceptance green / Manual Feel Proxy A main / Proxy B complete candidate**
 
 Gear Overhaul Phases 0–9, post-Gear Deep Survey, Survey Conditions, Convergence Apex and automated acceptance are implemented on the existing Gear/Exploration/Secret Realm stack.
 
@@ -78,22 +78,40 @@ No systems or reward numbers are added. Existing surfaces are clarified for port
 - Final phase shows the currently active Ash/Ninth/Root sub-cycle,
 - no new Home button, screen or navigation route.
 
-## Manual Feel Proxy A — complete candidate
+## Manual Feel Proxy A — ✅ main
 
-Before actual-device play, the code-side feel audit now protects the most likely short-portrait failures without changing balance:
-- on portrait viewports at **720px height or below**, enemy cards gain a bounded scroll area instead of consuming all vertical space,
+Before actual-device play, the first code-side feel audit protects short-portrait usability:
+- at **720px height or below**, enemy cards gain bounded scroll instead of consuming all vertical space,
 - the battle log keeps a usable minimum reading area,
 - command buttons retain at least **44px** height,
 - technique lists are bounded so the player can still return to commands,
-- each Apex phase announces itself once in the battle log with its immediate gameplay pressure,
-- Final announces each Ash / Ninth / Root sub-cycle when the active pressure changes,
-- all of this is transient presentation only: no save data, reward numbers or progression rules change.
+- each Apex phase announces itself once in the battle log,
+- Final announces each Ash / Ninth / Root sub-cycle when active pressure changes,
+- all presentation remains transient: no save data, reward numbers or progression rules change.
 
-Automated proxy checks live in `tests/post-cp3-manual-feel-proxy.test.js`.
+Automated checks: `tests/post-cp3-manual-feel-proxy.test.js`.
+
+## Manual Feel Proxy B — ✅ complete candidate
+
+The second code-side audit measures structural feel rather than viewport behavior.
+
+Run `npm run audit:post-cp3-feel` to report:
+- exactly **3 single Conditions + 3 optional two-Condition pairs per region**,
+- distinct pressure signatures for the three Conditions in each region,
+- the readable reward progression **34% → 38% → 42%**,
+- Convergence Apex phase order and total boss HP versus the hardest baseline Deep Survey boss,
+- Apex remaining materially longer than one boss without becoming four full hardest bosses stacked back-to-back,
+- Apex mixed-chase steering remaining **36%**,
+- Final Ash/Ninth/Root cycling remaining visible in combat code,
+- portrait Condition controls remaining **2 columns**, >=42px and `aria-pressed` aware.
+
+Automated checks: `tests/post-cp3-play-feel-proxy.test.js`.
+
+Proxy B does not claim to measure subjective fun. It narrows the remaining manual gate to things that genuinely require playing the game.
 
 ## Remaining actual-device feel gate
 
-The remaining checks now require real play rather than more speculative systems work:
+The remaining checks require real play rather than more speculative systems work:
 - are Condition buttons understandable on an actual phone,
 - do 38/42% target rates feel rewarding without feeling guaranteed,
 - are Ash/Ninth/Root pressures distinguishable during command selection,
