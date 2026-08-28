@@ -61,7 +61,7 @@ if(!BattleEngine.prototype[SPAWN_MARK]){
 
 const SCREEN_MARK=Symbol.for('bladeVale.enemy2RankVariants.screen');
 if(!TextBattleScreen.prototype[SCREEN_MARK]){
-  BattleEngine.prototype[SCREEN_MARK]=true;
+  TextBattleScreen.prototype[SCREEN_MARK]=true;
   const originalRender=TextBattleScreen.prototype._renderEnemies;
   TextBattleScreen.prototype._renderEnemies=function(){
     const result=originalRender.call(this);
