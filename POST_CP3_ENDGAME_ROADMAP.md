@@ -1,6 +1,6 @@
 # Post-CP3 Endgame Roadmap — Reconciled after Gear Overhaul
 
-Status: **Deep Survey Quantitative Acceptance COMPLETE / Manual Feel Gate ACTIVE**
+Status: **Deep Survey Quantitative Acceptance COMPLETE / Manual Feel Gate ACTIVE / Vertical Extension DESIGN READY**
 
 Gear Overhaul Phases 0–9 are complete. Post-CP3 high difficulty consumes that finished loot loop instead of creating parallel progression.
 
@@ -62,7 +62,27 @@ Before adding any new vertical layer, play the three regions and judge:
 
 If the answer is yes, keep Deep Survey as the current apex and spend the next work on polish/balance rather than another system.
 
-If the answer is no because the loop becomes shallow after gearing, only then design a vertical extension.
+If the answer is no because the loop becomes shallow after gearing, activate the contingency design in `POST_CP3_VERTICAL_EXTENSION_DESIGN.md`.
+
+## Contingency vertical extension — designed, not active
+
+The extension design is now fixed enough for implementation if the Manual Feel Gate justifies it.
+
+It has two layers only:
+
+1. **Survey Conditions** — three authored optional replay conditions per existing Deep Survey, reusing Abyss Challenge/combat hooks and existing reward systems.
+2. **Convergence Apex** — one authored multi-phase Secret Realm that synthesizes the durability, tempo and rotation lessons from the three regions.
+
+Key implementation rules are already specified in `POST_CP3_VERTICAL_EXTENSION_DESIGN.md`, including:
+- one-condition entry before optional two-condition mastery,
+- no three-condition requirement,
+- target Option steering caps of 38% / 42%,
+- no new rarity, currency, Item Power cap or save root,
+- Apex unlock after baseline clears plus at least one Condition clear in each region,
+- side-grade/distinctive rewards rather than mandatory BiS,
+- acceptance simulation after implementation.
+
+Design readiness must not be mistaken for implementation approval; the Manual Feel Gate is still the activation trigger.
 
 ## Permanent guardrails
 
@@ -76,12 +96,12 @@ If the answer is no because the loop becomes shallow after gearing, only then de
 
 ## What comes after this
 
-Do not automatically add Survey Conditions / Convergence Apex merely because they existed in the old pre-Gear plan.
+The next decision remains explicitly manual: **keep the three-region apex** or **activate the designed vertical extension because observed play shows the current loop becomes shallow**.
 
-The next decision is explicitly manual: **keep the three-region apex** or **justify one deeper vertical layer with observed playtest problems**.
+Do not implement Survey Conditions / Convergence Apex merely because the design now exists.
 
 Any later expansion must deepen the existing loop rather than add a new currency, gear tier, Home route, timed loop, or mandatory single-build gate.
 
 ## Supersession
 
-Old PR #228 was designed before Gear Overhaul. Its three-region world/combat concept is retained, but its reward assumptions and brittle tests are superseded by the post-Gear implementation.
+Old PR #228 was designed before Gear Overhaul. Its three-region world/combat concept is retained, but its reward assumptions and brittle tests are superseded by the post-Gear implementation and `POST_CP3_VERTICAL_EXTENSION_DESIGN.md`.
