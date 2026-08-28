@@ -2,6 +2,7 @@
 import './enemy3EliteAffixes.js';
 import './enemy3RareBehaviors.js';
 import './enemy3EncounterSynergy.js';
+import './enemy3BossPhaseAI.js';
 import { BattleEngine } from '../battleEngine.js';
 import { enemy3RoleBehaviorProfile } from '../data/enemy3RoleBehaviors.js';
 import { enemy3TacticalContext,enemy3ShouldReserveSkill } from '../data/enemy3Targeting.js';
