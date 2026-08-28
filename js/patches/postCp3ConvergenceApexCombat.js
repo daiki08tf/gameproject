@@ -25,6 +25,13 @@ function pressurePhase(engine){
 if(!BattleEngine.prototype[MARK]){
   BattleEngine.prototype[MARK]=true;
 
+  const originalBeginNextEncounter=BattleEngine.prototype.beginNextEncounter;
+  BattleEngine.prototype.beginNextEncounter=function(){
+    const event=originalBeginNextEncounter.call(this);
+    if(this.stage?.convergenceApex&&event&&this.defeated>0)this._freshGroupPending=false;
+    return event;
+  };
+
   const originalEnemyDamage=BattleEngine.prototype._enemyAttackDamage;
   BattleEngine.prototype._enemyAttackDamage=function(atk,opts={}){
     let damage=originalEnemyDamage.call(this,atk,opts);
@@ -89,8 +96,6 @@ if(!BattleEngine.prototype[MARK]){
   const originalAdvanceTurn=BattleEngine.prototype.advanceTurn;
   BattleEngine.prototype.advanceTurn=function(command){
     if(!this.stage?.convergenceApex||pressurePhase(this)!=='ninth')return originalAdvanceTurn.call(this,command);
-    // Ninth pressure is initiative/tempo only. Temporarily raise current enemy SPD
-    // for this round and restore it immediately after resolution so it never stacks.
     const snapshots=(this.enemies||[]).map(enemy=>[enemy,enemy.spd]);
     for(const [enemy,spd] of snapshots)if(!enemy.dead)enemy.spd=Math.max(1,Math.round(spd*1.16));
     try{return originalAdvanceTurn.call(this,command);}finally{
