@@ -1,9 +1,11 @@
-/* Phase 10.1 — World Tier runtime and combat integration. */
+/* Phase 10.1 — World Tier runtime and combat integration.
+   Enemy 2.0 E7 keeps generic World Tier Elite separate from historical Abyss Elite. */
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
+import { ENEMY_TYPES } from '../data/enemies.js';
 import { WORLD_TIERS, worldTier, unlockedWorldTiers } from '../data/worldTiers.js';
+import { markGenericElite } from '../data/enemyRankVariants2.js';
 
-const ELITE_HP=1.55,ELITE_ATK=1.25,ELITE_DEF=1.15,ELITE_REWARD=1.60;
 function ensure(){
   state.data.worldTierId??='normal';
   const unlocked=unlockedWorldTiers(state.characterLevel);
@@ -36,10 +38,10 @@ if(!BattleEngine.prototype.__worldTierWrapped){
     enemy.spd=Math.max(1,Math.round(enemy.spd*tier.enemySpd));
     enemy.xp=Math.max(1,Math.round(enemy.xp*tier.reward));
     enemy.gold=Math.max(0,Math.round(enemy.gold*tier.reward));
-    if(!enemy.boss&&!enemy.elite&&Math.random()<tier.eliteChance){
-      enemy.elite=true;enemy.hp=Math.round(enemy.hp*ELITE_HP);enemy.maxHp=enemy.hp;
-      enemy.atk=Math.round(enemy.atk*ELITE_ATK);enemy.def=Math.round(enemy.def*ELITE_DEF);
-      enemy.xp=Math.round(enemy.xp*ELITE_REWARD);enemy.gold=Math.round(enemy.gold*ELITE_REWARD);
+    const template=ENEMY_TYPES[type];
+    const rareIdentity=!!(enemy.rareIdentity||template?.rareIdentity);
+    if(!enemy.boss&&!enemy.elite&&!enemy.genericElite&&!rareIdentity&&Math.random()<tier.eliteChance){
+      markGenericElite(enemy);
     }
     if(enemy.boss){
       for(const key of ['slamTurns','chargeTurns','projectileTurns','summonTurns']){
