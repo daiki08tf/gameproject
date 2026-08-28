@@ -1,4 +1,4 @@
-/* Enemy 2.0 E7 — generic rank, Rare and environmental Variant contracts. */
+/* Enemy 2.0 E7/E8 — generic rank, Rare and environmental Variant contracts. */
 import { clampEnemyLevel, stageEnemyBaseLevel, ENEMY_LEVEL_SCALE_EXPONENTS } from './enemyLevel.js';
 import { weightedEncounterPick } from './encounterPools2.js';
 
@@ -14,6 +14,30 @@ export const ENVIRONMENT_VARIANTS=Object.freeze({
     id:'grassland_windswept',name:'風渡り',requiredTags:Object.freeze(['grassland']),
     roles:Object.freeze(['normal','fast','attacker']),
     statMult:Object.freeze({hp:1.00,atk:1.04,def:1.00,spd:1.06,xp:1.03,gold:1.03}),
+  }),
+  fire_ash:Object.freeze({
+    id:'fire_ash',name:'灰熱の',requiredTags:Object.freeze(['fire']),roles:Object.freeze([]),
+    statMult:Object.freeze({hp:1.03,atk:1.06,def:1.01,spd:1.00,xp:1.04,gold:1.04}),
+  }),
+  ice_frost:Object.freeze({
+    id:'ice_frost',name:'霜晶の',requiredTags:Object.freeze(['ice']),roles:Object.freeze([]),
+    statMult:Object.freeze({hp:1.04,atk:1.02,def:1.05,spd:.98,xp:1.04,gold:1.04}),
+  }),
+  wind_gale:Object.freeze({
+    id:'wind_gale',name:'疾風の',requiredTags:Object.freeze(['wind']),roles:Object.freeze(['normal','fast','attacker','caster']),
+    statMult:Object.freeze({hp:.99,atk:1.03,def:.99,spd:1.07,xp:1.04,gold:1.03}),
+  }),
+  poison_mire:Object.freeze({
+    id:'poison_mire',name:'瘴毒の',requiredTags:Object.freeze(['poison']),roles:Object.freeze(['normal','tank','trickster','support']),
+    statMult:Object.freeze({hp:1.04,atk:1.03,def:1.03,spd:.99,xp:1.04,gold:1.04}),
+  }),
+  dark_umbral:Object.freeze({
+    id:'dark_umbral',name:'影蝕の',requiredTags:Object.freeze(['dark']),roles:Object.freeze(['normal','fast','attacker','caster','trickster']),
+    statMult:Object.freeze({hp:1.01,atk:1.05,def:1.00,spd:1.03,xp:1.04,gold:1.04}),
+  }),
+  light_radiant:Object.freeze({
+    id:'light_radiant',name:'輝界の',requiredTags:Object.freeze(['light']),roles:Object.freeze(['normal','tank','caster','support']),
+    statMult:Object.freeze({hp:1.03,atk:1.02,def:1.04,spd:1.00,xp:1.04,gold:1.04}),
   }),
 });
 
@@ -47,7 +71,6 @@ export function markGenericElite(enemy){
   if(!enemy||enemy.boss||enemy.elite||enemy.rareIdentity)return enemy;
   enemy.rank='elite';
   enemy.genericElite=true;
-  // `enemy.elite` remains reserved for historical Abyss reward-eligible elites.
   for(const key of ['hp','atk','def','xp','gold']){
     if(!Number.isFinite(enemy[key]))continue;
     const floor=(key==='def'||key==='gold')?0:1;
