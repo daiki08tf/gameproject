@@ -16,7 +16,7 @@ Enemy 2.0 completed enemy identity, level, encounter roles, ranks/variants, endg
 ## Phases
 - [x] B0 — Current AI Audit
 - [x] B1 — Role AI 2.0 bridge
-- [ ] B2 — Targeting Logic
+- [x] B2 — Targeting Logic
 - [x] B3 — Weakness / Resistance (Enemy Affinity / Weakness 2.0, PR #283)
 - [ ] B4 — Elite Affix System
 - [ ] B5 — Rare Monster Behaviors
@@ -36,3 +36,13 @@ Role bridge:
 - support → support / ally heal
 
 `normal`, `fast`, `tank`, Rare and Boss identities remain on their existing paths. Rare behavior is intentionally reserved for B5. Boss AI remains fully authored and bypasses the bridge.
+
+## B2 scope
+B2 keeps Combat 3's existing random intent reservation as the default, then applies bounded deterministic overrides only when a role has a clear tactical reason to act.
+
+- attacker: prioritises its existing power attack when player HP is at or below 35%.
+- caster: prioritises slow against an active player SPD buff; avoids refreshing an already-active SPD debuff.
+- trickster: prioritises ATK disruption against an active player ATK buff; avoids redundant ATK debuff refreshes.
+- support: uses the existing lowest-injured-ally targeter; does not reserve healing above 70% HP and guarantees it at or below 40% HP.
+
+B2 adds no new damage formula, status type, target selector, reward rule or save data. Boss and Rare behavior remain outside this generic targeting layer.
