@@ -20,7 +20,7 @@ Enemy 2.0 completed enemy identity, level, encounter roles, ranks/variants, endg
 - [x] B3 — Weakness / Resistance (Enemy Affinity / Weakness 2.0, PR #283)
 - [x] B4 — Elite Affix System
 - [x] B5 — Rare Monster Behaviors
-- [ ] B6 — Encounter Synergy
+- [x] B6 — Encounter Synergy
 - [ ] B7 — Boss Phase AI 2.0
 - [ ] B8 — Codex Analysis 2.0
 - [ ] B9 — World Tier AI Escalation
@@ -68,3 +68,14 @@ Initial behaviors:
 - 急襲 — gains 25% effective ATK on its first actionable turn only.
 
 Only `rank==='rare'` Rare identities are eligible. Bosses, generic Elites and historical Abyss `enemy.elite` are excluded. B5 adds no reward multiplier, currency, save root or new status engine. True Rare escape behavior is intentionally deferred because reward-free departure must be coordinated with encounter completion and Codex semantics rather than faked as a kill.
+
+## B6 scope
+B6 makes ordinary Enemy 3.0 groups react to their composition while reusing existing Combat 3 skills and effective-stat hooks.
+
+Encounter synergies:
+- Guardian cover — a `guardAll` enemy reserves its existing defense skill when an uncovered caster/support backliner is present.
+- Support triage — a `healAlly` enemy reserves healing when the lowest injured ordinary ally falls to 55% HP or below.
+- Screened offense — an `attacker` behind a living guardian gains +6% effective ATK; `caster`/`trickster` gain +6% effective SPD.
+- Pack pressure — two or more ordinary enemies sharing the same `speciesId` gain +4% effective ATK.
+
+Stat synergy is capped at x1.10. Bosses, Rare identities and historical Abyss `enemy.elite` are excluded; no new skill, status, reward rule, save data or World Tier scaling is introduced.

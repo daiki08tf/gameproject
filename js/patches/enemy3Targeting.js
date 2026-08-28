@@ -1,6 +1,7 @@
 /* Enemy 3.0 B2 — context-aware action reservation for B1 advanced roles. */
 import './enemy3EliteAffixes.js';
 import './enemy3RareBehaviors.js';
+import './enemy3EncounterSynergy.js';
 import { BattleEngine } from '../battleEngine.js';
 import { enemy3RoleBehaviorProfile } from '../data/enemy3RoleBehaviors.js';
 import { enemy3TacticalContext,enemy3ShouldReserveSkill } from '../data/enemy3Targeting.js';
