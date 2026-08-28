@@ -1,4 +1,5 @@
 /* Enemy 2.0 E6 — role-first template planning for the Ch1 pilot. */
+import './enemy2EncounterPilot.js';
 import { BattleEngine } from '../battleEngine.js';
 import { CHAPTERS } from '../data/stages.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
