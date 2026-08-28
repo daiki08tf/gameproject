@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **Phase 8 Unique 2.0 COMPLETE ✅ / NEXT: Phase 9 Loot Distribution & Endgame Return**
+> Status: **Phase 8 Unique 2.0 COMPLETE ✅ / Phase 9A Named Unique target farms ACTIVE / NEXT: 9B endgame activity roles**
 >
 > Gear/content depth remains the priority over further Deep Survey expansion or large visual redesigns. Make loot worth farming first, then reconnect it to high difficulty.
 
@@ -69,7 +69,7 @@ Temper retired for Option4, Greater drop-only, reroll = family replacement + Lv1
 Compact list + selected detail, FIXED/Option separation, Option Lv/EXP/MASTER, compare/job/build tags, safe detail actions, compact slot/filter navigation. Key PRs: #242–#245.
 
 ### Phase 5 — Smart Loot 4.0 ✅
-All-slot Option search/rarity/Lv filtering, narrow protection for Legendary Power / Curse / Greater / Ancient / Lv80+, old-save migration. Phase 5C combination editor deliberately skipped because acceptance gate was not met. Phase 5D removed obsolete visible Affix controls. Key PRs: #246 / #247.
+All-slot Option search/rarity/Lv filtering, narrow protection for Legendary Power / Curse / Greater / Ancient / Lv80+, old-save migration. Phase 5C combination editor deliberately skipped because acceptance gate was not met. Key PRs: #246 / #247.
 
 ### Phase 6 — Weapon Identity ✅
 8 weapon families / 24 archetypes gained combat identities, soft 3-technique rotations, 24 build lanes, and comparative balance gates. Key PRs: #249–#252.
@@ -81,45 +81,57 @@ Current archetypes already cover `大剣 / 魔導書 / 双短剣 / 弩`. Add a n
 
 Full handoff: `GEAR_OVERHAUL_PHASE8_UNIQUE2.md`.
 
-#### 8A — inventory / architecture audit ✅
-Existing Unique / Legendary / FIXED identity architecture reused; no parallel Unique system.
+- 16 authored gameplay-loop identities across all 8 current weapon families.
+- 8/8 families have Named Unique weapon coverage.
+- duplicate Named drops remain distinct instances with max-three random Options.
+- effect-kind balance envelopes prevent proc / echo / DoT / execution / Boss-specialization runaway.
+- existing `UNIQUE FIXED` detail shows authored identity name + combat-loop explanation.
+- no new equipment screen, Home button, currency or save root.
 
-#### 8B — identity library ✅
-16 authored gameplay-loop identities across all 8 current weapon families, tied to existing Phase 6 build lanes.
+## Phase 9 — Loot Distribution / Endgame Return 🔄 ACTIVE
 
-#### 8C — Named weapon coverage & duplicate chase ✅
-- existing sword/staff Named weapons mapped into Unique 2.0
-- six Mythic Named weapons fill axe / bow / dagger / knuckle / instrument / rod gaps
-- 8/8 weapon families now have Named Unique coverage
-- duplicate drops remain distinct weapon instances with max-three random Options
-- legacy saved 4–5 Option weapons remain untouched
-- six new weapons remain distribution-pending for Phase 9
-
-#### 8D — balance & presentation ✅
-- effect-kind regression envelopes cover proc / echo / DoT / execution / diversity / guard / Boss specialization / sustain
-- extra-hit and DoT identities preserve per-action caps; spell echo remains spell-only
-- Boss specialization requires explicit opportunity cost in authored recipes
-- existing `UNIQUE FIXED` detail now shows authored identity name + combat-loop explanation
-- legacy Unique presentation remains unchanged when no Unique 2.0 mapping exists
-- no new equipment screen or Home button
-
-## NEXT — Phase 9 Loot Distribution / Endgame Return
+Full handoff: `GEAR_OVERHAUL_PHASE9_LOOT_DISTRIBUTION.md`.
 
 Purpose: make existing endgame activities answer different loot questions instead of all being generic high-level farming.
 
-Target structure, using existing systems only:
+### 9A — Named Unique target farms 🔄 ACTIVE
 
-- **Abyss** — depth-scaled high-Option / Option-rarity pressure and repeatable raw gear chase.
-- **Rift / World Event** — broad Greater / high-quality burst opportunities.
-- **Nemesis / EX bounty** — targeted Named / Unique enemy-themed chase.
-- **Secret Realm** — authored Named / build-identity chase and discovery reward.
-- **Deep Survey** — hardest mixed chase after its paused PR is reconciled; not a new currency or parallel progression.
+The six Phase 8C Named weapons are routed through existing stage `dropTable` metadata only:
 
-Phase 9 should first inventory live drop hooks and map the six `distributionPending` Named weapons onto existing activities. Only then resume/repair Deep Survey expansion.
+| Weapon | Existing target farm |
+|---|---|
+| 終王斧グリムヘッド | Abyss Armory Boss floor, depth >= 1200 |
+| 連星拳アルカ | Abyss Armory, depth >= 1800 |
+| 残光弓アステリオン | Wind / Lightning Rift |
+| 葬毒刃ミアズマ | Poison / Dark Rift |
+| 戦律器カデンツァ | Secret Realm: Inverted Library |
+| 反照錫セラフィム | Final Eighth Key |
 
-Target loop:
+Implementation: `js/data/gearOverhaulPhase9TargetFarm.js`.
 
-`high difficulty → chase Named/Unique/Greater/high-Option gear → Option Fusion/build refinement → deeper difficulty`
+Permanent 9A rules:
+- do not directly grant these outside the existing drop engine,
+- preserve normal weapon-instance generation and max-three random Options,
+- do not duplicate every Named weapon into every endgame activity,
+- no pity currency / vendor / new activity.
+
+### NEXT: 9B — activity-role separation
+
+Strengthen existing roles without parallel progression:
+
+- **Abyss** — repeatable high-depth Option / raw gear chase.
+- **Rift / World Event** — Greater / Ancient / burst-quality opportunities.
+- **Nemesis / EX Bounty** — enemy-themed Named / Unique chase where authored relationships exist.
+- **Secret Realm** — authored Named / build-identity chase.
+- **Deep Survey** — hardest mixed chase after the paused branch is reconciled.
+
+### 9C — loop validation
+
+Validate:
+
+`high difficulty → target gear → evaluate max-three Options → Option Fusion/build refinement → deeper difficulty`
+
+No single Unique may become a hard progression gate. Intended builds should clear earlier; extreme farming/brute force must remain viable.
 
 ## AI handoff
 
@@ -127,18 +139,20 @@ Read before continuing:
 
 1. `ROADMAP.md`
 2. `GEAR_OVERHAUL_ROADMAP.md`
-3. `GEAR_OVERHAUL_PHASE8_UNIQUE2.md`
-4. `GEAR_OVERHAUL_PHASE6_WEAPON_IDENTITY.md`
-5. `GEAR_OVERHAUL_AUDIT.md`
-6. `GEAR_OVERHAUL_OPTION_CATALOG.md`
-7. `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`
-8. `GEAR_OVERHAUL_PHASE2_FUSION.md`
-9. `GEAR_OVERHAUL_PHASE4_UI.md`
-10. `js/data/unique2IdentityLibrary.js`
-11. `js/data/uniqueEquipment.js`
-12. `js/data/equipmentFixedIdentity.js`
-13. `js/data/weaponIdentity.js`
-14. `js/data/weaponTechniqueRotation.js`
-15. `js/data/weaponBuildSynergy.js`
+3. `GEAR_OVERHAUL_PHASE9_LOOT_DISTRIBUTION.md`
+4. `GEAR_OVERHAUL_PHASE8_UNIQUE2.md`
+5. `GEAR_OVERHAUL_PHASE6_WEAPON_IDENTITY.md`
+6. `GEAR_OVERHAUL_AUDIT.md`
+7. `GEAR_OVERHAUL_OPTION_CATALOG.md`
+8. `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`
+9. `GEAR_OVERHAUL_PHASE2_FUSION.md`
+10. `GEAR_OVERHAUL_PHASE4_UI.md`
+11. `js/data/gearOverhaulPhase9TargetFarm.js`
+12. `js/data/unique2IdentityLibrary.js`
+13. `js/data/uniqueEquipment.js`
+14. `js/data/equipmentFixedIdentity.js`
+15. `js/data/weaponIdentity.js`
+16. `js/data/weaponTechniqueRotation.js`
+17. `js/data/weaponBuildSynergy.js`
 
 Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity, restore numeric Temper, make Greater freely craftable, let reroll inherit old Option Lv/EXP, mix FIXED identity into random Options, or add a new weapon family merely for variety.
