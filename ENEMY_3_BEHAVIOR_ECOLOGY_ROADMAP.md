@@ -22,7 +22,7 @@ Enemy 2.0 completed enemy identity, level, encounter roles, ranks/variants, endg
 - [x] B5 — Rare Monster Behaviors
 - [x] B6 — Encounter Synergy
 - [x] B7 — Boss Phase AI 2.0
-- [ ] B8 — Codex Analysis 2.0
+- [x] B8 — Codex Analysis 2.0
 - [ ] B9 — World Tier AI Escalation
 - [ ] B10 — Ch1–30 + Endgame Integration
 
@@ -90,3 +90,14 @@ Phase 2 pressure begins at the existing 50% HP transition:
 - active telegraphs are never accelerated or replaced
 
 B7 introduces no new Boss skill, damage formula, reward rule, save data, generic Elite/Rare behavior or World Tier scaling.
+
+## B8 scope
+B8 extends the existing `monsterCodex[enemyId]` knowledge object without adding a save root or changing Codex completion points.
+
+Observed Enemy 3.0 knowledge:
+- generic Elite Affix names seen in combat
+- Rare Behavior names seen in combat
+- Boss Phase 2 observation
+- Inspect/analysis immediately records the current Elite/Rare identity and marks Boss phase knowledge as analyzed
+
+The existing Role / observed skill / Affinity / Enemy 2.0 ecology records remain authoritative. A supplemental `Enemy 3.0 戦術解析` panel appears inside the Monster Codex and lists only observed/analyzed tactical knowledge. These fields do not add Codex points or permanent stat bonuses.
