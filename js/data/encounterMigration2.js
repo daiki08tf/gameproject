@@ -29,6 +29,12 @@ function globalAnchorId(chapterId,role){
   return regionalTypeId(chapterId,role)||regionalTypeId(chapterId,'normal');
 }
 
+function encounterRegionTags(chapter){
+  const tags=[...(chapter?.stages?.[0]?.dropRegionTags||[])];
+  if(chapter?.id==='ch1'&&!tags.includes('grassland'))tags.push('grassland');
+  return tags;
+}
+
 export function globalRosterForRegionTags(tags=[],chapterId=''){
   if(chapterId==='ch1')return ['slime','wolf','goblin'];
   const out=['slime'];
@@ -40,7 +46,7 @@ export function globalRosterForRegionTags(tags=[],chapterId=''){
 }
 
 export function registerChapterGlobalEnemies(chapter,enemyTypes){
-  const tags=chapter?.stages?.[0]?.dropRegionTags||[];
+  const tags=encounterRegionTags(chapter);
   const roster=globalRosterForRegionTags(tags,chapter?.id);
   const ids=[];
   for(const speciesId of roster){
@@ -65,7 +71,7 @@ export function buildChapterEncounterPool(chapter,enemyTypes){
   }
   const globals=registerChapterGlobalEnemies(chapter,enemyTypes).map(type=>{
     const species=speciesById.get(enemyTypes[type]?.speciesId);
-    return {type,weight:Math.max(.28,Math.min(.58,(species?.spawnWeight||.5)*.40))};
+    return {type,weight:Math.max(.35,Math.min(.65,(species?.spawnWeight||.5)*.50))};
   });
   return {
     id:`${chapter.id}-e8-field`,
@@ -73,7 +79,7 @@ export function buildChapterEncounterPool(chapter,enemyTypes){
     templates:[...E8_TEMPLATE_IDS],
     rareChance:.04,
     rareTypes:[{type:`${chapter.id}_rare`,weight:1}],
-    regionTags:[...(chapter?.stages?.[0]?.dropRegionTags||[])],
+    regionTags:encounterRegionTags(chapter),
     variantChance:.10,
   };
 }
