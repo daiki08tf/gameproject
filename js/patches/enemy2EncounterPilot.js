@@ -1,5 +1,5 @@
-/* Enemy 2.0 E5 — Ch1 Encounter Pool pilot.
-   1-1 and 1-B stay fixed. 1-2..1-5 opt in; Boss types never swap. */
+/* Enemy 2.0 E5/E6 — Ch1 Encounter Pool bridge.
+   E5 provides safe pool fallback; E6 may pre-plan a coherent type sequence. */
 import { BattleEngine } from '../battleEngine.js';
 import { CHAPTERS } from '../data/stages.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
@@ -29,12 +29,16 @@ if(!BattleEngine.prototype[MARK]){
   BattleEngine.prototype[MARK]=true;
   const originalSpawn=BattleEngine.prototype._spawnEnemy;
   BattleEngine.prototype._spawnEnemy=function(originalType){
-    const type=pickEncounterPoolType(this.stage,originalType,ENEMY_TYPES,Math.random);
+    const planned=Array.isArray(this._enemy2PlannedTypes)&&this._enemy2PlannedTypes.length
+      ? this._enemy2PlannedTypes.shift()
+      : null;
+    const type=planned||pickEncounterPoolType(this.stage,originalType,ENEMY_TYPES,Math.random);
     const enemy=originalSpawn.call(this,type);
     const template=ENEMY_TYPES[type];
     if(enemy&&template){
       enemy.encounterSourceType=originalType;
       enemy.encounterPooled=type!==originalType;
+      if(this._enemy2ActiveTemplateId)enemy.encounterTemplateId=this._enemy2ActiveTemplateId;
       for(const key of ['role','speciesId','speciesFamily','chapterId','regional','globalSpecies','trueGlobal','rareIdentity']){
         if(template[key]!==undefined)enemy[key]=template[key];
       }
