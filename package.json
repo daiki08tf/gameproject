@@ -8,6 +8,7 @@
     "sim:loot": "node scripts/loot-simulation.js",
     "sim:exp": "node scripts/phase10-7-exp-simulation.js",
     "sim:deep-survey": "node scripts/deep-survey-acceptance.js",
-    "audit:post-cp3-feel": "node scripts/post-cp3-play-feel-proxy.js"
+    "audit:post-cp3-feel": "node scripts/post-cp3-play-feel-proxy.js",
+    "audit:enemy2": "node scripts/enemy2-e0-audit.js"
   }
 }
