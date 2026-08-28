@@ -1,10 +1,7 @@
 /* ============================================================
    Combat 2.0 — Element rules
-   ------------------------------------------------------------
-   Turns spell/skill element tags into a real combat axis without replacing
-   the existing DEF / Damage Bucket formula. Element multiplier is applied as
-   a final bounded layer after calculateDamage().
    ============================================================ */
+import { enemyAffinityResist, affinityMultiplierFromResist } from './enemyAffinity2.js';
 
 export const COMBAT2_ELEMENTS = Object.freeze({
   fire:      { name: '炎', icon: '🔥', strongAgainst: ['ice'], weakAgainst: ['water'] },
@@ -39,10 +36,8 @@ export function inferEnemyElement(enemy = {}) {
 
 export function elementMultiplier(attackElement, enemy = {}) {
   if (!attackElement || attackElement === 'random') return 1;
-  const resist = enemy.elementResist?.[attackElement];
-  if (Number.isFinite(resist)) {
-    return Math.max(ELEMENT_DAMAGE_CAP.min, Math.min(ELEMENT_DAMAGE_CAP.max, 1 - resist));
-  }
+  const affinityResist = enemyAffinityResist(enemy, attackElement);
+  if (Number.isFinite(affinityResist)) return affinityMultiplierFromResist(affinityResist);
   const enemyElement = inferEnemyElement(enemy);
   if (!enemyElement || enemyElement === attackElement) return enemyElement === attackElement ? 0.82 : 1;
   const attack = COMBAT2_ELEMENTS[attackElement];
