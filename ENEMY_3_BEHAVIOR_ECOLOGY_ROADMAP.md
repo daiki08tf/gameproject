@@ -18,7 +18,7 @@ Enemy 2.0 completed enemy identity, level, encounter roles, ranks/variants, endg
 - [x] B1 — Role AI 2.0 bridge
 - [x] B2 — Targeting Logic
 - [x] B3 — Weakness / Resistance (Enemy Affinity / Weakness 2.0, PR #283)
-- [ ] B4 — Elite Affix System
+- [x] B4 — Elite Affix System
 - [ ] B5 — Rare Monster Behaviors
 - [ ] B6 — Encounter Synergy
 - [ ] B7 — Boss Phase AI 2.0
@@ -46,3 +46,14 @@ B2 keeps Combat 3's existing random intent reservation as the default, then appl
 - support: uses the existing lowest-injured-ally targeter; does not reserve healing above 70% HP and guarantees it at or below 40% HP.
 
 B2 adds no new damage formula, status type, target selector, reward rule or save data. Boss and Rare behavior remain outside this generic targeting layer.
+
+## B4 scope
+B4 gives only Enemy 2.0 `genericElite` enemies one visible combat affix. Historical Abyss `enemy.elite`, Rare identities and Bosses are explicitly excluded.
+
+Initial affixes:
+- 再生 — restores 3.5% max HP before its action while injured.
+- 狂乱 — gains 18% effective ATK at or below 40% HP.
+- 鉄壁 — gains 16% effective DEF.
+- 迅速 — gains 14% effective SPD.
+
+Affixes reuse existing HP/effective-stat hooks. They add no reward multiplier, currency, save root, new status engine or Abyss shard semantics.
