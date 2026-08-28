@@ -4,6 +4,7 @@ import './enemy2LevelScaling.js';
 import './enemy2EncounterPilot.js';
 import './enemy2EncounterTemplates.js';
 import './enemy2RankVariants.js';
+import './enemy2StoryMigration.js';
 import { BattleEngine } from '../battleEngine.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
 import { BREAK_RULES,COMPANION_TACTICS,breakCapacity,breakDamage,comboForHit,tickCombatStatuses } from '../data/battle2Tactics.js';
