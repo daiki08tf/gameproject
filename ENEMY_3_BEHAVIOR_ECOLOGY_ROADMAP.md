@@ -19,7 +19,7 @@ Enemy 2.0 completed enemy identity, level, encounter roles, ranks/variants, endg
 - [x] B2 — Targeting Logic
 - [x] B3 — Weakness / Resistance (Enemy Affinity / Weakness 2.0, PR #283)
 - [x] B4 — Elite Affix System
-- [ ] B5 — Rare Monster Behaviors
+- [x] B5 — Rare Monster Behaviors
 - [ ] B6 — Encounter Synergy
 - [ ] B7 — Boss Phase AI 2.0
 - [ ] B8 — Codex Analysis 2.0
@@ -57,3 +57,14 @@ Initial affixes:
 - 迅速 — gains 14% effective SPD.
 
 Affixes reuse existing HP/effective-stat hooks. They add no reward multiplier, currency, save root, new status engine or Abyss shard semantics.
+
+## B5 scope
+B5 gives Enemy 2.0 Rare identities one visible combat behavior. It does not alter Rare appearance rates, level bands, rewards, Codex denominators or story progression.
+
+Initial behaviors:
+- 狩人 — gains 18% effective ATK while the player is at or below 40% HP.
+- 吸命 — after dealing damage, restores 5% max HP, capped by missing HP.
+- 窮地 — at or below 35% HP, gains 20% effective DEF and 10% effective SPD.
+- 急襲 — gains 25% effective ATK on its first actionable turn only.
+
+Only `rank==='rare'` Rare identities are eligible. Bosses, generic Elites and historical Abyss `enemy.elite` are excluded. B5 adds no reward multiplier, currency, save root or new status engine. True Rare escape behavior is intentionally deferred because reward-free departure must be coordinated with encounter completion and Codex semantics rather than faked as a kill.
