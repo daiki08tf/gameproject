@@ -96,3 +96,17 @@ test('post-CP3 V4: exploration gate is derived from ordinary stage clear records
   assert.doesNotMatch(data,/state\.data\.[A-Za-z0-9_]+\s*=/);
   assert.doesNotMatch(core,/convergenceApex\s*:\s*\{/,'must not add a dedicated Apex save root');
 });
+
+test('post-CP3 V6: existing surfaces expose compact portrait-friendly Condition and Apex readability',()=>{
+  const ui=read('js/patches/postCp3DeepSurveyUi.js');
+  const combat=read('js/patches/postCp3ConvergenceApexCombat.js');
+  assert.match(ui,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(ui,/APEX \/ 4-PHASE/);
+  assert.match(ui,/MIXED CHASE：全3地域Option \/ 36%/);
+  assert.match(ui,/FIRST CLEAR：境界反響核/);
+  assert.match(ui,/aria-pressed/);
+  assert.match(combat,/TextBattleScreen/);
+  assert.match(combat,/収束観測 —/);
+  assert.match(combat,/FINAL ·/);
+  assert.doesNotMatch(ui,/homeScreen|home-menu|daily|weekly/i);
+});
