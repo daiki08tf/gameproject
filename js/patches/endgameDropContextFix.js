@@ -2,6 +2,7 @@
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { abyssTargetFarmProfile, isSetDropId } from '../data/abyssTargetFarm.js';
+import { rollUnique2ClearReward } from '../data/gearOverhaulPhase9TargetFarm.js';
 
 function targetProfile(engine) {
   return engine?.stage?.isAbyss ? abyssTargetFarmProfile(engine.stage.abyssRoute?.id) : null;
@@ -96,6 +97,14 @@ BattleEngine.prototype._finishBattle = function endgameFinishBattle(cleared, ret
       const key = state.addRiftKey(this.stage.abyssDepth);
       const result = output || this.finalResult;
       if (key && result) result.riftKeyFound = key;
+    }
+  }
+  if (cleared && !retreated && this.stage?.isRift) {
+    const chase = rollUnique2ClearReward(this.stage);
+    if (chase) {
+      const isNew = state.addItem(chase.itemId, 1, stageDropContext(this));
+      const result = output || this.finalResult;
+      if (result) result.unique2TargetFarmDrop = { itemId:chase.itemId, targetFarmId:chase.id, isNew:!!isNew };
     }
   }
   return output;
