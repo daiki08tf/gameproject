@@ -1,6 +1,6 @@
 # Post-CP3 Endgame Roadmap — Reconciled after Gear Overhaul
 
-Status: **Vertical Extension ACTIVE — V1/V2 merged / V3 Combination Gate complete candidate / V4 NEXT**
+Status: **Vertical Extension ACTIVE — V1/V2/V3 merged / V4 Convergence Apex complete candidate / V5 NEXT**
 
 Gear Overhaul Phases 0–9 and the post-Gear Deep Survey quantitative acceptance gate are complete. The vertical extension is active.
 
@@ -41,7 +41,7 @@ Conditions:
 
 `精鋭連鎖` does not set the Abyss `enemy.elite` flag, preventing accidental Abyss Shard rewards.
 
-### V3 — Combination Gate — ✅ complete candidate
+### V3 — Combination Gate — ✅ main
 
 - derive mastery only from each region's 3 existing single-Condition stage-clear IDs,
 - UI shows single-clear progress `0/3 ... 3/3`,
@@ -52,34 +52,48 @@ Conditions:
 - no three-Condition progression requirement,
 - no mastery currency/rank/save root.
 
-### V4 — Convergence Apex — NEXT
+### V4 — Convergence Apex — ✅ complete candidate
 
 Unlock contract:
 - all 3 baseline Deep Surveys cleared,
-- at least 1 Condition clear in each region,
-- do not require all 9 Conditions or any two-Condition clear.
+- at least 1 single-Condition clear in each region,
+- no requirement for all 9 Conditions,
+- no requirement for any two-Condition clear,
+- unlock is derived only from ordinary existing stage-clear records.
 
-Encounter contract:
-1. Ash / endurance,
-2. Ninth / tempo,
-3. Root / resource + rotation,
-4. final Convergence cycling one readable mechanic from each.
+Encounter:
+1. **Ash / endurance** — healing pressure + heavier incoming hits,
+2. **Ninth / tempo** — enemy initiative/speed pressure,
+3. **Root / rotation** — MP-cost pressure + repeated-action inefficiency,
+4. **Convergence** — Ash → Ninth → Root pressure cycles every two rounds instead of stacking all maximum penalties simultaneously.
 
-Use one existing Secret Realm route and existing stage-clear records. No new Home button, gear tier or mandatory Named Unique.
+Implementation rules:
+- one existing Secret Realm route,
+- first phase keeps normal encounter-entry grace; later phases continue immediately,
+- existing BattleEngine only; no second combat engine,
+- Lv99,999 / IP10,000 remains absolute,
+- existing Gear 9 target-farm wrapper remains authoritative,
+- Apex mixed chase uses all three regional Option families with 36% steering,
+- Legendary addition stays within +4 percentage points,
+- first clear reuses existing `uq_cp3_boundary_echo`,
+- repeat drops reuse existing CP3/Gear items only,
+- no Apex currency, shard, gear rarity or new Item Power cap.
 
-### V5 — Acceptance simulation
+### V5 — Acceptance simulation — NEXT
 
-Validate:
-- 34 / 38 / 42% steering,
+Validate deterministically:
+- baseline / one-Condition / two-Condition target steering at 34 / 38 / 42%,
 - Greater / Legendary bounds,
 - max-three Options,
-- Smart Loot/Fusion-material supply,
+- Smart Loot does not auto-protect all Fusion material,
 - single/two-Condition mastery routing,
-- Apex unlock/reward compatibility.
+- Apex unlock from existing clear IDs,
+- Apex mixed-chase reward compatibility,
+- no new reward/save progression root.
 
 ### V6 — polish/manual feel
 
-Tune wording, readability, mobile battle pressure and reward feel only.
+Tune wording, phase readability, mobile battle pressure and reward feel only. Do not add another progression layer.
 
 ## Permanent guardrails
 
