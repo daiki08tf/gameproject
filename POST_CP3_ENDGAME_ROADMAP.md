@@ -52,6 +52,8 @@ Encounter:
 
 Apex stays Lv99,999 / IP10,000 and reuses existing BattleEngine/Secret Realm/Gear 9 routing and existing CP3 rewards only.
 
+Runtime activation is part of the contract: production startup reaches `postCp3ConvergenceApexCombat.js` through `main.js → exploration1Core.js → postCp3DeepSurveyUi.js`. `tests/post-cp3-runtime-import.test.js` guards that import chain so Apex combat/readability hooks cannot silently become dead code.
+
 ### V5 — Acceptance simulation — ✅ main
 
 `npm run sim:deep-survey` validates the entire vertical extension:
