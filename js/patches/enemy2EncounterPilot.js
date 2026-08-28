@@ -1,5 +1,6 @@
-/* Enemy 2.0 E5/E6 — Ch1 Encounter Pool bridge.
-   E5 provides safe pool fallback; E6 may pre-plan a coherent type sequence. */
+/* Enemy 2.0 E5/E6/E7 — Ch1 Encounter Pool bridge.
+   E5 provides safe pool fallback; E6 may pre-plan a coherent type sequence;
+   E7 may explicitly replace one slot with a Chapter Rare. */
 import { BattleEngine } from '../battleEngine.js';
 import { CHAPTERS } from '../data/stages.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
@@ -29,15 +30,19 @@ if(!BattleEngine.prototype[MARK]){
   BattleEngine.prototype[MARK]=true;
   const originalSpawn=BattleEngine.prototype._spawnEnemy;
   BattleEngine.prototype._spawnEnemy=function(originalType){
+    const rankOverride=Array.isArray(this._enemy2RankOverrideTypes)&&this._enemy2RankOverrideTypes.length
+      ? this._enemy2RankOverrideTypes.shift()
+      : null;
     const planned=Array.isArray(this._enemy2PlannedTypes)&&this._enemy2PlannedTypes.length
       ? this._enemy2PlannedTypes.shift()
       : null;
-    const type=planned||pickEncounterPoolType(this.stage,originalType,ENEMY_TYPES,Math.random);
+    const type=rankOverride||planned||pickEncounterPoolType(this.stage,originalType,ENEMY_TYPES,Math.random);
     const enemy=originalSpawn.call(this,type);
     const template=ENEMY_TYPES[type];
     if(enemy&&template){
       enemy.encounterSourceType=originalType;
       enemy.encounterPooled=type!==originalType;
+      if(rankOverride)enemy.encounterRareOverride=true;
       if(this._enemy2ActiveTemplateId)enemy.encounterTemplateId=this._enemy2ActiveTemplateId;
       for(const key of ['role','speciesId','speciesFamily','chapterId','regional','globalSpecies','trueGlobal','rareIdentity']){
         if(template[key]!==undefined)enemy[key]=template[key];
