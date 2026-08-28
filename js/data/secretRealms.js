@@ -4,6 +4,7 @@ import { expandedRealmByStageId } from './secretRealmExpansion.js';
 import { buildWorld2KeyStage } from './world2Stages.js';
 import { world3EventStageById } from './world3EventStages.js';
 import { eighthKeyStageDef } from './phase9EighthKey.js';
+import { applyUnique2TargetFarm } from './gearOverhaulPhase9TargetFarm.js';
 
 function scaleRealmEnemies(stage, cfg){
   const seen=new Set();
@@ -119,16 +120,17 @@ function buildEighthKeyStage(def){
 }
 
 export function buildSecretRealmStage(stageId){
+  let stage=null;
   const eighth=eighthKeyStageDef(stageId);
-  if(eighth)return buildEighthKeyStage(eighth);
-  if(stageId.startsWith('secret-worldkey-')) return buildWorld2KeyStage(stageId.slice('secret-worldkey-'.length));
-  if(stageId.startsWith('secret-worldevent-')){
+  if(eighth) stage=buildEighthKeyStage(eighth);
+  else if(stageId.startsWith('secret-worldkey-')) stage=buildWorld2KeyStage(stageId.slice('secret-worldkey-'.length));
+  else if(stageId.startsWith('secret-worldevent-')){
     const eventStage=world3EventStageById(stageId);
-    return eventStage?{...eventStage,dropTable:[...(eventStage.dropTable||[])],waves:(eventStage.waves||[]).map(w=>({...w})),modifiers:[...(eventStage.modifiers||[])]}:null;
+    stage=eventStage?{...eventStage,dropTable:[...(eventStage.dropTable||[])],waves:(eventStage.waves||[]).map(w=>({...w})),modifiers:[...(eventStage.modifiers||[])]}:null;
   }
-  if(stageId==='secret-blood-castle'){
+  else if(stageId==='secret-blood-castle'){
     const base=buildAbyssStage(800,[],{suppressModifiers:true});
-    return {
+    stage={
       ...base,id:'secret-blood-castle',name:'異界・血王城',recLevel:base.recLevel,itemPowerTarget:Math.min(10000,base.itemPowerTarget+200),
       isAbyss:false,secretRealm:true,secretRealmId:'blood_gate',abyssDepth:null,abyssEra:'異界：血王城',
       healMult:Math.min(base.healMult||1,0.5),dropMult:(base.dropMult||1)*1.35,
@@ -137,6 +139,9 @@ export function buildSecretRealmStage(stageId){
       modifiers:[{id:'realm_blood_thirst',name:'血の渇き',desc:'回復効果-50% ／ ドロップ率+35%'}],dropRegionTags:['dark','poison'],
     };
   }
-  const cfg=expandedRealmByStageId(stageId);
-  return cfg?buildExpandedRealm(cfg):null;
+  else {
+    const cfg=expandedRealmByStageId(stageId);
+    stage=cfg?buildExpandedRealm(cfg):null;
+  }
+  return applyUnique2TargetFarm(stage);
 }
