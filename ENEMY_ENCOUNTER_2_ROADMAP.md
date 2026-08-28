@@ -1,10 +1,11 @@
 # Enemy 2.0 / Encounter 2.0 — Implementation Roadmap
 
-Status: **E0–E4 ✅ / E5 CH1 ENCOUNTER PILOT COMPLETE CANDIDATE / E6 NEXT**
+Status: **E0–E5 ✅ / E6 ROLE-FIRST TEMPLATES COMPLETE CANDIDATE / E7 NEXT**
 
 Authoritative design: `ENEMY_ENCOUNTER_2_DESIGN.md`.
 Human-readable enemy catalog: `ENEMY_2_CONTENT_CATALOG.md`.
 E5 handoff: `ENEMY_ENCOUNTER_2_E5_ENCOUNTER_PILOT.md`.
+E6 handoff: `ENEMY_ENCOUNTER_2_E6_ROLE_TEMPLATES.md`.
 
 ## Goal
 
@@ -41,84 +42,85 @@ Bosses remain authored by default.
 | E2 | anchor-safe level-relative stat scaling | ✅ main |
 | E3 | 12 Global Species, led by true-global slime | ✅ main |
 | E4 | Ch1–30 regional expansion to 7 roles + 1 Rare | ✅ main |
-| E5 | optional Encounter Pool contract + Ch1 pilot | ✅ complete candidate |
-| E6 | role-first Encounter Templates | NEXT |
-| E7 | Rare / generic Elite / environmental Variant integration | queued |
+| E5 | optional Encounter Pool contract + Ch1 pilot | ✅ main |
+| E6 | role-first Encounter Templates | ✅ complete candidate |
+| E7 | Rare / generic Elite / environmental Variant integration | NEXT |
 | E8 | progressive Ch1–30 migration | queued |
 | E9 | curated Abyss / Rift / Secret Realm / Deep Survey integration | queued |
 | E10 | existing Codex discovery polish | queued |
 
-## E0–E2 foundation
+## E0–E4 foundation
 
 - every runtime enemy has visible `baseLevel / level`,
 - ordinary enemies roll within 92–108% of the stage anchor,
 - Bosses stay authored at the anchor,
-- scaling is relative to `level / baseLevel`, so the anchor preserves old stats exactly,
-- current `enemy.elite` is still Abyss-specific because its kill path awards Abyss Shards.
-
-## E3 Global Species
-
-12 reusable species exist, led by the true-global slime family:
-
-`スライム / コウモリ / ゴブリン / ウルフ / スケルトン / ゴーレム / ウィスプ / 毒キノコ / 小精霊 / リザード / ミミック / 彷徨う鎧`
-
-Slime is true-global. Other reusable species retain habitat identity.
-
-## E4 regional expansion
-
-Every Ch1–30 region now has the existing normal / fast / tank plus new attacker / caster / trickster / support and one authored Rare.
-
-E4 added **150 new regional identities**. Current ordinary/Rare ecology volume before Bosses/special enemies is **252 identities**.
-
-Rares remain stronger ordinary identities and deliberately do **not** set `boss` or the current Abyss-specific `elite` flag.
+- anchor level preserves old stats exactly,
+- 12 Global Species exist, led by true-global slime,
+- every Ch1–30 region now has normal / fast / tank / attacker / caster / trickster / support + one Rare,
+- ordinary/Rare ecology volume before Bosses/special enemies is **252 identities**,
+- current historical `enemy.elite` remains Abyss-specific because its kill path awards Abyss Shards.
 
 ## E5 Ch1 Encounter Pool pilot
 
-The first live Encounter Pool is deliberately narrow:
+`1-2` through `1-5` use the optional Ch1 field pool while `1-1` tutorial and `1-B` hidden route remain fixed. Existing `waves`, enemy headcounts and Boss order are retained. Chapter Rare and generic Elite remain absent from live pool resolution.
 
-- `1-1` remains fully fixed as the tutorial,
-- `1-2` / `1-3` / `1-4` / `1-5` opt into `ch1-field-pilot`,
-- `1-B` remains fixed,
-- existing `waves` remain present as fallback,
-- the existing wave headcount and encounter grouping are not increased,
-- the authored `boss_orcking` type can never be replaced.
+E5 proves that re-entering the same stage can produce different ordinary species without a new stage/reward/save system.
 
-Pilot ordinary candidates include existing Ch1 normal/fast/tank, the four E4 ordinary roles, and actual Global Species materializations including **スライム** and **ウルフ**.
+## E6 role-first Encounter Templates
 
-E5 runtime selection is intentionally the smallest possible bridge: each non-Boss spawn in an opt-in stage can resolve to a safe weighted pool candidate, then flows through the existing Enemy Lv and Combat2 patch chain. Runtime enemies retain their ecology metadata (`role`, `speciesId`, `behaviorTags`, etc.).
+Ch1 pooled encounters now choose a **formation identity before species resolution**.
+
+Implemented templates:
+
+| Template | Role pattern |
+|---|---|
+| mixed | normal → fast → attacker |
+| pack | fast → attacker → fast |
+| frontline | tank → attacker → normal |
+| escort | tank → support → caster |
+| ambush | trickster → fast → attacker |
+| bulwark | tank → support → tank |
+
+For encounters of one or two enemies, the pattern is truncated to the existing group count. No encounter is enlarged.
+
+Runtime flow:
+
+```text
+existing encounterQueue spec
+  ↓
+choose weighted template
+  ↓
+choose role sequence
+  ↓
+resolve each role from safe regional/global pool candidates
+  ↓
+existing Enemy Lv / spawn / Combat2 pipeline
+```
+
+This is implemented as a thin wrapper around `beginNextEncounter()` plus the existing E5 spawn bridge; BattleEngine's queue construction is not replaced.
 
 Safety:
 
-- no Chapter Rare in the live pool yet,
-- no generic Elite,
-- no Boss replacement,
-- no new reward table / Item Power / Option rule,
-- no new save data,
-- no enemy-count inflation,
-- deterministic pure selection helpers exist for regression tests.
+- Boss specs bypass template planning,
+- every resolved type must match the requested role when that role exists in the pool,
+- no Rare / generic Elite yet,
+- fixed waves/headcounts/group sizes remain unchanged,
+- Global Species can naturally fill matching role slots,
+- deterministic seeded planning is regression-tested,
+- no save/currency/reward/IP/Option fork.
 
-This means E5 proves **“re-enter the same stage and ordinary enemies may differ”** without yet trying to author coherent party formations.
+## E7 acceptance gate
 
-## Encounter principle
+E7 may introduce Rare / generic Elite / environmental Variant runtime behavior only after separating generic rank semantics from historical Abyss Elite payout.
 
-Randomness must become role-driven rather than permanent slot-by-slot chaos.
+Required:
 
-Initial template vocabulary:
-
-`mixed / pack / frontline / escort / ambush / bulwark / rare_invasion / solo_threat`
-
-E5 proves the pool plumbing. **E6 is responsible for moving from individual pool swaps to coherent role-first Encounter Templates.**
-
-## E6 acceptance gate
-
-E6 may add role-first Encounter Templates when:
-
-1. a template chooses a coherent role pattern before species resolution,
-2. Ch1 pilot can produce at least `mixed / pack / frontline / escort / ambush / bulwark`,
-3. template output never exceeds the existing encounter-group/mobile safety limits,
-4. Boss encounter remains authored and fixed,
-5. Regional Species and eligible Global Species can fill compatible role slots,
-6. Support/Caster/Trickster are not guaranteed in every encounter,
-7. Rare invasion remains deferred to E7 runtime reward/rank work,
-8. deterministic seeded generation remains testable,
-9. fixed `waves` remain fallback and no save/currency/reward fork is added.
+1. generic Elite uses a rank/flag that does **not** trigger Abyss Shards,
+2. historical Abyss Elite behavior/rewards stay unchanged,
+3. Chapter Rare can appear only through explicit Rare-capable encounter rules and is never story-required,
+4. Rare/Elite Enemy Lv bands follow the authored design bounds rather than ordinary 92–108%,
+5. environmental Variants reuse base species/family identity instead of multiplying unrelated species IDs,
+6. rank/variant stat and reward bonuses are bounded and cannot double-count existing Abyss/World Tier scaling,
+7. Bosses are excluded from generic Rare/Elite conversion,
+8. seeded acceptance tests cover spawn rates and safety,
+9. no new currency/save root/Home route or timed spawn loop.
