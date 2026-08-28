@@ -105,11 +105,64 @@ if(!BattleEngine.prototype[MARK]){
   };
 }
 
+function ensureMobileBattleSafetyStyle(){
+  if(typeof document==='undefined'||document.getElementById('postCp3BattleFeelStyle'))return;
+  const style=document.createElement('style');
+  style.id='postCp3BattleFeelStyle';
+  style.textContent=`
+    @media (max-height: 720px) and (orientation: portrait) {
+      #textBattleScreen { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+      #textBattleScreen .tb-enemy-list { max-height: 32vh; overflow-y: auto; margin: 6px 0; }
+      #textBattleScreen .tb-log { min-height: 96px; padding: 8px 10px; line-height: 1.5; }
+      #textBattleScreen .tb-command-grid { gap: 6px; margin-top: 6px; }
+      #textBattleScreen .tb-cmd-btn { min-height: 44px; padding: 12px 6px; }
+      #textBattleScreen .tb-tech-menu { max-height: 42vh; margin-top: 6px; }
+    }
+  `;
+  document.head?.appendChild(style);
+}
+ensureMobileBattleSafetyStyle();
+
+const PHASE_CUES=Object.freeze({
+  ash:'【Phase I · ASH】回復圧と重い一撃。受け切るか、先に削り切れ。',
+  ninth:'【Phase II · NINTH】再照準が加速。先手と短期決着の価値が上がる。',
+  root:'【Phase III · ROOT】MPと反復行動に圧力。行動を回して崩せ。',
+  convergence:'【FINAL · CONVERGENCE】三つの圧力が順番に再演される。',
+});
+const CYCLE_CUES=Object.freeze({
+  ash:'FINAL位相：ASH — 回復圧と被ダメ圧。',
+  ninth:'FINAL位相：NINTH — 速度と先手圧。',
+  root:'FINAL位相：ROOT — MPと反復行動圧。',
+});
+
 const SCREEN_MARK=Symbol.for('bladeVale.postCp3ConvergenceApexReadability');
 if(!TextBattleScreen.prototype[SCREEN_MARK]){
   TextBattleScreen.prototype[SCREEN_MARK]=true;
+
+  const originalReveal=TextBattleScreen.prototype._revealNextGroupIfNeeded;
+  TextBattleScreen.prototype._revealNextGroupIfNeeded=function(){
+    const result=originalReveal.call(this);
+    if(!this.engine?.stage?.convergenceApex)return result;
+    const live=livePhase(this.engine);
+    if(live&&live!==this._apexLastAnnouncedPhase){
+      this._apexLastAnnouncedPhase=live;
+      const cue=PHASE_CUES[live];
+      if(cue)this._pushLines([cue]);
+      if(live!=='convergence')this._apexLastCycleCue=null;
+    }
+    return result;
+  };
+
   const originalRender=TextBattleScreen.prototype._render;
   TextBattleScreen.prototype._render=function(){
+    if(this.engine?.stage?.convergenceApex&&livePhase(this.engine)==='convergence'){
+      const cycle=pressurePhase(this.engine);
+      if(cycle&&cycle!==this._apexLastCycleCue){
+        this._apexLastCycleCue=cycle;
+        const cue=CYCLE_CUES[cycle];
+        if(cue)this._pushLines([cue]);
+      }
+    }
     const result=originalRender.call(this);
     if(!this.engine?.stage?.convergenceApex)return result;
     const live=livePhase(this.engine);
