@@ -1,6 +1,6 @@
 # Blade Vale — Gear Overhaul Roadmap
 
-> Status: **Phase 6 Weapon Identity COMPLETE — Phase 7 new-family expansion NO-GO — NEXT: Phase 8 Unique 2.0**
+> Status: **Phase 8 Unique 2.0 ACTIVE — 8A audit complete / 8B identity library foundation complete / NEXT: 8C Named/Unique content pass**
 >
 > Gear/content depth remains the priority over further Deep Survey expansion or large visual redesigns. Make loot worth farming first, then reconnect it to high difficulty.
 
@@ -85,7 +85,7 @@ Existing Lv1 / Lv100 / Lv350 Weapon Techniques form optional `Opener → Setup �
 Three credible routes per family (24 authored lanes total), built only from live Option families. Routes are guidance/content data and add no hidden bonus. One-family-one-package is explicitly forbidden. PR #251.
 
 #### 6D — balance / closeout ✅
-Comparative regression gates cover all 24 archetypes and all three techniques, including earned Setup/Finisher bonuses. Raw packet, hit count, Crit, Armor Pen, Weaken, MP and execution values are bounded. Rapid-hit archetypes are proc-focused rather than free burst multipliers.
+Comparative regression gates cover all 24 archetypes and all three techniques, including earned Setup/Finisher bonuses. Raw packet, hit count, Crit, Armor Pen, Weaken, MP and execution values are bounded. Rapid-hit archetypes are proc-focused rather than free burst multipliers. PR #252.
 
 ## Phase 7 — Weapon Expansion decision ⛔ NO-GO FOR NOW
 
@@ -98,7 +98,9 @@ Re-evaluate after Unique 2.0 only if a candidate weapon has:
 - multiple worthwhile Named/Unique designs,
 - more value than deepening the existing 8-family/24-archetype set.
 
-## NEXT — Phase 8 Unique 2.0
+## Phase 8 — Unique 2.0 🔄 ACTIVE
+
+Full handoff: `GEAR_OVERHAUL_PHASE8_UNIQUE2.md`.
 
 Goal: make Named/Unique equipment change gameplay, not merely raise numbers.
 
@@ -112,20 +114,25 @@ Unique base item
 
 Duplicate Unique drops remain valuable because random Options / rarity / Option Lv can differ, and unwanted copies can still participate in Option Fusion where compatible.
 
-### 8A — Unique inventory/audit
-- enumerate current Named/Unique equipment and fixed effects
-- identify numeric-only / obsolete / duplicate identities
-- map current drop sources and weapon-family coverage
+### 8A — Unique inventory/audit ✅
+- existing architecture already correctly separates `UNIQUE FIXED` from Options
+- current Named Unique content is concentrated in accessories / swords / shields
+- repeated Boss damage / action-diversity / generic damage identities should not dominate future content
+- reuse `uniqueEquipment.js`, `equipmentFixedIdentity.js`, `equipment3Legendary.js`; no parallel Unique system
 
-### 8B — Unique identity library
-- author multiple identity patterns for each weapon family and defensive/accessory slots
-- prefer gameplay-loop changes: guard-counter, execution, DoT, spell echo, combo, sustain, tempo, boss specialization, etc.
-- reuse existing BattleEngine effects whenever possible
+### 8B — Unique identity library ✅ foundation
+- `js/data/unique2IdentityLibrary.js`
+- 8 existing weapon families covered
+- 2 authored gameplay-loop identities per family = 16 initial recipes
+- recipes reference existing Phase 6 build lanes and live combat-effect vocabulary
+- recipe layer creates no drops/stats/currency/save root by itself
 
-### 8C — Named/Unique content pass
+### NEXT: 8C — Named/Unique content pass
+- score existing Uniques by identity strength and family/slot coverage
 - upgrade weak existing Uniques first
-- add new Named/Unique items only where coverage is thin
-- FIXED never consumes one of the three random Option slots
+- add new Named/Unique items only where coverage is genuinely thin
+- bind fixed identity to existing effect vocabulary and keep it outside max-3 random Options
+- make duplicate copies desirable through Option rolls rather than duplicate-only power creep
 
 ### 8D — duplicate chase / balance / presentation
 - verify duplicates remain worth farming
@@ -146,14 +153,16 @@ Read before continuing:
 
 1. `ROADMAP.md`
 2. `GEAR_OVERHAUL_ROADMAP.md`
-3. `GEAR_OVERHAUL_PHASE6_WEAPON_IDENTITY.md`
-4. `GEAR_OVERHAUL_AUDIT.md`
-5. `GEAR_OVERHAUL_OPTION_CATALOG.md`
-6. `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`
-7. `GEAR_OVERHAUL_PHASE2_FUSION.md`
-8. `GEAR_OVERHAUL_PHASE4_UI.md`
-9. `js/data/weaponIdentity.js`
-10. `js/data/weaponTechniqueRotation.js`
-11. `js/data/weaponBuildSynergy.js`
+3. `GEAR_OVERHAUL_PHASE8_UNIQUE2.md`
+4. `GEAR_OVERHAUL_PHASE6_WEAPON_IDENTITY.md`
+5. `GEAR_OVERHAUL_AUDIT.md`
+6. `GEAR_OVERHAUL_OPTION_CATALOG.md`
+7. `GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md`
+8. `GEAR_OVERHAUL_PHASE2_FUSION.md`
+9. `GEAR_OVERHAUL_PHASE4_UI.md`
+10. `js/data/unique2IdentityLibrary.js`
+11. `js/data/weaponIdentity.js`
+12. `js/data/weaponTechniqueRotation.js`
+13. `js/data/weaponBuildSynergy.js`
 
 Do not silently return to 5 random Affixes, remove the brute-force route, add a new currency, auto-promote Option rarity, restore numeric Temper, make Greater freely craftable, let reroll inherit old Option Lv/EXP, mix FIXED identity into random Options, or add a new weapon family merely for variety.
