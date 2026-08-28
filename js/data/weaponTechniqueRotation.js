@@ -38,6 +38,7 @@ const TECHNIQUE_STAGE = Object.freeze(Object.values(WEAPON_TECHNIQUE_ROTATIONS).
 }, {}));
 
 const round3 = (v) => Math.round(Number(v || 0) * 1000) / 1000;
+const MAX_CHAIN_HITS = 7;
 
 export function weaponTechniqueStage(techId) {
   return TECHNIQUE_STAGE[techId] || null;
@@ -57,7 +58,10 @@ function applyBonus(technique, bonus, label) {
   if (!bonus) return technique;
   const out = { ...technique };
   const baseHits = Math.max(1, Math.floor(Number(out.hits) || 1));
-  const nextHits = Math.max(1, baseHits + Math.floor(Number(bonus.hitDelta) || 0));
+  // Phase 6D closeout contract: even archetype + rotation stacking may never
+  // exceed seven hits. When already at the cap, preserve packet math instead
+  // of inventing an eighth proc opportunity.
+  const nextHits = Math.min(MAX_CHAIN_HITS, Math.max(1, baseHits + Math.floor(Number(bonus.hitDelta) || 0)));
   if (bonus.powerMult || nextHits !== baseHits) {
     out.power = round3((Number(out.power) || 0) * (Number(bonus.powerMult) || 1) * baseHits / nextHits);
   }

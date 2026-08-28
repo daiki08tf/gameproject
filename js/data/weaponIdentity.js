@@ -40,7 +40,9 @@ export const WEAPON_ARCHETYPE_TECHNIQUE_PROFILES = Object.freeze({
 
   knife: Object.freeze({ family:'dagger', name:'短刀', specialty:'素早い急所狙い', mpCostMult:0.82, critBonusAdd:6 }),
   twinblade: Object.freeze({ family:'dagger', name:'双短剣', specialty:'追加連撃', hitDelta:1, powerMult:1.02 }),
-  assassin: Object.freeze({ family:'dagger', name:'暗殺刃', specialty:'死線の処刑', critBonusAdd:10, execution:{ hpThreshold:0.30, power:1.22 } }),
+  // 1.50 base finisher × 1.15 archetype × 1.15 rotation = 1.984×,
+  // preserving assassin identity while staying inside the Phase 6D 2.0× gate.
+  assassin: Object.freeze({ family:'dagger', name:'暗殺刃', specialty:'死線の処刑', critBonusAdd:10, execution:{ hpThreshold:0.30, power:1.15 } }),
 
   gauntlet: Object.freeze({ family:'knuckle', name:'拳甲', specialty:'攻防一体', powerMult:1.04, selfBuffAdd:{ defPct:0.08, turns:2 } }),
   claw: Object.freeze({ family:'knuckle', name:'爪', specialty:'裂傷連撃', hitDelta:1, critBonusAdd:5 }),
