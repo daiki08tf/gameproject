@@ -1,10 +1,11 @@
 # Enemy 2.0 / Encounter 2.0 — Implementation Roadmap
 
-Status: **E0 AUDIT ✅ / E1 Enemy Lv COMPLETE CANDIDATE / E2 NEXT**
+Status: **E0–E1 ✅ / E2 ANCHOR SCALING COMPLETE CANDIDATE / E3 NEXT**
 
 Authoritative design: `ENEMY_ENCOUNTER_2_DESIGN.md`.
 E0 handoff: `ENEMY_ENCOUNTER_2_E0_AUDIT.md`.
 E1 handoff: `ENEMY_ENCOUNTER_2_E1_LEVEL_FOUNDATION.md`.
+E2 handoff: `ENEMY_ENCOUNTER_2_E2_ANCHOR_SCALING.md`.
 
 ## Goal
 
@@ -41,9 +42,9 @@ Bosses remain authored by default.
 | Phase | Scope | Status |
 |---|---|---|
 | E0 | current enemy/stat/spawn audit + balance snapshots | ✅ main |
-| E1 | visible runtime Enemy Lv foundation | ✅ complete candidate |
-| E2 | anchor-safe level-relative stat scaling | NEXT |
-| E3 | 10–12 Global Species, led by slime family | queued |
+| E1 | visible runtime Enemy Lv foundation | ✅ main |
+| E2 | anchor-safe level-relative stat scaling | ✅ complete candidate |
+| E3 | 10–12 Global Species, led by slime family | NEXT |
 | E4 | Ch1–30 regional expansion to 7 roles + 1 Rare | queued |
 | E5 | optional Encounter Pool contract + pilot chapter | queued |
 | E6 | role-first Encounter Templates | queued |
@@ -54,31 +55,34 @@ Bosses remain authored by default.
 
 ## E0 findings
 
-The current system is locked by `npm run audit:enemy2` and `tests/enemy2-e0-audit.test.js`.
-
-Key contracts:
-
 - story encounters still use fixed `waves`,
 - ordinary story generation is primarily `normal / fast / tank`,
 - `BattleEngine._spawnEnemy(type)` resolves the shared `ENEMY_TYPES` registry,
 - Abyss dynamically registers depth-specific enemy types before BattleEngine spawn,
 - Deep Survey remains Secret Realm content and is not ordinary Abyss content,
-- current `enemy.elite` is coupled to Abyss Shard payout, so generic Elite must not reuse that flag blindly,
+- current `enemy.elite` is coupled to Abyss Shard payout,
 - current stats are the Enemy Lv anchor stats.
 
 ## E1 implementation
 
-Every runtime enemy now receives `baseLevel` and `level`, clamped to **1–99,999**.
+Every runtime enemy receives `baseLevel` and `level`, clamped to **1–99,999**. Text Battle displays the level. E1 itself does not alter stats.
 
-At E1:
+## E2 implementation
 
-- source is authored `enemyLevelBase` or stage `recLevel`,
-- `level === baseLevel`,
-- Text Battle displays Enemy Lv,
-- HP / ATK / DEF / SPD / EXP / Gold are unchanged,
-- fixed waves and all existing reward paths are unchanged.
+Ordinary enemies now roll within **92–108%** of the stage anchor level. Bosses stay authored at the anchor.
 
-This intentionally makes Enemy Lv observable before it becomes a balance input.
+Scaling is relative to `level / baseLevel`:
+
+- HP ^1.00
+- ATK ^0.85
+- DEF ^0.70
+- SPD ^0.15
+- EXP ^0.78
+- Gold ^0.62
+
+At `level === baseLevel`, every E0 stat/reward value is preserved exactly.
+
+E2 does not touch item drops, Item Power, Option quality, fixed waves, Boss selection, save data, or generic Elite behavior.
 
 ## Enemy role target
 
@@ -104,20 +108,6 @@ Existing `normal / fast / tank` are preserved as the first three roles.
 
 Target after Enemy Content Pack I: **roughly 240+ ordinary/Rare enemy identities**, excluding Bosses/special enemies.
 
-## Enemy Lv principle
-
-Current stats are the anchor at the current reference level. E2 applies relative scaling around that anchor rather than replacing Chapter scaling.
-
-Initial level-roll targets:
-
-- ordinary: 92–108% of stage recLevel
-- strong: 105–118%
-- Rare: 115–135%
-- Elite: 120–145%
-- Boss: authored / normally around 100–112%
-
-All clamp to Lv1–99,999.
-
 ## Global Species principle
 
 A Global Species belongs to the world, not one Chapter.
@@ -138,14 +128,16 @@ Initial templates:
 
 The template chooses roles first. Region/global pools resolve actual species second.
 
-## E2 acceptance gate
+## E3 acceptance gate
 
-E2 may add level-relative rolls and stat scaling only when:
+E3 should add reusable species identities without yet replacing story fixed waves.
 
-1. an enemy at `level === baseLevel` has exactly the E0 stats,
-2. ordinary level rolls stay within the authored bounded range,
-3. scaling clamps safely at Lv1 and Lv99,999,
-4. Bosses remain authored by default,
-5. EXP/Gold do not double-count existing Chapter/Abyss progression,
-6. fixed waves remain untouched,
-7. generic Elite remains deferred until its Abyss reward coupling is separated.
+Required:
+
+1. 10–12 Global Species in canonical data,
+2. slime is the reference true-global species,
+3. each species has stable `speciesId`, base role and habitat/global metadata,
+4. existing Chapter enemy IDs remain valid,
+5. no random Encounter Pool migration yet,
+6. no generic Elite/Abyss reward collision,
+7. no new currency/save root/Home route.
