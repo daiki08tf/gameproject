@@ -6,6 +6,7 @@
    timed loop, pity meter or parallel progression track.
    ============================================================ */
 import { buildAbyssStage } from './abyss.js';
+import { abyssChallengeMultiplier } from './abyssChallenges.js';
 
 const D = (id, realmId, realmName, discoveredName, depth, role, ruleName, rule, challengeIds, unlockDiscoveries, inspectText, rewardHint, tags, preferredAffixIds, targetAffixChance, legendaryChanceAdd=0) => Object.freeze({
   id, realmId, realmName, discoveredName, depth, role, ruleName, rule,
@@ -66,6 +67,13 @@ export function deepSurveyExplorationSites(){
   }));
 }
 
+function challengePressureFloor(challengeIds,key,baseValue){
+  const floor=abyssChallengeMultiplier(challengeIds,key);
+  const current=Number.isFinite(Number(baseValue))?Number(baseValue):1;
+  // Most enemy multipliers are harder when larger. Healing is the inverse: lower is harsher.
+  return key==='healMult'?Math.min(current,floor):Math.max(current,floor);
+}
+
 export function buildDeepSurveyStage(realmId){
   const def=deepSurveyByRealmId(realmId);if(!def)return null;
   const base=buildAbyssStage(def.depth,[],{challengeIds:def.challengeIds});
@@ -83,6 +91,11 @@ export function buildDeepSurveyStage(realmId){
     rewards:{gold:Math.round(base.rewards.gold*1.15),exp:base.rewards.exp},
     waves,
     modifiers:[{id:`deep_${def.id}`,name:def.ruleName,desc:def.rule},...(base.modifiers||[])],
+    healMult:challengePressureFloor(def.challengeIds,'healMult',base.healMult),
+    enemyAtkMult:challengePressureFloor(def.challengeIds,'enemyAtkMult',base.enemyAtkMult),
+    enemyDefMult:challengePressureFloor(def.challengeIds,'enemyDefMult',base.enemyDefMult),
+    enemySpeedMult:challengePressureFloor(def.challengeIds,'enemySpeedMult',base.enemySpeedMult),
+    enemyHpMult:challengePressureFloor(def.challengeIds,'enemyHpMult',base.enemyHpMult),
     dropRegionTags:[...def.tags],
     deepSurveyRole:def.role,
     deepSurveyRewardHint:def.rewardHint,
