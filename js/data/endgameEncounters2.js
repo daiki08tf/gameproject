@@ -22,7 +22,12 @@ const ACTIVITY_TEMPLATES=Object.freeze({
 });
 
 function unique(xs){return [...new Set(xs.filter(Boolean))];}
-function nonBossWaveTypes(stage,enemyTypes){return unique((stage?.waves||[]).map(w=>w?.type).filter(type=>enemyTypes?.[type]&&!enemyTypes[type].boss));}
+function nonBossWaveTypes(stage,enemyTypes){
+  return unique((stage?.waves||[]).filter(w=>{
+    const enemy=enemyTypes?.[w?.type];
+    return enemy&&!enemy.boss&&!enemy.rareIdentity&&!w?.phase12Rare&&!w?.deepSurveyApex&&!w?.convergencePhase;
+  }).map(w=>w.type));
+}
 function firstAnchor(stage,enemyTypes){return nonBossWaveTypes(stage,enemyTypes).map(id=>enemyTypes[id]).find(Boolean)||null;}
 function roleAnchor(stage,enemyTypes,role){
   const ids=nonBossWaveTypes(stage,enemyTypes);
