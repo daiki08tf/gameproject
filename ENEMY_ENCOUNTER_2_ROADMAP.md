@@ -1,11 +1,12 @@
 # Enemy 2.0 / Encounter 2.0 — Implementation Roadmap
 
-Status: **E0–E5 ✅ / E6 ROLE-FIRST TEMPLATES COMPLETE CANDIDATE / E7 NEXT**
+Status: **E0–E6 ✅ / E7 COMPLETE CANDIDATE / E8 NEXT**
 
 Authoritative design: `ENEMY_ENCOUNTER_2_DESIGN.md`.
 Human-readable enemy catalog: `ENEMY_2_CONTENT_CATALOG.md`.
 E5 handoff: `ENEMY_ENCOUNTER_2_E5_ENCOUNTER_PILOT.md`.
 E6 handoff: `ENEMY_ENCOUNTER_2_E6_ROLE_TEMPLATES.md`.
+E7 handoff: `ENEMY_ENCOUNTER_2_E7_RANK_VARIANTS.md`.
 
 ## Goal
 
@@ -43,9 +44,9 @@ Bosses remain authored by default.
 | E3 | 12 Global Species, led by true-global slime | ✅ main |
 | E4 | Ch1–30 regional expansion to 7 roles + 1 Rare | ✅ main |
 | E5 | optional Encounter Pool contract + Ch1 pilot | ✅ main |
-| E6 | role-first Encounter Templates | ✅ complete candidate |
-| E7 | Rare / generic Elite / environmental Variant integration | NEXT |
-| E8 | progressive Ch1–30 migration | queued |
+| E6 | role-first Encounter Templates | ✅ main |
+| E7 | Rare / generic Elite / environmental Variant integration | ✅ complete candidate |
+| E8 | progressive Ch1–30 migration | NEXT |
 | E9 | curated Abyss / Rift / Secret Realm / Deep Survey integration | queued |
 | E10 | existing Codex discovery polish | queued |
 
@@ -62,13 +63,13 @@ Bosses remain authored by default.
 
 ## E5 Ch1 Encounter Pool pilot
 
-`1-2` through `1-5` use the optional Ch1 field pool while `1-1` tutorial and `1-B` hidden route remain fixed. Existing `waves`, enemy headcounts and Boss order are retained. Chapter Rare and generic Elite remain absent from live pool resolution.
+`1-2` through `1-5` use the optional Ch1 field pool while `1-1` tutorial and `1-B` hidden route remain fixed. Existing `waves`, enemy headcounts and Boss order are retained. Existing E5 safe resolution excludes Rare and historical Abyss Elite semantics; E7 adds Rare only through an explicit override contract.
 
 E5 proves that re-entering the same stage can produce different ordinary species without a new stage/reward/save system.
 
 ## E6 role-first Encounter Templates
 
-Ch1 pooled encounters now choose a **formation identity before species resolution**.
+Ch1 pooled encounters choose a **formation identity before species resolution**.
 
 Implemented templates:
 
@@ -103,24 +104,27 @@ Safety:
 
 - Boss specs bypass template planning,
 - every resolved type must match the requested role when that role exists in the pool,
-- no Rare / generic Elite yet,
 - fixed waves/headcounts/group sizes remain unchanged,
 - Global Species can naturally fill matching role slots,
 - deterministic seeded planning is regression-tested,
 - no save/currency/reward/IP/Option fork.
 
-## E7 acceptance gate
+## E7 Rare / generic Elite / environmental Variant integration
 
-E7 may introduce Rare / generic Elite / environmental Variant runtime behavior only after separating generic rank semantics from historical Abyss Elite payout.
+E7 keeps the rollout on the Ch1 pilot while completing the rank/variant contract needed for E8.
 
-Required:
+Implemented boundaries:
 
-1. generic Elite uses a rank/flag that does **not** trigger Abyss Shards,
-2. historical Abyss Elite behavior/rewards stay unchanged,
-3. Chapter Rare can appear only through explicit Rare-capable encounter rules and is never story-required,
-4. Rare/Elite Enemy Lv bands follow the authored design bounds rather than ordinary 92–108%,
-5. environmental Variants reuse base species/family identity instead of multiplying unrelated species IDs,
-6. rank/variant stat and reward bonuses are bounded and cannot double-count existing Abyss/World Tier scaling,
-7. Bosses are excluded from generic Rare/Elite conversion,
-8. seeded acceptance tests cover spawn rates and safety,
-9. no new currency/save root/Home route or timed spawn loop.
+1. generic World Tier Elite uses `rank='elite'` + `genericElite=true`; historical `enemy.elite` remains Abyss-only reward semantics,
+2. historical Abyss Elite behavior/rewards are unchanged,
+3. Ch1 Rare appears only through explicit Rare-capable encounter metadata at 4% base presence, with bounded World Tier influence,
+4. Rare Enemy Lv rolls at 115–135%; generic Elite at 120–145%,
+5. the initial `grassland_windswept` environmental Variant preserves `speciesId` while adding bounded flavor stats/name metadata,
+6. World Tier remains the owner of its existing stat/reward/drop multipliers; E7 does not apply those multipliers again,
+7. Bosses bypass generic Rare/Elite conversion,
+8. seeded acceptance tests cover rank safety, Rare rules, level bands and Variant identity,
+9. no currency/save root/Home route/timed spawn loop was added.
+
+## E8 next gate
+
+Progressively migrate Ch1–30 stages onto Encounter Pool + role template + rank/variant behavior. Migration must remain chapter-by-chapter, preserve fixed `waves` as fallback, keep authored Boss order, and avoid turning every region into the same broad global pool.
