@@ -1,10 +1,11 @@
 /* ============================================================
-   Post-CP3 Vertical Extension V4 — Convergence Apex combat bridge
+   Post-CP3 Vertical Extension V4/V6 — Convergence Apex bridge
    ------------------------------------------------------------
-   Reuses BattleEngine hooks. No persisted meter/resource or parallel engine.
-   The final phase cycles Ash -> Ninth -> Root pressure every two rounds.
+   Reuses BattleEngine and TextBattleScreen hooks. No persisted meter/resource,
+   parallel engine or extra battle screen. Final cycles Ash -> Ninth -> Root.
    ============================================================ */
 import { BattleEngine } from '../battleEngine.js';
+import { TextBattleScreen } from '../screens/textBattle.js';
 
 const MARK=Symbol.for('bladeVale.postCp3ConvergenceApexCombat');
 
@@ -101,5 +102,28 @@ if(!BattleEngine.prototype[MARK]){
     try{return originalAdvanceTurn.call(this,command);}finally{
       for(const [enemy,spd] of snapshots)enemy.spd=spd;
     }
+  };
+}
+
+const SCREEN_MARK=Symbol.for('bladeVale.postCp3ConvergenceApexReadability');
+if(!TextBattleScreen.prototype[SCREEN_MARK]){
+  TextBattleScreen.prototype[SCREEN_MARK]=true;
+  const originalRender=TextBattleScreen.prototype._render;
+  TextBattleScreen.prototype._render=function(){
+    const result=originalRender.call(this);
+    if(!this.engine?.stage?.convergenceApex)return result;
+    const live=livePhase(this.engine);
+    const pressure=pressurePhase(this.engine);
+    const labels={ash:'I · ASH',ninth:'II · NINTH',root:'III · ROOT'};
+    const label=live==='convergence'?`FINAL · ${String(pressure||'').toUpperCase()}`:(labels[live]||'APEX');
+    if(this.el?.stageName){
+      this.el.stageName.textContent=`収束観測 — ${label}`;
+      this.el.stageName.title=live==='convergence'
+        ? 'FinalはASH→NINTH→ROOTを2ラウンドずつ循環'
+        : live==='ash'?'回復圧と重い一撃'
+          :live==='ninth'?'高速再照準・先手圧'
+            :live==='root'?'MP消費・同一行動反復圧':'CONVERGENCE APEX';
+    }
+    return result;
   };
 }
