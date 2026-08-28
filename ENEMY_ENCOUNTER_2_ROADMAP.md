@@ -1,8 +1,9 @@
 # Enemy 2.0 / Encounter 2.0 — Implementation Roadmap
 
-Status: **DESIGN COMPLETE / IMPLEMENTATION NOT STARTED**
+Status: **E0 AUDIT COMPLETE CANDIDATE / E1 Enemy Lv NEXT**
 
 Authoritative design: `ENEMY_ENCOUNTER_2_DESIGN.md`.
+E0 handoff: `ENEMY_ENCOUNTER_2_E0_AUDIT.md`.
 
 ## Goal
 
@@ -38,8 +39,8 @@ Bosses remain authored by default.
 
 | Phase | Scope | Status |
 |---|---|---|
-| E0 | current enemy/stat/spawn audit + balance snapshots | NEXT |
-| E1 | visible runtime Enemy Lv foundation | queued |
+| E0 | current enemy/stat/spawn audit + balance snapshots | ✅ complete candidate |
+| E1 | visible runtime Enemy Lv foundation | NEXT |
 | E2 | anchor-safe level-relative stat scaling | queued |
 | E3 | 10–12 Global Species, led by slime family | queued |
 | E4 | Ch1–30 regional expansion to 7 roles + 1 Rare | queued |
@@ -49,6 +50,20 @@ Bosses remain authored by default.
 | E8 | progressive Ch1–30 migration | queued |
 | E9 | curated Abyss / Rift / Secret Realm / Deep Survey integration | queued |
 | E10 | existing Codex discovery polish | queued |
+
+## E0 findings
+
+The current system is now locked by `npm run audit:enemy2` and `tests/enemy2-e0-audit.test.js`.
+
+Key contracts:
+
+- story encounters still use fixed `waves`,
+- ordinary story generation is primarily `normal / fast / tank`,
+- `BattleEngine._spawnEnemy(type)` resolves the shared `ENEMY_TYPES` registry,
+- Abyss dynamically registers depth-specific enemy types before BattleEngine spawn,
+- Deep Survey remains Secret Realm content and is not ordinary Abyss content,
+- current `enemy.elite` is coupled to Abyss Shard payout, so generic Elite must not reuse that flag blindly,
+- current stats are the future Enemy Lv **anchor stats** and must not be rebased during E1.
 
 ## Enemy role target
 
@@ -78,9 +93,9 @@ Target after Enemy Content Pack I: **roughly 240+ ordinary/Rare enemy identities
 
 Do not replace current Chapter scaling on day one.
 
-Current stats become the anchor at the current reference level. Runtime Enemy Lv applies a relative multiplier around that anchor, so migration does not silently rebalance the whole game.
+Current stats become the anchor at the current reference level. E1 adds level metadata only; E2 applies the relative stat multiplier around that anchor.
 
-Initial level-roll targets:
+Initial level-roll targets for the later scaling phase:
 
 - ordinary: 92–108% of stage recLevel
 - strong: 105–118%
@@ -110,19 +125,16 @@ Initial templates:
 
 The template chooses roles first. Region/global pools resolve actual species second.
 
-## Recommended first implementation
+## E1 acceptance gate
 
-Do **E0 only** first.
+E1 is allowed to add runtime/visible Enemy Lv only when it preserves all E0 balance anchors.
 
-E0 must answer before code migration:
+Required:
 
-1. every current enemy source,
-2. every direct `ENEMY_TYPES` consumer,
-3. current enemy stats vs stage `recLevel`,
-4. current kill EXP/Gold assumptions,
-5. every use of `enemy.elite`,
-6. Boss AI assumptions tied to enemy IDs,
-7. Abyss/Rift/Secret Realm enemy builders,
-8. regression snapshots for representative Ch1 / Ch10 / Ch20 / Ch30 / Abyss / Deep Survey encounters.
-
-Only after E0 is green should E1 add visible Enemy Lv.
+1. every spawned enemy has `level` and `baseLevel`,
+2. levels clamp to 1–99,999,
+3. baseline story/Abyss/Deep Survey enemy stats remain unchanged,
+4. fixed waves remain untouched,
+5. Bosses receive authored/reference level metadata without random rebalance,
+6. no new currency/save root/reward path,
+7. generic Elite remains deferred until the Abyss payout coupling is separated.
