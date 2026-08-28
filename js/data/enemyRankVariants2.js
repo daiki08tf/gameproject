@@ -1,4 +1,4 @@
-/* Enemy 2.0 E7/E8 — generic rank, Rare and environmental Variant contracts. */
+/* Enemy 2.0 E7/E8/E9 — generic rank, Rare and environmental Variant contracts. */
 import { clampEnemyLevel, stageEnemyBaseLevel, ENEMY_LEVEL_SCALE_EXPONENTS } from './enemyLevel.js';
 import { weightedEncounterPick } from './encounterPools2.js';
 
@@ -23,6 +23,10 @@ export const ENVIRONMENT_VARIANTS=Object.freeze({
     id:'ice_frost',name:'霜晶の',requiredTags:Object.freeze(['ice']),roles:Object.freeze([]),
     statMult:Object.freeze({hp:1.04,atk:1.02,def:1.05,spd:.98,xp:1.04,gold:1.04}),
   }),
+  lightning_arc:Object.freeze({
+    id:'lightning_arc',name:'雷光の',requiredTags:Object.freeze(['lightning']),roles:Object.freeze(['normal','fast','attacker','caster','support']),
+    statMult:Object.freeze({hp:1.00,atk:1.05,def:1.00,spd:1.08,xp:1.04,gold:1.04}),
+  }),
   wind_gale:Object.freeze({
     id:'wind_gale',name:'疾風の',requiredTags:Object.freeze(['wind']),roles:Object.freeze(['normal','fast','attacker','caster']),
     statMult:Object.freeze({hp:.99,atk:1.03,def:.99,spd:1.07,xp:1.04,gold:1.03}),
@@ -38,6 +42,10 @@ export const ENVIRONMENT_VARIANTS=Object.freeze({
   light_radiant:Object.freeze({
     id:'light_radiant',name:'輝界の',requiredTags:Object.freeze(['light']),roles:Object.freeze(['normal','tank','caster','support']),
     statMult:Object.freeze({hp:1.03,atk:1.02,def:1.04,spd:1.00,xp:1.04,gold:1.04}),
+  }),
+  abyss_echo:Object.freeze({
+    id:'abyss_echo',name:'深淵映しの',requiredTags:Object.freeze(['abyss']),roles:Object.freeze([]),
+    statMult:Object.freeze({hp:1.03,atk:1.04,def:1.03,spd:1.01,xp:1.03,gold:1.03}),
   }),
 });
 
