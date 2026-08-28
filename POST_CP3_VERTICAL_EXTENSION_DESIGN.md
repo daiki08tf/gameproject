@@ -1,200 +1,140 @@
 # Post-CP3 Vertical Extension Design
 
-Status: **DESIGN READY / IMPLEMENTATION NOT YET ACTIVE**
+Status: **ACTIVATED / V1+V2 IMPLEMENTED CANDIDATE / V3 NEXT**
 
-This document is the contingency design that should be used only if manual Deep Survey play confirms that the current three-region apex becomes shallow after gearing.
+The player explicitly activated this design after the design review. The former Manual Feel Gate is no longer an implementation blocker. Keep the original guardrails and ship each step behind regression tests.
 
-It does not authorize implementation by itself. The existing Manual Feel Gate remains the trigger.
+## 1. Goal
 
-## 1. Design goal
-
-Deepen the existing loop without creating another progression system.
-
-Target loop:
+Deepen the existing loop without creating another progression system:
 
 `Deep Survey → choose authored pressure → clear harder replay → improve existing Gear/Options → unlock Convergence Apex → repeat for speed/safety/build variety`
 
 Permanent constraints:
 
-- no new currency,
-- no new save root,
+- no new currency or save root,
 - no new Home button or parallel mode,
 - no daily/weekly/FOMO cadence,
 - no new gear rarity or Item Power cap,
 - no mandatory Named Unique,
 - no infinite modifier tree,
-- no requirement that one build archetype be the only correct answer,
+- no single correct build,
 - brute-force stat/Option investment remains valid if sufficiently strong.
 
 ## 2. Layer A — Survey Conditions
 
-Survey Conditions are **optional authored replay clauses attached to each existing Deep Survey**. They should reuse Abyss Challenge machinery wherever possible.
+Survey Conditions are optional authored replay clauses attached to each existing Deep Survey. No new screen is added; selection lives inside the existing Deep Survey confirm surface.
 
-Each region exposes exactly three Conditions. The player can choose one at first. Clearing all three individually unlocks a two-Condition combination for that region. A three-Condition stack is intentionally not required for progression and is not part of the first implementation.
+V1/V2 contract:
+- exactly three Conditions per region,
+- choose `なし` or one Condition,
+- runtime selection itself is not saved,
+- battle start encodes the chosen Condition into the existing Secret Realm stage ID,
+- existing `recordStageResult(stage.id, ...)` therefore records Condition clear history,
+- baseline Deep Survey remains unchanged when no Condition is selected.
 
-No new screen is added. Conditions appear inside the existing Deep Survey detail/start surface.
+V3 contract:
+- clearing all three singles in a region unlocks optional two-Condition selection,
+- no three-Condition progression requirement,
+- no mastery currency/rank ladder.
 
 ### 2.1 返信炉床・深層観測
 
-Purpose: test sustain, guard timing, recovery and raw durability.
+Purpose: sustain, guard timing, recovery and raw durability.
 
-- **灰圧増幅** — enemy HP pressure increases further. Favors long-form sustain and efficient damage.
-- **乾いた傷口** — healing is reduced further, but not disabled. Favors mitigation, guard, absorption and kill-speed alternatives.
-- **反響打撃** — repeated direct hits from enemies gain pressure over time until interrupted by guard/defensive timing. Must be implemented through existing combat effect/challenge hooks, not a new resource meter.
+- **灰圧増幅** — additional enemy HP pressure.
+- **乾いた傷口** — healing reduced further, never disabled.
+- **反響打撃** — attacking continuously builds bounded incoming pressure; Guard breaks the chain.
 
-Reward steering: keep the current DEF / HP / Guard-heal / Lifesteal regional Option bias, with a modest increase to existing Greater/Legendary opportunity. Do not create a new reward pool.
+Reward bias remains DEF / HP / Guard-heal / Lifesteal.
 
 ### 2.2 第九照準廊・深層観測
 
-Purpose: test tempo, first-action value, target prioritization and burst consistency.
+Purpose: tempo, first-action value, target prioritization and burst consistency.
 
-- **再照準短縮** — enemy speed/turn pressure increases.
-- **精鋭連鎖** — Elite density or Elite pressure rises using existing challenge machinery.
-- **照準固定** — leaving dangerous enemies alive for too long increases incoming pressure. This should be implemented as existing enemy/boss behavior pressure, not a timer UI or FOMO mechanic.
+- **再照準短縮** — enemy speed pressure increases.
+- **精鋭連鎖** — enemy count rises and periodic enemies receive authored HP/ATK pressure. It intentionally does not set the Abyss `enemy.elite` flag, preventing accidental Abyss Shard rewards.
+- **照準固定** — incoming pressure increases gradually with battle rounds, bounded and with no timer/FOMO UI.
 
-Reward steering: keep SPD / Crit / Attack Speed / Crit Damage bias, with modest Greater quality pressure only.
+Reward bias remains SPD / Crit / Attack Speed / Crit Damage.
 
 ### 2.3 異記憶根室・深層観測
 
-Purpose: test MP economy, skill/spell rotation and resistance to repetitive play.
+Purpose: MP economy, skill/spell rotation and resistance to repetitive play.
 
-- **記録飽和** — repeated use of the same action becomes less efficient temporarily; alternating actions avoids the penalty. No permanent stack resource should be saved.
-- **根脈枯渇** — stronger MP/resource pressure using existing cost/recovery hooks.
-- **生体再演** — boss technique frequency/variety increases using existing boss-technique challenge behavior.
+- **記録飽和** — repeating attack/skill/spell gains a bounded damage-efficiency penalty; switching action family or guarding clears repetition.
+- **根脈枯渇** — MP cost increases through the existing technique-cost hook.
+- **生体再演** — Boss technique intervals shorten while keeping existing telegraphs.
 
-Reward steering: keep MAG / MP / CDR / Crit-MP bias and existing mixed-chase loot.
+Reward bias remains MAG / MP / CDR / Crit-MP.
 
-## 3. Condition reward contract
+## 3. Reward contract
 
-Conditions should improve **quality density, not create exclusive power**.
+Conditions improve quality density, not exclusive power.
 
-Preferred reward adjustments:
-
-- +small Greater chance or Greater-count weight,
-- +small Legendary chance within existing caps,
-- slightly stronger existing regional Option steering,
-- optional increase to mixed-drop quantity if needed after simulation,
-- never guarantee Ancient, Greater×3, Legendary Power, or a specific Option.
-
-Hard caps for initial implementation:
-
-- regional target Option steering: baseline 34%, one Condition <= 38%, two Conditions <= 42%,
-- total additional Legendary chance from Conditions: <= +4 percentage points above the current region profile,
-- no new Item Power above 10,000,
+Hard caps:
+- baseline regional Option steering: 34%,
+- one Condition: <= 38%,
+- two Conditions: <= 42%,
+- total Condition Legendary contribution: <= +4 percentage points above the region profile,
+- Item Power <= 10,000,
 - max three random Options remains absolute for new gear.
 
-Rejected drops must still remain useful Option Fusion material. Smart Loot must not auto-protect so much gear that Fusion supply collapses.
+Never guarantee Ancient, Greater×3, Legendary Power or a specific Option. Rejected drops must remain useful Option Fusion material and Smart Loot must not protect everything.
 
 ## 4. Layer B — Convergence Apex
 
-Convergence Apex is one authored Secret Realm encounter revealed only after the player proves all three Deep Survey lessons.
-
-### 4.1 Unlock
-
-Minimum unlock contract:
-
+Unlock minimum:
 - clear all three baseline Deep Surveys,
 - clear at least one Survey Condition in each region.
 
-Do **not** require all Conditions or two-Condition clears to unlock the Apex. Those remain optional mastery goals.
+Do not require all Conditions or a two-Condition clear to unlock Apex.
 
-Use existing stage/discovery/clear records where possible. Avoid a new progression root.
+One existing-system Secret Realm encounter uses four readable phases:
 
-### 4.2 Encounter structure
+1. **Ash / endurance** — healing pressure, heavy readable hits, guard/sustain value.
+2. **Ninth / tempo** — faster cadence and target-priority pressure.
+3. **Root / rotation** — MP pressure, Boss-technique variety and repetition pressure.
+4. **Convergence** — cycles one recognizable mechanic from each region instead of stacking every maximum penalty at once.
 
-One encounter, three authored phases, one final convergence phase.
-
-**Phase I — Ash / endurance**
-- healing pressure,
-- heavy but readable attacks,
-- guard/mitigation/sustain valuable,
-- pure damage can still skip portions if sufficiently invested.
-
-**Phase II — Ninth / tempo**
-- faster enemy cadence,
-- Elite/add or target-priority pressure,
-- burst and speed valuable,
-- tank builds can survive through it with enough investment.
-
-**Phase III — Root / rotation**
-- MP/resource pressure,
-- boss-technique variation,
-- repeated-action inefficiency or alternating-response incentive,
-- simple high-stat builds remain viable through raw reserves and durability.
-
-**Final — Convergence**
-- combines one readable mechanic from each prior phase,
-- never stacks all maximum penalties simultaneously,
-- mechanics cycle rather than randomly overlap,
-- player should recognize the source of each pressure from the three regions.
-
-The fight must feel like synthesis, not a fourth unrelated gimmick.
+Counter-builds should clear earlier/cheaper; balanced builds clear normally; sufficiently invested brute-force builds can still win.
 
 ## 5. Apex rewards
 
-Apex rewards should be distinctive but side-grade oriented.
+Side-grade/distinctive only:
+- existing cosmetic/title/codex-style distinction and/or deterministic high-quality existing-system gear for first clear,
+- strongest mixed-chase density for repeat clears,
+- no new material/currency/tier,
+- no guaranteed BiS,
+- Named Unique eligibility may be higher but no Named Unique is required.
 
-Preferred first-clear reward:
+## 6. Mastery without a new system
 
-- one existing-system cosmetic/title/codex-style distinction, and/or
-- one deterministic high-quality existing gear drop whose power remains inside current Legendary/Greater/Option rules.
-
-Repeat clears:
-
-- strongest mixed-chase density in the game,
-- no unique mandatory material,
-- no new currency,
-- no Apex-only gear tier,
-- no guaranteed best-in-slot item.
-
-Named Unique eligibility may be higher here, but no single Unique may be required to clear the encounter.
-
-## 6. Mastery goals without a new system
-
-Optional mastery can be expressed only through existing clear records/UI:
-
+Use ordinary stage clear metadata only:
 - baseline clear,
 - each single Condition clear,
 - one two-Condition clear per region,
-- Convergence Apex clear.
+- Apex clear.
 
-Do not add a mastery currency, battle pass, rank ladder or infinite difficulty score.
-
-If a visible completion indicator is useful, render it inside existing Exploration/Secret Realm detail surfaces from ordinary clear metadata.
+Any completion indicator belongs inside existing Exploration/Secret Realm detail surfaces.
 
 ## 7. Balance philosophy
 
-The intended relationship is:
-
 - counter-build = earlier/cheaper clear,
 - balanced build = normal clear,
-- brute-force build = later/more expensive but still valid clear.
+- brute-force build = later/more expensive but valid clear.
 
-No Condition should hard-disable healing, crits, magic, physical damage, guard, or one weapon family. Pressure may reduce efficiency, but never invalidate an entire build identity.
-
-The permanent rule remains:
+No Condition may hard-disable healing, crits, magic, physical damage, guard or an entire weapon family.
 
 `「知らん、火力と耐久で押し切る」も正しい攻略法。`
 
-## 8. Implementation order if activated
+## 8. Implementation order
 
-1. **V1 — Condition data contract**: authored Condition definitions, no UI expansion beyond existing stage detail.
-2. **V2 — Region integration**: one-Condition selection, live Abyss challenge reuse, reward steering caps.
-3. **V3 — Combination gate**: unlock two-Condition replays after all singles for that region; still optional.
-4. **V4 — Convergence Apex encounter**: authored four-phase fight and existing-system reward wiring.
-5. **V5 — Acceptance simulation**: confirm target Option rates, Smart Loot/Fusion supply, Greater/Legendary bounds and max-three Option contract.
-6. **V6 — Polish/manual feel**: tune wording, encounter readability, mobile command pressure and reward feel.
+1. **V1 — Condition data contract** — implemented candidate.
+2. **V2 — Region integration / one Condition** — implemented candidate; awaiting CI before merge.
+3. **V3 — Combination gate** — next after V1/V2 green.
+4. **V4 — Convergence Apex** — after V3.
+5. **V5 — Acceptance simulation** — validate 34/38/42%, Smart Loot/Fusion supply, Greater/Legendary bounds and max-three contract.
+6. **V6 — Polish/manual feel** — wording, readability, mobile pressure and reward feel.
 
-Each step should be independently shippable and protected by tests before the next begins.
-
-## 9. Activation gate
-
-Implement this design only if manual Deep Survey play reveals one or more of these problems:
-
-- three regions stop feeling meaningfully different after gearing,
-- repeated clears have no reason to alter build choices,
-- target farming becomes solved too quickly,
-- returning with refined Gear does not create a satisfying mastery loop,
-- the current apex lacks a final synthesis challenge.
-
-If those problems are not observed, keep the current three-region Deep Survey as the apex and do not build this extension simply because the design exists.
+Each step must remain independently shippable and regression-tested.

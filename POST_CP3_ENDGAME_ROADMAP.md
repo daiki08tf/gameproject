@@ -1,88 +1,86 @@
 # Post-CP3 Endgame Roadmap — Reconciled after Gear Overhaul
 
-Status: **Deep Survey Quantitative Acceptance COMPLETE / Manual Feel Gate ACTIVE / Vertical Extension DESIGN READY**
+Status: **Vertical Extension ACTIVE — V1/V2 Survey Conditions implementation**
 
-Gear Overhaul Phases 0–9 are complete. Post-CP3 high difficulty consumes that finished loot loop instead of creating parallel progression.
+Gear Overhaul Phases 0–9 and the post-Gear Deep Survey quantitative acceptance gate are complete. The player explicitly activated the designed vertical extension after the design review, so the former Manual Feel Gate is no longer an implementation blocker.
 
-## Deep Survey — current implementation
+## Deep Survey — baseline complete
 
-Three existing CP3 hidden-route conclusions are Lv99,999 / IP10,000 Secret Realm targets:
+Three CP3 hidden-route conclusions remain the Lv99,999 / IP10,000 apex foundations:
 
 | Region | Combat pressure | Gear purpose |
 |---|---|---|
-| 返信炉床・深層観測 | HP pressure + healing restriction | high Option gear; DEF / HP / guard-heal / lifesteal bias |
-| 第九照準廊・深層観測 | ATK + Elite pressure | high-quality gear; SPD / Crit / attack-speed / Crit-damage bias |
-| 異記憶根室・深層観測 | HP + healing + Boss-technique pressure | high Option gear; MAG / MP / CDR / crit-MP bias |
+| 返信炉床・深層観測 | HP + healing pressure | DEF / HP / guard-heal / lifesteal bias |
+| 第九照準廊・深層観測 | ATK + tempo pressure | SPD / Crit / attack-speed / Crit-damage bias |
+| 異記憶根室・深層観測 | HP + healing + Boss-technique pressure | MAG / MP / CDR / crit-MP bias |
 
-Unlock authority remains existing CP3 `world2.discoveries`. The existing Exploration root and Secret Realm routing are reused.
+Baseline regional Option steering remains 34%. The existing Exploration root, Secret Realm route, CP3 `world2.discoveries`, Item Power 10,000, max-three Options, Option Lv1–100, Greater / Legendary / Curse, Smart Loot and Option Fusion remain authoritative.
 
-## Loot contract
+`npm run sim:deep-survey` is the quantitative regression gate for the baseline mixed-chase loop.
 
-Deep Survey is the hardest **mixed chase**, not a new loot tier.
+## Vertical Extension implementation
 
-It reuses:
-- Item Power up to 10,000,
-- max-three random Options,
-- seven Option rarities,
-- Option Lv1–100,
-- Greater / Legendary / Curse systems already present,
-- Option Fusion for non-jackpot drops,
-- existing Loot3 target-Affix steering through `loot3Profile`.
+The authoritative design is `POST_CP3_VERTICAL_EXTENSION_DESIGN.md`.
 
-Regional Option steering is bounded at 34%; it is a bias, never a guaranteed roll. Small Legendary chance additions are capped at +3–4 percentage points.
+### V1 — Condition data contract — COMPLETE candidate
 
-## Quantitative Acceptance — complete
+- exactly three authored Conditions per Deep Survey region,
+- stable Condition IDs and encoded Secret Realm stage IDs,
+- no new currency/save root/Home route,
+- reward steering helpers enforce the one-Condition 38% and future two-Condition 42% caps.
 
-The post-Gear loop is exercised as:
+### V2 — one-Condition region integration — COMPLETE candidate
 
-`Deep Survey → mixed gear drops → evaluate max-three Options → Option Fusion / build refinement → return deeper/faster`
+- Condition selector appears only inside the existing Deep Survey confirm surface,
+- player may choose `なし` or one of the region's three Conditions,
+- the selection is runtime-only; the battle stage gets an encoded condition stage ID,
+- existing `recordStageResult(stage.id, ...)` therefore stores Condition clear history without a new progression root,
+- combat hooks are transient BattleEngine state only,
+- one Condition raises regional Option steering from 34% to at most 38%,
+- Condition Legendary contribution stays bounded to +4 percentage points above the region profile,
+- no Item Power / rarity / Option-count cap changes.
 
-`npm run sim:deep-survey` now runs a deterministic acceptance simulation for all three regions using the live Option 4.0 quality bridge, regional steering, Smart Loot protection rules and Option Fusion XP.
+Implemented single-Condition pressures:
 
-Automated acceptance proves that:
-- each region's 34% Option-family steering remains materially visible but non-guaranteed,
-- every simulated Option remains canonical Option 4.0,
-- no simulated item exceeds three random Options,
-- valuable Ancient/protected outcomes remain present,
-- ordinary drops remain available as Fusion material instead of everything being auto-protected,
-- every preferred regional family repeatedly supplies positive same-family Fusion XP,
-- Deep Survey remains on the existing IP10,000 / Option / Legendary / Greater loot stack,
-- no parallel reward tier or progression root is introduced.
+- **返信炉床**: 灰圧増幅 / 乾いた傷口 / 反響打撃
+- **第九照準廊**: 再照準短縮 / 精鋭連鎖 / 照準固定
+- **異記憶根室**: 記録飽和 / 根脈枯渇 / 生体再演
 
-This closes the quantitative/plumbing gate. It does **not** pretend to replace human play feel.
+`精鋭連鎖` deliberately does not set the existing Abyss `enemy.elite` flag, because that flag also awards Abyss Shards. Deep Survey Conditions must not become a new Abyss-currency source.
 
-## Manual Feel Gate — active
+### V3 — Combination gate — NEXT
 
-Before adding any new vertical layer, play the three regions and judge:
-- whether the combat pressures feel meaningfully different,
-- whether a desired regional Option appears often enough to make target farming readable without feeling guaranteed,
-- whether rejected drops naturally feed Option Fusion,
-- whether returning after build refinement produces a noticeable faster/safer clear,
-- whether the three-region loop still feels rewarding after repeated clears.
+After V1/V2 CI and play-safety are green:
 
-If the answer is yes, keep Deep Survey as the current apex and spend the next work on polish/balance rather than another system.
+- use existing Condition stage clear IDs to detect all three single clears for a region,
+- unlock optional two-Condition selection for that region,
+- never require a three-Condition stack,
+- two Conditions cap regional Option steering at 42%,
+- no new mastery currency or rank ladder.
 
-If the answer is no because the loop becomes shallow after gearing, activate the contingency design in `POST_CP3_VERTICAL_EXTENSION_DESIGN.md`.
+### V4 — Convergence Apex
 
-## Contingency vertical extension — designed, not active
+After V3:
 
-The extension design is now fixed enough for implementation if the Manual Feel Gate justifies it.
+- unlock after all three baseline Deep Surveys plus at least one Condition clear in each region,
+- one authored Secret Realm encounter with Ash → Ninth → Root → Convergence phases,
+- no mandatory Named Unique or new gear tier,
+- first-clear/repeat rewards remain inside existing Gear systems.
 
-It has two layers only:
+### V5 — Acceptance simulation
 
-1. **Survey Conditions** — three authored optional replay conditions per existing Deep Survey, reusing Abyss Challenge/combat hooks and existing reward systems.
-2. **Convergence Apex** — one authored multi-phase Secret Realm that synthesizes the durability, tempo and rotation lessons from the three regions.
+Add deterministic validation for:
 
-Key implementation rules are already specified in `POST_CP3_VERTICAL_EXTENSION_DESIGN.md`, including:
-- one-condition entry before optional two-condition mastery,
-- no three-condition requirement,
-- target Option steering caps of 38% / 42%,
-- no new rarity, currency, Item Power cap or save root,
-- Apex unlock after baseline clears plus at least one Condition clear in each region,
-- side-grade/distinctive rewards rather than mandatory BiS,
-- acceptance simulation after implementation.
+- 34% / 38% / 42% target-steering bounds,
+- Greater / Legendary bounds,
+- max-three Options,
+- Smart Loot not protecting all Fusion material,
+- encoded Condition clear/mastery routing,
+- Apex reward compatibility.
 
-Design readiness must not be mistaken for implementation approval; the Manual Feel Gate is still the activation trigger.
+### V6 — polish/manual feel
+
+Tune wording, battle readability, mobile pressure and reward feel without adding another progression layer.
 
 ## Permanent guardrails
 
@@ -90,18 +88,17 @@ Design readiness must not be mistaken for implementation approval; the Manual Fe
 - no new save root,
 - no new Home button or parallel mode,
 - no daily/weekly/FOMO loop,
+- no new rarity or Item Power cap,
 - no hard requirement for one Named Unique or one Phase 6 build lane,
+- no infinite modifier tree,
+- no three-Condition progression requirement,
 - brute-force stat / Option investment remains a valid route,
 - old saved 4–5 Option gear remains untouched.
 
-## What comes after this
+The balance rule remains:
 
-The next decision remains explicitly manual: **keep the three-region apex** or **activate the designed vertical extension because observed play shows the current loop becomes shallow**.
-
-Do not implement Survey Conditions / Convergence Apex merely because the design now exists.
-
-Any later expansion must deepen the existing loop rather than add a new currency, gear tier, Home route, timed loop, or mandatory single-build gate.
+`「知らん、火力と耐久で押し切る」も正しい攻略法。`
 
 ## Supersession
 
-Old PR #228 was designed before Gear Overhaul. Its three-region world/combat concept is retained, but its reward assumptions and brittle tests are superseded by the post-Gear implementation and `POST_CP3_VERTICAL_EXTENSION_DESIGN.md`.
+Old PR #228 remains superseded. The post-Gear Deep Survey implementation, quantitative acceptance, and `POST_CP3_VERTICAL_EXTENSION_DESIGN.md` are the current authority.
