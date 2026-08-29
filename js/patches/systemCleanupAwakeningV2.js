@@ -158,7 +158,7 @@ state.unlockArtifact = function unlockArtifactV2(id) {
   return true;
 };
 
-const legacyRuneTab = document.querySelector('#blacksmithScreen [data-tab="rune"]');
-if (legacyRuneTab) legacyRuneTab.remove();
+// Keep the blacksmith Rune tab as the entry point for Rune 2.0.
+// Legacy weapon socket/crafting behavior is retired above; rune2Ui.js owns this tab's content.
 
 export { ensureCleanupData };
