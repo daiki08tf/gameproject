@@ -6,6 +6,8 @@
 import './adventureWorld4Session.js';
 import './adventureWorld4Ui.js';
 import './adventureWorld4EventChainRuntime.js';
+import './adventureWorld4MysterySceneRuntime.js';
+import './adventureWorld4HiddenRouteUi.js';
 import './settlementCore.js';
 import './settlementTavern.js';
 import './settlementProduction.js';

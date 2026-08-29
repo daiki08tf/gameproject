@@ -28,6 +28,7 @@ function chainScene(manager){
   return adventure4EventChainIScene(event,manager.adventure4EventMemory?.('frontier-old-sluice'));
 }
 
+state.adventure4HasPendingEventChain=function(){return !!selectedEvent(this)||eligibleChainEvents(this).length>0;};
 state.adventure4ContentPackIScene=function(){return chainScene(this)||previousScene?.()||null;};
 state.completeAdventure4ContentPackIScene=function(){
   const event=selectedEvent(this);
