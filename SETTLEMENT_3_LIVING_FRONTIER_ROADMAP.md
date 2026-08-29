@@ -211,12 +211,16 @@ Lv6以降は旧1.8倍指数をそのまま延長せず、成長率を段階的�
 - 保存する追加状態は `settlementBuildings.__settlement3.endgameNetwork.seenAbyssReturns` の既読記録だけとする。
 - UIはSettlement内のコンパクトなグリッドへ統合し、Homeボタンを追加しない。
 
-## [ ] S16 — Arena & Training Grounds
+## [x] S16 — Arena & Training Grounds
 
-- 模擬戦、Boss再現、ビルド確認。
-- Companion AIテスト。
-- 制限戦・連戦・自己ベスト。
-- 本番報酬を複製するfarm手段にはしない。
+- `模擬戦 / Boss再現 / 高難度再現 / 連戦訓練` をSettlement内の訓練場から開始可能にする。
+- 到達済みBossステージのwaveを再利用し、既存 `TextBattleScreen / BattleEngine / Companion Battle` をそのまま正本として使用する。
+- `標準 / 退路封鎖 / 単独確認` の訓練ルールを用意し、Companion AIは既存Nature AIを変更せず実戦同等に確認する。
+- 訓練中は敵撃破EXP / Gold / Drop / Manastone / Rune / Companion EXPを付与せず、Gold消費技も終了時に開始前残高へ復元する。
+- 連戦は到達済みBoss群から複数Bossを選んで連続wave化し、別の戦闘計算式は作らない。
+- 自己ベストはモード＋ルールごとのクリアターンのみ `settlementBuildings.__settlement3.arena` 配下に保存する。
+- Arena内部Chapterは通常Story/Abyss進行番号から隔離し、既存解禁判定へ混入させない。
+- UIはSettlement内の折りたたみパネルへ統合し、Homeボタンを追加しない。
 
 ## [ ] S17 — Monuments, Museum & Chronicle
 
