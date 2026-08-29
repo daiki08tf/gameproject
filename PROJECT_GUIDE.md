@@ -46,6 +46,7 @@
 | Hidden Route / permanent Shortcut | Mystery data + `world2.mysteries.shortcuts` | `js/patches/adventureWorld4HiddenRouteUi.js` |
 | NPC / Traveler network | `js/data/adventureWorld4Mysteries.js` の NPC 定義 | `js/patches/adventureWorld4MysteryRuntime.js` |
 | Job / Companion / Equipment / Rune の探索連携 | `js/data/adventureWorld4FieldActions.js` | `js/patches/adventureWorld4BuildExpressionRuntime.js` |
+| Utility Set / Nemesis Hunt / World Event / Season / World Tier の探索連携 | 各既存 Authority + `js/data/adventureWorld4LivingWorld.js` | `js/patches/adventureWorld4LivingWorldRuntime.js`, `adventureWorld4LivingWorldUi.js` |
 | Adventure UI | UIは正本ではない | `js/patches/adventureWorld4Ui.js` |
 | Home から Adventure への入口 | 既存 `goStageBtn` | `js/patches/homeNavigation.js`, `adventureWorld4Ui.js` |
 
@@ -150,10 +151,12 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 **Adventure Integration**
 - Adventure 中に生成された既存装備インスタンスへ `adventure4RegionalGear` メタデータを付与
 - `js/patches/adventureWorld4BuildExpressionRuntime.js`
+- W18 Utility Set は装備中の regional gear を `adventureWorld4LivingWorldRuntime.js` で数え、情報 / Trace / Camp 用の探索効果だけを派生する
 
 **ルール**
-- Regional Gear 用の別 Inventory を作らない。
+- Regional Gear / Utility Set 用の別 Inventory を作らない。
 - Item Power / Affix / Unique / Legendary / World Tier / Loot scaling は既存パイプラインを使う。
+- Utility Set を DPS 最強セットにしない。
 - Adventure 側で報酬倍率を二重適用しない。
 
 ---
@@ -176,12 +179,48 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 
 ---
 
+### Nemesis / Bounty
+
+**Authority**
+- `state.data.bountyNemesis`
+- `js/patches/bounty2Foundation.js`
+- `js/patches/bounty2Combat.js`
+- `js/data/nemesis3.js`
+
+**Adventure Integration**
+- `js/patches/adventureWorld4LivingWorldRuntime.js` は既存 `intel` / `huntMode` を Activity → Trace → Clue → location として読む。
+- location 到達後は既存 Bounty stage を `TextBattleScreen` へ渡す。
+
+**ルール**
+- Adventure 専用 Nemesis Lv / reward store を作らない。
+- Nemesis の戦闘倍率・trait・reward を Adventure 側で再実装しない。
+
+---
+
+### World Event
+
+**Authority**
+- `js/patches/world2Core.js`
+- `state.data.world2.lastEvent`
+- `state.data.world2.eventsSeen` / `eventChains`
+
+**Adventure Integration**
+- `adventureWorld4LivingWorldRuntime.js` が現在 event を Adventure event context / optional Scene へ渡す。
+
+**ルール**
+- World Event reward / outcome / cooldown を Adventure 側で再解決しない。
+
+---
+
 ### World Tier
 
 **Authority**
 - `js/data/worldTiers.js`
 - `state.data.worldTierId`
 - `js/patches/worldTierRuntime.js`
+
+**Adventure Integration**
+- `adventureWorld4LivingWorldRuntime.js` は既存 Tier の `rank` のみを optional content availability へ使う。
 
 **ルール**
 - Adventure 側で enemy / drop / item power の Tier 補正を再適用しない。
@@ -205,9 +244,13 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 **Authority**
 - `js/patches/settlementSeasons.js`
 
+**Adventure Integration**
+- `adventureWorld4LivingWorldRuntime.js` が `settlementSeasonState()` を読み、Rain / Mist / Night / Season を optional route/scene 情報へ変換する。
+
 **ルール**
 - 現実時計による待ち時間・respawn gate を作らない。
 - game-progress based deterministic cycle を再利用する。
+- 単純な戦闘倍率だけの天候システムにしない。
 
 ---
 
@@ -226,6 +269,7 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 | `state.data.world2.investigation` | Trace / Clue |
 | `state.data.world2.mysteries` | Rumor / Research / permanent Shortcut |
 | `state.data.world2.npcNetwork` | recurring NPC / Trade Route |
+| `state.data.bountyNemesis` | Nemesis level / intel / huntMode authority |
 | `state.data.adventure4` | **current Adventure session only** |
 | `state.data.currentJobId` / `jobs` | Job |
 | `state.data.companionInstances` / `companionParty` | Companion |
@@ -274,8 +318,10 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 - Adventure 専用 BattleEngine
 - Adventure 専用 Job progression
 - Adventure 専用 Companion progression
+- Adventure 専用 Nemesis progression / reward store
 - Rune socket 復活
 - Loot / Gold / Item Power / World Tier の二重補正
+- World Event reward / outcome の二重解決
 - permanent Discovery / Clue / Mystery の `adventure4` への複製
 
 ---
@@ -302,7 +348,12 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 | W15 | Companion Field Actions | PR #330 / same shared Field Action layer |
 | W16 | Equipment Expansion I: Regional Gear | PR #330 / regional metadata on existing Equipment 3 instances |
 | W17 | Rune 2.0 Adventure Expansion | PR #330 / active Rune 2 marks → Field Actions |
-| W18–W36 | 未完了 | `ADVENTURE_WORLD_4_ROADMAP.md` を正本として進める |
+| W18 | Exploration Gear & Utility Sets | PR #332 / `adventureWorld4LivingWorld.js` + runtime |
+| W19 | Nemesis Hunt 4.0 | PR #332 / Living World runtime/UI → existing Bounty/Nemesis authority |
+| W20 | World Event Adventure Integration | PR #332 / current `world2.lastEvent` → Adventure event context |
+| W21 | Seasons / Weather / Daypart Integration | PR #332 / Settlement S12 → Living World context |
+| W22 | World Tier Adventure Integration | PR #332 / existing Tier rank → optional content availability |
+| W23–W36 | 未完了 | `ADVENTURE_WORLD_4_ROADMAP.md` を正本として進める |
 
 ---
 
@@ -314,6 +365,7 @@ World 4.0 の変更では、対象機能に近い `tests/adventure-world4-*.test
 
 - Mystery / Secret / NPC: `tests/adventure-world4-mystery-secret-npc.test.js`
 - W14–W17 Build Expression: `tests/adventure-world4-build-expression.test.js`
+- W18–W22 Living World: `tests/adventure-world4-living-world.test.js`
 
 CI は GitHub Actions の以下を基準にします。
 
