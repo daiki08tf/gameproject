@@ -13,6 +13,7 @@ import { renderResult } from '../screens/result.js';
 import './adventureWorld4Session.js';
 import './adventureWorld4RouteEngine.js';
 import './adventureWorld4SceneRuntime.js';
+import './adventureWorld4ContentPackI.js';
 
 const battle=new TextBattleScreen();
 let activeRoute=null;
@@ -39,7 +40,7 @@ function nodeButton(node,route){const button=document.createElement('button');bu
 function sceneStepKey(sceneId){return `sceneStep:${sceneId}`;}
 function setSceneStep(sceneId,stepId){const session=state.adventure4Session(),flags={...(session.temporaryFlags||{})};if(stepId)flags[sceneStepKey(sceneId)]=stepId;else delete flags[sceneStepKey(sceneId)];state.checkpointAdventure4({temporaryFlags:flags});}
 
-function renderScene(body,region,route,current,scene){
+function renderScene(body,region,route,current,scene,{onComplete=null}={}){
   const session=state.adventure4Session();
   const savedStep=session.temporaryFlags?.[sceneStepKey(scene.id)];
   const step=adventure4SceneStep(scene,savedStep)||adventure4SceneStep(scene,scene.entryStepId);
@@ -58,6 +59,7 @@ function renderScene(body,region,route,current,scene){
       const applied=state.applyAdventure4SceneResolution(resolution);if(!applied.ok)return;
       if(resolution.nextStepId){setSceneStep(scene.id,resolution.nextStepId);renderAdventureRoute();return;}
       setSceneStep(scene.id,null);
+      if(onComplete){onComplete();renderAdventureRoute();return;}
       const target=applied.immediate.find(effect=>effect.type==='routeTarget')?.targetId;
       if(target){const moved=state.moveAdventure4ToNode(route,target);if(!moved.ok)return;const node=route.nodes.find(item=>item.id===target);if(['battle','elite','boss'].includes(node?.type)){launchAdventureBattle(node);return;}if(node?.type==='camp'&&node.tags?.includes('return')){returnAdventure();return;}}
       renderAdventureRoute();
@@ -67,12 +69,18 @@ function renderScene(body,region,route,current,scene){
   return true;
 }
 
+function renderAmbientScene(body,region,route,current){
+  const scene=state.adventure4ContentPackIScene?.();if(!scene)return false;
+  return renderScene(body,region,route,current,scene,{onComplete:()=>state.completeAdventure4ContentPackIScene?.()});
+}
+
 export function renderAdventureRoute(){
   ensureStyles();const screen=makeScreen('adventureRoute4Screen','冒険');const body=screen.querySelector('.adventure4-body');const {session,region,route}=currentRegionAndRoute();
   if(!session.active||!region||!route){renderAdventureWorld();return;}
   if(!session.routeId){const entered=state.enterAdventure4Route(route);if(!entered.ok){returnAdventure();return;}}
   const view=state.adventure4RouteState(route);if(!view.ok){returnAdventure();return;}
   const current=view.current;const scenes=buildAdventure4PilotSceneCatalog(region,route);const scene=current.sceneId?adventure4SceneById(scenes,current.sceneId):null;
+  if(current.id==='entry'&&renderAmbientScene(body,region,route,current)){const suspend=document.createElement('button');suspend.type='button';suspend.className='btn-sub adventure4-suspend';suspend.textContent='中断して拠点へ戻る';suspend.addEventListener('click',()=>{Audio_.tap();suspendAdventure();});body.appendChild(suspend);screen.querySelector('.adventure4-back').onclick=()=>{Audio_.tap();suspendAdventure();};showScreen(screen.id);return;}
   if(scene&&renderScene(body,region,route,current,scene)){const suspend=document.createElement('button');suspend.type='button';suspend.className='btn-sub adventure4-suspend';suspend.textContent='中断して拠点へ戻る';suspend.addEventListener('click',()=>{Audio_.tap();suspendAdventure();});body.appendChild(suspend);screen.querySelector('.adventure4-back').onclick=()=>{Audio_.tap();suspendAdventure();};showScreen(screen.id);return;}
   const preview=adventure4PilotPreview(route,current.id);body.innerHTML='';
   const summary=document.createElement('section');summary.className='adventure4-card adventure4-current';summary.innerHTML=`<div class="adventure4-meta">${region.name}</div><h3>${current.name}</h3><p>${current.type==='battle'?'既存Storyの戦闘へ接続します。結果は通常の進行・報酬処理へそのまま反映されます。':'次に進む道を選びます。見えているのは直近の行き先だけです。'}</p>`;body.appendChild(summary);
