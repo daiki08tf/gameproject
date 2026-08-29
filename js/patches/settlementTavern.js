@@ -1,0 +1,13 @@
+import { state } from '../state.js';
+import { TAVERN_REQUESTS,TAVERN_UNLOCK_HALL_LEVEL,buildTavernRumors,tavernRequestComplete } from '../data/settlementTavern.js';
+
+const META_KEY='__settlement3';
+function meta(){const root=state.data.settlementBuildings??={hall:0,inn:0,market:0,watch:0,ranch:0};const m=root[META_KEY]??={};if(!m.tavern||typeof m.tavern!=='object')m.tavern={claimedRequests:[]};if(!Array.isArray(m.tavern.claimedRequests))m.tavern.claimedRequests=[];root[META_KEY]=m;return m.tavern;}
+function progressCount(){return Object.values(state.data.stageProgress||{}).filter(v=>v===true||v?.cleared||Number(v)>0).length;}
+function codexEntries(){return Object.values(state.data.monsterCodex||{});}
+function worldEventText(){const event=state.activeWorldEvent?.()||state.currentWorldEvent?.()||null;if(!event)return null;return event.summary||event.desc||event.description||event.name||null;}
+state.settlementTavernUnlocked=function(){return (this.settlementLevel?.('hall')||0)>=TAVERN_UNLOCK_HALL_LEVEL;};
+state.settlementTavernContext=function(){const codex=codexEntries(),active=this.activeBountyNemesis?.();return{hall:this.settlementLevel?.('hall')||0,stageClears:progressCount(),codexSeen:codex.filter(e=>e?.seen).length,codexKills:codex.reduce((n,e)=>n+(Number(e?.kills)||0),0),recruitedCodex:codex.filter(e=>e?.recruited).length,rareSeen:codex.filter(e=>e?.rare||e?.legendary).length,abyssBestDepth:Math.max(0,Number(this.data.abyssBestDepth)||0),activeNemesis:active?{...active,title:this.bountyNemesisTitle?.(active.id)||active.id}:null,worldEventText:worldEventText()};};
+state.settlementTavernRumors=function(){if(!this.settlementTavernUnlocked())return[];return buildTavernRumors(this.settlementTavernContext());};
+state.settlementTavernRequests=function(){const m=meta(),context=this.settlementTavernContext();return TAVERN_REQUESTS.map(request=>({...request,current:Math.min(request.goal.value,Math.max(0,Number(context[request.goal.key])||0)),complete:tavernRequestComplete(request,context),claimed:m.claimedRequests.includes(request.id)}));};
+state.claimSettlementTavernRequest=function(id){if(!this.settlementTavernUnlocked())return{ok:false,reason:'locked'};const request=TAVERN_REQUESTS.find(x=>x.id===id);if(!request)return{ok:false,reason:'unknown'};const m=meta();if(m.claimedRequests.includes(id))return{ok:false,reason:'claimed'};const context=this.settlementTavernContext();if(!tavernRequestComplete(request,context))return{ok:false,reason:'incomplete'};if(request.reward.gold)this.gainGold(request.reward.gold);if(request.reward.materials)this.addSettlementMaterials?.(request.reward.materials);m.claimedRequests.push(id);this.save();return{ok:true,reward:request.reward};};
