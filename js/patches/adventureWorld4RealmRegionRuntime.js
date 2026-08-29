@@ -7,6 +7,7 @@ import './adventureWorld4DiscoveryRuntime.js';
 import './phase9MachineWorldRuntime.js';
 import './riftKeyCore.js';
 import './world2Core.js';
+import './settlementCore.js';
 import './settlementResearch.js';
 import './settlementExpeditions.js';
 import './settlementChronicle.js';
