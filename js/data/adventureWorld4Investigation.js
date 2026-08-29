@@ -52,6 +52,7 @@ export function adventure4ClueById(catalog,id){return catalog?.clues?.find(item=
 export function adventure4TraceTypeLabel(type){return TRACE_LABELS[type]||'痕跡';}
 
 function requirementsMet(clue,knownTraces,knownClues){
+  if(!clue.requiresTraces.length&&!clue.requiresClues.length)return false;
   return clue.requiresTraces.every(id=>knownTraces.has(id))&&clue.requiresClues.every(id=>knownClues.has(id));
 }
 
