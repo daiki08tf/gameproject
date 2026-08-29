@@ -1,0 +1,15 @@
+import { state } from '../state.js';
+import { CP3_DEEP_SURVEYS,deepSurveyUnlocked } from '../data/postCp3DeepSurvey.js';
+import { RESEARCH_DOMAINS,RESEARCH_UNLOCK_HALL_LEVEL,buildResearchCodexReport,buildResearchOutlook } from '../data/settlementResearch.js';
+
+const META_KEY='__settlement3';
+function researchMeta(){const root=state.data.settlementBuildings??={hall:0,inn:0,market:0,watch:0,ranch:0};const meta=root[META_KEY]??={};if(!meta.research||typeof meta.research!=='object')meta.research={reviewed:{}};if(!meta.research.reviewed||typeof meta.research.reviewed!=='object')meta.research.reviewed={};root[META_KEY]=meta;return meta.research;}
+function seenCodexEntries(){return Object.values(state.data.monsterCodex||{}).filter(entry=>entry&&entry.seen);}
+function visibleDeepSurveys(){const discoveries=state.data.world2?.discoveries||{};return CP3_DEEP_SURVEYS.filter(def=>deepSurveyUnlocked(def,discoveries)).map(def=>({id:def.id,name:def.realmName,role:def.role,hint:def.inspectText?.[0]||def.rule}));}
+function worldEventObservation(){const world=state.data.world2||{};if(world.lastEvent)return{name:world.lastEvent.name||'World Event',text:`${world.lastEvent.name||'世界事件'}が観測されている。選択肢を解決するまで研究所は結果を断定しない。`};const chance=state.world2EventChance?.();if(Number.isFinite(chance))return{name:'世界情勢の観測',text:`直近の冒険記録からWorld Event発生兆候は約${Math.round(chance*100)}%。これは既存の発生率表示であり、イベント内容の事前開示ではない。`};return null;}
+
+state.settlementResearchUnlocked=function(){return (this.settlementLevel?.('hall')||0)>=RESEARCH_UNLOCK_HALL_LEVEL;};
+state.settlementResearchReport=function(){return buildResearchCodexReport(seenCodexEntries());};
+state.settlementResearchDomains=function(){const report=this.settlementResearchReport(),reviewed=researchMeta().reviewed;return RESEARCH_DOMAINS.map(domain=>({...domain,...report.domains[domain.id],reviewedTier:Math.max(0,Math.floor(reviewed[domain.id]||0))}));};
+state.reviewSettlementResearchDomain=function(id){if(!this.settlementResearchUnlocked())return{ok:false,reason:'locked'};const domain=this.settlementResearchDomains().find(x=>x.id===id);if(!domain)return{ok:false,reason:'unknown'};if(domain.tier<=0)return{ok:false,reason:'no_evidence'};const meta=researchMeta();meta.reviewed[id]=Math.max(meta.reviewed[id]||0,domain.tier);this.save();return{ok:true,id,tier:domain.tier};};
+state.settlementResearchOutlook=function(){if(!this.settlementResearchUnlocked())return[];return buildResearchOutlook({worldEvent:worldEventObservation(),deepSurveys:visibleDeepSurveys()});};

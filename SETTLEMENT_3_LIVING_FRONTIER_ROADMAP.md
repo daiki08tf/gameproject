@@ -127,12 +127,15 @@ Lv6以降は旧1.8倍指数をそのまま延長せず、成長率を段階的�
 - 交易状態は `settlementBuildings.__settlement3.market2` 配下に保存し、新しいsave rootを増やさない。
 - `影市` はRare観測＋Abyss深度を要求するSecret条件に置き、通常進行必須にはしない。
 
-## [ ] S7 — Research Hall & Codex Lab
+## [x] S7 — Research Hall & Codex Lab
 
-- 敵種族、Affinity、Elite Affix、Rare Behavior、Boss Phase知識を研究へ接続。
-- Codex観測済み情報だけを利用する。
-- 未観測情報を研究施設だけで自動開示しない。
-- World Event / Deep Surveyの予測・ヒント機能。
+- 交易町（集会所Lv10）から研究所 / Codex Labを解禁。
+- Codexの `seen` 済みエントリだけを対象に、生態分類・Affinity・Elite Affix・Rare Behavior・Boss Phaseの5研究分野へ再整理。
+- 研究段階は新通貨や研究EXPではなく、実際に蓄積された観測証拠数から `未着手 → 基礎整理 → 比較研究 → 蓄積解析` と決定する。
+- 敵マスターデータを研究所から直接参照せず、未遭遇エントリに内部情報が存在しても表示・集計しない。
+- World Eventは既存の発生兆候/進行中イベントだけを観測し、内容や結果を先読みしない。
+- Deep Surveyは `world2.discoveries` の既存解禁条件を満たした領域だけを研究ヒントへ載せ、未発見領域の名称やBoss情報を開示しない。
+- 研究記録の既読段階だけを `settlementBuildings.__settlement3.research` 配下に保存し、新しいsave root・通貨・時間依存ループを増やさない。
 
 ## [ ] S8 — Ranch 3.0 Integration
 
