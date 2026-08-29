@@ -4,6 +4,7 @@
    menu with one primary Adventure CTA plus compact category drawers.
    ============================================================ */
 import './adventureWorld4Session.js';
+import './adventureWorld4Ui.js';
 import './settlementCore.js';
 import './settlementTavern.js';
 import './settlementProduction.js';
