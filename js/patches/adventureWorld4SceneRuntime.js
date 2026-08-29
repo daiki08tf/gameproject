@@ -1,12 +1,12 @@
 /* Adventure / World 4.0 — W5 Scene runtime bridge.
-   Applies Adventure-scoped consequences only to W2 session state.
-   Region/World effects are surfaced to their authoritative systems instead of
-   being persisted here. */
+   Applies Adventure-scoped consequences to W2 session state and delegates
+   known persistent consequence families to their authoritative World 4.0 runtimes. */
 import { state } from '../state.js';
 import './adventureWorld4Session.js';
 import './adventureWorld4EventRuntime.js';
 import './adventureWorld4DiscoveryRuntime.js';
 import './adventureWorld4InvestigationRuntime.js';
+import './adventureWorld4EventMemoryRuntime.js';
 
 function unique(values){return [...new Set((values||[]).filter(value=>typeof value==='string'&&value.length))];}
 
@@ -18,7 +18,7 @@ state.applyAdventure4SceneResolution=function(resolution){
     cluesThisRun:[...(session.cluesThisRun||[])],
     discoveredThisRun:[...(session.discoveredThisRun||[])],
   };
-  const immediate=[],external=[],investigation=[];
+  const immediate=[],external=[],investigation=[],memory=[];
   for(const effect of resolution.consequences||[]){
     if(effect.scope==='adventure'){
       if(effect.type==='flag'&&effect.key)patch.temporaryFlags[effect.key]=effect.value;
@@ -29,6 +29,7 @@ state.applyAdventure4SceneResolution=function(resolution){
       continue;
     }
     if(effect.scope==='immediate')immediate.push({...effect});
+    else if(effect.scope==='world'&&effect.type==='eventMemory')memory.push({...effect});
     else external.push({...effect});
   }
   patch.cluesThisRun=unique(patch.cluesThisRun);patch.discoveredThisRun=unique(patch.discoveredThisRun);
@@ -36,5 +37,7 @@ state.applyAdventure4SceneResolution=function(resolution){
   if(!checkpoint.ok)return checkpoint;
   const investigationResults=[];
   for(const effect of investigation){const result=this.recordAdventure4TraceById?.(effect.key,{source:`scene:${resolution.sceneId||'unknown'}`});if(result?.ok)investigationResults.push(result);}
-  return{ok:true,session:this.adventure4Session(),immediate,external,investigation:investigationResults};
+  const memoryResults=[];
+  for(const effect of memory){const result=this.applyAdventure4EventMemoryEffect?.(effect);if(result?.ok)memoryResults.push(result);}
+  return{ok:true,session:this.adventure4Session(),immediate,external,investigation:investigationResults,memory:memoryResults};
 };
