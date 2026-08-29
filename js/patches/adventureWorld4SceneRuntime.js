@@ -6,6 +6,7 @@ import { state } from '../state.js';
 import './adventureWorld4Session.js';
 import './adventureWorld4EventRuntime.js';
 import './adventureWorld4DiscoveryRuntime.js';
+import './adventureWorld4InvestigationRuntime.js';
 
 function unique(values){return [...new Set((values||[]).filter(value=>typeof value==='string'&&value.length))];}
 
@@ -17,12 +18,13 @@ state.applyAdventure4SceneResolution=function(resolution){
     cluesThisRun:[...(session.cluesThisRun||[])],
     discoveredThisRun:[...(session.discoveredThisRun||[])],
   };
-  const immediate=[],external=[];
+  const immediate=[],external=[],investigation=[];
   for(const effect of resolution.consequences||[]){
     if(effect.scope==='adventure'){
       if(effect.type==='flag'&&effect.key)patch.temporaryFlags[effect.key]=effect.value;
       else if(effect.type==='clue'&&effect.key)patch.cluesThisRun.push(effect.key);
       else if(effect.type==='discovery'&&effect.key)patch.discoveredThisRun.push(effect.key);
+      else if(effect.type==='trace'&&effect.key)investigation.push({...effect});
       else if(effect.type==='campUsed')patch.campUsed=!!effect.value;
       continue;
     }
@@ -32,5 +34,7 @@ state.applyAdventure4SceneResolution=function(resolution){
   patch.cluesThisRun=unique(patch.cluesThisRun);patch.discoveredThisRun=unique(patch.discoveredThisRun);
   const checkpoint=this.checkpointAdventure4(patch);
   if(!checkpoint.ok)return checkpoint;
-  return{ok:true,session:checkpoint.session,immediate,external};
+  const investigationResults=[];
+  for(const effect of investigation){const result=this.recordAdventure4TraceById?.(effect.key,{source:`scene:${resolution.sceneId||'unknown'}`});if(result?.ok)investigationResults.push(result);}
+  return{ok:true,session:this.adventure4Session(),immediate,external,investigation:investigationResults};
 };
