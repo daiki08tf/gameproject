@@ -91,20 +91,24 @@ export function resolveAdventure4SceneChoice(scene,stepId,choiceId,context={}){
 export function buildAdventure4PilotSceneCatalog(region,route){
   if(!region||!route)return[];
   const story=route.nodes.find(node=>node.id==='story');
-  return [normalizeAdventure4Scene({
-    id:'pilot-fork',name:'分かれ道',entryStepId:'observe',tags:['pilot','route-choice'],
-    steps:[
-      {id:'observe',phase:'observation',title:'分かれ道',text:`${region.name}の道は二つに分かれている。片方は主要路へ、もう片方は安全な帰還路へ続いている。`,choices:[
-        {id:'inspect',label:'周囲を調べる',detail:'足跡や道標を確認する',nextStepId:'inspect',resultText:'道標と新しい足跡を見つけた。'},
-        ...(story?[{id:'story',label:'主要路を進む',detail:story.name,resultText:'覚悟を決めて主要路へ進む。',consequences:[{scope:'immediate',type:'routeTarget',targetId:'story'}]}]:[]),
-        {id:'return',label:'拠点へ戻る',detail:'成果を持って安全に帰還する',resultText:'帰還路へ向かう。',consequences:[{scope:'immediate',type:'routeTarget',targetId:'return'}]},
-      ]},
-      {id:'inspect',phase:'investigation',title:'道の痕跡',text:'主要路には新しい足跡が続いている。帰還路の標識はまだ無事だ。どうする？',choices:[
-        ...(story?[{id:'story-after-inspect',label:'足跡を追う',detail:'主要路へ進む',resultText:'痕跡を追って先へ進む。',consequences:[{scope:'adventure',type:'flag',key:'inspectedPilotFork',value:true},{scope:'immediate',type:'routeTarget',targetId:'story'}]}]:[]),
-        {id:'return-after-inspect',label:'記録して帰還する',detail:'調査結果を持ち帰る',resultText:'道の様子を記録し、帰還路へ向かう。',consequences:[{scope:'adventure',type:'flag',key:'inspectedPilotFork',value:true},{scope:'immediate',type:'routeTarget',targetId:'return'}]},
-      ]},
-    ],
-  })];
+  const steps=[
+    {id:'observe',phase:'observation',title:'分かれ道',text:`${region.name}の道は二つに分かれている。片方は主要路へ、もう片方は安全な帰還路へ続いている。`,choices:[
+      {id:'inspect',label:'周囲を調べる',detail:'足跡や道標を確認する',nextStepId:'inspect'},
+      ...(story?[{id:'story',label:'主要路を進む',detail:story.name,nextStepId:'resolve-story'}]:[]),
+      {id:'return',label:'拠点へ戻る',detail:'成果を持って安全に帰還する',nextStepId:'resolve-return'},
+    ]},
+    {id:'inspect',phase:'investigation',title:'道の痕跡',text:'主要路には新しい足跡が続いている。帰還路の標識はまだ無事だ。どうする？',choices:[
+      ...(story?[{id:'story-after-inspect',label:'足跡を追う',detail:'主要路へ進む',nextStepId:'resolve-story-inspected'}]:[]),
+      {id:'return-after-inspect',label:'記録して帰還する',detail:'調査結果を持ち帰る',nextStepId:'resolve-return-inspected'},
+    ]},
+    ...(story?[
+      {id:'resolve-story',phase:'resolution',title:'主要路へ',text:'覚悟を決めて主要路へ進む。前方に戦いの気配が近づいている。',choices:[{id:'continue-story',label:'先へ進む',consequences:[{scope:'immediate',type:'routeTarget',targetId:'story'}]}]},
+      {id:'resolve-story-inspected',phase:'resolution',title:'痕跡を追う',text:'新しい足跡は主要路の先へ続いている。痕跡を記録し、そのまま追跡を続ける。',choices:[{id:'continue-story-inspected',label:'足跡を追う',consequences:[{scope:'adventure',type:'flag',key:'inspectedPilotFork',value:true},{scope:'immediate',type:'routeTarget',targetId:'story'}]}]},
+    ]:[]),
+    {id:'resolve-return',phase:'resolution',title:'帰還',text:'無理に先へ進まず、現在の成果を持って拠点へ戻ることにした。',choices:[{id:'continue-return',label:'帰還する',consequences:[{scope:'immediate',type:'routeTarget',targetId:'return'}]}]},
+    {id:'resolve-return-inspected',phase:'resolution',title:'記録して帰還',text:'道標と足跡の様子を記録した。次の冒険に備えて拠点へ持ち帰る。',choices:[{id:'continue-return-inspected',label:'記録を持ち帰る',consequences:[{scope:'adventure',type:'flag',key:'inspectedPilotFork',value:true},{scope:'immediate',type:'routeTarget',targetId:'return'}]}]},
+  ];
+  return [normalizeAdventure4Scene({id:'pilot-fork',name:'分かれ道',entryStepId:'observe',tags:['pilot','route-choice'],steps})];
 }
 
 export function adventure4SceneById(catalog,id){return catalog?.find(scene=>scene?.id===id)||null;}
