@@ -47,6 +47,7 @@
 | NPC / Traveler network | `js/data/adventureWorld4Mysteries.js` の NPC 定義 | `js/patches/adventureWorld4MysteryRuntime.js` |
 | Job / Companion / Equipment / Rune の探索連携 | `js/data/adventureWorld4FieldActions.js` | `js/patches/adventureWorld4BuildExpressionRuntime.js` |
 | Utility Set / Nemesis Hunt / World Event / Season / World Tier の探索連携 | 各既存 Authority + `js/data/adventureWorld4LivingWorld.js` | `js/patches/adventureWorld4LivingWorldRuntime.js`, `adventureWorld4LivingWorldUi.js` |
+| Realm 発見 / Dynamic Region / Settlement feedback | World2 / Rift Key / Machine World / Settlement の既存 Authority + `js/data/adventureWorld4RealmDiscovery.js` | `js/patches/adventureWorld4RealmRegionRuntime.js`, `adventureWorld4RealmRegionUi.js` |
 | Adventure UI | UIは正本ではない | `js/patches/adventureWorld4Ui.js` |
 | Home から Adventure への入口 | 既存 `goStageBtn` | `js/patches/homeNavigation.js`, `adventureWorld4Ui.js` |
 
@@ -227,6 +228,28 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 
 ---
 
+### Realm / Rift / Machine World
+
+**Authority**
+- Heaven / Underworld / Modern visibility: `state.world2RealmVisibility()` / `js/data/world2.js`
+- Rift Key: `state.riftKeys()` / `js/patches/riftKeyCore.js`
+- Machine World unlock: `state.phase9MachineWorldUnlocked()` / Phase 9 Machine World runtime
+- permanent observation record: `state.data.world2.discoveries`
+
+**Adventure Integration**
+- `js/data/adventureWorld4RealmDiscovery.js`
+- `js/patches/adventureWorld4RealmRegionRuntime.js`
+- Adventure は既存 Authority から Realm signal を派生し、発見時は `world2.discoveries` に観測記録だけを残す。
+- Dynamic Region は Realm pressure / World Event / Nemesis / weather / known Shortcut から毎回派生し、別の恒久 Region state を保存しない。
+
+**ルール**
+- Adventure の Realm 発見だけで鍵を生成・消費しない。
+- Heaven / Underworld / Modern / Machine World の既存 unlock を代替・迂回しない。
+- Realm 専用 Adventure 通貨・進行 namespace を作らない。
+- W5 `adventureWorld4SceneRuntime.js` から後発 Realm runtime を逆 import しない。Scene runtime は optional delegation のみを持ち、W23 runtime は上位 integration からロードする。
+
+---
+
 ### Settlement
 
 **Authority / Hub**
@@ -235,6 +258,7 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 
 **関連**
 - Investigation Board / Mystery Research / NPC network は Settlement UI と接続する。
+- W25 は Adventure Realm Discovery を既存 Research / Chronicle の derived view へ渡し、既存 Expedition discovery を次の Adventure context へ返す。
 - Home のトップレベルボタンを増やす代わりに Settlement / category hub を使う。
 
 ---
@@ -262,7 +286,7 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 |---|---|
 | `state.data.stageProgress` | Story / Stage progression |
 | `state.data.worldTierId` | World Tier |
-| `state.data.world2.discoveries` | permanent Discovery |
+| `state.data.world2.discoveries` | permanent Discovery（Realm signal の恒久観測記録もここ） |
 | `state.data.world2.eventsSeen` | Event seen authority |
 | `state.data.world2.eventChains` | Event chain progression |
 | `state.data.world2.eventMemory` | cross-Adventure persistent memory |
@@ -319,6 +343,7 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 - Adventure 専用 Job progression
 - Adventure 専用 Companion progression
 - Adventure 専用 Nemesis progression / reward store
+- Adventure 専用 Realm progression / key / unlock store
 - Rune socket 復活
 - Loot / Gold / Item Power / World Tier の二重補正
 - World Event reward / outcome の二重解決
@@ -353,7 +378,10 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 | W20 | World Event Adventure Integration | PR #332 / current `world2.lastEvent` → Adventure event context |
 | W21 | Seasons / Weather / Daypart Integration | PR #332 / Settlement S12 → Living World context |
 | W22 | World Tier Adventure Integration | PR #332 / existing Tier rank → optional content availability |
-| W23–W36 | 未完了 | `ADVENTURE_WORLD_4_ROADMAP.md` を正本として進める |
+| W23 | Rift / Secret Realm / Machine Realm Discovery | PR #333 / `adventureWorld4RealmDiscovery.js` + runtime/UI |
+| W24 | Dynamic Region State | PR #333 / derived Realm/Event/Nemesis/weather/Shortcut overlays |
+| W25 | Settlement ↔ Adventure Feedback Loop | PR #333 / Research/Chronicle derived views + Expedition lead feedback |
+| W26–W36 | 未完了 | `ADVENTURE_WORLD_4_ROADMAP.md` を正本として進める |
 
 ---
 
@@ -366,6 +394,7 @@ World 4.0 の変更では、対象機能に近い `tests/adventure-world4-*.test
 - Mystery / Secret / NPC: `tests/adventure-world4-mystery-secret-npc.test.js`
 - W14–W17 Build Expression: `tests/adventure-world4-build-expression.test.js`
 - W18–W22 Living World: `tests/adventure-world4-living-world.test.js`
+- W23–W25 Realm / Dynamic Region / Settlement feedback: `tests/adventure-world4-realm-region-settlement.test.js`
 
 CI は GitHub Actions の以下を基準にします。
 
