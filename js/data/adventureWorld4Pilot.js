@@ -8,7 +8,7 @@ export function buildAdventure4PilotRoute(region,regionState){
   const story=regionState?.routeEntry||null;
   const nodes=[
     {id:'entry',type:'scene',name:`${region.name}への道`,next:['fork'],tags:['major','visible']},
-    {id:'fork',type:'event',name:'分かれ道',next:story?['story','return']:['return'],tags:['choice','visible']},
+    {id:'fork',type:'event',name:'分かれ道',sceneId:'pilot-fork',next:story?['story','return']:['return'],tags:['choice','visible']},
   ];
   if(story){
     nodes.push({
