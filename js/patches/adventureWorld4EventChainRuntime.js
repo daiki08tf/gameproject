@@ -7,7 +7,6 @@ const SELECTED='eventChain:selected';
 const previousScene=state.adventure4ContentPackIScene?.bind(state);
 const previousComplete=state.completeAdventure4ContentPackIScene?.bind(state);
 
-function sessionFlags(manager){return manager.adventure4Session?.()?.temporaryFlags||{};}
 function setSelected(manager,id){const session=manager.adventure4Session?.();if(!session?.active)return null;return manager.checkpointAdventure4({temporaryFlags:{...(session.temporaryFlags||{}),[SELECTED]:id||null}});}
 function selectedEvent(manager){const session=manager.adventure4Session?.();if(!session?.active)return null;const id=session.temporaryFlags?.[SELECTED];return adventure4EventChainIForRegion(session.regionId).find(event=>event.id===id)||null;}
 function currentIndex(){return Math.max(0,Math.floor(Number(state.data.world2?.adventureEventMeta?.adventureIndex)||0));}
@@ -33,11 +32,13 @@ state.adventure4ContentPackIScene=function(){return chainScene(this)||previousSc
 state.completeAdventure4ContentPackIScene=function(){
   const event=selectedEvent(this);
   if(!event)return previousComplete?.()||{ok:true};
-  const recorded=this.recordAdventure4Event?.(event);
+  const memory=this.adventure4EventMemory?.('frontier-old-sluice');
+  const deferred=event.id==='frontier-sluice-return'&&memory?.status!=='resolved';
+  const recorded=deferred?{ok:true,deferred:true}:this.recordAdventure4Event?.(event);
   setSelected(this,null);
   // W10 counts as this Adventure's authored side scene; do not immediately stack W9.
   previousComplete?.();
-  return recorded?.ok?{ok:true,eventId:event.id,chain:event.chain}:recorded;
+  return recorded?.ok?{ok:true,eventId:event.id,chain:event.chain,deferred:!!recorded.deferred}:recorded;
 };
 
 export function adventure4SelectedEventChain(){return selectedEvent(state);}
