@@ -37,7 +37,8 @@ export function codexBonuses(completionPct = 0) {
 }
 
 export function ensureCodexEntry(entries, enemyId, enemyName = enemyId) {
-  if (!entries[enemyId]) entries[enemyId] = { name: enemyName, seen: false, kills: 0, recruited: false, rare: false, legendary: false };
+  if (!entries[enemyId]) entries[enemyId] = { name: enemyName, seen: false, kills: 0, recruited: false, rare: false, legendary: false, activities: [] };
   if (enemyName && !entries[enemyId].name) entries[enemyId].name = enemyName;
+  if (!Array.isArray(entries[enemyId].activities)) entries[enemyId].activities = [];
   return entries[enemyId];
 }
