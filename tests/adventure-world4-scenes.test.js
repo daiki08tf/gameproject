@@ -58,19 +58,23 @@ test('W5 runtime applies only Adventure scope and surfaces Region/World effects'
   assert.equal(state.data.world2.flags.scout,undefined);
 });
 
-test('W5 pilot fork is a real Scene with observation, nested investigation, and route outcomes',()=>{
+test('W5 pilot fork is a real three-phase Scene with nested investigation and route outcomes',()=>{
   const region={id:'frontier',name:'開拓辺境'};
   const route=buildAdventure4PilotRoute(region,{routeEntry:{stageId:'1-1',stageName:'草原'}});
   const fork=route.nodes.find(node=>node.id==='fork');
   assert.equal(fork.sceneId,'pilot-fork');
-  const catalog=buildAdventure4PilotSceneCatalog(region,route);
-  const pilot=catalog[0];
+  const pilot=buildAdventure4PilotSceneCatalog(region,route)[0];
   assert.equal(validateAdventure4Scene(pilot).ok,true);
   const observe=pilot.steps.find(step=>step.id==='observe');
   assert.equal(observe.phase,'observation');
   assert.deepEqual(observe.choices.map(choice=>choice.id),['inspect','story','return']);
   const inspect=resolveAdventure4SceneChoice(pilot,'observe','inspect',{});
   assert.equal(inspect.nextStepId,'inspect');
-  const story=resolveAdventure4SceneChoice(pilot,'inspect','story-after-inspect',{});
-  assert.equal(story.consequences.find(effect=>effect.type==='routeTarget').targetId,'story');
+  const inspectedChoice=resolveAdventure4SceneChoice(pilot,'inspect','story-after-inspect',{});
+  assert.equal(inspectedChoice.nextStepId,'resolve-story-inspected');
+  const resolutionStep=pilot.steps.find(step=>step.id==='resolve-story-inspected');
+  assert.equal(resolutionStep.phase,'resolution');
+  const finish=resolveAdventure4SceneChoice(pilot,'resolve-story-inspected','continue-story-inspected',{});
+  assert.equal(finish.consequences.find(effect=>effect.type==='routeTarget').targetId,'story');
+  assert.equal(finish.consequences.find(effect=>effect.type==='flag').key,'inspectedPilotFork');
 });
