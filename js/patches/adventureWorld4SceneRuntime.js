@@ -7,18 +7,15 @@ import './adventureWorld4EventRuntime.js';
 import './adventureWorld4DiscoveryRuntime.js';
 import './adventureWorld4InvestigationRuntime.js';
 import './adventureWorld4EventMemoryRuntime.js';
+import './adventureWorld4MysteryRuntime.js';
 
 function unique(values){return [...new Set((values||[]).filter(value=>typeof value==='string'&&value.length))];}
 
 state.applyAdventure4SceneResolution=function(resolution){
   if(!resolution?.ok)return{ok:false,reason:'invalid_resolution'};
   const session=this.adventure4Session();if(!session.active)return{ok:false,reason:'no_session'};
-  const patch={
-    temporaryFlags:{...(session.temporaryFlags||{})},
-    cluesThisRun:[...(session.cluesThisRun||[])],
-    discoveredThisRun:[...(session.discoveredThisRun||[])],
-  };
-  const immediate=[],external=[],investigation=[],memory=[];
+  const patch={temporaryFlags:{...(session.temporaryFlags||{})},cluesThisRun:[...(session.cluesThisRun||[])],discoveredThisRun:[...(session.discoveredThisRun||[])]};
+  const immediate=[],external=[],investigation=[],memory=[],mystery=[];
   for(const effect of resolution.consequences||[]){
     if(effect.scope==='adventure'){
       if(effect.type==='flag'&&effect.key)patch.temporaryFlags[effect.key]=effect.value;
@@ -30,14 +27,13 @@ state.applyAdventure4SceneResolution=function(resolution){
     }
     if(effect.scope==='immediate')immediate.push({...effect});
     else if(effect.scope==='world'&&effect.type==='eventMemory')memory.push({...effect});
+    else if(effect.scope==='world'&&['mysteryRumor','mysteryTrace','mysteryDiscovery','npcMeeting','mysteryResolve'].includes(effect.type))mystery.push({...effect});
     else external.push({...effect});
   }
   patch.cluesThisRun=unique(patch.cluesThisRun);patch.discoveredThisRun=unique(patch.discoveredThisRun);
-  const checkpoint=this.checkpointAdventure4(patch);
-  if(!checkpoint.ok)return checkpoint;
-  const investigationResults=[];
-  for(const effect of investigation){const result=this.recordAdventure4TraceById?.(effect.key,{source:`scene:${resolution.sceneId||'unknown'}`});if(result?.ok)investigationResults.push(result);}
-  const memoryResults=[];
-  for(const effect of memory){const result=this.applyAdventure4EventMemoryEffect?.(effect);if(result?.ok)memoryResults.push(result);}
-  return{ok:true,session:this.adventure4Session(),immediate,external,investigation:investigationResults,memory:memoryResults};
+  const checkpoint=this.checkpointAdventure4(patch);if(!checkpoint.ok)return checkpoint;
+  const investigationResults=[];for(const effect of investigation){const result=this.recordAdventure4TraceById?.(effect.key,{source:`scene:${resolution.sceneId||'unknown'}`});if(result?.ok)investigationResults.push(result);}
+  const memoryResults=[];for(const effect of memory){const result=this.applyAdventure4EventMemoryEffect?.(effect);if(result?.ok)memoryResults.push(result);}
+  const mysteryResults=[];for(const effect of mystery){const result=this.applyAdventure4MysteryEffect?.(effect);if(result?.ok)mysteryResults.push(result);}
+  return{ok:true,session:this.adventure4Session(),immediate,external,investigation:investigationResults,memory:memoryResults,mystery:mysteryResults};
 };
