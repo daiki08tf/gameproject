@@ -1,0 +1,9 @@
+import { state } from '../state.js';
+import { SETTLEMENT_SEASONS,SETTLEMENT_WEATHER,SETTLEMENT_DAYPARTS,SETTLEMENT_FESTIVALS,settlementFestivalEligible } from '../data/settlementSeasons.js';
+const META_KEY='__settlement3';
+function ensure(){if(!state.data.settlementBuildings)state.data.settlementBuildings={hall:0,inn:0,market:0,watch:0,ranch:0};let root=state.data.settlementBuildings[META_KEY];if(!root||typeof root!=='object'||Array.isArray(root)){root={};state.data.settlementBuildings[META_KEY]=root;}let s=root.seasons;let changed=false;if(!s||typeof s!=='object'||Array.isArray(s)){s={cycle:0,festivalSeen:[]};root.seasons=s;changed=true;}if(!Number.isFinite(s.cycle)){s.cycle=0;changed=true;}if(!Array.isArray(s.festivalSeen)){s.festivalSeen=[];changed=true;}if(changed)state.save();return s;}
+function snapshot(){const s=ensure(),c=Math.max(0,Math.floor(s.cycle));const season=SETTLEMENT_SEASONS[Math.floor(c/4)%SETTLEMENT_SEASONS.length],weather=SETTLEMENT_WEATHER[(c*3+Math.floor(c/4))%SETTLEMENT_WEATHER.length],daypart=SETTLEMENT_DAYPARTS[c%SETTLEMENT_DAYPARTS.length];const hall=state.settlementLevel?.('hall')||0;const festival=SETTLEMENT_FESTIVALS.find(f=>settlementFestivalEligible(f,{hall,season:season.id}))||null;return{cycle:c,season,weather,daypart,festival};}
+state.settlementSeasonState=function(){return snapshot();};
+state.advanceSettlementCycle=function(){const s=ensure();s.cycle=Math.max(0,Math.floor(s.cycle))+1;this.save();return snapshot();};
+state.settlementSeasonalHooks=function(){const x=snapshot();return{graveyardNight:x.daypart.id==='night',rainExploration:x.weather.id==='rain',mistExploration:x.weather.id==='mist',festival:x.festival?.id||null};};
+state.consumeSettlementFestival=function(){const s=ensure(),x=snapshot(),id=x.festival?.id;if(!id||s.festivalSeen.includes(id))return null;s.festivalSeen.push(id);this.save();return x.festival;};
