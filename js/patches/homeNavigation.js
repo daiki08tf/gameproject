@@ -4,6 +4,7 @@
    menu with one primary Adventure CTA plus compact category drawers.
    ============================================================ */
 import './settlementCore.js';
+import './settlementTavern.js';
 import './settlementUi.js';
 import './monsterRanchCore.js';
 import './monsterRanch2Facilities.js';
