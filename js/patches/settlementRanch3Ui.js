@@ -9,8 +9,7 @@ function facilityLine(summary){const map=summary.facilities||{};return (state.ra
 function rosterCard(r){const traits=r.traits.length?r.traits.join('・'):'なし',mutation=r.mutation?`✨ ${r.mutation.name}`:'未変異';return `<div class="forge-card" data-ranch3-individual="${esc(r.id)}" style="padding:10px 12px;"><div class="forge-card-top"><div class="forge-card-name">${r.favorite?'★ ':'🐾 '}${esc(r.name)}</div><strong>Lv.${r.level} / 第${r.generation}世代</strong></div><div class="forge-card-sub">${esc(r.species)} / ${esc(r.rarity)} / Nature: ${esc(r.natureName)} → AI【${esc(r.aiLabel)}】</div><div class="forge-card-sub" style="margin-top:5px;">育成方針：${esc(r.trainingLabel)} / Trait：${esc(traits)} / ${esc(mutation)}</div><details style="margin-top:5px;"><summary class="forge-card-sub">Talentを見る</summary><div class="forge-card-sub" style="margin-top:5px;">${talentLine(r)}</div></details></div>`;}
 
 export function renderSettlementRanch3(){
-  const root=document.getElementById('settlementContent');if(!root)return;
-  root.querySelector('[data-settlement-ranch3]')?.remove();
+  const root=document.getElementById('settlementContent');if(!root||root.querySelector('[data-settlement-ranch3]'))return;
   const summary=state.settlementRanch3Summary?.();if(!summary)return;
   const section=document.createElement('section');section.dataset.settlementRanch3='true';section.className='settlement-ranch3';section.style.marginTop='14px';
   if(!summary.unlocked){section.innerHTML='<div class="forge-card"><div class="forge-card-top"><div class="forge-card-name">🐾 Monster Ranch 3.0</div><strong>LOCKED</strong></div><div class="forge-card-sub">牧舎Lv.1で、既存Monster RanchとSettlementの統合状況を確認できる。</div></div>';root.appendChild(section);return;}
@@ -21,5 +20,5 @@ export function renderSettlementRanch3(){
   section.querySelector('[data-ranch3-open]')?.addEventListener('click',()=>document.getElementById('goCompanionBtn')?.click());
 }
 
-function install(){const root=document.getElementById('settlementContent');if(!root)return;const observer=new MutationObserver(()=>queueMicrotask(renderSettlementRanch3));observer.observe(root,{childList:true});queueMicrotask(renderSettlementRanch3);}
+function install(){const root=document.getElementById('settlementContent');if(!root)return;const observer=new MutationObserver(()=>{if(!root.querySelector('[data-settlement-ranch3]'))queueMicrotask(renderSettlementRanch3);});observer.observe(root,{childList:true});queueMicrotask(renderSettlementRanch3);}
 install();
