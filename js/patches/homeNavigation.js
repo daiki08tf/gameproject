@@ -5,6 +5,7 @@
    ============================================================ */
 import './adventureWorld4Session.js';
 import './adventureWorld4Ui.js';
+import './adventureWorld4EventChainRuntime.js';
 import './settlementCore.js';
 import './settlementTavern.js';
 import './settlementProduction.js';
