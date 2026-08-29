@@ -13,6 +13,20 @@ export const SETTLEMENT_AREA_GROUPS=Object.freeze([
 {id:'trade',name:'交易区',icon:'🏪',buildingIds:Object.freeze(['market']),desc:'戦利品と物資が集まる商業区画。'},
 {id:'defense',name:'外縁区',icon:'🗼',buildingIds:Object.freeze(['watch']),desc:'危険を監視し、街の外へ目を向ける区画。'},
 ]);
+export const SETTLEMENT_RESIDENT_ROLES=Object.freeze({smith:{id:'smith',name:'鍛冶師',icon:'🔨'},merchant:{id:'merchant',name:'商人',icon:'🧳'},apothecary:{id:'apothecary',name:'薬師',icon:'🌿'},scholar:{id:'scholar',name:'学者',icon:'📚'},adventurer:{id:'adventurer',name:'冒険者',icon:'⚔️'},tamer:{id:'tamer',name:'魔物使い',icon:'🐾'},traveler:{id:'traveler',name:'旅人',icon:'🗺️'},archivist:{id:'archivist',name:'記録官',icon:'📜'},veteran:{id:'veteran',name:'歴戦者',icon:'🛡️'}});
+export const SETTLEMENT_RESIDENTS=Object.freeze([
+{id:'garrick',name:'ガリック',role:'smith',buildingId:'hall',minHall:5,source:'発展',event:'開拓村の噂を聞いた鍛冶師が、壊れた炉を抱えて街へやって来た。'},
+{id:'mira',name:'ミラ',role:'merchant',buildingId:'market',minHall:5,minBuilding:{id:'market',level:5},source:'発展',event:'往来が増えた市場に、小さな行商隊を率いる商人が店を構えた。'},
+{id:'sena',name:'セナ',role:'apothecary',buildingId:'inn',minHall:5,minBuilding:{id:'inn',level:5},source:'発展',event:'旅人の傷を見かねた薬師が、宿屋の一角に薬棚を置いた。'},
+{id:'noma',name:'ノーマ',role:'traveler',buildingId:'inn',minHall:5,source:'冒険',minStageClears:5,event:'各地を歩いた旅人が、この街を次の旅の帰着点に選んだ。'},
+{id:'ruka',name:'ルカ',role:'adventurer',buildingId:'watch',minHall:5,minStageClears:12,event:'冒険の足跡に惹かれた若い冒険者が、見張り塔の探索隊へ加わった。',source:'冒険'},
+{id:'yuno',name:'ユノ',role:'tamer',buildingId:'ranch',minHall:5,minRecruitedCodex:1,event:'仲間になった魔物の話を聞いた魔物使いが、牧舎の世話役を買って出た。',source:'仲間化'},
+{id:'orwin',name:'オルウィン',role:'scholar',buildingId:'hall',minHall:10,event:'交易町へ育った記録を調べるため、辺境史を研究する学者が移住した。',source:'発展'},
+{id:'iris',name:'イリス',role:'archivist',buildingId:'hall',minHall:10,minCodexSeen:10,event:'十分な魔物観測記録が集まり、記録官が図鑑資料の整理に常駐するようになった。',source:'Codex'},
+{id:'valen',name:'ヴァレン',role:'veteran',buildingId:'watch',minHall:10,minCodexKills:50,event:'数多くの討伐記録を見届けた歴戦者が、街の守りと新人指導を引き受けた。',source:'討伐'},
+]);
+export function settlementResidentRole(id){return SETTLEMENT_RESIDENT_ROLES[id]||null;}
+export function settlementResidentEligible(resident,context={}){if(!resident)return false;const buildings=context.buildings||{};if((context.hall||0)<(resident.minHall||0))return false;if(resident.minBuilding&&(buildings[resident.minBuilding.id]||0)<resident.minBuilding.level)return false;if((context.stageClears||0)<(resident.minStageClears||0))return false;if((context.codexSeen||0)<(resident.minCodexSeen||0))return false;if((context.codexKills||0)<(resident.minCodexKills||0))return false;if((context.recruitedCodex||0)<(resident.minRecruitedCodex||0))return false;return true;}
 export function settlementEraForLevel(level){const lv=Math.max(0,Math.min(SETTLEMENT_MAX_LEVEL,Math.floor(Number(level)||0)));return[...SETTLEMENT_ERAS].reverse().find(era=>lv>=era.minLevel)||SETTLEMENT_ERAS[0];}
 export function settlementReachedEras(level){const lv=Math.max(0,Math.min(SETTLEMENT_MAX_LEVEL,Math.floor(Number(level)||0)));return SETTLEMENT_ERAS.filter(era=>era.minLevel>0&&lv>=era.minLevel);}
 export function settlementEraAtMilestone(level){const lv=Math.floor(Number(level)||0);return SETTLEMENT_ERAS.find(era=>era.minLevel>0&&era.minLevel===lv)||null;}
