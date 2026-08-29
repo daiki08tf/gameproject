@@ -57,7 +57,7 @@ function runeSources(target,map){
 }
 
 state.adventure4FieldActionSources=function(){const map={};jobSources(this,map);companionSources(this,map);gearSources(this,map);runeSources(this,map);return map;};
-state.adventure4FieldActions=function(){return Object.keys(this.adventure4FieldActionSources()).filter(id=>ADVENTURE4_FIELD_ACTIONS[id]).map(id=>({...ADVENTURE4_FIELD_ACTIONS[id],sources:this.adventure4FieldActionSources()[id]}));};
+state.adventure4FieldActions=function(){const map=this.adventure4FieldActionSources();return Object.keys(map).filter(id=>ADVENTURE4_FIELD_ACTIONS[id]).map(id=>({...ADVENTURE4_FIELD_ACTIONS[id],sources:map[id]}));};
 state.adventure4HasFieldAction=function(id){return !!this.adventure4FieldActionSources()[id]?.length;};
 
 state.adventure4RefreshFieldActionFlags=function(){
@@ -74,6 +74,17 @@ state.adventure4TagRegionalGear=function(instanceId,regionId){
 };
 state.beginAdventure4RegionalDropContext=function(regionId){regionalDropRegionId=adventure4RegionalGearProfile(regionId)?regionId:null;return regionalDropRegionId;};
 state.endAdventure4RegionalDropContext=function(){regionalDropRegionId=null;};
+
+// Regional identity is active only while an Adventure session is active/resumed.
+// It annotates the existing Equipment 3.0 instance; Item Power/Affix/Unique rolls remain untouched.
+const previousStartAdventure4=state.startAdventure4.bind(state);
+state.startAdventure4=function adventure4BuildStart(opts={}){const result=previousStartAdventure4(opts);if(result?.ok)this.beginAdventure4RegionalDropContext(this.adventure4Session()?.regionId);return result;};
+const previousResumeAdventure4=state.resumeAdventure4.bind(state);
+state.resumeAdventure4=function adventure4BuildResume(){const result=previousResumeAdventure4();if(result?.ok)this.beginAdventure4RegionalDropContext(this.adventure4Session()?.regionId);return result;};
+const previousSuspendAdventure4=state.suspendAdventure4.bind(state);
+state.suspendAdventure4=function adventure4BuildSuspend(){const result=previousSuspendAdventure4();this.endAdventure4RegionalDropContext();return result;};
+const previousReturnAdventure4=state.returnFromAdventure4.bind(state);
+state.returnFromAdventure4=function adventure4BuildReturn(){const result=previousReturnAdventure4();this.endAdventure4RegionalDropContext();return result;};
 
 const previousAddItem=state.addItem?.bind(state);
 if(previousAddItem&&!state.__adventure4RegionalLootWrapped){
@@ -97,6 +108,7 @@ if(previousAddItem&&!state.__adventure4RegionalLootWrapped){
 const previousScene=state.adventure4ContentPackIScene?.bind(state),previousComplete=state.completeAdventure4ContentPackIScene?.bind(state);
 state.adventure4ContentPackIScene=function adventure4BuildExpressionScene(){
   const session=this.adventure4Session?.();if(!session?.active)return null;
+  this.beginAdventure4RegionalDropContext(session.regionId);
   this.adventure4RefreshFieldActionFlags();
   const latest=this.adventure4Session();
   if(latest.temporaryFlags?.[FIELD_ACTIVE])return buildAdventure4BuildExpressionScene(latest.regionId);
