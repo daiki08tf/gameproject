@@ -1,6 +1,7 @@
 /* Adventure / World 4.0 — W18-W22 Living World data contracts.
    Combat/reward scaling stays authoritative in existing systems. This module
    only describes utility exploration effects and optional content availability. */
+import { normalizeAdventure4Scene } from './adventureWorld4Scenes.js';
 
 export const ADVENTURE4_UTILITY_EFFECTS=Object.freeze({
   routeIntel:{id:'routeIntel',name:'道程観測',detail:'直近の経路情報を詳しく読む'},
@@ -91,9 +92,9 @@ export function buildAdventure4LivingWorldScene(ctx={}){
     });
   }
   if(ctx.worldTierAvailability?.anomaly)choices.push({id:'anomaly',label:'異常地点を確認する',detail:'World Tierで出現',resultText:'高いWorld Tierだからこそ現れた異常地点を記録した。敵倍率や報酬倍率はここでは変更しない。',consequences:[{scope:'adventure',type:'flag',key:'living:anomalyObserved',value:true}]});
-  return {
+  return normalizeAdventure4Scene({
     id:`living-world-${ctx.regionId||'region'}`,
     name:'移ろう地域',entryStepId:'observe',tags:['living-world','optional'],
     steps:[{id:'observe',phase:'observation',title:'いつもと違う気配',text:`${regionName}は同じ地図でも、季節・天候・時刻・出来事によって見え方が変わる。`,choices}],
-  };
+  });
 }
