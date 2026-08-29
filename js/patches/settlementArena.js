@@ -5,7 +5,7 @@ import { CHAPTERS } from '../data/stages.js';
 import { SETTLEMENT_ARENA_MODES,SETTLEMENT_ARENA_RULES } from '../data/settlementArena.js';
 
 function meta(){state.data.settlementBuildings||={};const root=state.data.settlementBuildings.__settlement3||(state.data.settlementBuildings.__settlement3={});return root.arena||(root.arena={best:{},runs:0});}
-function arenaChapter(){let ch=CHAPTERS.find(x=>x.id==='settlement_arena');if(!ch){ch={id:'settlement_arena',num:0,name:'Settlement訓練場',hidden:true,arenaTraining:true,stages:[]};CHAPTERS.push(ch);}return ch;}
+function arenaChapter(){let ch=CHAPTERS.find(x=>x.id==='settlement_arena');if(!ch){ch={id:'settlement_arena',num:999,name:'Settlement訓練場',hidden:true,arenaTraining:true,stages:[]};CHAPTERS.push(ch);}return ch;}
 function bossStages(){return CHAPTERS.flatMap(ch=>(ch.stages||[]).filter(s=>s.boss&&!s.arenaTraining).map(stage=>({chapter:ch,stage})));}
 function clearedBosses(){const all=bossStages();const cleared=all.filter(x=>state.isStageCleared?.(x.stage.id));return cleared.length?cleared:all.slice(0,1);}
 function pickBoss(rank){const list=clearedBosses();if(!list.length)return null;const idx=Math.max(0,Math.min(list.length-1,Math.round((list.length-1)*rank)));return list[idx];}
