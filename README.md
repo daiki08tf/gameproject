@@ -4,7 +4,8 @@
 
 装備を掘り、職業・仲間・覚醒・恒久成長を育てながらストーリーと複数のエンドゲームへ進みます。Character Lvは最大99,999。Vanilla JavaScript / ES Modulesで動作し、外部ゲームライブラリは不要です。
 
-> 開発の正式な方針・現在地は `ROADMAP.md` を参照してください。Lv99,999の進行設計は `LEVEL_ROADMAP_99999.md`、Official Phase 10の最終監査は `PHASE10_FINAL_AUDIT.md` が補助資料です。
+> **開発時に「どこを読めば何が分かるか」を探す場合は、最初に `PROJECT_GUIDE.md` を参照してください。**
+> 開発の正式な方針・現在地は `ROADMAP.md`、World 4.0 / Living Adventure は `ADVENTURE_WORLD_4_ROADMAP.md`、Lv99,999の進行設計は `LEVEL_ROADMAP_99999.md`、Official Phase 10の最終監査は `PHASE10_FINAL_AUDIT.md` が基準・補助資料です。
 
 ## 起動方法
 
@@ -181,7 +182,7 @@ js/data/numericSafety.js           large-number safety helpers
 js/patches/                        integration/runtime layers
 js/screens/                        screen UI
 scripts/                           simulations/validation
- tests/                            regression tests
+tests/                             regression tests
 ```
 
 ## 開発方針
