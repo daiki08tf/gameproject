@@ -79,12 +79,18 @@ World Tier / Event / Abyss / Rift / Secret Realm / Machine Realm / Deep Survey�
 - Lv21,22…へ施設Lvを延長せず、首都計画という横方向のPrestige/地区発展軸にする。
 - 新通貨・報酬倍率・タイマー・日課・Homeボタンを追加しない。
 
-## [ ] S19 — UI 4.0 + Full Integration Regression
-- Homeボタン増殖を整理。
-- Settlement内を「街 / 住民 / 探索 / 生産 / 研究 / 記録」等のカテゴリへ圧縮。
-- スマホで入口→各施設→操作→戻るまで実機相当の導線監査。
-- 旧save、Lv0、旧Lv5 MAX save、Lv20、新機能欠損saveを回帰。
-- Syntax / targeted / full suite / CI greenを必須とする。
+## [x] S19 — UI 4.0 + Full Integration Regression
+- Homeボタンは`goSettlementBtn`一つのみで変わらないことを確認（増殖なし）。
+- 常時展開だった10系統（探索/秘密施設/防衛/季節/政策/遠征/終端ネットワーク/訓練場/年代記/首都）の折りたたみパネル群に、`settlementUi4.js`でカテゴリ見出し4本（探索・秘密施設 / 防衛・季節・政策 / 遠征・終端ネットワーク / 訓練・記録・首都）を挿入し、フラットな縦積みを整理。見出し挿入のみで状態は一切持たない。
+- S13「魔物共生」方針がRanch 3.0（`settlementRanch3Summary`）とS14遠征（`settlementExpeditionAgents`の並び替え・共生会/tamers実績記録）に未接続だったギャップを解消。
+- S11防衛局のUIが「既存戦闘システムへ遭遇情報を渡した」と完了済みであるかのように誤表示していた箇所を、実際の状態（迎撃準備＝pending）に即した文言へ修正。
+- 全18サブシステムが`settlementBuildings.__settlement3`配下で個別サブキーを持ち、衝突がないことを回帰テストで固定。
+- 新規統合テスト `tests/settlementS19Integration.test.js` を追加（import生存、Homeボタン単一性、save key衝突なし、公開APIの命名衝突なし、旧save後方互換、コンテナID重複なし、raw ID非露出、BattleEngine非重複、pending誤表示防止、政策接続、UI4.0の副作用なし）。
+- Syntax / targeted / full suite 全green。
+
+### Known technical debt (S19時点)
+- S11防衛局の襲撃・S18首都の境界収束災害・S10秘密門の境界守護者は、いずれもpending encounterフックを生成するのみで、実際のBattleEngine起動・結果反映への配線がまだ存在しない（Arena訓練場の`settlement-arena-start`イベント経由の実装のみが実戦連携済み）。UI表示は「待機中」と正確に修正済みだが、機能としては未完成のまま。
+- S12の季節/天候hook（`settlementSeasonalHooks`：墓地夜間・雨天探索・霧探索・祭り）は公開されているが、Exploration側を含めどこからも参照されていない。UI側で過大表現はしていないため実害はないが、未接続のまま。
 
 ---
 ## Future ideas pool

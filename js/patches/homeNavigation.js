@@ -32,6 +32,7 @@ import './settlementEndgameNetworkUi.js';
 import './settlementArenaUi.js';
 import './settlementChronicleUi.js';
 import './settlementCapitalUi.js';
+import './settlementUi4.js';
 import './monsterRanchCore.js';
 import './monsterRanch2Facilities.js';
 import './monsterRanch2Complete.js';

@@ -12,9 +12,9 @@ function talentSummary(talent={}){const entries=['hp','mp','atk','def','mag','sp
 
 state.settlementRanch3Unlocked=function(){return(this.settlementLevel?.('ranch')||0)>=1;};
 state.settlementRanch3Summary=function(){
-  const ranchLevel=this.settlementLevel?.('ranch')||0,facilities=facilityLevels(),research=this.ranchResearchUnlocks?.()||{};
+  const ranchLevel=this.settlementLevel?.('ranch')||0,facilities=facilityLevels(),research=this.ranchResearchUnlocks?.()||{},policyFavored=this.settlementPolicyBias?.('ranch')===1;
   const capabilityMap=ranch3CapabilityState({ranchLevel,facilityLevels:facilities,researchUnlocks:research});
-  return{unlocked:ranchLevel>=1,ranchLevel,count:this.ranchCount?.()||0,capacity:this.ranchCapacity?.()||0,eggs:this.ranchEggList?.().length||0,facilities,research,capabilities:RANCH3_CAPABILITIES.map(x=>({...x,unlocked:!!capabilityMap[x.id]}))};
+  return{unlocked:ranchLevel>=1,ranchLevel,count:this.ranchCount?.()||0,capacity:this.ranchCapacity?.()||0,eggs:this.ranchEggList?.().length||0,facilities,research,policyFavored,capabilities:RANCH3_CAPABILITIES.map(x=>({...x,unlocked:!!capabilityMap[x.id]}))};
 };
 state.settlementRanch3Roster=function(){
   return Object.keys(this.data.companionInstances||{}).map(id=>{
