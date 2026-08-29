@@ -6,8 +6,10 @@
 import './settlementCore.js';
 import './settlementTavern.js';
 import './settlementProduction.js';
+import './settlementMarket.js';
 import './settlementUi.js';
 import './settlementProductionUi.js';
+import './settlementMarketUi.js';
 import './monsterRanchCore.js';
 import './monsterRanch2Facilities.js';
 import './monsterRanch2Complete.js';
