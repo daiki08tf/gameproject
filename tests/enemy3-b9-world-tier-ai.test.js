@@ -26,7 +26,7 @@ test('B9 World VI escalates decisions without stat fields',()=>{
 
 test('B9 attacker and support thresholds rise monotonically',()=>{
   let prev=enemy3WorldTierAiPolicy(0);
-  for(let rank=1;rank<=5;rank++){
+  for(let rank=1;rank<=6;rank++){
     const next=enemy3WorldTierAiPolicy(rank);
     assert.ok(next.attackerExecuteHp>=prev.attackerExecuteHp);
     assert.ok(next.supportForceHealHp>=prev.supportForceHealHp);
@@ -59,4 +59,24 @@ test('B9 encounter triage uses World Tier policy while leaving stat synergy unch
 test('B9 source does not duplicate World Tier stats, rewards, Elite chance, or Boss haste',()=>{
   const source=readFileSync(new URL('../js/data/enemy3WorldTierAI.js',import.meta.url),'utf8');
   assert.doesNotMatch(source,/enemyHp|enemyAtk|enemyDef|enemySpd|reward|drop|eliteChance|aiHaste|slamTurns|chargeTurns|projectileTurns|summonTurns/);
+});
+
+test('World VII (rank 6) extends every B9 threshold table by exactly one more of its own existing step',()=>{
+  const vi=enemy3WorldTierAiPolicy(5),vii=enemy3WorldTierAiPolicy(6);
+  assert.equal(vii.rank,6);
+  assert.equal(vii.attackerExecuteHp,.47);
+  assert.equal(vii.supportForceHealHp,.52);
+  assert.equal(vii.supportHoldHealHp,.82);
+  assert.equal(vii.synergyTriageHp,.70);
+  assert.equal(vii.proactiveDisruption,true);
+  assert.ok(vii.attackerExecuteHp-vi.attackerExecuteHp>.019 && vii.attackerExecuteHp-vi.attackerExecuteHp<.021,'same +.02 step as every prior tier');
+  assert.ok(vii.supportForceHealHp-vi.supportForceHealHp>.019 && vii.supportForceHealHp-vi.supportForceHealHp<.021,'same +.02 step as every prior tier');
+  assert.ok(vii.supportHoldHealHp-vi.supportHoldHealHp>.019 && vii.supportHoldHealHp-vi.supportHoldHealHp<.021,'same +.02 step as every prior tier');
+  assert.ok(vii.synergyTriageHp-vi.synergyTriageHp>.024 && vii.synergyTriageHp-vi.synergyTriageHp<.026,'same +.025 step as every prior tier');
+});
+
+test('ranks above World VII still clamp to rank 6, matching the historical clamp-to-max-tier behavior',()=>{
+  assert.equal(enemy3WorldTierAiPolicy(7).rank,6);
+  assert.equal(enemy3WorldTierAiPolicy(99).rank,6);
+  assert.deepEqual(enemy3WorldTierAiPolicy(7),enemy3WorldTierAiPolicy(6));
 });
