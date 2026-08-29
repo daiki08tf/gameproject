@@ -24,6 +24,7 @@ import './settlementUi.js';
 import './settlementProductionUi.js';
 import './settlementMarketUi.js';
 import './settlementResearchUi.js';
+import './adventureWorld4InvestigationUi.js';
 import './settlementExplorationUi.js';
 import './settlementSecretsUi.js';
 import './settlementDefenseUi.js';
