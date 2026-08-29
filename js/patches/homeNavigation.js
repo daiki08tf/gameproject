@@ -5,7 +5,9 @@
    ============================================================ */
 import './settlementCore.js';
 import './settlementTavern.js';
+import './settlementProduction.js';
 import './settlementUi.js';
+import './settlementProductionUi.js';
 import './monsterRanchCore.js';
 import './monsterRanch2Facilities.js';
 import './monsterRanch2Complete.js';
