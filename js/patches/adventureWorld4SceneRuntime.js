@@ -4,6 +4,7 @@
    being persisted here. */
 import { state } from '../state.js';
 import './adventureWorld4Session.js';
+import './adventureWorld4EventRuntime.js';
 
 function unique(values){return [...new Set((values||[]).filter(value=>typeof value==='string'&&value.length))];}
 
