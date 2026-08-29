@@ -4,6 +4,7 @@ import { state } from '../state.js';
 import { renderAdventureRoute } from './adventureWorld4Ui.js';
 import './adventureWorld4MysterySceneRuntime.js';
 import './adventureWorld4BuildExpressionRuntime.js';
+import './adventureWorld4LivingWorldUi.js';
 
 function render(){
   const screen=document.getElementById('adventureRoute4Screen'),body=screen?.querySelector('.adventure4-body');if(!screen||!body||!screen.classList.contains('active'))return;
