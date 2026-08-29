@@ -3,6 +3,7 @@
    Keeps existing button IDs/listeners while replacing the growing vertical
    menu with one primary Adventure CTA plus compact category drawers.
    ============================================================ */
+import './adventureWorld4Session.js';
 import './settlementCore.js';
 import './settlementTavern.js';
 import './settlementProduction.js';
