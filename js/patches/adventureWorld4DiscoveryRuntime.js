@@ -40,3 +40,11 @@ state.recordAdventure4DiscoveryById=function(catalog,id,options={}){
 
 state.adventure4RegionDiscoveryProgress=function(regionId,catalog){return adventure4RegionDiscoveryProgress(regionId,catalog,ensure());};
 state.adventure4VisibleDiscoveries=function(regionId,catalog){return adventure4VisibleDiscoveries(regionId,catalog,ensure());};
+state.adventure4RegionCompletion=function(region,regionState,catalog){
+  if(!region?.id)return null;
+  const discoveries=this.adventure4RegionDiscoveryProgress(region.id,catalog);
+  const storyCleared=Math.max(0,Number(regionState?.clearedChapters)||0),storyTotal=Math.max(0,Number(regionState?.totalChapters)||0);
+  const storyComplete=storyTotal>0&&storyCleared>=storyTotal;
+  const publicDiscoveryComplete=discoveries.visibleTotal===0||discoveries.visibleKnownCount>=discoveries.visibleTotal;
+  return Object.freeze({regionId:region.id,story:{cleared:storyCleared,total:storyTotal,complete:storyComplete},discoveries,recordedComplete:storyComplete&&publicDiscoveryComplete,label:`Story ${storyCleared}/${storyTotal} / 探索 ${discoveries.label}`});
+};
