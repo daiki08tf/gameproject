@@ -86,7 +86,10 @@ export function adventure4Reachable(route,{includeHidden=false,context={}}={}){
   while(queue.length){
     const id=queue.shift();if(seen.has(id))continue;seen.add(id);
     const node=adventure4NodeById(route,id);if(!node)continue;
-    if((!node.hidden||includeHidden)&&adventure4ConditionMet(node.condition,context))out.push(node);
+    const conditionMet=adventure4ConditionMet(node.condition,context);
+    const visible=!node.hidden||includeHidden;
+    if(!conditionMet||!visible)continue;
+    out.push(node);
     for(const nextId of node.next)if(!seen.has(nextId))queue.push(nextId);
   }
   return out;
