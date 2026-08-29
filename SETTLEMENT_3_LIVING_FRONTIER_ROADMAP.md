@@ -137,12 +137,14 @@ Lv6以降は旧1.8倍指数をそのまま延長せず、成長率を段階的�
 - Deep Surveyは `world2.discoveries` の既存解禁条件を満たした領域だけを研究ヒントへ載せ、未発見領域の名称やBoss情報を開示しない。
 - 研究記録の既読段階だけを `settlementBuildings.__settlement3.research` 配下に保存し、新しいsave root・通貨・時間依存ループを増やさない。
 
-## [ ] S8 — Ranch 3.0 Integration
+## [x] S8 — Ranch 3.0 Integration
 
-- 牧舎をMonster Ranch本体へ昇格。
-- 個体管理、Trait、Talent、育成方針、配合、特殊配合、突然変異。
-- Companion 3.0 AI方針と接続。
-- 牧舎Lvは枠・育成施設・解析機能などを解禁し、加入率だけを無限に上げない。
+- 既存牧舎をMonster Ranch / Companionの統合ハブへ昇格し、Ranch 3.0用の並行育成システムは作らない。
+- 個体管理では既存Companion個体から名前、種族、Lv、世代、Trait、Talent、育成方針、突然変異を読み取り、Settlement内でコンパクトに確認可能にする。
+- 育成方針は既存 `trainingFocus`、配合/孵化は既存Ranch卵系統、指向配合（特殊配合）は既存Directed Inheritance、突然変異は既存Mutation APIを正本として再利用する。
+- Companion 3.0の戦闘AIは別設定を新設せず、個体Natureの `COMPANION_NATURES[nature].ai`（攻勢 / 防衛 / 支援 / 均衡）をそのまま表示する。
+- 牧舎Lvは既存の個体枠とRanchサブ施設の上限として維持し、訓練場・孵化場・魔物研究所・変異研究室と既存研究解禁を機能gateに利用する。
+- 加入率への新しい無限加算、新通貨、新save root、日課・タイマー、Homeボタンを追加しない。
 
 ## [ ] S9 — Settlement Exploration Layer
 
