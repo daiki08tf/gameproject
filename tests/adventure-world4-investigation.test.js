@@ -38,6 +38,8 @@ test('W8 connects evidence into deterministic multi-step Clue chains',()=>{
   assert.deepEqual(deriveAdventure4Clues(chainCatalog,{traces:{m:{},h:{}},clues:{}}).map(x=>x.id),['c1']);
   assert.deepEqual(deriveAdventure4Clues(chainCatalog,{traces:{m:{},h:{},a:{}},clues:{}}).map(x=>x.id),['c1','c2']);
   assert.deepEqual(deriveAdventure4Clues(chainCatalog,{traces:{m:{}},clues:{}}),[]);
+  const unsafe=normalizeAdventure4InvestigationCatalog({clues:[{id:'secret-without-evidence',regionId:'frontier',name:'漏れてはいけない秘密',secret:true}]});
+  assert.deepEqual(deriveAdventure4Clues(unsafe,{traces:{},clues:{}}),[]);
 });
 
 test('W8 board exposes only recorded evidence and never reveals unknown Secret counts',()=>{
