@@ -91,7 +91,7 @@ test('W10 persistent memory effect is delegated by Scene runtime and world2 rema
   const applied=state.applyAdventure4SceneResolution(resolution);
   assert.equal(applied.memory.length,1);
   assert.equal(state.data.world2.eventMemory['frontier-old-sluice'].status,'failed');
-  assert.equal('eventMemory' in state.data,true);
+  assert.equal('eventMemory' in state.data,false);
   assert.equal(state.data.eventMemory,undefined);
 });
 
