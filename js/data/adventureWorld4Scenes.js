@@ -91,6 +91,10 @@ export function resolveAdventure4SceneChoice(scene,stepId,choiceId,context={}){
 export function buildAdventure4PilotSceneCatalog(region,route){
   if(!region||!route)return[];
   const story=route.nodes.find(node=>node.id==='story');
+  const inspectedEffects=[
+    {scope:'adventure',type:'flag',key:'inspectedPilotFork',value:true},
+    ...(region.id==='frontier'?[{scope:'adventure',type:'trace',key:'frontier-pilot-fresh-tracks'}]:[]),
+  ];
   const steps=[
     {id:'observe',phase:'observation',title:'分かれ道',text:`${region.name}の道は二つに分かれている。片方は主要路へ、もう片方は安全な帰還路へ続いている。`,choices:[
       {id:'inspect',label:'周囲を調べる',detail:'足跡や道標を確認する',nextStepId:'inspect'},
@@ -103,10 +107,10 @@ export function buildAdventure4PilotSceneCatalog(region,route){
     ]},
     ...(story?[
       {id:'resolve-story',phase:'resolution',title:'主要路へ',text:'覚悟を決めて主要路へ進む。前方に戦いの気配が近づいている。',choices:[{id:'continue-story',label:'先へ進む',consequences:[{scope:'immediate',type:'routeTarget',targetId:'story'}]}]},
-      {id:'resolve-story-inspected',phase:'resolution',title:'痕跡を追う',text:'新しい足跡は主要路の先へ続いている。痕跡を記録し、そのまま追跡を続ける。',choices:[{id:'continue-story-inspected',label:'足跡を追う',consequences:[{scope:'adventure',type:'flag',key:'inspectedPilotFork',value:true},{scope:'immediate',type:'routeTarget',targetId:'story'}]}]},
+      {id:'resolve-story-inspected',phase:'resolution',title:'痕跡を追う',text:'新しい足跡は主要路の先へ続いている。痕跡を記録し、そのまま追跡を続ける。',choices:[{id:'continue-story-inspected',label:'足跡を追う',consequences:[...inspectedEffects,{scope:'immediate',type:'routeTarget',targetId:'story'}]}]},
     ]:[]),
     {id:'resolve-return',phase:'resolution',title:'帰還',text:'無理に先へ進まず、現在の成果を持って拠点へ戻ることにした。',choices:[{id:'continue-return',label:'帰還する',consequences:[{scope:'immediate',type:'routeTarget',targetId:'return'}]}]},
-    {id:'resolve-return-inspected',phase:'resolution',title:'記録して帰還',text:'道標と足跡の様子を記録した。次の冒険に備えて拠点へ持ち帰る。',choices:[{id:'continue-return-inspected',label:'記録を持ち帰る',consequences:[{scope:'adventure',type:'flag',key:'inspectedPilotFork',value:true},{scope:'immediate',type:'routeTarget',targetId:'return'}]}]},
+    {id:'resolve-return-inspected',phase:'resolution',title:'記録して帰還',text:'道標と足跡の様子を記録した。次の冒険に備えて拠点へ持ち帰る。',choices:[{id:'continue-return-inspected',label:'記録を持ち帰る',consequences:[...inspectedEffects,{scope:'immediate',type:'routeTarget',targetId:'return'}]}]},
   ];
   return [normalizeAdventure4Scene({id:'pilot-fork',name:'分かれ道',entryStepId:'observe',tags:['pilot','route-choice'],steps})];
 }
