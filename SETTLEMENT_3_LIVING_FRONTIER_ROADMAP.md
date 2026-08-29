@@ -146,19 +146,24 @@ Lv6以降は旧1.8倍指数をそのまま延長せず、成長率を段階的�
 - 牧舎Lvは既存の個体枠とRanchサブ施設の上限として維持し、訓練場・孵化場・魔物研究所・変異研究室と既存研究解禁を機能gateに利用する。
 - 加入率への新しい無限加算、新通貨、新save root、日課・タイマー、Homeボタンを追加しない。
 
-## [ ] S9 — Settlement Exploration Layer
+## [x] S9 — Settlement Exploration Layer
 
-- 井戸、墓地、廃屋、村外れの森、採掘坑、地下水路。
-- Settlement内部にも探索地点を持つ。
-- 調べる → 発見 → 小イベント → 戦闘/報酬/住民加入へ繋ぐ。
-- 一度きり探索と再訪可能探索を分離。
+- 古井戸、共同墓地、廃屋、村外れの森、旧採掘坑、地下水路の6地点を実装。
+- 既存Settlement施設Lvで段階的に発見し、Settlement内部の探索地点として扱う。
+- 初回探索では小イベントと既存Settlement素材の一度きり報酬を与え、再訪だけで素材を無限獲得できないようにする。
+- `repeatable` で一度きり探索と再訪可能探索を分離し、訪問回数を記録する。
+- 状態は `settlementBuildings.__settlement3.exploration` 配下の `discovered / completed / visits` のみに保存し、新しいsave rootを増やさない。
+- Homeボタンは増やさず、Settlement内のコンパクトな探索パネルへ統合する。
 
-## [ ] S10 — Hidden Facilities & Secret Questlines
+## [x] S10 — Hidden Facilities & Secret Questlines
 
-- 鍛冶屋地下、封印庫、古代研究室、異界門など。
-- 建築Lvだけではなく特定の発見・NPC・Unique・Boss討伐で解禁。
-- 複数段階のSettlement専用Secret Quest。
-- Secret Bossを配置可能にする。
+- `鍛冶屋地下 / 封印庫 / 古代研究室 / 異界門` の4隠し施設を実装。
+- S9探索完了に加えて、ガリック / イリス / オルウィン / ヴァレンなど既存住民、集会所Lv、Codex観測、Boss討伐記録を発見条件に利用する。
+- `埋もれた炉火 / 石下の名簿 / 境界式の残響 / 門の向こうから` の4本の複数段階Secret Questを追加。
+- 通常Secret Questの報酬は既存Settlement素材のみとし、新通貨や日課を増やさない。
+- 異界門の最終段階は `secretBoss` 遭遇フック `settlementBoundaryGuardian` を生成し、戦闘処理そのものは既存BattleEngine側へ委譲できる形にする。
+- 状態は `settlementBuildings.__settlement3.secrets` 配下の `facilities / questStage / completedQuests / pendingEncounters` のみに保存する。
+- UIはSettlement内の折りたたみパネルへ統合し、Homeボタンを追加しない。
 
 ## [ ] S11 — Defense & Invasions
 
