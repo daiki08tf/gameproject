@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { readFileSync } from 'fs';
-import { enemy3WorldTierDecisionRank } from '../js/data/enemy3Targeting.js';
+import { enemy3WorldTierAiPolicy } from '../js/data/enemy3WorldTierAI.js';
 
 const mainSource = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
 const completeSource = readFileSync(new URL('../js/patches/battle2RoadmapComplete.js', import.meta.url), 'utf8');
@@ -35,24 +35,43 @@ for (const modulePath of [
   );
 }
 
+// There is no separate Abyss battle engine. goAbyssList()'s stage callback
+// sets the same pendingStage used by goStageSelect(), and both routes end at
+// the single confirmStartBtn handler that calls the one shared startBattle().
 assert.match(
   mainSource,
-  /function startAbyssBattle\(\)[\s\S]*?startBattle\(\);/,
-  'Abyss must reuse the common battle entry point and therefore the Enemy 3 patch chain',
+  /function goAbyssList\(\)\{renderAbyssList\(stage=>\{cameFromAbyss=true;pendingStage=stage;renderStageConfirm\(stage\);showScreen\('stageConfirmScreen'\);\}\);showScreen\('abyssScreen'\);\}/,
+  'Abyss stage selection must set pendingStage and route through the shared stage-confirm screen, not a separate Abyss battle flow',
 );
 assert.match(
   mainSource,
-  /function startBattle\(\)[\s\S]*?battle\.start\(stage\.id,/,
-  'the common Ch1–30/endgame battle entry point must still start the shared BattleEngine',
+  /document\.getElementById\('confirmStartBtn'\)\.addEventListener\('click',\(\)=>\{Audio_\.tap\(\);startBattle\(pendingStage,getSelectedBlessingId\(\)\);\}\)/,
+  'Ch1–30 and Abyss stages must launch through the same confirmStartBtn -> startBattle(pendingStage, ...) call',
+);
+assert.equal(
+  (mainSource.match(/function startBattle\(/g) || []).length,
+  1,
+  'there must be exactly one startBattle definition — no second, Abyss-specific battle engine',
+);
+assert.match(
+  mainSource,
+  /function startBattle\(stage,blessingId\)\{[\s\S]*?battle\.start\(stage\.id,/,
+  'the single shared battle entry point must still start the shared BattleEngine',
 );
 
-assert.equal(enemy3WorldTierDecisionRank({ worldTier: 1 }), 0, 'World I must keep rank-0 behavior');
-assert.equal(enemy3WorldTierDecisionRank({ worldTier: 6 }), 5, 'World VI must reach decision rank 5');
-assert.equal(enemy3WorldTierDecisionRank({ isAbyss: true }), 0, 'Abyss without WT runtime must remain rank 0');
-assert.match(
-  worldTierSource,
-  /if \(this\?\.isAbyss\) return enemy;/,
-  'Abyss must remain excluded from World Tier spawn scaling',
+assert.equal(enemy3WorldTierAiPolicy(0).attackerExecuteHp, 0.35, 'World I must keep rank-0 behavior (existing B9 contract)');
+assert.equal(enemy3WorldTierAiPolicy(5).attackerExecuteHp, 0.45, 'World VI must reach decision rank 5 (existing B9 contract)');
+assert.equal(
+  enemy3WorldTierAiPolicy(undefined).attackerExecuteHp,
+  0.35,
+  'Abyss engines never receive engine.worldTier, so the policy must resolve the same as rank 0',
+);
+
+const isAbyssGuardIndex = worldTierSource.indexOf('if(this.stage?.isAbyss)return enemy;');
+const worldTierAssignIndex = worldTierSource.indexOf('this.worldTier=tier;');
+assert.ok(
+  isAbyssGuardIndex >= 0 && worldTierAssignIndex >= 0 && isAbyssGuardIndex < worldTierAssignIndex,
+  'Abyss must return before engine.worldTier is ever assigned, so Enemy 3 tactical context always resolves rank 0 for Abyss',
 );
 
 const behaviorSources = [
