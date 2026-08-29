@@ -8,6 +8,7 @@ import './adventureWorld4DiscoveryRuntime.js';
 import './adventureWorld4InvestigationRuntime.js';
 import './adventureWorld4EventMemoryRuntime.js';
 import './adventureWorld4MysteryRuntime.js';
+import './adventureWorld4RealmRegionRuntime.js';
 
 function unique(values){return [...new Set((values||[]).filter(value=>typeof value==='string'&&value.length))];}
 
@@ -15,7 +16,7 @@ state.applyAdventure4SceneResolution=function(resolution){
   if(!resolution?.ok)return{ok:false,reason:'invalid_resolution'};
   const session=this.adventure4Session();if(!session.active)return{ok:false,reason:'no_session'};
   const patch={temporaryFlags:{...(session.temporaryFlags||{})},cluesThisRun:[...(session.cluesThisRun||[])],discoveredThisRun:[...(session.discoveredThisRun||[])]};
-  const immediate=[],external=[],investigation=[],memory=[],mystery=[],living=[];
+  const immediate=[],external=[],investigation=[],memory=[],mystery=[],living=[],realm=[];
   for(const effect of resolution.consequences||[]){
     if(effect.scope==='adventure'){
       if(effect.type==='flag'&&effect.key)patch.temporaryFlags[effect.key]=effect.value;
@@ -29,6 +30,7 @@ state.applyAdventure4SceneResolution=function(resolution){
     else if(effect.scope==='world'&&effect.type==='eventMemory')memory.push({...effect});
     else if(effect.scope==='world'&&['mysteryRumor','mysteryTrace','mysteryDiscovery','npcMeeting','mysteryResolve'].includes(effect.type))mystery.push({...effect});
     else if(effect.scope==='world'&&effect.type==='nemesisHuntAdvance')living.push({...effect});
+    else if(effect.scope==='world'&&effect.type==='realmDiscovery')realm.push({...effect});
     else external.push({...effect});
   }
   patch.cluesThisRun=unique(patch.cluesThisRun);patch.discoveredThisRun=unique(patch.discoveredThisRun);
@@ -37,5 +39,6 @@ state.applyAdventure4SceneResolution=function(resolution){
   const memoryResults=[];for(const effect of memory){const result=this.applyAdventure4EventMemoryEffect?.(effect);if(result?.ok)memoryResults.push(result);}
   const mysteryResults=[];for(const effect of mystery){const result=this.applyAdventure4MysteryEffect?.(effect);if(result?.ok)mysteryResults.push(result);}
   const livingResults=[];for(const effect of living){const result=this.applyAdventure4LivingWorldEffect?.(effect);if(result?.ok)livingResults.push(result);else external.push({...effect});}
-  return{ok:true,session:this.adventure4Session(),immediate,external,investigation:investigationResults,memory:memoryResults,mystery:mysteryResults,living:livingResults};
+  const realmResults=[];for(const effect of realm){const result=this.applyAdventure4RealmEffect?.(effect);if(result?.ok)realmResults.push(result);else external.push({...effect});}
+  return{ok:true,session:this.adventure4Session(),immediate,external,investigation:investigationResults,memory:memoryResults,mystery:mysteryResults,living:livingResults,realm:realmResults};
 };
