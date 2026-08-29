@@ -165,43 +165,51 @@ Lv6以降は旧1.8倍指数をそのまま延長せず、成長率を段階的�
 - 状態は `settlementBuildings.__settlement3.secrets` 配下の `facilities / questStage / completedQuests / pendingEncounters` のみに保存する。
 - UIはSettlement内の折りたたみパネルへ統合し、Homeボタンを追加しない。
 
-## [ ] S11 — Defense & Invasions
+## [x] S11 — Defense & Invasions
 
-- 魔物襲撃、盗賊、Nemesis、異界侵食などの防衛イベント。
-- 壁、見張り、罠など防衛施設。
-- プレイヤー戦闘を中心にし、自動数値判定だけにしない。
-- 敗北で建物Lv永久喪失はさせない。
+- `魔物襲撃 / 盗賊襲撃 / Nemesis襲来 / 異界侵食` の4防衛イベントを実装。
+- `外縁防壁 / 前哨見張り / 迎撃罠` の3防衛設備を既存素材で強化可能にする。
+- 防衛設備は迎撃準備として扱い、勝敗を自動数値判定だけで完結させず既存BattleEngineへ遭遇を渡す。
+- 初回撃退報酬だけを既存Settlement素材で付与し、再戦で無限farmできないようにする。
+- 敗北しても既存施設Lv・住民・街の恒久状態を失わない。
+- 状態は `settlementBuildings.__settlement3.defense` 配下に保存する。
 
-## [ ] S12 — Seasons, Weather & Festivals
+## [x] S12 — Seasons, Weather & Festivals
 
-- 季節/天候/時間帯をSettlementイベントの条件として利用。
-- 祭り、旅商人、夜の墓地、雨天限定探索など。
-- 実時間依存を必須にせず、ゲーム内サイクルで再訪可能にする。
+- `春 / 夏 / 秋 / 冬`、4天候、4時間帯をゲーム内Settlement Cycleとして実装。
+- 季節祭り、夜間、雨天、霧などを後続イベント条件として参照可能にする。
+- 墓地夜間・雨天探索・霧探索・祭り用のhookを公開する。
+- 現実時刻・日付・ログイン日数には依存せず、ゲーム内Cycleで再訪可能にする。
+- 状態は `settlementBuildings.__settlement3.seasons` 配下に保存し、日課・タイマーを追加しない。
 
-## [ ] S13 — Policies, Factions & City Identity
+## [x] S13 — Policies, Factions & City Identity
 
-- 行政方針：交易 / 研究 / 防衛 / 魔物共生など。
-- 派閥：商会、冒険者、学会、魔物使い等。
-- 特化は切替可能にし、取り返し不能にしない。
-- 数値倍率より、依頼・在庫・研究・イベント出現傾向を変える。
+- `交易重視 / 研究重視 / 防衛重視 / 魔物共生` の4行政方針を追加し、いつでも切替可能にする。
+- `辺境商会 / 探索者連盟 / 境界学会 / 共生会` の4派閥を非排他的に管理する。
+- 市場購入・研究レビュー・防衛活動など既存行動から派閥実績を積み上げる。
+- 方針は報酬倍率を増やすのではなく、市場・研究・防衛など既存候補の優先表示/傾向へ反映する。
+- 状態は `settlementBuildings.__settlement3.identity` 配下に保存し、取り返し不能な都市特化を作らない。
 
-## [ ] S14 — Expeditions & Away Teams
+## [x] S14 — Expeditions & Away Teams
 
-- 未編成Companion / Monster / NPCを遠征へ派遣。
-- 短期・長期探索。
-- 結果は素材だけでなく噂、地図、NPC、イベント種を持ち帰る。
-- 主力を派遣しないと損する強制設計を避ける。
+- 加入済み住民と既存Ranch/Companion個体から遠征隊を編成する。
+- `近郊踏査 / 旧道測量` の短期遠征と `境界深部偵察 / 旅人捜索` の長期遠征を実装。
+- 現実時間ではなくS12 Settlement Cycleで進行する。
+- 帰還時は既存Settlement素材に加え、噂・地図・NPC情報・イベント兆候を恒久的な発見として持ち帰る。
+- お気に入りCompanionを候補から外し、主力派遣を強制しない。
+- 状態は `settlementBuildings.__settlement3.expeditions` 配下に保存する。
 
-## [ ] S15 — Endgame Network Integration
+## [x] S15 — Endgame Network Integration
 
-- World Tier：高TierでSettlement事件・依頼・研究を拡張。
-- World Event：酒場/掲示板/防衛へ反映。
-- Abyss：深層帰還イベント、境界研究、専用住民。
-- Rift：拠点侵食、研究、門施設。
-- Secret Realm：発見した領域との恒久接続。
-- Machine Realm：機械工房・解析・機械系Companion。
-- Deep Survey：地図室・遠征・研究へ接続。
-- 各モード固有reward倍率をSettlement側で重複させない。
+- `World Tier / World Event / Abyss / Rift / Secret Realm / Machine Realm / Deep Survey` の7系統をSettlement内の終端ネットワークへ統合表示する。
+- World Tierは既存 `activeWorldTier`、World Event/Realmは既存 `world2`、Riftは既存Rift Key、Machine Realmは既存Machine World進行を正本として読む。
+- Abyssは `abyssBestDepth` の深層帰還節目を境界研究室へ記録するが、帰還報告そのものから追加報酬を付与しない。
+- RiftはRift Key数と境界共鳴、Secret Realmは既存Realm visibilityを門路台帳へ接続する。
+- Machine Realmは既存15ステージ進行を機械解析台へ表示し、別の機界進行や倍率を作らない。
+- Deep Surveyは `world2.discoveries` に基づく既存解禁判定を再利用し、S14の地図/イベント発見と地図室・遠征・研究を接続する。
+- Settlement側では各モード固有のDrop / Gold / Item Power / challenge倍率を再計算・重複適用しない。
+- 保存する追加状態は `settlementBuildings.__settlement3.endgameNetwork.seenAbyssReturns` の既読記録だけとする。
+- UIはSettlement内のコンパクトなグリッドへ統合し、Homeボタンを追加しない。
 
 ## [ ] S16 — Arena & Training Grounds
 
