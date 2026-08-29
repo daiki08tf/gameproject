@@ -78,7 +78,18 @@ export function buildAdventure4LivingWorldScene(ctx={}){
   if(ctx.utility?.effects?.includes('campToolkit'))choices.push({id:'gear-camp',label:'野営具を準備する',detail:'3部位Utility Set',resultText:'戦闘力ではなく探索の準備に装備を使い、次の調査手順を整えた。',consequences:[{scope:'adventure',type:'flag',key:'living:campPrepared',value:true}]});
   if(ctx.weatherId==='mist'||ctx.daypartId==='night'||ctx.weatherId==='rain')choices.push({id:'conditions',label:'環境の変化を追う',detail:ctx.weatherId==='mist'?'霧の中だけ浮く輪郭':ctx.weatherId==='rain'?'雨で浮いた足跡':'夜だけ見える反射',resultText:'普段は見えない地形や痕跡の違和感を記録した。',consequences:[{scope:'adventure',type:'flag',key:'living:conditionalTrace',value:true}]});
   if(ctx.worldEvent)choices.push({id:'event',label:'地域の騒ぎを調べる',detail:ctx.worldEvent.name||'World Event',resultText:'現在のWorld Eventが人の流れと脇道の使われ方を変えている。報酬処理そのものは既存World Eventに任せる。',consequences:[{scope:'adventure',type:'flag',key:'living:eventObserved',value:true}]});
-  if(ctx.nemesisStage&&ctx.nemesisStage!=='inactive'&&ctx.nemesisHere)choices.push({id:'nemesis',label:'Nemesisの痕跡を追う',detail:`追跡段階: ${ctx.nemesisStage}`,resultText:'追跡情報を既存Nemesis記録へ接続した。倒すための戦闘・報酬は既存Bounty/Nemesis系が担当する。',consequences:[{scope:'adventure',type:'flag',key:'living:nemesisObserved',value:true}]});
+  if(ctx.nemesisStage&&ctx.nemesisStage!=='inactive'&&ctx.nemesisHere){
+    const located=ctx.nemesisStage==='located'&&ctx.nemesisId;
+    choices.push({
+      id:'nemesis',
+      label:located?'Nemesisの居場所へ踏み込む':'Nemesisの痕跡を追う',
+      detail:located?'既存Nemesis戦へ接続':`追跡段階: ${ctx.nemesisStage}`,
+      resultText:located?'追跡の末にNemesisを捕捉した。戦闘・難易度・報酬は既存Bounty/Nemesis系へ引き渡す。':'追跡情報を既存Nemesis記録へ接続した。',
+      consequences:located
+        ?[{scope:'immediate',type:'nemesisBattle',targetId:ctx.nemesisId}]
+        :[{scope:'world',type:'nemesisHuntAdvance',targetId:ctx.nemesisId}],
+    });
+  }
   if(ctx.worldTierAvailability?.anomaly)choices.push({id:'anomaly',label:'異常地点を確認する',detail:'World Tierで出現',resultText:'高いWorld Tierだからこそ現れた異常地点を記録した。敵倍率や報酬倍率はここでは変更しない。',consequences:[{scope:'adventure',type:'flag',key:'living:anomalyObserved',value:true}]});
   return {
     id:`living-world-${ctx.regionId||'region'}`,
