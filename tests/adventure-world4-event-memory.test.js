@@ -84,6 +84,28 @@ test('W10 follow-up cannot fire in the same Adventure and returns on the next on
   assert.match(revisit.steps[0].text,/記録して帰った意味/);
 });
 
+test('W10 deferred revisit stays at chain step 1 until a later resolution',()=>{
+  reset();state.startAdventure4({regionId:'frontier'});
+  let scene=state.adventure4ContentPackIScene();
+  state.applyAdventure4SceneResolution(resolveAdventure4SceneChoice(scene,'recorded','finish',{}));
+  state.completeAdventure4ContentPackIScene();
+  state.returnFromAdventure4();state.startAdventure4({regionId:'frontier'});
+  scene=state.adventure4ContentPackIScene();
+  state.applyAdventure4SceneResolution(resolveAdventure4SceneChoice(scene,'leave','finish',{}));
+  const deferred=state.completeAdventure4ContentPackIScene();
+  assert.equal(deferred.deferred,true);
+  assert.equal(state.data.world2.eventChains['frontier-old-sluice'].step,1);
+  assert.equal(state.data.world2.eventsSeen['frontier-sluice-return'],undefined);
+
+  state.returnFromAdventure4();state.startAdventure4({regionId:'frontier'});
+  scene=state.adventure4ContentPackIScene();
+  assert.equal(scene.id,'frontier-sluice-return');
+  state.applyAdventure4SceneResolution(resolveAdventure4SceneChoice(scene,'solved','finish',{}));
+  const finished=state.completeAdventure4ContentPackIScene();
+  assert.equal(finished.deferred,false);
+  assert.equal(state.data.world2.eventChains['frontier-old-sluice'].completed,true);
+});
+
 test('W10 persistent memory effect is delegated by Scene runtime and world2 remains authority',()=>{
   reset();state.startAdventure4({regionId:'frontier'});
   const scene=adventure4EventChainIScene(ADVENTURE4_EVENT_CHAIN_I_EVENTS[0],null);
