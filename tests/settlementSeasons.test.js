@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const data=fs.readFileSync('js/data/settlementSeasons.js','utf8');
+const runtime=fs.readFileSync('js/patches/settlementSeasons.js','utf8');
+const ui=fs.readFileSync('js/patches/settlementSeasonsUi.js','utf8');
+const nav=fs.readFileSync('js/patches/homeNavigation.js','utf8');
+test('S12 defines four seasons weather dayparts and festivals',()=>{for(const id of ['spring','summer','autumn','winter'])assert.match(data,new RegExp(`id:'${id}'`));for(const id of ['clear','rain','wind','mist'])assert.match(data,new RegExp(`id:'${id}'`));assert.match(data,/springFair/);assert.match(data,/winterVigil/);});
+test('S12 uses deterministic game cycle not real time',()=>{assert.match(runtime,/cycle/);assert.match(runtime,/advanceSettlementCycle/);assert.doesNotMatch(runtime,/Date\(|setInterval|setTimeout|new Date/);});
+test('S12 exposes exploration and festival hooks',()=>{assert.match(runtime,/graveyardNight/);assert.match(runtime,/rainExploration/);assert.match(runtime,/mistExploration/);assert.match(runtime,/consumeSettlementFestival/);});
+test('S12 persists compactly under settlement3 and adds no home button',()=>{assert.match(runtime,/__settlement3/);assert.match(runtime,/seasons/);assert.doesNotMatch(runtime,/state\.data\.settlementSeasons\s*=/);assert.match(ui,/settlementContent/);assert.match(ui,/dataset\.settlementSeasons/);assert.doesNotMatch(nav,/goSettlementSeasonsBtn/);assert.match(nav,/settlementSeasons\.js/);assert.match(nav,/settlementSeasonsUi\.js/);});
