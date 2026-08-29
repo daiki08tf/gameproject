@@ -24,7 +24,7 @@ Enemy 2.0 completed enemy identity, level, encounter roles, ranks/variants, endg
 - [x] B7 — Boss Phase AI 2.0
 - [x] B8 — Codex Analysis 2.0
 - [x] B9 — World Tier AI Escalation
-- [ ] B10 — Ch1–30 + Endgame Integration
+- [x] B10 — Ch1–30 + Endgame Integration
 
 ## B1 scope
 Enemy 2.0 added advanced regional roles (`attacker`, `caster`, `trickster`, `support`) after the older Combat 3 enemy profiles were authored. B1 connects those role identities to the already-existing Combat 3 tactical skill engine rather than creating a second AI engine.
@@ -112,3 +112,15 @@ World I preserves the exact B2/B6 decision thresholds. World II–VI progressive
 - World V–VI caster/trickster proactively reserve their existing disruption skill when the corresponding debuff is not already active
 
 B9 adds no stat multiplier, reward multiplier, Elite/Rare chance, Boss timer acceleration, currency, save field or new combat action. Abyss has no active World Tier runtime and therefore keeps rank-0 Enemy 3.0 tactical behavior.
+
+## B10 scope
+B10 closes Enemy 3.0 by locking the existing global BattleEngine integration rather than introducing another runtime layer.
+
+- `js/main.js` installs `battle2RoadmapComplete.js` globally, so Ch1–30 and endgame battles share the same Enemy 3.0 patch chain.
+- Enemy 2.0 rank identity and Ch1–30 story migration remain installed before Enemy 3.0 role/targeting behavior.
+- B4 Elite Affixes, B5 Rare Behaviors, B6 Encounter Synergy, B7 Boss Phase AI and B8 Codex Analysis remain transitively installed through the Enemy 3 targeting entry point without duplicate wrappers.
+- Authored Boss logic, historical Abyss `enemy.elite` reward semantics and existing endgame reward identities remain authoritative.
+- World I remains rank 0, World II–VI use B9 decision escalation, and Abyss remains excluded from World Tier spawn scaling / Enemy 3.0 WT escalation.
+- Integration adds no reward/currency rule, save root, Home route, random story gate or second AI engine.
+
+Enemy 3.0 Behavior & Ecology is complete through B10.
