@@ -64,15 +64,21 @@ export function adventure4EventPool(catalog,context={}){
   return list(catalog).filter(event=>adventure4EventEligible(event,context));
 }
 
-export function rollAdventure4Event(catalog,{context={},rng=Math.random,rareWeightMultiplier=.35}={}){
-  const pool=adventure4EventPool(catalog,context);
-  if(!pool.length)return null;
+function weightedRoll(pool,rng,rareWeightMultiplier){
   const weighted=pool.map(event=>({event,weight:event.weight*(event.rare?Math.max(0,rareWeightMultiplier):1)})).filter(entry=>entry.weight>0);
   if(!weighted.length)return null;
   const total=weighted.reduce((sum,entry)=>sum+entry.weight,0);
   let roll=Math.min(.999999999999,Math.max(0,number(rng?.(),0)))*total;
   for(const entry of weighted){roll-=entry.weight;if(roll<0)return entry.event;}
   return weighted.at(-1).event;
+}
+
+export function rollAdventure4Event(catalog,{context={},rng=Math.random,rareWeightMultiplier=.35}={}){
+  let pool=adventure4EventPool(catalog,context);
+  if(!pool.length&&list(context.recentEventIds).length){
+    pool=adventure4EventPool(catalog,{...context,recentEventIds:[]});
+  }
+  return weightedRoll(pool,rng,rareWeightMultiplier);
 }
 
 export function nextAdventure4EventHistory(history,event,adventureIndex,{recentLimit=3}={}){
