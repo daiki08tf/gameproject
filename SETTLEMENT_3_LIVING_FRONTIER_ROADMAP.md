@@ -83,12 +83,13 @@ Lv6以降は旧1.8倍指数をそのまま延長せず、成長率を段階的�
 - Settlement UIに現在段階と次の発展Lvを表示。
 - 既存save互換。
 
-## [ ] S2 — Settlement Rank & Visual Evolution
+## [x] S2 — Settlement Rank & Visual Evolution
 
 - 集会所節目に応じてSettlement全体の見た目・説明・雰囲気を変更。
-- Lv5 / 10 / 15 / 20到達演出。
-- 発展履歴を保持し、既達成演出の再発火を防ぐ。
-- UIは縦長カード増殖ではなくエリア/カテゴリ方式を前提とする。
+- Lv5 / 10 / 15 / 20到達時に一度だけ発展演出を表示。
+- `settlementBuildings.__settlement3` に発展履歴を保持し、新しいsave rootを増やさない。
+- 旧saveの既到達段階はmigration時に既読化し、過去演出を連打しない。
+- 施設一覧を `中央区 / 生活区 / 交易区 / 外縁区` のエリア方式へ整理し、将来のUI増殖に備える。
 
 ## [ ] S3 — Residents & Roles
 
