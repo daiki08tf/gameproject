@@ -14,6 +14,7 @@ function renderRune2Dashboard() {
 
   const capacity = state.rune2Capacity();
   const used = state.rune2ActiveTotal();
+  const totalOwned = RUNE2_DEFS.reduce((sum, rune) => sum + state.rune2OwnedMarks(rune.id), 0);
   const remaining = Math.max(0, capacity - used);
 
   const cards = RUNE2_DEFS.map((r) => {
@@ -43,8 +44,8 @@ function renderRune2Dashboard() {
 
   content.innerHTML = `
     <div class="forge-card">
-      <div class="forge-card-top"><div class="forge-card-name">Rune 2.0 — 永久刻印</div><div>${used.toLocaleString()} / ${capacity.toLocaleString()}</div></div>
-      <div class="forge-card-sub">取得したRuneは継承しても消えません。有効化できる総刻数は歴代最高Character Lvと同じ（最大99,999）。旧武器Runeスロットは廃止されました。</div>
+      <div class="forge-card-top"><div class="forge-card-name">Rune 2.0 — 永久刻印</div><div>所持総数 ${totalOwned.toLocaleString()}</div></div>
+      <div class="forge-card-sub">有効 ${used.toLocaleString()} / 容量 ${capacity.toLocaleString()}　（残り ${remaining.toLocaleString()}）<br>取得したRuneは継承しても消えません。有効化できる総刻数は歴代最高Character Lvと同じ（最大99,999）。旧武器Runeスロットは廃止されました。</div>
     </div>
     <div class="section-heading">刻印一覧</div>
     ${cards}`;
