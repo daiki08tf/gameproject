@@ -12,6 +12,7 @@ test('pixel icon atlas and UI integration exist',()=>{
   assert.match(css,/pixel-icons\.png/);
   for(const key of ['wood','ore','hide','veilstone','adventure','abyss','settlement','ranch','blacksmith','legendary','cursed'])assert.match(ui,new RegExp(`${key}:\\[`));
   assert.match(nav,/applyHomePixelIcons/);
-  assert.match(settlement,/pixelIconHtml\('settlement'/);
+  assert.match(settlement,/BUILDING_ICON=\{[^}]*hall:'settlement'/);
+  assert.match(settlement,/pixelIconHtml\(BUILDING_ICON\[b\.id\]\|\|'settlement'\)/);
   assert.match(settlement,/pixelIconHtml\(m\.id,'sm'\)/);
 });
