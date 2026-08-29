@@ -9,14 +9,26 @@ export const ADVENTURE4_REALM_SIGNALS=Object.freeze([
   {id:'machine',name:'機界への観測線',regionId:'reverse-observation',category:'secret',hint:'既存の機界経路と一致する観測線が、地形の奥へ続いている。'},
 ]);
 
+function authoritativeRealmState(realmVisibility,id){
+  if(Array.isArray(realmVisibility)){
+    const entry=realmVisibility.find?.(x=>x?.id===id);
+    return typeof entry==='string'?entry:entry?.state||null;
+  }
+  if(realmVisibility&&typeof realmVisibility==='object'){
+    const entry=realmVisibility[id];
+    return typeof entry==='string'?entry:entry?.state||null;
+  }
+  return null;
+}
+
 export function adventure4RealmSignalStage(def,ctx={}){
   if(!def)return'hidden';
   if(ctx.recorded?.[def.id])return'discovered';
   if(def.id==='rift')return (ctx.riftKeyCount||0)>0||ctx.flags?.riftAttunement?'trace':ctx.expeditionLeadIds?.includes('boundarySignal')?'rumor':'hidden';
   if(def.id==='machine')return ctx.machineUnlocked?'open':ctx.flags?.modernTrace?'trace':ctx.flags?.modernSignal||ctx.flags?.modernContact?'rumor':'hidden';
-  const realm=ctx.realmVisibility?.find?.(x=>x.id===def.id);
-  if(realm?.state==='open')return'open';
-  if(realm?.state==='hint'||realm?.state==='unknown')return realm.state==='hint'?'rumor':'trace';
+  const realmState=authoritativeRealmState(ctx.realmVisibility,def.id);
+  if(realmState==='open')return'open';
+  if(realmState==='hint'||realmState==='unknown')return realmState==='hint'?'rumor':'trace';
   return'hidden';
 }
 
