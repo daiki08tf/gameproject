@@ -1,6 +1,13 @@
 # Phase 8 — Fusion Job Naming Audit
 
-Status: CANONICAL NAMING DRAFT
+Status: HISTORICAL DRAFT — predates the shipped registry
+
+Naming continued to evolve after this document (and the parallel
+`PHASE8_NAMING_AUDIT.md`) was written. Neither fully matches what shipped;
+the `NEW_NAMES`/`LEGACY` tables in `js/data/jobFusion.js` are the current
+source of truth for all 105 Fusion Job display names. Kept for history only.
+
+Status (original): CANONICAL NAMING DRAFT
 
 This document freezes the naming direction before the 105-job runtime expansion. Existing implemented jobs take precedence. New names should read as real RPG professions/titles rather than mechanical combinations of the two parent names.
 

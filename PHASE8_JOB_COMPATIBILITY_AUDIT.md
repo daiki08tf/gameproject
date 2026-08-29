@@ -1,6 +1,12 @@
 # Phase 8 — Existing Advanced Job Compatibility Audit
 
-Status: DESIGN / MIGRATION SOURCE OF TRUTH
+Status: DESIGN / MIGRATION SOURCE OF TRUTH — supersedes `PHASE8_COMPATIBILITY_AUDIT.md`
+
+The "Existing 30 → Fusion pair mapping" table below (all `KEEP ID + name`)
+matches the shipped `LEGACY` table in `js/data/jobFusion.js` exactly. The
+earlier `PHASE8_COMPATIBILITY_AUDIT.md` proposed renaming several of these
+(e.g. `傭兵`, `城塞騎士`); this document's corrections are what actually
+shipped.
 
 Phase 8 expands advanced jobs from the current 30 fixed pairs to all 105 pairs of the 15 basic jobs. Existing saves, mastered jobs, learned skills/spells, special-job prerequisites, and specialization/legacy progress must survive the migration.
 

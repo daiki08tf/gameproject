@@ -1,6 +1,15 @@
 # Phase 8 — Legacy Job Compatibility Audit
 
-Status: IMPLEMENTATION CONTRACT
+Status: SUPERSEDED — see `PHASE8_JOB_COMPATIBILITY_AUDIT.md`
+
+This document is kept for history only. Several of the display-name proposals
+below (e.g. `傭兵` for `swordsaint2`, `城塞騎士` for `armsknight`) were later
+reverted — the shipped `js/data/jobFusion.js` `LEGACY` table keeps every
+existing advanced job's original display name unchanged. The later
+`PHASE8_JOB_COMPATIBILITY_AUDIT.md` documents that correction explicitly and
+matches what actually shipped; read that one instead.
+
+Status (original): IMPLEMENTATION CONTRACT
 
 This document bridges the current 30 advanced jobs into the Phase 8 `15C2 = 105` Fusion Job system. The primary rule is **save compatibility first**: an existing advanced-job ID is never casually deleted or repurposed.
 

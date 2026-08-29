@@ -1,6 +1,14 @@
 # Phase 8 — Fusion Job Naming Audit
 
-Status: FINAL NAMING CONTRACT
+Status: HISTORICAL DRAFT — predates the shipped registry
+
+Naming continued to evolve after this document (and the parallel
+`PHASE8_JOB_NAMING_AUDIT.md`) was written. Neither fully matches what
+shipped; the `NEW_NAMES`/`LEGACY` tables in `js/data/jobFusion.js` are the
+current source of truth for all 105 Fusion Job display names. Kept for
+history only.
+
+Status (original): FINAL NAMING CONTRACT
 
 This audit freezes the player-facing names for the 105 basic-job Fusion pairs before the machine-readable registry is implemented.
 
