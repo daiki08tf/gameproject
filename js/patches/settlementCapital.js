@@ -1,0 +1,24 @@
+/* Settlement 3.0 S18 — Frontier Capital Endgame. Horizontal Lv20 progression only. */
+import './settlementEndgameNetwork.js';
+import './settlementResearch.js';
+import './settlementDefense.js';
+import { state } from '../state.js';
+import { FRONTIER_CAPITAL_MIN_HALL,FRONTIER_CAPITAL_PROJECTS,FRONTIER_CAPITAL_CRISIS,capitalProjectEligible } from '../data/settlementCapital.js';
+
+const META_KEY='__settlement3';
+function ensure(){
+ state.data.settlementBuildings??={hall:0,inn:0,market:0,watch:0,ranch:0};
+ let root=state.data.settlementBuildings[META_KEY];if(!root||typeof root!=='object'||Array.isArray(root)){root={};state.data.settlementBuildings[META_KEY]=root;}
+ let c=root.capital,changed=false;if(!c||typeof c!=='object'||Array.isArray(c)){c={projects:[],crisisCleared:false,pendingEncounter:null};root.capital=c;changed=true;}
+ if(!Array.isArray(c.projects)){c.projects=[];changed=true;} if(typeof c.crisisCleared!=='boolean'){c.crisisCleared=false;changed=true;} if(!('pendingEncounter' in c)){c.pendingEncounter=null;changed=true;}
+ if(changed)state.save();return c;
+}
+function researchEvidence(){const s=state.settlementResearchSummary?.();return Number(s?.evidence||s?.seen||s?.observations||0)||0;}
+function context(){const network=state.settlementEndgameSummary?.()||{},defense=state.settlementDefenseSummary?.()||{},tier=state.activeWorldTier?.()||{rank:0};return{hall:Number(state.data.settlementBuildings?.hall)||0,networkOnline:Number(network.online)||0,researchEvidence:researchEvidence(),defenseClears:Number(defense.cleared||defense.clearedCount)||0,abyssDepth:Math.max(0,Number(state.data.abyssBestDepth)||0),worldTierRank:Number(tier.rank)||0};}
+
+state.settlementCapitalState=function(){const meta=ensure(),ctx=context();const projects=FRONTIER_CAPITAL_PROJECTS.map(p=>({...p,eligible:capitalProjectEligible(p,ctx),completed:meta.projects.includes(p.id)}));const unlocked=ctx.hall>=FRONTIER_CAPITAL_MIN_HALL;const crisisReady=unlocked&&projects.every(p=>p.completed)&&ctx.abyssDepth>=FRONTIER_CAPITAL_CRISIS.require.abyssDepth&&ctx.worldTierRank>=FRONTIER_CAPITAL_CRISIS.require.worldTierRank&&!meta.crisisCleared;return{unlocked,title:unlocked?'辺境首都':'首都昇格前',ctx,projects,crisis:{...FRONTIER_CAPITAL_CRISIS,ready:crisisReady,cleared:meta.crisisCleared,pending:!!meta.pendingEncounter}};};
+state.activateSettlementCapitalProject=function(id){const meta=ensure(),view=this.settlementCapitalState(),p=view.projects.find(x=>x.id===id);if(!p||!p.eligible||p.completed)return false;meta.projects.push(id);this.save();return true;};
+state.startSettlementCapitalCrisis=function(){const meta=ensure(),view=this.settlementCapitalState();if(!view.crisis.ready||meta.pendingEncounter)return null;meta.pendingEncounter={id:FRONTIER_CAPITAL_CRISIS.id,name:FRONTIER_CAPITAL_CRISIS.name,kind:'settlementCapitalCrisis',noAutoReward:true};this.save();return meta.pendingEncounter;};
+state.settlementCapitalEncounter=function(){return ensure().pendingEncounter;};
+state.resolveSettlementCapitalCrisis=function(victory){const meta=ensure();if(!meta.pendingEncounter)return false;meta.pendingEncounter=null;if(victory)meta.crisisCleared=true;this.save();return true;};
+state.settlementCapitalPrestige=function(){const v=this.settlementCapitalState();return{unlocked:v.unlocked,completedProjects:v.projects.filter(x=>x.completed).length,totalProjects:v.projects.length,crisisCleared:v.crisis.cleared,note:'Lv20以降は施設Lvを増やさず、首都計画と実績接続で発展する。'};};
