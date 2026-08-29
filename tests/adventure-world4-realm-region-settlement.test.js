@@ -21,6 +21,8 @@ test('W23 Realm signals are derived from existing realm/machine/rift authorities
   const machine=ADVENTURE4_REALM_SIGNALS.find(x=>x.id==='machine');
   assert.equal(adventure4RealmSignalStage(heaven,{realmVisibility:[{id:'heaven',state:'hint'}],recorded:{}}),'rumor');
   assert.equal(adventure4RealmSignalStage(heaven,{realmVisibility:[{id:'heaven',state:'open'}],recorded:{}}),'open');
+  assert.equal(adventure4RealmSignalStage(heaven,{realmVisibility:{heaven:'hint'},recorded:{}}),'rumor');
+  assert.equal(adventure4RealmSignalStage(heaven,{realmVisibility:{heaven:'open'},recorded:{}}),'open');
   assert.equal(adventure4RealmSignalStage(machine,{machineUnlocked:false,flags:{modernTrace:true},recorded:{}}),'trace');
   assert.equal(adventure4RealmSignalStage(machine,{machineUnlocked:true,flags:{},recorded:{}}),'open');
 });
