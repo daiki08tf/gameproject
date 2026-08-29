@@ -3,6 +3,7 @@ import './postCp3SurveyConditionCombat.js';
 import './postCp3ConvergenceApexCombat.js';
 import { state } from '../state.js';
 import { CP3_DEEP_SURVEYS } from '../data/postCp3DeepSurvey.js';
+import { setTextIfChanged } from './domSafety.js';
 import { CONVERGENCE_APEX_ID } from '../data/postCp3ConvergenceApex.js';
 import {
   activeDeepSurveyConditions,
@@ -25,17 +26,26 @@ function annotateStageList(){
     const name=card.querySelector('.name')?.textContent||'';
     if(isApexText(name)){
       found=true;
-      if(card.dataset.convergenceApexAnnotated)return;card.dataset.convergenceApexAnnotated='true';
+      // `return` here would stop processing the REST of the list as soon as
+      // one already-annotated card is seen (e.g. once a second secret site
+      // appears alongside an already-discovered one) — must only skip this
+      // one card.
+      if(card.dataset.convergenceApexAnnotated)continue;card.dataset.convergenceApexAnnotated='true';
       const rec=card.querySelector('.rec');
       if(rec)rec.innerHTML='<strong>APEX / 4-PHASE</strong> ・ 推奨Lv 99,999 ・ 目標IP 10,000<br>ASH → NINTH → ROOT → CONVERGENCE<br><span style="opacity:.76">全3地域OptionのMIXED CHASE / 36%（保証なし）</span>';
       continue;
     }
     const def=matchDef(name);if(!def)continue;found=true;
-    if(card.dataset.deepSurveyAnnotated)return;card.dataset.deepSurveyAnnotated='true';
+    if(card.dataset.deepSurveyAnnotated)continue;card.dataset.deepSurveyAnnotated='true';
     const rec=card.querySelector('.rec');
     if(rec)rec.innerHTML=`<strong>深層観測 / MIXED CHASE</strong> ・ 推奨Lv 99,999 ・ 目標IP 10,000<br>${def.role}<br><span style="opacity:.76">${def.rewardHint}</span>`;
   }
-  if(found){const heading=[...list.querySelectorAll('.section-heading')].find(x=>x.textContent.includes('深淵で発見した異界')||x.textContent.includes('異界・深層観測'));if(heading)heading.textContent='異界・深層観測 / APEX';}
+  // textContent= queues a childList mutation even when the string is
+  // unchanged, and this function is invoked (via schedule()) from the
+  // MutationObserver watching #stageList's own subtree below — writing it
+  // unconditionally on every pass would retrigger that observer.
+  // setTextIfChanged only writes when the heading doesn't already say this.
+  if(found){const heading=[...list.querySelectorAll('.section-heading')].find(x=>x.textContent.includes('深淵で発見した異界')||x.textContent.includes('異界・深層観測'));if(heading)setTextIfChanged(heading,'異界・深層観測 / APEX');}
 }
 
 function conditionPicker(){

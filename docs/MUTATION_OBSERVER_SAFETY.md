@@ -44,6 +44,7 @@ freeze or crash, reproduced with a Playwright repro before being fixed:
 | `js/patches/gearOverhaulCraftingConsolidation.js` (`decorateCraftingButtons`) | `button.textContent =` on temper/greater/reroll buttons, watched by its own observer on `#blacksmithContent` | Tab froze on opening the Blacksmith with an Option 4.0 item equipped |
 | `js/patches/contentPackIIE.js` (`decorateNotebook`) | Lore-fragment block remove+recreate, watched by its own observer on `#monsterCodexContent` | Tab froze after collecting at least one world-lore fragment |
 | `js/patches/inheritanceBalanceUi.js` (`syncInheritanceGate`) | `btn.textContent =` on the inheritance gate button, watched by its own observer on `#rebirthContent` | Tab froze/crashed opening the Rebirth screen before the level gate was met |
+| `js/patches/postCp3DeepSurveyUi.js` (`annotateStageList`) | `heading.textContent =` on the stage-list section heading, watched by its own observer on `#stageList` | Found during a proactive audit, not a player report — self-limiting in practice because a separate bug (`return` instead of `continue` after the first already-annotated card) accidentally short-circuited the function before it reached the unconditional write on the very next pass. Both bugs fixed together. |
 
 `js/patches/phase12FinaleRuntime.js` and `js/patches/contentPackIIE.js`'s
 startup-dependency issue had a related but distinct root cause (an import

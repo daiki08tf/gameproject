@@ -64,3 +64,15 @@ test('gearOverhaulCraftingConsolidation.js: crafting button labels are only writ
   assert.match(src, /setTextIfChanged\(button, label\);/);
   assert.match(src, /setTextIfChanged\(button, 'Option再抽選'\);/);
 });
+
+test('postCp3DeepSurveyUi.js: the section heading is only rewritten when it changed, and per-card annotation skips only that card', () => {
+  const src = read('js/patches/postCp3DeepSurveyUi.js');
+  assert.ok(importsFromDomSafety(src, 'setTextIfChanged'), 'must import setTextIfChanged from domSafety.js');
+  assert.match(src, /setTextIfChanged\(heading,'異界・深層観測 \/ APEX'\);/);
+  // `return` inside the per-card loop would abandon the rest of #stageList's
+  // cards as soon as one already-annotated card is seen; it must `continue`.
+  assert.doesNotMatch(src, /if\(card\.dataset\.convergenceApexAnnotated\)return;/);
+  assert.doesNotMatch(src, /if\(card\.dataset\.deepSurveyAnnotated\)return;/);
+  assert.match(src, /if\(card\.dataset\.convergenceApexAnnotated\)continue;/);
+  assert.match(src, /if\(card\.dataset\.deepSurveyAnnotated\)continue;/);
+});
