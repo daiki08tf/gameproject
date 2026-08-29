@@ -5,6 +5,7 @@ import { CHAPTERS } from '../data/stages.js';
 import { SETTLEMENT_ARENA_MODES,SETTLEMENT_ARENA_RULES } from '../data/settlementArena.js';
 
 function meta(){state.data.settlementBuildings||={};const root=state.data.settlementBuildings.__settlement3||(state.data.settlementBuildings.__settlement3={});return root.arena||(root.arena={best:{},runs:0});}
+function arenaChapter(){let ch=CHAPTERS.find(x=>x.id==='settlement_arena');if(!ch){ch={id:'settlement_arena',num:0,name:'Settlement訓練場',hidden:true,arenaTraining:true,stages:[]};CHAPTERS.push(ch);}return ch;}
 function bossStages(){return CHAPTERS.flatMap(ch=>(ch.stages||[]).filter(s=>s.boss&&!s.arenaTraining).map(stage=>({chapter:ch,stage})));}
 function clearedBosses(){const all=bossStages();const cleared=all.filter(x=>state.isStageCleared?.(x.stage.id));return cleared.length?cleared:all.slice(0,1);}
 function pickBoss(rank){const list=clearedBosses();if(!list.length)return null;const idx=Math.max(0,Math.min(list.length-1,Math.round((list.length-1)*rank)));return list[idx];}
@@ -16,10 +17,12 @@ function arenaStage(modeId,ruleId='standard'){
  const recLevel=Math.max(...selected.map(x=>Number(x.stage.recLevel)||1));
  return{id:`arena:${mode.id}:${rule.id}`,name:`訓練場：${mode.name} / ${rule.name}`,recLevel,boss:true,arenaTraining:true,arenaModeId:mode.id,arenaRuleId:rule.id,arenaNoFlee:!!rule.noFlee,waves,rewards:{gold:0,exp:0},dropTable:[],sourceStageIds:selected.map(x=>x.stage.id),sourceNames:selected.map(x=>x.stage.name)};
 }
+function registerStage(stage){if(!stage)return null;const ch=arenaChapter(),i=ch.stages.findIndex(x=>x.id===stage.id);if(i>=0)ch.stages[i]=stage;else ch.stages.push(stage);return stage;}
 
 state.settlementArenaModes=function(){return SETTLEMENT_ARENA_MODES.map(x=>({...x}));};
 state.settlementArenaRules=function(){return SETTLEMENT_ARENA_RULES.map(x=>({...x}));};
 state.settlementArenaStage=function(modeId,ruleId='standard'){return arenaStage(modeId,ruleId);};
+state.prepareSettlementArena=function(modeId,ruleId='standard'){return registerStage(arenaStage(modeId,ruleId));};
 state.settlementArenaSummary=function(){const m=meta();return{runs:m.runs||0,best:{...m.best},modes:this.settlementArenaModes(),rules:this.settlementArenaRules()};};
 state.recordSettlementArenaResult=function(stage,result){if(!stage?.arenaTraining)return null;const m=meta(),turns=Math.max(0,Number(result?.arenaTurns)||0),cleared=!!result?.cleared,key=`${stage.arenaModeId}:${stage.arenaRuleId}`;m.runs=(m.runs||0)+1;const prev=m.best[key];if(cleared&&(!prev||turns<prev.turns))m.best[key]={turns,at:Date.now(),sourceStageIds:[...(stage.sourceStageIds||[])]};this.save();return{key,turns,cleared,best:m.best[key]||null};};
 
