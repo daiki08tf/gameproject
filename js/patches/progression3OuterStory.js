@@ -1,11 +1,10 @@
 /* ============================================================
    PLAY / TUNE — outer story progression bridge
    ------------------------------------------------------------
-   Ch16–20 runtime progression ends at Lv3,000. Ch21–30 were authored
-   later from older raw level bands, so without a runtime bridge the live
-   curve falls back to Lv700 at Ch21. Keep Abyss 1F at its canonical
-   Lv3,000 entry while making the outer-world story a parallel Lv3,000→7,600
-   route.
+   Ch16–20 runtime progression ends at Lv3,000. Ch21+ Story was authored
+   later from multiple raw level bands, so this bridge keeps the live curve
+   continuous. Abyss 1F stays at its canonical Lv3,000 Ch20 fork while the
+   outer Story continues in parallel, now through Ch31 / Lv8,200.
    ============================================================ */
 import './progression3StoryExpansion.js';
 import { state } from '../state.js';
@@ -24,6 +23,7 @@ export const OUTER_STORY_LEVEL_ROADMAP = Object.freeze([
   { chapter:28, min:6000, max:6500, oldMin:4000, oldMax:5000 },
   { chapter:29, min:6500, max:7000, oldMin:5000, oldMax:6200 },
   { chapter:30, min:7000, max:7600, oldMin:6200, oldMax:7600 },
+  { chapter:31, min:7600, max:8200, oldMin:7600, oldMax:8200 },
 ]);
 
 const ONE_PASS_TARGET_SHARE=0.82;
@@ -75,10 +75,10 @@ function applyOuterStoryProgression(){
   if(globalThis.__BLADE_VALE_OUTER_STORY_PROGRESSION__)return;
   globalThis.__BLADE_VALE_OUTER_STORY_PROGRESSION__=true;
   const applied=OUTER_STORY_LEVEL_ROADMAP.map(applyEntry).filter(Boolean);
-  state.progression3OuterStory={min:3000,max:7600,onePassTargetShare:ONE_PASS_TARGET_SHARE,applied};
+  state.progression3OuterStory={min:3000,max:8200,onePassTargetShare:ONE_PASS_TARGET_SHARE,applied};
   if(state.levelRoadmap99999)state.levelRoadmap99999.outerStory=OUTER_STORY_LEVEL_ROADMAP;
   // Abyss 1F is canonically Lv3,000. Unlock it at the Ch20 fork instead of
-  // forcing the player through a now-higher-level Ch21–25 route first.
+  // forcing the player through the later, higher-level Story route first.
   state.isAbyssUnlocked=function outerStoryAbyssGate(){
     return CHAPTERS.filter(ch=>ch.num<=20).every(ch=>this.isStageCleared(finalStageOf(ch).id));
   };
