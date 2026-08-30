@@ -45,7 +45,7 @@ test('CP4-3 reuses world2 discoveries, Rumor Notebook and TextBattleScreen with 
   assert.match(runtime,/state\.data\.world2/);
   assert.match(runtime,/state\.rumorNotebook/);
   assert.match(runtime,/TextBattleScreen\.prototype\.start/);
-  assert.match(runtime,/cp4:branch-sight:active/);
+  assert.equal(CP4_BRANCH_SIGHT_AWAKENING.discoveryId,'cp4:branch-sight:active');
   assert.match(parent,/import '\.\/contentPackIVC\.js';/);
   assert.doesNotMatch(runtime,/branchSightSave|multiverseProgress|goContentPackIV|contentPackIVScreen/i);
 });
