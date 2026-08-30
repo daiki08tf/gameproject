@@ -3,8 +3,11 @@
 import { state } from '../state.js';
 import { CHAPTERS } from '../data/stages.js';
 import { buildWorld4RegionCatalog } from '../data/adventureWorld4Regions.js';
+import { ADVENTURE4_CONTENT_PACK_I_EVENTS } from '../data/adventureWorld4ContentPackI.js';
 import { ADVENTURE4_CONTENT_PACK_II_EVENTS } from '../data/adventureWorld4ContentPackII.js';
 import { adventure4ExplorationRecords,adventure4ExplorationRecordSummary } from '../data/adventureWorld4WorldRecords.js';
+
+const WORLD4_EVENT_CATALOG=Object.freeze([...ADVENTURE4_CONTENT_PACK_I_EVENTS,...ADVENTURE4_CONTENT_PACK_II_EVENTS]);
 
 function chapterByNumber(number){return CHAPTERS.find(ch=>Number(ch.num)===Number(number))||CHAPTERS[Number(number)-1]||null;}
 function canonicalBoss(chapter){return chapter?.stages?.find(stage=>stage.boss&&!stage.branch)||chapter?.stages?.find(stage=>stage.boss)||chapter?.stages?.at(-1)||null;}
@@ -22,7 +25,7 @@ state.adventure4WorldRecords=function(){
     regionBosses:regionBossRecords(this),
     nemesis:this.data.bountyNemesis||{},
     eventsSeen:world2.eventsSeen||{},
-    eventCatalog:ADVENTURE4_CONTENT_PACK_II_EVENTS,
+    eventCatalog:WORLD4_EVENT_CATALOG,
   });
 };
 state.adventure4WorldRecordSummary=function(){return adventure4ExplorationRecordSummary(this.adventure4WorldRecords());};
