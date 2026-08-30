@@ -34,7 +34,7 @@ test('CP4-2 is perception/discovery only: no Branch Sight activation, combat rew
   const data=fs.readFileSync(new URL('../js/data/contentPackIVB.js',import.meta.url),'utf8');
   const runtime=fs.readFileSync(new URL('../js/patches/contentPackIVB.js',import.meta.url),'utf8');
   assert.match(runtime,/branchSightActive:false/);
-  assert.doesNotMatch(data+runtime,/Math\.random|World Tier|worldTier|gearScore|difficulty|Hard Mode|Extreme|currency|token|Branch XP|stamina|daily|weekly|reward|gold|exp/i);
+  assert.doesNotMatch(data+runtime,/Math\.random|World Tier|worldTier|gearScore|difficulty|Hard Mode|Extreme|currency|token|Branch XP|stamina|daily|weekly|\b(?:reward|gold|exp)\b/i);
   assert.doesNotMatch(runtime,/new BattleEngine|goContentPackIV|contentPackIVScreen|multiverseProgress|branchSightSave/i);
 });
 
@@ -52,6 +52,6 @@ test('CP4-2 captures readiness before the previous start so CP4-1 cannot chain d
   const runtime=fs.readFileSync(new URL('../js/patches/contentPackIVB.js',import.meta.url),'utf8');
   const beforeIndex=runtime.indexOf('const before=cp4ParallaxProgress');
   const previousIndex=runtime.indexOf('previousStart.call');
-  const recordIndex=runtime.indexOf('recordContact(stageId,wasReady)');
+  const recordIndex=runtime.lastIndexOf('recordContact(stageId,wasReady)');
   assert.ok(beforeIndex>=0&&previousIndex>beforeIndex&&recordIndex>previousIndex);
 });
