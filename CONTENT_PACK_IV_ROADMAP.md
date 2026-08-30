@@ -3,7 +3,7 @@
 > Parent handoff: `STORY_EXPANSION_II_ROADMAP.md`.
 > Canonical multiverse references: `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md` and `OBSERVED_BRANCHES_ACCESS_AND_TRANSCENDENTS.md`.
 >
-> Status: **ACTIVE — CP4-6 COMPLETE; NEXT CP4-7 INTEGRATION AUDIT / HANDOFF**
+> Status: **COMPLETE — HANDOFF READY; NEXT OBSERVED BRANCHES M0**
 
 ## Theme
 
@@ -254,25 +254,31 @@ Forbidden systems remain absent:
 Deliverable:
 - `CONTENT_PACK_IV_CP4_6_IMPLEMENTATION.md`.
 
-## CP4-7 — Integration audit / handoff
+## CP4-7 — Integration audit / handoff ✅ COMPLETE
 
-Cross-check:
-- Ch1–35 Story progression unchanged except Ch35 prerequisite for CP4.
-- Abyss/Rift/Secret/Machine/Deep Survey unlocks unchanged.
-- Branch Sight not tied to difficulty or World Tier.
-- no RNG mandatory gate.
-- no extra Home entry/save root/currency.
-- unknown Branch count hidden.
-- Prime Deep Green Forest remains usable after awakening.
+Verified against the pre-CP4 baseline `4eb99f84981285726c49a5d21c4db018e962bd12`:
+- Ch1–35 Story progression files are unchanged; Ch35 / `35-8` is only consumed as the CP4 prerequisite.
+- Abyss/Rift/Secret/Machine/Deep Survey implementation files and unlock authorities are unchanged by CP4.
+- Branch Sight remains authored boolean discovery state and is not tied to difficulty, World Tier, gear score or combat stats.
+- no RNG mandatory gate exists.
+- no extra Home entry, save root or currency exists; Home only bootstraps the CP4 patch chain.
+- unknown Branch count stays hidden.
+- Prime Deep Green Forest remains usable after awakening; the first Branch anchor remains `traversable:false`.
 - explicit Branch terminology appears only after the perception-change beat.
-- no Japan/Tokyo/Earth reveal.
-- Blade Vale Tests + Phase 8 Validation green.
+- no Japan/Tokyo/Earth or Transcendent reveal exists in CP4 runtime content.
+- CP4-6 identity reward remains optional and does not become a progression gate.
 
-Then hand off to:
+Automated final-boundary coverage:
+- `tests/content-pack-iv-g.test.js`.
 
-`OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md` → M0–M4
+Audit record:
+- `CONTENT_PACK_IV_CP4_7_AUDIT.md`.
 
-where the first fully traversable Branch (`王樹領`) receives its own Region implementation, divergence ecology, technology profile, equipment identity and indirect Walker encounter.
+Handoff:
+
+`OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md` → **M0 — Multiverse / authority audit**
+
+M0–M4 now own the first fully traversable Branch (`王樹領`): Region implementation, divergence ecology, technology profile, equipment identity and indirect Walker encounter.
 
 ## Acceptance criteria
 
