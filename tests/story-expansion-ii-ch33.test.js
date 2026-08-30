@@ -27,9 +27,10 @@ test('Ch33 registers through the canonical expanded chapter pipeline',()=>{
   assert.equal(PHASE9_REGION_PROFILES.ch33?.id,'missing_interval_layer');
 });
 
-test('Ch33 extends the authored shared-observation Region without creating a parallel Region',()=>{
+test('Ch33 remains inside the authored shared-observation Region as later Arc V chapters are appended',()=>{
   const region=WORLD3_REGIONS.find(r=>r.id==='shared-observation');
-  assert.deepEqual(region?.chapters,[31,32,33]);
+  assert.deepEqual(region?.chapters.slice(0,3),[31,32,33]);
+  assert.ok(region?.chapters.includes(33));
   assert.equal(region?.name,'共観測域');
 });
 
@@ -74,13 +75,13 @@ test('journey dispatcher attaches Ch33 and sequential Story unlock derives from 
   assert.equal(isChapterUnlocked(index,()=>false),false);
 });
 
-test('live progression extends Ch32 8800 into Ch33 8800-9400 without moving the Ch20 Abyss fork',()=>{
+test('live progression preserves Ch33 8800-9400 without moving the Ch20 Abyss fork when later Story is appended',()=>{
   const ch32=CHAPTERS.find(ch=>ch.num===32),chapter=ch33();
   assert.equal(finalStageOf(ch32).recLevel,8800);
   assert.equal(chapter.stages.find(s=>s.id==='33-1').recLevel,8800);
   assert.equal(finalStageOf(chapter).recLevel,9400);
-  assert.deepEqual(OUTER_STORY_LEVEL_ROADMAP.at(-1),{chapter:33,min:8800,max:9400,oldMin:8800,oldMax:9400});
-  assert.equal(state.progression3OuterStory?.max,9400);
+  assert.deepEqual(OUTER_STORY_LEVEL_ROADMAP.find(x=>x.chapter===33),{chapter:33,min:8800,max:9400,oldMin:8800,oldMax:9400});
+  assert.ok((state.progression3OuterStory?.max||0)>=9400);
   const original=state.isStageCleared;
   try{
     state.isStageCleared=id=>id!=='20-8';
