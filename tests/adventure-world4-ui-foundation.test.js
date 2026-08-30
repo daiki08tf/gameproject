@@ -10,7 +10,12 @@ const progress={routeEntry:{chapterNumber:1,chapterName:'第一章',stageId:'1-1
 test('W4 pilot wraps the canonical next Story stage as a battle node',()=>{
   const route=buildAdventure4PilotRoute(region,progress);
   assert.equal(validateAdventure4Route(route).ok,true);
-  assert.equal(route.id,'frontier-story-pilot');
+  // W26 formalized the Story wrapper's id as a "Region Story Route"
+  // (ADVENTURE_WORLD_4_ROADMAP.md: "existing Story StageをRegion Story Routeとして包む"),
+  // renaming it from the earlier vertical-slice "-story-pilot" id. The
+  // buildAdventure4PilotRoute() function/file name is unchanged; only the
+  // route id it returns changed to match the new terminology.
+  assert.equal(route.id,'frontier-story-route');
   const battle=route.nodes.find(node=>node.id==='story');
   assert.equal(battle.type,'battle');
   assert.equal(battle.stageId,'1-1');
