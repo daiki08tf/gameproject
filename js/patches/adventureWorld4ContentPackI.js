@@ -1,9 +1,11 @@
-/* Adventure / World 4.0 — W9 Content Pack I runtime.
-   Selects at most one authored ambient/investigation scene per Adventure and
-   reuses W6 history. The existing route/story flow remains authoritative. */
+/* Adventure / World 4.0 — W9/W31 authored event runtime facade.
+   Pack II adds Region variety while W6 event history and the Adventure session
+   remain authoritative. No permanent progression state is owned here. */
 import { state } from '../state.js';
 import { adventure4ContentPackIForRegion,adventure4ContentPackISceneById } from '../data/adventureWorld4ContentPackI.js';
 import './adventureWorld4EventRuntime.js';
+import './adventureWorld4HorizontalGearRuntime.js';
+import './adventureWorld4ContentPackII.js';
 
 const EVENT_FLAG='contentPackI:eventId';
 const DONE_FLAG='contentPackI:done';
@@ -20,5 +22,14 @@ state.adventure4ContentPackIEvent=function(){
   this.recordAdventure4Event?.(event);patchFlags(this,{[EVENT_FLAG]:event.id});return event;
 };
 
-state.adventure4ContentPackIScene=function(){const event=this.adventure4ContentPackIEvent();return event?adventure4ContentPackISceneById(event.sceneId):null;};
-state.completeAdventure4ContentPackIScene=function(){const session=this.adventure4Session?.();if(!session?.active)return{ok:false,reason:'no_session'};return patchFlags(this,{[EVENT_FLAG]:null,[DONE_FLAG]:true});};
+// The UI keeps one ambient-scene entry point. Pack II is tried first on its
+// deterministic alternating Adventures; Pack I remains the fallback.
+state.adventure4ContentPackIScene=function(){
+  const expanded=this.adventure4ContentPackIIScene?.();if(expanded)return expanded;
+  const event=this.adventure4ContentPackIEvent();return event?adventure4ContentPackISceneById(event.sceneId):null;
+};
+state.completeAdventure4ContentPackIScene=function(){
+  const session=this.adventure4Session?.();if(!session?.active)return{ok:false,reason:'no_session'};
+  if(session.temporaryFlags?.['contentPackII:eventId'])return this.completeAdventure4ContentPackIIScene?.()||{ok:false,reason:'missing_pack_ii'};
+  return patchFlags(this,{[EVENT_FLAG]:null,[DONE_FLAG]:true});
+};
