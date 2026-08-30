@@ -3,7 +3,7 @@
 > Parent handoff: `STORY_EXPANSION_II_ROADMAP.md`.
 > Canonical multiverse references: `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md` and `OBSERVED_BRANCHES_ACCESS_AND_TRANSCENDENTS.md`.
 >
-> Status: **ACTIVE — CP4-4 COMPLETE; NEXT CP4-5 HORIZONTAL REACTION LAYER**
+> Status: **ACTIVE — CP4-5 COMPLETE; NEXT CP4-6 REWARDS / IDENTITY**
 
 ## Theme
 
@@ -207,18 +207,23 @@ This phase ends when the player understands:
 Deliverable:
 - `CONTENT_PACK_IV_CP4_4_IMPLEMENTATION.md`.
 
-## CP4-5 — Horizontal reaction layer
+## CP4-5 — Horizontal reaction layer ✅ COMPLETE
 
 Use existing systems to make the awakening feel like a world event without creating a new progression system.
 
-Candidates:
-- Rumor Notebook entries reinterpret older contradictions.
-- Codex gains one small “historical inconsistency” field for authored discoveries.
-- Chronicle records the Parallax Core event and the first recognized divergence.
-- Ranch / Companion reactions may provide optional flavor to doubled ecology signals.
-- Research may compare Prime biological data with the impossible canopy record.
+Implemented derived reactions after `cp4:branch-anchor:tree-sovereign`:
+- the existing Rumor Notebook contradiction entry is reinterpreted as a confirmed alternate fixed history,
+- Codex shows one read-only `歴史的不整合` section without changing points, milestones or completion,
+- the existing Chronicle timeline derives the Parallax Core contact and first recognized Branch anchor from their discovery timestamps,
+- Settlement Research adds one authored `Prime生態と樹冠史の比較` outlook entry only when the existing Research facility is already unlocked,
+- no new mandatory discovery, reaction progress root or side-system completion is introduced.
+
+Ranch / Companion flavor remains optional and is intentionally deferred rather than adding one-off UI coupling solely for CP4-5.
 
 No mandatory side-system completion.
+
+Deliverable:
+- `CONTENT_PACK_IV_CP4_5_IMPLEMENTATION.md`.
 
 ## CP4-6 — Rewards / identity
 

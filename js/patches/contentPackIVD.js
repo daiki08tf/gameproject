@@ -1,4 +1,5 @@
 /* Content Pack IV D — first visible Branch anchor handoff runtime. */
+import './contentPackIVE.js';
 import { state } from '../state.js';
 import { CP4_FIRST_BRANCH_ANCHOR,cp4FirstBranchAnchorProgress } from '../data/contentPackIVD.js';
 function world(){state.data.world2??={};state.data.world2.discoveries??={};return state.data.world2;}
