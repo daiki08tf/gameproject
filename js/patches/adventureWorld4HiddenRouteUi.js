@@ -2,6 +2,7 @@
    Adds only discovered shortcuts to the existing Adventure screen. */
 import { state } from '../state.js';
 import { renderAdventureRoute } from './adventureWorld4Ui.js';
+import { ensureInserted } from './domSafety.js';
 import './adventureWorld4MysterySceneRuntime.js';
 import './adventureWorld4BuildExpressionRuntime.js';
 import './adventureWorld4LivingWorldUi.js';
@@ -17,5 +18,11 @@ function render(){
   for(const shortcut of shortcuts){const btn=document.createElement('button');btn.type='button';btn.className='adventure4-choice adventure4-secret';btn.innerHTML=`<span><strong>${shortcut.name}</strong><small>恒久Shortcut</small></span><span>›</span>`;btn.addEventListener('click',()=>{const r=state.enterAdventure4MysteryShortcut?.(shortcut.id);if(r?.ok)renderAdventureRoute();});box.appendChild(btn);}body.appendChild(box);
 }
 
-const observer=new MutationObserver(()=>queueMicrotask(render));observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});queueMicrotask(render);
+// render() unconditionally removes+recreates its box, so wiring the
+// MutationObserver straight to render() would retrigger itself forever.
+// ensureInserted() only calls render() when the box is actually missing
+// (e.g. the underlying route repaint wiped it), same pattern as
+// monsterRanch2CompleteUi.js.
+function reinsertIfMissing(){ensureInserted(()=>document.querySelector('[data-adventure4-shortcuts]'),render);}
+const observer=new MutationObserver(()=>queueMicrotask(reinsertIfMissing));observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});queueMicrotask(render);
 export { render as renderAdventure4HiddenRoutes };

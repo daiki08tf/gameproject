@@ -76,3 +76,33 @@ test('postCp3DeepSurveyUi.js: the section heading is only rewritten when it chan
   assert.match(src, /if\(card\.dataset\.convergenceApexAnnotated\)continue;/);
   assert.match(src, /if\(card\.dataset\.deepSurveyAnnotated\)continue;/);
 });
+
+// World 4.0's Dynamic Region / Living World / Hidden Route decorators were
+// all found wired the same unsafe way: render() unconditionally removes then
+// recreates its own box every call, and the observer watched document.body's
+// entire subtree (childList + class attribute), so as long as the box's
+// display condition stayed true it retriggered itself forever — a genuine
+// CPU-spinning freeze while the Adventure Route screen was open, not just a
+// theoretical risk. Fixed with the same ensureInserted()-gated reinsert used
+// by monsterRanch2CompleteUi.js: the observer only calls render() when the
+// box is actually missing (e.g. the route screen's own repaint wiped it).
+test('adventureWorld4RealmRegionUi.js: observer only reinserts the Dynamic Region box when missing', () => {
+  const src = read('js/patches/adventureWorld4RealmRegionUi.js');
+  assert.ok(importsFromDomSafety(src, 'ensureInserted'), 'must import ensureInserted from domSafety.js');
+  assert.match(src, /ensureInserted\(\(\)=>document\.querySelector\('\[data-adventure4-region-state\]'\),render\)/);
+  assert.doesNotMatch(src, /new MutationObserver\(\(\)=>queueMicrotask\(render\)\)/);
+});
+
+test('adventureWorld4LivingWorldUi.js: observer only reinserts the Living World box when missing', () => {
+  const src = read('js/patches/adventureWorld4LivingWorldUi.js');
+  assert.ok(importsFromDomSafety(src, 'ensureInserted'), 'must import ensureInserted from domSafety.js');
+  assert.match(src, /ensureInserted\(\(\)=>document\.querySelector\('\[data-adventure4-living-world\]'\),render\)/);
+  assert.doesNotMatch(src, /new MutationObserver\(\(\)=>queueMicrotask\(render\)\)/);
+});
+
+test('adventureWorld4HiddenRouteUi.js: observer only reinserts the shortcuts box when missing', () => {
+  const src = read('js/patches/adventureWorld4HiddenRouteUi.js');
+  assert.ok(importsFromDomSafety(src, 'ensureInserted'), 'must import ensureInserted from domSafety.js');
+  assert.match(src, /ensureInserted\(\(\)=>document\.querySelector\('\[data-adventure4-shortcuts\]'\),render\)/);
+  assert.doesNotMatch(src, /new MutationObserver\(\(\)=>queueMicrotask\(render\)\)/);
+});
