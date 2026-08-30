@@ -19,10 +19,13 @@ test('CP4-7 keeps CP4 bootstrapped in-place without a new Home mode',()=>{
 test('CP4-7 keeps Branch Sight authored and non-combat',()=>{
   const data=read('js/data/contentPackIVC.js');
   const runtime=read('js/patches/contentPackIVC.js');
-  assert.match(data,/numeric:false/);
-  assert.match(data,/trainable:false/);
-  assert.match(data,/equippable:false/);
-  assert.match(data,/battleBonus:false/);
+  // These flags are written onto the discovery record itself in the runtime
+  // (js/patches/contentPackIVC.js's recordAwakening()->put()), not in the
+  // static event definition in js/data/contentPackIVC.js.
+  assert.match(runtime,/numeric:false/);
+  assert.match(runtime,/trainable:false/);
+  assert.match(runtime,/equippable:false/);
+  assert.match(runtime,/battleBonus:false/);
   assert.match(runtime,/hasBranchSight/);
   assert.doesNotMatch(`${data}\n${runtime}`,/worldTier|gearScore|Math\.random|difficulty/i);
 });
