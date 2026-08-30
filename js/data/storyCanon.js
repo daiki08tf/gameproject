@@ -2,7 +2,7 @@
    Phase 11 / Story Expansion — Story Canon
    ============================================================ */
 
-export const STORY_CANON_VERSION = '3.0-story-expansion-ii-ch33';
+export const STORY_CANON_VERSION = '3.0-story-expansion-ii-ch34';
 
 export const CENTRAL_MYSTERY = Object.freeze({
   question: 'なぜBlade Valeの世界と現代世界はつながっているのか？',
@@ -43,7 +43,7 @@ export const STORY_ARCS = Object.freeze([
   {id:'arc2',chapters:[16,20],name:'The Veil',purpose:'歴史から消えた場所、外側から来た痕跡、時間空間の破綻を追い、The Veilという概念と門番の真実へ到達する。',reveal:'境界は壊れつつある'},
   {id:'arc3',chapters:[21,25],name:'外縁世界',purpose:'The Veilの外側ではなく、境界網に接続された外縁層を巡り、境界王座と観測中枢を発見する。',reveal:'Blade Valeは巨大な境界網の一ノード'},
   {id:'arc4',chapters:[26,30],name:'第八鍵と逆観測',purpose:'既知の七鍵体系から外れた接続を追い、機界の管理者も観測される側だと知り、外部文明との双方向認識へ到達する。',reveal:'第八鍵は外部から差し込まれた例外接続で、外側はこちらを認識している'},
-  {id:'arc5',chapters:[31,35],name:'共観測',purpose:'双方向応答の手順、欠落する記録、双方が共有できる参照枠を追い、第八鍵が異なる観測領域を同期できる可能性へ進む。',reveal:'Ch33時点で第八鍵は外側の対向端点を前提とする例外接続であり、機械記録には同じ一拍の系統的な盲点がある一方、生体・根脈・残留記憶にはその一拍の痕跡が残る。削除か表現不能かは未解決'},
+  {id:'arc5',chapters:[31,35],name:'共観測',purpose:'双方向応答の手順、欠落する記録、双方が共有できる参照枠を追い、第八鍵が異なる観測領域を同期できる可能性へ進む。',reveal:'Ch34時点で外側は点・線・順序・間隔の非言語構造を返し、Blade Vale側と同じ境界不安定点を指せる。双方は完全な言語共有なしに共通参照枠を作ろうとしているが、外側の正体・位置・接続理由は未解決'},
 ]);
 
 export const CLUE_LADDER = Object.freeze([
@@ -53,7 +53,7 @@ export const CLUE_LADDER = Object.freeze([
   {tier:4,label:'境界網',examples:['外縁世界','境界王座','第八鍵','実験層という語']},
   {tier:5,label:'観測者',examples:['機界の記録','第八実験体','外部観測窓','選別という概念']},
   {tier:6,label:'現代世界',examples:['規則的な都市光','列車のような振動音','年月日表記','通信端末','日本語に似た文字列']},
-  {tier:7,label:'双方向観測',examples:['返された焦点','応答座標','受理・再試行・確認に似た状態遷移','送信元を持たない重複応答','第八鍵の対向端点','存在しない第二署名','機械記録だけに生じる同一の欠落時標','根脈・生体・残留記憶に残る一拍']},
+  {tier:7,label:'双方向観測',examples:['返された焦点','応答座標','受理・再試行・確認に似た状態遷移','送信元を持たない重複応答','第八鍵の対向端点','存在しない第二署名','機械記録だけに生じる同一の欠落時標','根脈・生体・残留記憶に残る一拍','点と線だけの非言語返答','双方が同じ不安定点を指す共通参照枠']},
 ]);
 
 export const STORY_WRITING_RULES = Object.freeze([
