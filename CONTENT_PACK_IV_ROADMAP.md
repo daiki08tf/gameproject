@@ -3,7 +3,7 @@
 > Parent handoff: `STORY_EXPANSION_II_ROADMAP.md`.
 > Canonical multiverse references: `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md` and `OBSERVED_BRANCHES_ACCESS_AND_TRANSCENDENTS.md`.
 >
-> Status: **ACTIVE — CP4-0 COMPLETE; NEXT CP4-1 CONTRADICTION CHAIN**
+> Status: **ACTIVE — CP4-1 COMPLETE; NEXT CP4-2 PARALLAX CORE INVESTIGATION**
 
 ## Theme
 
@@ -70,13 +70,19 @@ Freeze before implementation:
 Deliverable:
 - `CONTENT_PACK_IV_C0_AUDIT.md`.
 
-## CP4-1 — Deep Green contradiction chain
+## CP4-1 — Deep Green contradiction chain ✅ COMPLETE
 
 First playable horizontal slice.
 
 Prerequisite:
 - Ch35 final Story clear.
 - Deep Green Forest / Ch2 already cleared through normal Story progression.
+
+Implemented deterministic revisit sequence:
+- `2-1` — confirms the current / Prime record: the Great Tree Spirit was defeated and present ecology follows the known journey.
+- `2-3` — recovers an impossible old record where the Great Tree Spirit survived, villages withdrew into the canopy, and living/root architecture developed while metal infrastructure declined.
+- `2-5` — reads living-memory evidence in which the forest never formed at all.
+- after all three records, `cp4:deepgreen:overlap-coordinate` identifies the one coordinate where all histories have zero positional error.
 
 Three contradictory evidence lines:
 
