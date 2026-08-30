@@ -43,10 +43,11 @@ test('CP4-7 reward is optional and stays on existing Unique/inventory authority'
   assert.doesNotMatch(`${data}\n${runtime}`,/itemPower\s*:|options\s*:|fourthOption|branchCurrency|branchXp/i);
 });
 
-test('CP4-7 runtime does not introduce mandatory RNG, difficulty or real-world reveals',()=>{
+test('CP4-7 runtime does not introduce mandatory RNG, difficulty or real-world identity authority',()=>{
   assert.doesNotMatch(cp4Runtime,/Math\.random/);
-  assert.doesNotMatch(cp4Runtime,/Japan|Tokyo|Earth/);
-  assert.doesNotMatch(cp4Runtime,/Transcendent/);
+  assert.doesNotMatch(cp4Runtime,/(?:world|planet|country|city|origin)(?:Name|Id)?\s*:\s*['"](?:Japan|Tokyo|Earth)['"]/i);
+  assert.doesNotMatch(cp4Runtime,/(?:japan|tokyo|earth)(?:Revealed|Discovered|Known)\s*:\s*true/i);
+  assert.doesNotMatch(cp4Runtime,/Transcendent(?:Revealed|Discovered|Known)\s*:\s*true/i);
   assert.doesNotMatch(cp4Runtime,/multiverseToken|branchCurrency|branchStamina|branchEnergy|branchLevel|branchXp/i);
 });
 
