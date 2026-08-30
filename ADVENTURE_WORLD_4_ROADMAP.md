@@ -563,10 +563,14 @@ Deliverables:
 - branch / treasure / camp / secret / boss。
 - permanent shortcutで周回負荷軽減。
 
-### [ ] W29 — High-Level / Lv99,999 World
+### [x] W29 — High-Level / Lv99,999 World
 - Regionを無限増殖させず、WT / Endgame / Dynamic Stateで既存Regionを横展開。
 - Normal → Corrupted → Nemesis Territory → Rift Overrun等。
 - Lv1–99,999の既存成長軸・Reward Scalingを尊重。
+- 実装: `adventure4HighLevelState()`（新規data）は既存W22 `adventure4WorldTierAvailability()`のelite/anomaly/endgame閾値(rank1/2/4)をそのまま再利用し、独自のランク軸を作らない。Regionが物語踏破済み(`world4RegionState().status==='completed'`)の場合のみ発動し、未踏破Regionの本編演出には一切影響しない。Nemesis Hunt(W19)が同Region内で進行中なら最低でも「浸食地帯」まで引き上げる。
+- Endgame Reward Scaling(`endgameRewardScaling.js`)・Abyss・Machine World側の数値には一切触れず、参照すらしない（表示専用の雰囲気ラベルのみ）。
+- 新規save rootなし。`state.adventure4HighLevelStateForRegion(regionId)`は既存`activeWorldTier`/`world4RegionState`/`adventure4NemesisHuntState`を読むだけのderived view。
+- UIはWorld選択画面の既存Region cardへ1行のバッジ（`normal`時は非表示）を足しただけで、新しいボタン・新しい画面は追加していない。
 
 ### [ ] W30 — Equipment Expansion II: Endgame Horizontal Gear
 - 高Lvで単純Item Powerだけではない横方向Unique / conditional gear。

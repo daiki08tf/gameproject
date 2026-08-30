@@ -53,3 +53,13 @@ test('W4 UI reuses the existing Home CTA and canonical TextBattleScreen',async()
   assert.match(source,/pendingEncounter/);
   assert.doesNotMatch(source,/world4Tier|explorationXp|adventureLevel|energy:/i);
 });
+
+test('W29 High-Level badge is a single conditional line on the existing Region card, not a new button/screen',async()=>{
+  const source=await readFile(new URL('../js/patches/adventureWorld4Ui.js',import.meta.url),'utf8');
+  assert.match(source,/adventure4HighLevelStateForRegion/);
+  assert.match(source,/highLevelBadge/);
+  // still exactly one region-card class/screen id; W29 adds no new ones
+  assert.equal((source.match(/adventure4-region-card/g)||[]).length,1);
+  assert.doesNotMatch(source,/makeScreen\([^)]*[Hh]igh[Ll]evel/);
+  assert.equal((source.match(/adventure4HighLevelBtn|highLevelScreen|goHighLevel/gi)||[]).length,0);
+});
