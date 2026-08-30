@@ -1,4 +1,4 @@
-/* Enemy 2.0 E8 — progressive Ch1–31 story Encounter Pool migration. */
+/* Enemy 2.0 E8 — progressive Ch1–32 story Encounter Pool migration. */
 import './enemy2RankVariants.js';
 import { CHAPTERS } from '../data/stages.js';
 import { ENEMY_TYPES } from '../data/enemies.js';

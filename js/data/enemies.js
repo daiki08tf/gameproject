@@ -1,7 +1,7 @@
 /* ============================================================
    敵データ定義
    第1章は既存のまま。第2章以降は chapter metadata から
-   normal/fast/tank/boss を自動生成。16〜31章はmidbossも生成する。
+   normal/fast/tank/boss を自動生成。16〜32章はmidbossも生成する。
    Enemy 2.0 E4 adds attacker/caster/trickster/support/rare identities.
    Enemy 2.0 E5 registers only the Ch1 Global Species pilot types.
    ============================================================ */
@@ -11,6 +11,7 @@ import { CHAPTER_EXPANSION_21_25 } from './chapters21to25.js';
 import { CHAPTER_EXPANSION_26_29 } from './chapters26to29.js';
 import { CHAPTER_EXPANSION_30 } from './chapters30.js';
 import { CHAPTER_EXPANSION_31 } from './chapters31.js';
+import { CHAPTER_EXPANSION_32 } from './chapters32.js';
 import { REGIONAL_ENEMY_EXPANSION, REGIONAL_ENEMY_ROLES } from './regionalEnemies2.js';
 import { materializeGlobalSpecies } from './globalEnemySpecies.js';
 import { ENEMY_SCALING, chapterScaleMult } from './balance.js';
@@ -33,7 +34,7 @@ const BRANCH_BASE={hp:150,atk:20,def:9,speed:70,radius:26,color:'#d68b3a',xp:40,
 const E4_ROLE_BASES=Object.freeze({attacker:ATTACKER_BASE,caster:CASTER_BASE,trickster:TRICKSTER_BASE,support:SUPPORT_BASE,rare:RARE_BASE});
 function scale(base,name,num,meta={}){const isBoss=!!base.boss;return{...base,...meta,name,hp:Math.round(base.hp*(isBoss?bossHpMult(num):hpMult(num))),atk:Math.round(base.atk*atkMult(num)),def:Math.round(base.def*defMult(num)),xp:Math.round(base.xp*chapterMult(num)),gold:Math.round(base.gold*chapterMult(num))};}
 export const ENEMY_TYPES={grunt:scale(NORMAL_BASE,'ゴブリン',1),fast:scale(FAST_BASE,'コウモリ',1),tank:scale(TANK_BASE,'オーガ',1),boss_orcking:scale(BOSS_BASE,'オークキング',1),branch_goblin_chief:scale(BRANCH_BASE,'ゴブリンの頭目',1)};
-export const ALL_CHAPTER_SPECS=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_21_25,...CHAPTER_EXPANSION_26_29,...CHAPTER_EXPANSION_30,...CHAPTER_EXPANSION_31];
+export const ALL_CHAPTER_SPECS=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_21_25,...CHAPTER_EXPANSION_26_29,...CHAPTER_EXPANSION_30,...CHAPTER_EXPANSION_31,...CHAPTER_EXPANSION_32];
 for(const ch of ALL_CHAPTER_SPECS){
  ENEMY_TYPES[`${ch.id}_normal`]=scale(NORMAL_BASE,ch.enemies.normal,ch.num,{role:'normal',chapterId:ch.id});
  ENEMY_TYPES[`${ch.id}_fast`]=scale(FAST_BASE,ch.enemies.fast,ch.num,{role:'fast',chapterId:ch.id});
