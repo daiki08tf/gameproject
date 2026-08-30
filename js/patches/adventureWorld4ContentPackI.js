@@ -1,6 +1,6 @@
 /* Adventure / World 4.0 — W9/W31 authored event runtime facade.
    Pack II adds Region variety while W6 event history and the Adventure session
-   remain authoritative. No reward or permanent progression state is owned here. */
+   remain authoritative. No permanent progression state is owned here. */
 import { state } from '../state.js';
 import { adventure4ContentPackIForRegion,adventure4ContentPackISceneById } from '../data/adventureWorld4ContentPackI.js';
 import './adventureWorld4EventRuntime.js';
