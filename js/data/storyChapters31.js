@@ -19,7 +19,7 @@ export function storyExpansionIICh31BeatForStage(chapterNumber,stage,index,total
   const beat={act:story.act,objective:story.objective};
   if(index===0)beat.opening=story.opening;
   if(index===2)beat.discovery=story.discovery;
-  if(stage.midBoss||index===3)beat.mid=story.mid;
+  if(stage.midBoss||index===3)beat.discovery=story.mid;
   if(index===5)beat.discovery=story.contradiction;
   if(stage.boss||index===total-1){beat.bossIntro=story.bossIntro;beat.clear=story.clear;}
   return beat;
