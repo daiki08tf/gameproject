@@ -9,8 +9,8 @@ import { chooseEnvironmentalVariant } from '../js/data/enemyRankVariants2.js';
 const roleSet=pool=>new Set((pool?.types||[]).map(x=>ENEMY_TYPES[x.type]?.role).filter(Boolean));
 const globals=pool=>(pool?.types||[]).filter(x=>ENEMY_TYPES[x.type]?.e8Global).map(x=>ENEMY_TYPES[x.type]?.speciesId);
 
-test('E8 migrates all eligible Ch1-31 story stages and leaves tutorial/branches fixed',()=>{
-  assert.equal(CHAPTERS.length,31);
+test('E8 migrates all eligible Ch1-32 story stages and leaves tutorial/branches fixed',()=>{
+  assert.equal(CHAPTERS.length,32);
   const expected=CHAPTERS.flatMap(ch=>ch.stages.filter(st=>!st.branch&&st.id!=='1-1').map(st=>st.id));
   assert.deepEqual([...E8_MIGRATED_STAGE_IDS].sort(),expected.sort());
   assert.equal(CHAPTERS[0].stages.find(s=>s.id==='1-1').encounterPool,undefined);
@@ -70,7 +70,7 @@ test('E8 region tags activate bounded environmental variants without changing sp
 });
 
 test('fixed wave headcounts remain unchanged by migration metadata',()=>{
-  const checks=[['1-4',13],['2-4',13],['16-7',10],['30-8',5]];
+  const checks=[['1-4',13],['2-4',13],['16-7',10],['30-8',5],['32-8',5]];
   for(const [id,total] of checks){
     const stage=CHAPTERS.flatMap(ch=>ch.stages).find(s=>s.id===id);
     assert.ok(stage,`missing ${id}`);
