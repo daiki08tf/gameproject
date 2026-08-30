@@ -1,4 +1,4 @@
-/* Enemy 2.0 E8 — progressive Ch1–33 Encounter Pool migration profiles. */
+/* Enemy 2.0 E8 — progressive Ch1–34 Encounter Pool migration profiles. */
 import { GLOBAL_ENEMY_SPECIES, materializeGlobalSpecies } from './globalEnemySpecies.js';
 
 export const E8_TEMPLATE_IDS=Object.freeze(['mixed','pack','frontline','escort','ambush','bulwark']);
@@ -92,7 +92,7 @@ export function isE8MigratableStage(chapter,stage){
 export function migrateStoryEncounterPools(chapters,enemyTypes){
   const migrated=[];
   for(const chapter of chapters||[]){
-    if(!chapter||chapter.num<1||chapter.num>33)continue;
+    if(!chapter||chapter.num<1||chapter.num>34)continue;
     const basePool=buildChapterEncounterPool(chapter,enemyTypes);
     for(const stage of chapter.stages||[]){
       if(!isE8MigratableStage(chapter,stage))continue;
