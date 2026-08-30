@@ -6,7 +6,10 @@ import { normalizeAdventure4Route } from './adventureWorld4Routes.js';
 
 function chapterByNumber(number){return CHAPTERS.find(ch=>Number(ch.num)===Number(number))||CHAPTERS[Number(number)-1]||null;}
 function primaryStages(chapter){return (chapter?.stages||[]).filter(stage=>!stage.branch);}
-function canonicalBoss(chapter){return chapter?.stages?.find(stage=>stage.boss&&!stage.branch)||chapter?.stages?.find(stage=>stage.boss)||null;}
+/* Keep the same endpoint rule as the existing World3/World4 Region authorities:
+   prefer an authored Boss, otherwise the chapter's final Stage is the canonical
+   completion endpoint. Adventure must not invent a separate boss progression. */
+function canonicalBoss(chapter){return chapter?.stages?.find(stage=>stage.boss&&!stage.branch)||chapter?.stages?.find(stage=>stage.boss)||chapter?.stages?.at(-1)||null;}
 function ownedChapters(region){return (region?.chapterNumbers||[]).map(chapterByNumber).filter(Boolean);}
 
 export function adventure4ShortcutDiscoveryId(regionId){return regionId?`adventure4-shortcut-${regionId}`:null;}
