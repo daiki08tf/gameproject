@@ -4,7 +4,7 @@
    Ch16–20 runtime progression ends at Lv3,000. Ch21+ Story was authored
    later from multiple raw level bands, so this bridge keeps the live curve
    continuous. Abyss 1F stays at its canonical Lv3,000 Ch20 fork while the
-   outer Story continues in parallel, now through Ch32 / Lv8,800.
+   outer Story continues in parallel, now through Ch33 / Lv9,400.
    ============================================================ */
 import './progression3StoryExpansion.js';
 import { state } from '../state.js';
@@ -25,6 +25,7 @@ export const OUTER_STORY_LEVEL_ROADMAP = Object.freeze([
   { chapter:30, min:7000, max:7600, oldMin:6200, oldMax:7600 },
   { chapter:31, min:7600, max:8200, oldMin:7600, oldMax:8200 },
   { chapter:32, min:8200, max:8800, oldMin:8200, oldMax:8800 },
+  { chapter:33, min:8800, max:9400, oldMin:8800, oldMax:9400 },
 ]);
 
 const ONE_PASS_TARGET_SHARE=0.82;
@@ -76,10 +77,8 @@ function applyOuterStoryProgression(){
   if(globalThis.__BLADE_VALE_OUTER_STORY_PROGRESSION__)return;
   globalThis.__BLADE_VALE_OUTER_STORY_PROGRESSION__=true;
   const applied=OUTER_STORY_LEVEL_ROADMAP.map(applyEntry).filter(Boolean);
-  state.progression3OuterStory={min:3000,max:8800,onePassTargetShare:ONE_PASS_TARGET_SHARE,applied};
+  state.progression3OuterStory={min:3000,max:9400,onePassTargetShare:ONE_PASS_TARGET_SHARE,applied};
   if(state.levelRoadmap99999)state.levelRoadmap99999.outerStory=OUTER_STORY_LEVEL_ROADMAP;
-  // Abyss 1F is canonically Lv3,000. Unlock it at the Ch20 fork instead of
-  // forcing the player through the later, higher-level Story route first.
   state.isAbyssUnlocked=function outerStoryAbyssGate(){
     return CHAPTERS.filter(ch=>ch.num<=20).every(ch=>this.isStageCleared(finalStageOf(ch).id));
   };
