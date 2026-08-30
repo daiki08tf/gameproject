@@ -3,7 +3,7 @@
 > Parent handoff: `STORY_EXPANSION_II_ROADMAP.md`.
 > Canonical multiverse references: `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md` and `OBSERVED_BRANCHES_ACCESS_AND_TRANSCENDENTS.md`.
 >
-> Status: **ACTIVE — CP4-3 COMPLETE; NEXT CP4-4 FIRST VISIBLE BRANCH ANCHOR HANDOFF**
+> Status: **ACTIVE — CP4-4 COMPLETE; NEXT CP4-5 HORIZONTAL REACTION LAYER**
 
 ## Theme
 
@@ -183,21 +183,29 @@ Branch Sight does **not** reveal every Branch.
 Deliverable:
 - `CONTENT_PACK_IV_CP4_3_IMPLEMENTATION.md`.
 
-## CP4-4 — First visible Branch anchor handoff
+## CP4-4 — First visible Branch anchor handoff ✅ COMPLETE
 
-After awakening, Deep Green Forest may expose exactly one discovered alternate-history anchor:
+After awakening, Deep Green Forest exposes exactly one authored alternate-history anchor:
 
 **観測分岐：王樹領**
 
+Implemented handoff:
+- Branch Sight plus `cp4:deepgreen:survival-record` makes one `歴史的重なり` card recognizable in the existing Chapter 2 Region list,
+- `重なりを観測` records `cp4:branch-anchor:tree-sovereign` under existing `world2.discoveries`,
+- after observation the card is named `観測分岐：王樹領` and marked `OBSERVED`,
+- the card remains non-playable and records `traversable:false`,
+- `深緑消失域` and total Branch count remain hidden.
+
 Important:
-- `深緑消失域` remains hidden.
-- total Branch count remains hidden.
-- displaying the anchor does not require the full traversal implementation to be owned by CP4.
+- displaying the anchor does not implement full traversal.
 - full Branch region data, traversal, technology profiles, enemy ecology and gear originate in the Observed Branches roadmap.
 
 This phase ends when the player understands:
 
 > “That record was not false. It belonged to another fixed history.”
+
+Deliverable:
+- `CONTENT_PACK_IV_CP4_4_IMPLEMENTATION.md`.
 
 ## CP4-5 — Horizontal reaction layer
 

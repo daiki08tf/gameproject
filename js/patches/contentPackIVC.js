@@ -1,4 +1,5 @@
 /* Content Pack IV C — Branch Sight awakening runtime. */
+import './contentPackIVD.js';
 import { state } from '../state.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
 import { CP4_BRANCH_SIGHT_AWAKENING,cp4BranchSightProgress,cp4BranchSightActivationForStage } from '../data/contentPackIVC.js';
