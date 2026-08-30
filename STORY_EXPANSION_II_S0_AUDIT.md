@@ -17,6 +17,8 @@ canonical CHAPTERS / buildExpandedChapter()
   ↓
 enemy + equipment generation
   ↓
+live progression tuning
+  ↓
 regional identity
   ↓
 journey story beats
@@ -47,7 +49,7 @@ The expanded chapter contract is currently:
 - stage 8 = authored chapter boss,
 - optional `-B` branch when chapter metadata defines one,
 - branch requires main-stage progress and never owns mandatory Story beats,
-- chapter metadata provides the recommended-level interval,
+- chapter metadata provides the authored/raw recommended-level interval,
 - reward tables are built through the existing stage/equipment authorities.
 
 ### Ch30 reference implementation
@@ -63,10 +65,12 @@ Source:
 - `js/data/regionsPhase9.js`
 - `js/data/world3Regions.js`
 - `js/patches/story11CoreJourney.js`
+- `js/patches/progression3OuterStory.js`
 
 Current Ch30 contract:
 - chapter: `第30章 外部観測核`
-- recommended-level interval: **6200 → 7600**
+- raw metadata interval: **6200 → 7600**
+- live tuned interval after `progression3OuterStory.js`: **7000 → 7600**
 - 8 main stages + 1 optional branch
 - final stage: `30-8`
 - final boss: `外界照合者オブザーバ`
@@ -140,15 +144,44 @@ No reward multiplier may be applied once in Story data and again by World Tier /
 
 ---
 
-## 5. Endgame unlock freeze
+## 5. Live progression and endgame unlock freeze
 
-### Abyss — exact frozen contract
+### Story / Abyss fork — authoritative runtime contract
 
-`isAbyssUnlocked()` explicitly evaluates only canonical chapters with `chapter.num <= 25`.
+There are two relevant layers that must not be confused:
 
-This was intentionally added when later Story chapters were appended.
+1. `js/data/stages.js` contains an older defensive helper that filters Story chapters through Ch25.
+2. `js/patches/progression3OuterStory.js` is the current live progression bridge and overrides `state.isAbyssUnlocked()`.
 
-**Ch31–35 must not change that boundary merely because more Story exists.**
+The **live runtime contract** is:
+
+```text
+Ch20 finale / Lv3000
+       ├─ Abyss 1F / Lv3000
+       └─ Ch21–30 outer Story / Lv3000→7600
+```
+
+`progression3OuterStory.js` explicitly requires only Ch1–20 final clears for the live Abyss gate.
+
+This was a deliberate play/tune correction so the later outer Story does not push the already-live Abyss entry backward.
+
+**Ch31–35 must not change the live Ch20 Abyss fork merely because more Story exists.**
+
+### Outer Story runtime curve
+
+`OUTER_STORY_LEVEL_ROADMAP` currently maps:
+- Ch21: 3000 → 3300
+- Ch22: 3300 → 3650
+- Ch23: 3650 → 4050
+- Ch24: 4050 → 4500
+- Ch25: 4500 → 5000
+- Ch26: 5000 → 5500
+- Ch27: 5500 → 6000
+- Ch28: 6000 → 6500
+- Ch29: 6500 → 7000
+- Ch30: 7000 → 7600
+
+Ch31 cannot be appended only to raw metadata while forgetting the live progression bridge. S2-1 must extend or supersede that roadmap deliberately.
 
 ### Rift / Secret Realm / Machine Realm / Deep Survey
 
@@ -163,7 +196,8 @@ If a future design deliberately changes an endgame gate, that must be a separate
 ### Required Ch31 regression
 
 Ch31 implementation must include regression coverage demonstrating:
-- Abyss remains unlocked from the existing Ch1–25 contract,
+- live Abyss access still forks after Ch20 at Lv3000,
+- Ch21–31 Story remains a parallel route rather than an Abyss prerequisite,
 - old Ch1–30 saves do not lose access to already-live endgame activities,
 - no endgame builder/reward function begins requiring Ch31 clear solely because Ch31 exists.
 
@@ -171,17 +205,20 @@ Ch31 implementation must include regression coverage demonstrating:
 
 ## 6. Recommended-level continuation
 
-Ch30 ends at recommended Lv **7600**.
+The live Ch30 Story route ends at recommended Lv **7600**.
 
-Ch31 must continue from the live post-tuning Story curve rather than reverting to an older chapter multiplier assumption.
+Ch31 must continue from the live post-tuning Story curve rather than reverting to the raw chapter metadata curve or older chapter multiplier assumptions.
 
-S2-1 should inspect the current live level-scaling patches before finalizing the exact Ch31 endpoint. The structural requirement is:
-- Ch31 begins at or above the canonical Ch30 endpoint,
+S2-1 must extend the live Story roadmap with a deliberate Ch31 band.
+
+Structural requirements:
+- Ch31 starts at **7600**,
 - progression is monotonic,
-- no accidental jump toward Lv99,999 merely because the account cap is high,
-- Story remains one route alongside endgame progression, not the only leveling lane.
+- the new band must be modest relative to the long Lv99,999 account cap,
+- Story remains one route alongside endgame progression, not the only leveling lane,
+- existing Ch21–30 live values remain unchanged.
 
-Exact Ch31 numbers belong to S2-1 implementation tests, not this audit.
+A suitable initial Ch31 target should be selected in S2-1 after checking current enemy/reward scaling, then frozen in regression tests.
 
 ---
 
@@ -326,7 +363,8 @@ Ch31 is ready to implement when all of the following are preserved:
 
 ### Progression
 - [ ] Ch30 final clear naturally unlocks Ch31 through existing chapter sequencing,
-- [ ] Abyss Ch1–25 gate unchanged,
+- [ ] live Abyss Ch20 / Lv3000 fork unchanged,
+- [ ] Ch21–30 live progression curve unchanged,
 - [ ] Rift / Secret / Machine / Deep Survey existing gates unchanged,
 - [ ] no new currency / stamina / Story progression root.
 
@@ -346,6 +384,6 @@ Ch31 is ready to implement when all of the following are preserved:
 
 **GO for S2-1 / Ch31 vertical slice.**
 
-The safest implementation is an incremental extension of the current Ch30 pipeline, not a new Story-II subsystem.
+The safest implementation is an incremental extension of the current Ch30 pipeline plus the live outer-Story progression bridge, not a new Story-II subsystem.
 
 S2-1 should prove one complete Ch31 path before Ch32–35 are added.
