@@ -1,4 +1,5 @@
 /* Content Pack IV B — Parallax Core first-contact runtime. */
+import './contentPackIVC.js';
 import { state } from '../state.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
 import { CP4_PARALLAX_CONTACT,cp4ParallaxProgress,cp4ParallaxContactForStage } from '../data/contentPackIVB.js';
