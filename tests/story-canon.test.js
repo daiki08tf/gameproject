@@ -41,7 +41,7 @@ test('existing endgame systems receive narrative meaning instead of parallel rep
   }
 });
 
-test('chapter arcs preserve Ch1-25 and formally map Story Expansion I through Ch30', () => {
+test('chapter arcs preserve Ch1-30 and map Story Expansion II as Arc V', () => {
   assert.equal(storyArcForChapter(1)?.id, 'arc1');
   assert.equal(storyArcForChapter(15)?.id, 'arc1');
   assert.equal(storyArcForChapter(16)?.id, 'arc2');
@@ -50,13 +50,18 @@ test('chapter arcs preserve Ch1-25 and formally map Story Expansion I through Ch
   assert.equal(storyArcForChapter(25)?.id, 'arc3');
   assert.equal(storyArcForChapter(26)?.id, 'arc4');
   assert.equal(storyArcForChapter(30)?.id, 'arc4');
-  assert.equal(storyArcForChapter(31), null);
+  assert.equal(storyArcForChapter(31)?.id, 'arc5');
+  assert.equal(storyArcForChapter(35)?.id, 'arc5');
+  assert.equal(storyArcForChapter(36), null);
 });
 
-test('clue ladder delays explicit modern-world evidence until the latest tier', () => {
+test('clue ladder preserves modern-world evidence and then advances to bidirectional observation', () => {
   assert.equal(CLUE_LADDER[0].tier, 1);
-  assert.equal(CLUE_LADDER.at(-1).label, '現代世界');
-  assert.ok(CLUE_LADDER.at(-1).examples.some(x => x.includes('日')));
+  const modern=CLUE_LADDER.find(t=>t.label==='現代世界');
+  assert.ok(modern);
+  assert.ok(modern.examples.some(x => x.includes('日')));
+  assert.equal(CLUE_LADDER.at(-1).label, '双方向観測');
+  assert.ok(CLUE_LADDER.at(-1).examples.some(x=>x.includes('再試行')));
 });
 
 test('writing rules protect mobile readability and progression separation', () => {
