@@ -3,7 +3,7 @@
 > Parent handoff: `STORY_EXPANSION_II_ROADMAP.md`.
 > Canonical multiverse references: `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md` and `OBSERVED_BRANCHES_ACCESS_AND_TRANSCENDENTS.md`.
 >
-> Status: **ACTIVE — CP4-1 COMPLETE; NEXT CP4-2 PARALLAX CORE INVESTIGATION**
+> Status: **ACTIVE — CP4-2 COMPLETE; NEXT CP4-3 BRANCH SIGHT ACTIVATION**
 
 ## Theme
 
@@ -118,13 +118,20 @@ Do not yet say:
 - 観測分岐世界,
 - Branch.
 
-## CP4-2 — Parallax Core investigation
+## CP4-2 — Parallax Core investigation ✅ COMPLETE
 
 At the overlap coordinate, the player finds or synchronizes with:
 
 **視差核 / Parallax Core**
 
 It is not a magical multiverse key and does not immediately teleport the player.
+
+Implemented deterministic investigation:
+- prerequisite is the authored `cp4:deepgreen:overlap-coordinate` discovery from CP4-1,
+- the player revisits Deep Green `2-5` after the coordinate has already been identified,
+- `cp4:parallax:first-contact` records the first contact under existing `world2.discoveries`,
+- readiness is captured before the existing battle start so the CP4-1 run that creates the overlap coordinate cannot chain directly into CP4-2,
+- the event grants no combat reward and explicitly leaves Branch Sight inactive for CP4-3.
 
 Required awakening presentation:
 - sound doubles for a moment,
@@ -136,6 +143,9 @@ Required awakening presentation:
 No boss is required for the first awakening. The focus is perception and discovery.
 
 If combat is used in the investigation, it must be ordinary existing BattleEngine content representing local instability rather than “multiverse guardians.”
+
+Deliverable:
+- `CONTENT_PACK_IV_CP4_2_IMPLEMENTATION.md`.
 
 ## CP4-3 — Branch Sight activation
 
