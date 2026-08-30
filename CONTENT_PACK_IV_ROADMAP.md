@@ -3,7 +3,7 @@
 > Parent handoff: `STORY_EXPANSION_II_ROADMAP.md`.
 > Canonical multiverse references: `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md` and `OBSERVED_BRANCHES_ACCESS_AND_TRANSCENDENTS.md`.
 >
-> Status: **ACTIVE — CP4-5 COMPLETE; NEXT CP4-6 REWARDS / IDENTITY**
+> Status: **ACTIVE — CP4-6 COMPLETE; NEXT CP4-7 INTEGRATION AUDIT / HANDOFF**
 
 ## Theme
 
@@ -225,23 +225,34 @@ No mandatory side-system completion.
 Deliverable:
 - `CONTENT_PACK_IV_CP4_5_IMPLEMENTATION.md`.
 
-## CP4-6 — Rewards / identity
+## CP4-6 — Rewards / identity ✅ COMPLETE
 
 Rewards use existing authorities only.
 
-Preferred reward types:
-- authored Unique or Relic with observation / reaction identity,
-- existing option-family biases,
-- cosmetic/read-only origin metadata only when the Observed Branch equipment model is ready.
+Implemented identity reward after `cp4:branch-anchor:tree-sovereign`:
+- `視差残響章` (`uq_cp4_parallax_echo_emblem`) is registered through the existing Unique Equipment list,
+- the existing `mythic` rarity and `accessory` slot are reused,
+- the existing `state.addItem()` inventory pipeline grants exactly one copy,
+- `cp4:reward:parallax-echo-emblem` records the one-time grant under existing `world2.discoveries`,
+- the item uses only the existing `actionDiversityBuff` effect kind,
+- old saves with the observed anchor are synchronized on load, while current-session anchor observation grants immediately,
+- ownership/equipped checks plus the authored reward discovery prevent duplicate grants.
 
-Forbidden:
-- Branch rarity,
-- multiverse token,
-- fourth Option,
-- Item Power above 10,000,
-- mandatory Branch Sight weapon.
+Identity boundary:
+- the item is a Prime-side keepsake made from Parallax Core observation residue,
+- it is explicitly not mature `王樹領` technology,
+- equipping it is optional and never gates Branch Sight, Branch visibility, CP4-7 or later traversal.
 
-CP4 itself should avoid handing out mature Branch-specific technology gear before the player has actually traversed a Branch.
+Forbidden systems remain absent:
+- no Branch rarity,
+- no multiverse token,
+- no fourth Option,
+- no Item Power override or value above 10,000,
+- no mandatory Branch Sight weapon,
+- no new Branch currency / XP / level / skill tree / stamina.
+
+Deliverable:
+- `CONTENT_PACK_IV_CP4_6_IMPLEMENTATION.md`.
 
 ## CP4-7 — Integration audit / handoff
 

@@ -1,4 +1,5 @@
 /* Content Pack IV E — horizontal reaction layer. */
+import './contentPackIVF.js';
 import { state } from '../state.js';
 import { CP4_HORIZONTAL_REACTIONS,cp4HorizontalReactionState } from '../data/contentPackIVE.js';
 
