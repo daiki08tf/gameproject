@@ -16,7 +16,7 @@ import { materializeGlobalSpecies } from './globalEnemySpecies.js';
 import { ENEMY_SCALING, chapterScaleMult } from './balance.js';
 
 export function hpMult(num) { return chapterScaleMult(ENEMY_SCALING.HP_BASE_MULT, ENEMY_SCALING.HP_EARLY_RATE, ENEMY_SCALING.HP_LATE_RATE, ENEMY_SCALING.PIVOT_CHAPTER, num); }
-export function atkMult(num) { return chapterScaleMult(ENEMY_SCALING.ATK_BASE_MULT, ENEMY_SCALING.ATK_EARLY_RATE, ENEMY_SCALING.PIVOT_CHAPTER, num); }
+export function atkMult(num) { return chapterScaleMult(ENEMY_SCALING.ATK_BASE_MULT, ENEMY_SCALING.ATK_EARLY_RATE, ENEMY_SCALING.ATK_LATE_RATE, ENEMY_SCALING.PIVOT_CHAPTER, num); }
 export function defMult(num) { return chapterScaleMult(ENEMY_SCALING.DEF_BASE_MULT, ENEMY_SCALING.DEF_EARLY_RATE, ENEMY_SCALING.DEF_LATE_RATE, ENEMY_SCALING.PIVOT_CHAPTER, num); }
 export function bossHpMult(num) { return chapterScaleMult(ENEMY_SCALING.BOSS_HP_BASE_MULT, ENEMY_SCALING.BOSS_HP_EARLY_RATE, ENEMY_SCALING.BOSS_HP_LATE_RATE, ENEMY_SCALING.PIVOT_CHAPTER, num); }
 const NORMAL_BASE={hp:26,atk:6,def:2,speed:95,radius:15,color:'#c9505f',xp:6,gold:4};
