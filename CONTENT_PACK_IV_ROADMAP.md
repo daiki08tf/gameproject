@@ -3,7 +3,7 @@
 > Parent handoff: `STORY_EXPANSION_II_ROADMAP.md`.
 > Canonical multiverse references: `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md` and `OBSERVED_BRANCHES_ACCESS_AND_TRANSCENDENTS.md`.
 >
-> Status: **ACTIVE — CP4-2 COMPLETE; NEXT CP4-3 BRANCH SIGHT ACTIVATION**
+> Status: **ACTIVE — CP4-3 COMPLETE; NEXT CP4-4 FIRST VISIBLE BRANCH ANCHOR HANDOFF**
 
 ## Theme
 
@@ -147,14 +147,22 @@ If combat is used in the investigation, it must be ordinary existing BattleEngin
 Deliverable:
 - `CONTENT_PACK_IV_CP4_2_IMPLEMENTATION.md`.
 
-## CP4-3 — Branch Sight activation
+## CP4-3 — Branch Sight activation ✅ COMPLETE
 
 Working state name:
 
 **Branch Sight / 分岐視**
 
+Implemented deterministic activation:
+- prerequisite is `cp4:parallax:first-contact`,
+- the player deliberately revisits Deep Green `2-5` to reproduce and stabilize the Parallax Core synchronization,
+- `cp4:branch-sight:active` is stored under existing `world2.discoveries`,
+- `state.hasBranchSight()` exposes a boolean authored-state check without adding a parallel save root,
+- the activation event separates doubled noise and conflicting images into distinguishable internally consistent histories,
+- the blank Boundary scar remains unidentified and no Branch traversal occurs.
+
 Implementation contract:
-- store as existing Story/Discovery-compatible authored state,
+- stored as existing Story/Discovery-compatible authored state,
 - not numeric,
 - not trainable,
 - not equippable,
@@ -171,6 +179,9 @@ After activation:
 - Codex/Chronicle may begin using explicit divergence terminology only after the narrative beat.
 
 Branch Sight does **not** reveal every Branch.
+
+Deliverable:
+- `CONTENT_PACK_IV_CP4_3_IMPLEMENTATION.md`.
 
 ## CP4-4 — First visible Branch anchor handoff
 
