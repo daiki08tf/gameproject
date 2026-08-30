@@ -1,13 +1,13 @@
 /* ============================================================
-   Phase 11 / Story Expansion I — Story Canon
+   Phase 11 / Story Expansion — Story Canon
    ============================================================ */
 
-export const STORY_CANON_VERSION = '3.0-story-expansion-i';
+export const STORY_CANON_VERSION = '3.0-story-expansion-ii-ch31';
 
 export const CENTRAL_MYSTERY = Object.freeze({
   question: 'なぜBlade Valeの世界と現代世界はつながっているのか？',
   playerObjective: '各地で起きる境界異常の原因を追い、崩れつつある世界層を守りながら「観測者」が世界を選別する理由へ辿り着く。',
-  truthPolicy: '答えを一度に説明しない。Ch1–15は違和感、Ch16–20はThe Veil、Ch21–25は境界網、Ch26–30は第八鍵と双方向観測、Modern Worldの固有名はさらに後まで断片的に見せる。',
+  truthPolicy: '答えを一度に説明しない。Ch1–15は違和感、Ch16–20はThe Veil、Ch21–25は境界網、Ch26–30は第八鍵と双方向観測、Ch31以降は返答構造と共観測を段階的に扱い、Modern Worldの固有名はさらに後まで断片的に見せる。',
 });
 
 export const WORLD_LAYERS = Object.freeze({
@@ -43,7 +43,7 @@ export const STORY_ARCS = Object.freeze([
   {id:'arc2',chapters:[16,20],name:'The Veil',purpose:'歴史から消えた場所、外側から来た痕跡、時間空間の破綻を追い、The Veilという概念と門番の真実へ到達する。',reveal:'境界は壊れつつある'},
   {id:'arc3',chapters:[21,25],name:'外縁世界',purpose:'The Veilの外側ではなく、境界網に接続された外縁層を巡り、境界王座と観測中枢を発見する。',reveal:'Blade Valeは巨大な境界網の一ノード'},
   {id:'arc4',chapters:[26,30],name:'第八鍵と逆観測',purpose:'既知の七鍵体系から外れた接続を追い、機界の管理者も観測される側だと知り、外部文明との双方向認識へ到達する。',reveal:'第八鍵は外部から差し込まれた例外接続で、外側はこちらを認識している'},
-  {id:'arc5',chapters:null,name:'現代世界の信号',purpose:'Ch30で確認した外部文明の正体と、二つの世界が接続された理由を追う。固有地名や最終回答は次の物語段階で扱う。',reveal:'接続理由と最初の接続者は未解決'},
+  {id:'arc5',chapters:[31,35],name:'共観測',purpose:'双方向応答の手順、欠落する記録、双方が共有できる参照枠を追い、第八鍵が異なる観測領域を同期できる可能性へ進む。',reveal:'Ch31時点では返答が偶然ではなく手順を持つことだけを確定し、より大きな歴史矛盾の意味は保留する'},
 ]);
 
 export const CLUE_LADDER = Object.freeze([
@@ -53,6 +53,7 @@ export const CLUE_LADDER = Object.freeze([
   {tier:4,label:'境界網',examples:['外縁世界','境界王座','第八鍵','実験層という語']},
   {tier:5,label:'観測者',examples:['機界の記録','第八実験体','外部観測窓','選別という概念']},
   {tier:6,label:'現代世界',examples:['規則的な都市光','列車のような振動音','年月日表記','通信端末','日本語に似た文字列']},
+  {tier:7,label:'双方向観測',examples:['返された焦点','応答座標','受理・再試行・確認に似た状態遷移','送信元を持たない重複応答']},
 ]);
 
 export const STORY_WRITING_RULES = Object.freeze([
