@@ -27,9 +27,10 @@ test('Ch31 registers through the canonical expanded chapter pipeline',()=>{
   assert.equal(PHASE9_REGION_PROFILES.ch31?.id,'response_grammar_layer');
 });
 
-test('Ch31 starts Arc V inside the authored shared-observation Region',()=>{
+test('Ch31 starts Arc V inside the authored shared-observation Region and remains there as later chapters append',()=>{
   const region=WORLD3_REGIONS.find(r=>r.id==='shared-observation');
-  assert.deepEqual(region?.chapters,[31]);
+  assert.ok(region?.chapters.includes(31));
+  assert.equal(region?.chapters[0],31);
   assert.equal(region?.name,'共観測域');
 });
 
@@ -71,19 +72,19 @@ test('journey dispatcher attaches Ch31 and sequential Story unlock still derives
   assert.equal(isChapterUnlocked(index,()=>false),false);
 });
 
-test('live progression extends Ch30 7600 into Ch31 7600-8200 without moving the Ch20 Abyss fork',()=>{
+test('live progression preserves Ch30 7600 into Ch31 7600-8200 and keeps the Ch20 Abyss fork as later Story appends',()=>{
   const ch30=CHAPTERS.find(ch=>ch.num===30),chapter=ch31();
   assert.equal(finalStageOf(ch30).recLevel,7600);
   assert.equal(chapter.stages.find(s=>s.id==='31-1').recLevel,7600);
   assert.equal(finalStageOf(chapter).recLevel,8200);
-  assert.deepEqual(OUTER_STORY_LEVEL_ROADMAP.at(-1),{chapter:31,min:7600,max:8200,oldMin:7600,oldMax:8200});
-  assert.equal(state.progression3OuterStory?.max,8200);
+  assert.deepEqual(OUTER_STORY_LEVEL_ROADMAP.find(entry=>entry.chapter===31),{chapter:31,min:7600,max:8200,oldMin:7600,oldMax:8200});
+  assert.ok((state.progression3OuterStory?.max||0)>=8200);
   const original=state.isStageCleared;
   try{
     state.isStageCleared=id=>id!=='20-8';
     assert.equal(state.isAbyssUnlocked(),false);
-    state.isStageCleared=id=>!String(id).startsWith('21-')&&!String(id).startsWith('31-');
-    assert.equal(state.isAbyssUnlocked(),true,'Ch21+ and Ch31 must not become Abyss prerequisites');
+    state.isStageCleared=id=>!String(id).startsWith('21-')&&!String(id).startsWith('31-')&&!String(id).startsWith('32-');
+    assert.equal(state.isAbyssUnlocked(),true,'Ch21+ must not become Abyss prerequisites');
   }finally{state.isStageCleared=original;}
 });
 
