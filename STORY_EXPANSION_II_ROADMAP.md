@@ -1,6 +1,6 @@
 # Blade Vale — Story Expansion II Roadmap
 
-> Status: **ACTIVE — Ch33 / S2-3 COMPLETE; NEXT S2-4**
+> Status: **ACTIVE — Ch34 / S2-4 COMPLETE; NEXT S2-5**
 >
 > Working arc title: **Arc V — 共観測 / Handshake**
 
@@ -122,7 +122,7 @@ Reveal:
 Remain unknown:
 - whether somebody intentionally erased it.
 
-### [ ] Ch34 — 向こう側の窓
+### [x] Ch34 — 向こう側の窓
 
 **Purpose:** allow meaningful external cooperation without explicit modern-world identification.
 
@@ -230,7 +230,7 @@ Implement Ch32 and validate:
 
 Implement Ch33 using existing CP3 / Codex / Discovery facts without duplicating their save ownership.
 
-### [ ] S2-4 — Ch34 / common reference frame
+### [x] S2-4 — Ch34 / common reference frame
 
 Implement external response clues with Modern World restraint regression checks.
 

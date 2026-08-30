@@ -1,4 +1,4 @@
-/* Enemy 2.0 E4 — Ch1–33 regional enemy expansion.
+/* Enemy 2.0 E4 — Ch1–34 regional enemy expansion.
    Adds four ordinary roles + one Rare identity per story region.
    Existing normal/fast/tank remain authoritative and fixed waves are untouched. */
 
@@ -46,6 +46,7 @@ export const REGIONAL_ENEMY_EXPANSION = Object.freeze({
   ch31:entry('三拍破砕体','照合演算師','再送撹乱体','確認補助端末','送信元なき応答獣'),
   ch32:entry('例外鍵破砕体','対向演算師','裏面撹乱体','第二署名補助端末','鏡写しの鍵獣'),
   ch33:entry('空白破砕体','残響読取師','一拍撹乱体','生体記憶補助端末','記録外の残響獣'),
+  ch34:entry('参照線破砕体','外部配列術師','座標ずらし体','共通枠補助端末','地図外の標識獣'),
 });
 
 export function regionalEnemySet(chapterId){return REGIONAL_ENEMY_EXPANSION[chapterId]||null;}
