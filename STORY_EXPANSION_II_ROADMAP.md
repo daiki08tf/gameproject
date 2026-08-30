@@ -1,6 +1,6 @@
 # Blade Vale — Story Expansion II Roadmap
 
-> Status: **ACTIVE — Ch34 / S2-4 COMPLETE; NEXT S2-5**
+> Status: **ACTIVE — Ch35 / S2-5 COMPLETE; NEXT S2-6 INTEGRATION AUDIT**
 >
 > Working arc title: **Arc V — 共観測 / Handshake**
 
@@ -138,7 +138,7 @@ Reveal:
 Remain unknown:
 - its exact world identity.
 
-### [ ] Ch35 — 共観測点
+### [x] Ch35 — 共観測点
 
 **Purpose:** give Arc V a satisfying conclusion while preserving the larger mystery.
 
@@ -147,6 +147,7 @@ Story beats:
 - the final Story route uses World 4.0 route/scene structure but launches canonical Story battles.
 - final boss/phase represents a synchronization failure / boundary process, not “the external civilization attacking.”
 - after victory, the Eighth Key briefly stabilizes as a shared reference point.
+- the final synchronized record leaves one unexplained contradiction: the same Deep Green Forest coordinates briefly produce two mutually incompatible contours, one dominated by an enormous tree crown and one with no forest response at all.
 
 Arc reveal:
 - the Eighth Key can synchronize two observation domains around one shared boundary phenomenon.
@@ -157,9 +158,10 @@ Still unresolved after Ch35:
 - why Blade Vale and the external civilization were selected,
 - exact external-world identity/location,
 - what the shared boundary phenomenon ultimately is,
-- whether the missing interval was deliberately hidden.
+- whether the missing interval was deliberately hidden,
+- why one known Region can return mutually incompatible observation contours.
 
-These become seeds for horizontal Content Pack IV and a later Story Expansion III.
+These become seeds for horizontal Content Pack IV, Observed Branches, and a later Story Expansion III.
 
 ## Gameplay integration goals
 
@@ -234,7 +236,7 @@ Implement Ch33 using existing CP3 / Codex / Discovery facts without duplicating 
 
 Implement external response clues with Modern World restraint regression checks.
 
-### [ ] S2-5 — Ch35 / Arc V finale
+### [x] S2-5 — Ch35 / Arc V finale
 
 Implement the shared observation point and authored finale.
 
@@ -265,7 +267,8 @@ Candidate Content Pack IV themes:
 - two-sided “marker” events where both observation domains react to the same phenomenon,
 - new Mystery chains around the missing interval,
 - existing Companion / Ranch / Codex ecology reacting to synchronization events,
-- activity-themed Unique / exploration rewards through existing authorities.
+- activity-themed Unique / exploration rewards through existing authorities,
+- first investigations into the unexplained incompatible Region contours before any explicit Observed Branch terminology is used.
 
 No new parallel progression layer by default.
 

@@ -55,13 +55,18 @@ test('chapter arcs preserve Ch1-30 and map Story Expansion II as Arc V', () => {
   assert.equal(storyArcForChapter(36), null);
 });
 
-test('clue ladder preserves modern-world evidence and then advances to bidirectional observation', () => {
+test('clue ladder preserves modern-world evidence and advances through bidirectional to shared observation', () => {
   assert.equal(CLUE_LADDER[0].tier, 1);
   const modern=CLUE_LADDER.find(t=>t.label==='現代世界');
   assert.ok(modern);
   assert.ok(modern.examples.some(x => x.includes('日')));
-  assert.equal(CLUE_LADDER.at(-1).label, '双方向観測');
-  assert.ok(CLUE_LADDER.at(-1).examples.some(x=>x.includes('再試行')));
+  const bidirectional=CLUE_LADDER.find(t=>t.label==='双方向観測');
+  assert.ok(bidirectional);
+  assert.ok(bidirectional.examples.some(x=>x.includes('再試行')));
+  // Ch35/Arc V finale adds tier 8 '共観測' as the new terminal tier built on
+  // top of '双方向観測', so the ladder's last entry moves forward with it.
+  assert.equal(CLUE_LADDER.at(-1).label, '共観測');
+  assert.ok(CLUE_LADDER.at(-1).examples.some(x=>x.includes('協調観測')));
 });
 
 test('writing rules protect mobile readability and progression separation', () => {

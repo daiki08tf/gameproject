@@ -6,9 +6,9 @@ import { REGIONAL_ENEMY_EXPANSION, REGIONAL_ENEMY_ROLES } from '../js/data/regio
 
 const chapterIds=['ch1',...ALL_CHAPTER_SPECS.map(ch=>ch.id)];
 
-test('E4 authors five new regional identities for all 34 story chapters',()=>{
-  assert.equal(chapterIds.length,34);
-  assert.equal(Object.keys(REGIONAL_ENEMY_EXPANSION).length,34);
+test('E4 authors five new regional identities for all 35 story chapters',()=>{
+  assert.equal(chapterIds.length,35);
+  assert.equal(Object.keys(REGIONAL_ENEMY_EXPANSION).length,35);
   assert.deepEqual(REGIONAL_ENEMY_ROLES,['attacker','caster','trickster','support','rare']);
   for(const chapterId of chapterIds){
     const set=REGIONAL_ENEMY_EXPANSION[chapterId];
@@ -20,7 +20,7 @@ test('E4 authors five new regional identities for all 34 story chapters',()=>{
   }
 });
 
-test('E4 registers 170 reusable regional enemy types with stable ecology metadata',()=>{
+test('E4 registers 175 reusable regional enemy types with stable ecology metadata',()=>{
   let count=0;
   for(const chapterId of chapterIds){
     for(const role of REGIONAL_ENEMY_ROLES){
@@ -36,7 +36,7 @@ test('E4 registers 170 reusable regional enemy types with stable ecology metadat
       count++;
     }
   }
-  assert.equal(count,170);
+  assert.equal(count,175);
 });
 
 test('E4 role stat silhouettes are materially different rather than name-only clones',()=>{

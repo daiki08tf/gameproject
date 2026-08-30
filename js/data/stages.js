@@ -1,7 +1,7 @@
 /* ============================================================
    ステージ／章データ定義
    第1章は既存のまま。第2〜15章は標準5ステージ構成、
-   第16〜34章は8ステージ＋隠し道（中Bossあり）で展開する。
+   第16〜35章は8ステージ＋隠し道（中Bossあり）で展開する。
    ============================================================ */
 import { CHAPTER_SPECS, chapterMult, CHAPTER_REGION_TAGS } from './chapters.js';
 import { CHAPTER_EXPANSION_16_20, CHAPTER_EXPANSION_REGION_TAGS } from './chapters16to20.js';
@@ -12,6 +12,7 @@ import { CHAPTER_EXPANSION_31, CHAPTER_EXPANSION_REGION_TAGS_31 } from './chapte
 import { CHAPTER_EXPANSION_32, CHAPTER_EXPANSION_REGION_TAGS_32 } from './chapters32.js';
 import { CHAPTER_EXPANSION_33, CHAPTER_EXPANSION_REGION_TAGS_33 } from './chapters33.js';
 import { CHAPTER_EXPANSION_34, CHAPTER_EXPANSION_REGION_TAGS_34 } from './chapters34.js';
+import { CHAPTER_EXPANSION_35, CHAPTER_EXPANSION_REGION_TAGS_35 } from './chapters35.js';
 import { regionProfileForChapter } from './regionsPhase9.js';
 import { buildAbyssStage } from './abyss.js';
 import { buildSecretRealmStage } from './secretRealms.js';
@@ -55,8 +56,8 @@ function buildExpandedChapter(ch){
   return{id:ch.id,num:ch.num,name:`第${ch.num}章 ${ch.name}`,lore:ch.lore,expanded:true,stages};
 }
 
-export const CHAPTERS=[CHAPTER_1,...CHAPTER_SPECS.map(buildChapter),...CHAPTER_EXPANSION_16_20.map(buildExpandedChapter),...CHAPTER_EXPANSION_21_25.map(buildExpandedChapter),...CHAPTER_EXPANSION_26_29.map(buildExpandedChapter),...CHAPTER_EXPANSION_30.map(buildExpandedChapter),...CHAPTER_EXPANSION_31.map(buildExpandedChapter),...CHAPTER_EXPANSION_32.map(buildExpandedChapter),...CHAPTER_EXPANSION_33.map(buildExpandedChapter),...CHAPTER_EXPANSION_34.map(buildExpandedChapter)];
-const ALL_REGION_TAGS={...CHAPTER_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS_21_25,...CHAPTER_EXPANSION_REGION_TAGS_26_29,...CHAPTER_EXPANSION_REGION_TAGS_30,...CHAPTER_EXPANSION_REGION_TAGS_31,...CHAPTER_EXPANSION_REGION_TAGS_32,...CHAPTER_EXPANSION_REGION_TAGS_33,...CHAPTER_EXPANSION_REGION_TAGS_34};
+export const CHAPTERS=[CHAPTER_1,...CHAPTER_SPECS.map(buildChapter),...CHAPTER_EXPANSION_16_20.map(buildExpandedChapter),...CHAPTER_EXPANSION_21_25.map(buildExpandedChapter),...CHAPTER_EXPANSION_26_29.map(buildExpandedChapter),...CHAPTER_EXPANSION_30.map(buildExpandedChapter),...CHAPTER_EXPANSION_31.map(buildExpandedChapter),...CHAPTER_EXPANSION_32.map(buildExpandedChapter),...CHAPTER_EXPANSION_33.map(buildExpandedChapter),...CHAPTER_EXPANSION_34.map(buildExpandedChapter),...CHAPTER_EXPANSION_35.map(buildExpandedChapter)];
+const ALL_REGION_TAGS={...CHAPTER_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS_21_25,...CHAPTER_EXPANSION_REGION_TAGS_26_29,...CHAPTER_EXPANSION_REGION_TAGS_30,...CHAPTER_EXPANSION_REGION_TAGS_31,...CHAPTER_EXPANSION_REGION_TAGS_32,...CHAPTER_EXPANSION_REGION_TAGS_33,...CHAPTER_EXPANSION_REGION_TAGS_34,...CHAPTER_EXPANSION_REGION_TAGS_35};
 for(const ch of CHAPTERS){
   const tags=ALL_REGION_TAGS[ch.id]||[],profile=regionProfileForChapter(ch.id);
   ch.regionProfile=profile;
