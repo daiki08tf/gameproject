@@ -11,12 +11,13 @@ import { storyExpansionIFinaleBeatForStage } from '../data/storyChapters30.js';
 import { storyExpansionIICh31BeatForStage } from '../data/storyChapters31.js';
 import { storyExpansionIICh32BeatForStage } from '../data/storyChapters32.js';
 import { storyExpansionIICh33BeatForStage } from '../data/storyChapters33.js';
+import { storyExpansionIICh34BeatForStage } from '../data/storyChapters34.js';
 import { worldMysteryClueForStage } from '../data/storyWorldMystery.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
 
 function attachJourneyStory(){
   for(const chapter of CHAPTERS){
-    if(chapter.num<1||chapter.num>33)continue;
+    if(chapter.num<1||chapter.num>34)continue;
     const mainStages=chapter.stages.filter(stage=>!stage.branch&&!stage.bounty);
     chapter.stages.forEach(stage=>{
       const mainIndex=mainStages.indexOf(stage);
@@ -35,7 +36,9 @@ function attachJourneyStory(){
                   ? storyExpansionIICh31BeatForStage(chapter.num,stage,mainIndex,mainStages.length)
                   : chapter.num===32
                     ? storyExpansionIICh32BeatForStage(chapter.num,stage,mainIndex,mainStages.length)
-                    : storyExpansionIICh33BeatForStage(chapter.num,stage,mainIndex,mainStages.length);
+                    : chapter.num===33
+                      ? storyExpansionIICh33BeatForStage(chapter.num,stage,mainIndex,mainStages.length)
+                      : storyExpansionIICh34BeatForStage(chapter.num,stage,mainIndex,mainStages.length);
       if(beat)stage.story11=beat;
     });
   }
