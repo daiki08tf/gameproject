@@ -1,6 +1,6 @@
 # Blade Vale — Story Expansion II Roadmap
 
-> Status: **DESIGN / NEXT MAJOR STORY ARC**
+> Status: **ACTIVE — Ch33 / S2-3 COMPLETE; NEXT S2-4**
 >
 > Working arc title: **Arc V — 共観測 / Handshake**
 
@@ -70,7 +70,7 @@ This does NOT yet prove who built it, where the external civilization is, or why
 
 ## Chapter plan
 
-### [ ] Ch31 — 返答の文法
+### [x] Ch31 — 返答の文法
 
 **Purpose:** prove that the returned signal has structure without turning it into convenient spoken language.
 
@@ -88,7 +88,7 @@ Remain unknown:
 - what language/culture they use,
 - why the handshake exists.
 
-### [ ] Ch32 — 第八鍵の裏面
+### [x] Ch32 — 第八鍵の裏面
 
 **Purpose:** reframe the Eighth Key from “mysterious extra key” into an exception endpoint with a missing counterpart.
 
@@ -106,7 +106,7 @@ Remain unknown:
 - external endpoint location,
 - whether the connection was created cooperatively or unilaterally.
 
-### [ ] Ch33 — 記録されない一拍
+### [x] Ch33 — 記録されない一拍
 
 **Purpose:** connect CP3 living-memory findings to the central story.
 
@@ -192,7 +192,7 @@ Story Expansion II should demonstrate that the systems added after Ch30 matter t
 
 ## Implementation phases
 
-### [ ] S2-0 — Story / progression architecture audit
+### [x] S2-0 — Story / progression architecture audit
 
 Before adding Ch31:
 - locate canonical Ch26–30 Story data and Stage builders,
@@ -206,7 +206,7 @@ Before adding Ch31:
 Deliverable:
 - `STORY_EXPANSION_II_S0_AUDIT.md`.
 
-### [ ] S2-1 — Ch31 vertical slice
+### [x] S2-1 — Ch31 vertical slice
 
 Implement Ch31 end-to-end:
 - chapter/stage data,
@@ -219,14 +219,14 @@ Implement Ch31 end-to-end:
 
 No Ch32 implementation until Ch31 proves the integration path.
 
-### [ ] S2-2 — Ch32 / Eighth Key architecture
+### [x] S2-2 — Ch32 / Eighth Key architecture
 
 Implement Ch32 and validate:
 - Seven Keys remain canonical historical architecture,
 - Eighth Key stays an exception connection,
 - no retroactive endgame gate movement.
 
-### [ ] S2-3 — Ch33 / living-memory convergence
+### [x] S2-3 — Ch33 / living-memory convergence
 
 Implement Ch33 using existing CP3 / Codex / Discovery facts without duplicating their save ownership.
 

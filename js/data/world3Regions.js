@@ -10,7 +10,7 @@ export const WORLD3_REGIONS=Object.freeze([
   Object.freeze({id:'veil',name:'The Veil',subtitle:'世界の外側へ続く第二部',chapters:[16,17,18,19,20],tone:'boundary'}),
   Object.freeze({id:'outer-world',name:'外縁世界',subtitle:'境界網の外側に連なる第三部',chapters:[21,22,23,24,25],tone:'outer'}),
   Object.freeze({id:'reverse-observation',name:'逆観測域',subtitle:'第八鍵の接続元を追う第四部',chapters:[26,27,28,29,30],tone:'observer'}),
-  Object.freeze({id:'shared-observation',name:'共観測域',subtitle:'返された応答と第八鍵の対向構造を追う第五部',chapters:[31,32],tone:'handshake'}),
+  Object.freeze({id:'shared-observation',name:'共観測域',subtitle:'返された応答・第八鍵・記録盲点を追う第五部',chapters:[31,32,33],tone:'handshake'}),
 ]);
 
 export function world3RegionForChapter(chapterNumber){

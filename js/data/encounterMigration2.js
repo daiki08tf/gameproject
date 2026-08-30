@@ -1,4 +1,4 @@
-/* Enemy 2.0 E8 — progressive Ch1–32 Encounter Pool migration profiles. */
+/* Enemy 2.0 E8 — progressive Ch1–33 Encounter Pool migration profiles. */
 import { GLOBAL_ENEMY_SPECIES, materializeGlobalSpecies } from './globalEnemySpecies.js';
 
 export const E8_TEMPLATE_IDS=Object.freeze(['mixed','pack','frontline','escort','ambush','bulwark']);
@@ -41,7 +41,6 @@ export function globalRosterForRegionTags(tags=[],chapterId=''){
   for(const tag of tags||[]){
     for(const id of ELEMENT_GLOBALS[tag]||[]){if(!out.includes(id))out.push(id);}
   }
-  // Keep regional identity stronger than the global layer.
   return out.slice(0,4);
 }
 
@@ -86,7 +85,6 @@ export function buildChapterEncounterPool(chapter,enemyTypes){
 
 export function isE8MigratableStage(chapter,stage){
   if(!chapter||!stage||stage.isAbyss||stage.branch)return false;
-  // Keep the original onboarding fight deterministic.
   if(stage.id==='1-1')return false;
   return true;
 }
@@ -94,7 +92,7 @@ export function isE8MigratableStage(chapter,stage){
 export function migrateStoryEncounterPools(chapters,enemyTypes){
   const migrated=[];
   for(const chapter of chapters||[]){
-    if(!chapter||chapter.num<1||chapter.num>32)continue;
+    if(!chapter||chapter.num<1||chapter.num>33)continue;
     const basePool=buildChapterEncounterPool(chapter,enemyTypes);
     for(const stage of chapter.stages||[]){
       if(!isE8MigratableStage(chapter,stage))continue;
