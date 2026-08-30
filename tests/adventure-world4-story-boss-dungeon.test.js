@@ -8,7 +8,7 @@ import { buildAdventure4PilotRoute,adventure4RegionBossEndpoint,adventure4Secret
 const region=buildWorld4RegionCatalog(CHAPTERS)[0];
 
 function chapter(number){return CHAPTERS.find(ch=>Number(ch.num)===Number(number))||CHAPTERS[Number(number)-1];}
-function canonicalBoss(ch){return ch?.stages?.find(stage=>stage.boss&&!stage.branch)||ch?.stages?.find(stage=>stage.boss)||null;}
+function canonicalBoss(ch){return ch?.stages?.find(stage=>stage.boss&&!stage.branch)||ch?.stages?.find(stage=>stage.boss)||ch?.stages?.at(-1)||null;}
 
 test('W26 unresolved Story remains a canonical Stage-backed Region Story Route',()=>{
   const entry=region.routeEntries[0];
@@ -29,7 +29,7 @@ test('W26 Story completion unlocks Free Adventure without adding parallel progre
   assert.equal(validateAdventure4Route(route).ok,true);
 });
 
-test('W27 Region Boss endpoint points at the existing final chapter Boss Stage',()=>{
+test('W27 Region Boss endpoint points at the existing final chapter completion Stage',()=>{
   const endpoint=adventure4RegionBossEndpoint(region);
   const lastChapter=chapter(region.chapterNumbers.at(-1));
   const boss=canonicalBoss(lastChapter);
