@@ -1,5 +1,5 @@
 /* Adventure / World 4.0 — W31 Event Content Pack II.
-   Seven Region-authored scenes. Data-only content: no reward/scaling authority. */
+   Eight Region-authored scenes. Data-only content: no reward/scaling authority. */
 import { normalizeAdventure4Scene } from './adventureWorld4Scenes.js';
 import { normalizeAdventure4EventCatalog } from './adventureWorld4Events.js';
 
@@ -36,6 +36,10 @@ const RAW_SCENES=[
     {id:'observe',phase:'observation',title:'描かれていない地図',text:'壁に白紙の地図が貼られている。現在地だけが墨で記され、歩くたびその点も移動する。',choices:[{id:'wait',label:'動かず地図を見る',nextStepId:'wait'},{id:'circle',label:'周囲を一周する',nextStepId:'circle'}]},
     {id:'wait',phase:'resolution',title:'観測される現在地',text:'止まっている間だけ、点の周囲に存在しない道が薄く現れた。',choices:[{id:'finish',label:'形を記憶する'}]},
     {id:'circle',phase:'resolution',title:'閉じない線',text:'一周したはずの軌跡は閉じず、地図の外へ一本だけ伸びていた。',choices:[{id:'finish',label:'地図から離れる'}]},
+  ]},
+  {id:'shared-observation-second-answer',name:'二つ目の返答',tags:['mystery','investigation','shared-observation'],entryStepId:'observe',steps:[
+    {id:'observe',phase:'observation',title:'二つ目の返答',text:'観測記録に同じ応答が二つ並んでいる。片方には送信元の座標があるが、もう片方には何も記されていない。',choices:[{id:'compare',label:'二つの記録を見比べる',nextStepId:'compare'},{id:'ignore',label:'片方だけを記録して進む'}]},
+    {id:'compare',phase:'resolution',title:'空欄の座標',text:'内容は一致しているのに、座標欄だけが最初から空白のまま保存されている。誰かが消したのではなく、最初から書かれていない。',choices:[{id:'finish',label:'違和感だけを持ち帰る'}]},
   ]},
 ];
 

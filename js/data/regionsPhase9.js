@@ -1,5 +1,5 @@
 /* ============================================================
-   Phase 9.1 / Story Expansion I — Regional Identity
+   Phase 9.1 / Story Expansion — Regional Identity
    BGMなし。地域ごとの戦闘傾向・推奨対策・探索イベントをデータ化する。
    ============================================================ */
 
@@ -14,6 +14,7 @@ export const PHASE9_REGION_PROFILES = Object.freeze({
   ch28:{id:'machine_audit_layer',name:'機界監査層',theme:'権限照合と被観測',hazards:['seal','analysis'],favored:['analysis','fusion','break'],resisted:['ice','light'],enemyBias:{fast:'中',tank:'高',status:'権限拒絶'},lootFocus:['analysis','fusion','spell'],fieldRule:{id:'audit_protocol',name:'監査手順',desc:'同じ行動を繰り返すと監査対象として対策される。攻撃軸を切り替えて照合を外す地域。'},events:[{id:'mother_audit',name:'母機監査記録',kind:'lore',rewardTag:'analysis'},{id:'architect_signature',name:'設計者外部署名',kind:'loot',rewardTag:'fusion'},{id:'observer_target',name:'観測先照合器',kind:'choice',rewardTag:'insight'}]},
   ch29:{id:'reverse_observation_gate',name:'逆観測門',theme:'二重観測と焦点反転',hazards:['phase','focus'],favored:['analysis','reaction','fate'],resisted:['dark','wind'],enemyBias:{fast:'高',tank:'高',status:'焦点反転'},lootFocus:['reaction','fate','speed'],fieldRule:{id:'reverse_focus',name:'逆焦点',desc:'こちらの狙いと敵の観測が重なるほど圧力が増す。解析・反応・行動順の管理が重要な地域。'},events:[{id:'eighth_socket',name:'第八接続室',kind:'lore',rewardTag:'fate'},{id:'asymmetric_keyhole',name:'非対称鍵孔',kind:'loot',rewardTag:'dark'},{id:'returned_focus',name:'返された焦点',kind:'choice',rewardTag:'analysis'}]},
   ch30:{id:'external_observation_core',name:'外部観測核',theme:'双方向応答と照合',hazards:['phase','scan'],favored:['analysis','break','fusion'],resisted:['light','dark'],enemyBias:{fast:'高',tank:'高',status:'同期照合'},lootFocus:['analysis','fusion','fate'],fieldRule:{id:'two_way_observation',name:'双方向観測',desc:'敵はプレイヤーの直前行動へ応答する。解析で意図を読み、攻撃軸を固定しすぎないことが重要。'},events:[{id:'reply_coordinate',name:'返された座標',kind:'lore',rewardTag:'analysis'},{id:'life_signal_archive',name:'生活圏信号記録',kind:'loot',rewardTag:'insight'},{id:'two_way_terminal',name:'双方向照合端末',kind:'choice',rewardTag:'fate'}]},
+  ch31:{id:'response_grammar_layer',name:'応答文法層',theme:'受理・再試行・確認',hazards:['scan','sequence'],favored:['analysis','tempo','break'],resisted:['lightning','wind'],enemyBias:{fast:'高',tank:'中',status:'再試行'},lootFocus:['analysis','speed','reaction'],fieldRule:{id:'handshake_states',name:'三状態照合',desc:'同じ行動を固定すると接続が再試行へ戻る。行動順と攻撃軸を切り替え、受理→再試行→確認の状態変化を読む地域。'},events:[{id:'three_interval_reply',name:'三間隔応答記録',kind:'lore',rewardTag:'analysis'},{id:'missing_interval_store',name:'欠落間隔庫',kind:'lore',rewardTag:'insight'},{id:'source_less_duplicate',name:'送信元なき第二応答',kind:'choice',rewardTag:'fate'}]},
 });
 
 export function regionProfileForChapter(chapterId){return PHASE9_REGION_PROFILES[chapterId]||null;}

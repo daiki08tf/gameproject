@@ -9,8 +9,8 @@ import { chooseEnvironmentalVariant } from '../js/data/enemyRankVariants2.js';
 const roleSet=pool=>new Set((pool?.types||[]).map(x=>ENEMY_TYPES[x.type]?.role).filter(Boolean));
 const globals=pool=>(pool?.types||[]).filter(x=>ENEMY_TYPES[x.type]?.e8Global).map(x=>ENEMY_TYPES[x.type]?.speciesId);
 
-test('E8 migrates all eligible Ch1-30 story stages and leaves tutorial/branches fixed',()=>{
-  assert.equal(CHAPTERS.length,30);
+test('E8 migrates all eligible Ch1-31 story stages and leaves tutorial/branches fixed',()=>{
+  assert.equal(CHAPTERS.length,31);
   const expected=CHAPTERS.flatMap(ch=>ch.stages.filter(st=>!st.branch&&st.id!=='1-1').map(st=>st.id));
   assert.deepEqual([...E8_MIGRATED_STAGE_IDS].sort(),expected.sort());
   assert.equal(CHAPTERS[0].stages.find(s=>s.id==='1-1').encounterPool,undefined);
