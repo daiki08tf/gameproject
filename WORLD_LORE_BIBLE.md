@@ -6,7 +6,9 @@
 
 **なぜBlade Valeと「外側の文明」は接続されているのか。誰が接続し、何を観測しているのか。**
 
-The story must not reduce this to a simple “another world invaded us” answer. The known worlds are layers inside a larger boundary network. The systems that looked like creators are only administrators, and the external civilization is real but its identity, location and reason for connection remain unresolved after Ch30.
+The story must not reduce this to a simple “another world invaded us” answer. The known worlds are layers inside a larger boundary network. The systems that looked like creators are only administrators, and the external civilization is real but its identity, location and reason for connection remain unresolved after Ch35.
+
+By Ch35, the two sides can briefly synchronize around the same third boundary phenomenon. That proves coordinated observation is possible, but it does not explain the original connector or the nature of the phenomenon itself.
 
 ## 2. World structure
 
@@ -15,7 +17,7 @@ The story must not reduce this to a simple “another world invaded us” answer
 - **冥界 / Underworld** — memory/death/remnant layer. Not merely an afterlife.
 - **境界層 / Boundary Layer** — infrastructure between worlds: gates, seals, corridors, observation stations and isolation sectors.
 - **機界 / Machine World** — artificial administration / maintenance / observation layer. MOTHER and ARCHITECT operate here but did not create the full network.
-- **外側の文明 / External civilization** — technologically ordered inhabited civilization beyond the known layers. Ch27–30 confirm its sensory traces and bidirectional response, but not its explicit geographic identity.
+- **外側の文明 / External civilization** — technologically ordered inhabited civilization beyond the known layers. Ch27–35 confirm sensory traces, bidirectional response and coordinated observation, but not its explicit geographic identity.
 
 ## 3. The Veil
 
@@ -38,13 +40,15 @@ The known internal control architecture of the boundary network. They manage rou
 ### Eighth Key
 Not an ordinary eighth member of the Seven Keys.
 
-By Ch29–30 the best supported interpretation is:
+By Ch35 the best supported interpretation is:
 - it bypasses the known seven-key architecture
-- it behaves like an **external connection point** inserted from outside the normal management system
+- it behaves like an **exception synchronization endpoint** outside the normal internal authorization tree
 - its connection origin is missing from internal records
-- the external side can recognize contact through it and return a limited response
+- the external side can recognize contact through it and return structured procedural responses
+- it expects a counterpart outside the known layer network
+- it can briefly align two otherwise incompatible observation domains around one shared reference point
 
-The reason it exists and who first inserted it remain unsolved.
+The reason it exists, who first inserted it, and why these two domains were connected remain unsolved.
 
 ## 5. MOTHER / ARCHITECT
 
@@ -94,6 +98,19 @@ The player learns Blade Vale is one node in a larger boundary network. The Eight
 - Ch30 外部観測核 — external civilization and bidirectional recognition are confirmed, but identity and connection reason remain unknown.
 
 **Reveal:** the connection is real and the other side can answer.
+
+### Arc V — Ch31–35: 共観測 / Handshake
+- Ch31 返答の文法 — returned signals show repeatable acknowledgement / retry / confirmation-like procedure rather than random noise.
+- Ch32 第八鍵の裏面 — the Eighth Key does not fit the Seven Keys authorization tree and expects an external counterpart.
+- Ch33 記録されない一拍 — machine/infrastructure records consistently omit one interval that living/remnant memory still preserves.
+- Ch34 向こう側の窓 — the external side returns non-linguistic topology and timing that both sides can use as a common reference frame.
+- Ch35 共観測点 — both sides independently identify the same third boundary anomaly and the Eighth Key briefly stabilizes as a shared observation point.
+
+At the end of Ch35, the synchronized record contains one bounded contradiction: the same coordinates corresponding to 深緑の森 briefly produce two mutually incompatible contours — one dominated by an enormous tree crown, another with no forest response at all.
+
+This is not yet named or explained as an Observed Branch in-story. It is only an impossible observation result that future horizontal content may investigate.
+
+**Reveal:** the connection can support coordinated observation, not only surveillance or reply.
 
 ## 7. Challenge / constraint systems in-world
 
@@ -164,7 +181,7 @@ Initial clusters:
    - 一方、根・灰・変質した生態系にはその区間の痕跡が残る。
    - 現時点では「誰かが意図的に削除した」のか「機械には記録できない性質」なのか判別できない。
 
-These findings deepen the mystery but do **not** identify the external civilization or explain why Blade Vale is observed.
+These findings deepen the mystery and feed directly into Arc V, but do **not** identify the external civilization or explain why Blade Vale is observed.
 
 ## 11. Modern-world restraint
 
@@ -192,6 +209,7 @@ These are intentionally unresolved and must not be accidentally answered in side
 7. What happened during previous world reconstructions seen in frozen/archival records?
 8. Why is part of the returned observation missing from machine/infrastructure records?
 9. Was that interval deleted deliberately, or is it intrinsically unrecordable by those systems?
+10. Why can one known Region return two internally consistent but mutually incompatible observation contours?
 
 ## 13. Writing rules
 
@@ -203,3 +221,4 @@ These are intentionally unresolved and must not be accidentally answered in side
 - Keep mandatory mobile text compact.
 - Optional discoveries can be deeper, but must not gate Ch1–30 completion retroactively.
 - Japan/Tokyo remains withheld until an explicit future story decision.
+- Before explicit Branch Sight awakening, contradictory histories must appear only as unexplained observation contradictions; do not expose Observed Branch terminology or traversal UI early.

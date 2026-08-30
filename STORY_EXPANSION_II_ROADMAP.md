@@ -1,6 +1,6 @@
 # Blade Vale — Story Expansion II Roadmap
 
-> Status: **ACTIVE — Ch35 / S2-5 COMPLETE; NEXT S2-6 INTEGRATION AUDIT**
+> Status: **COMPLETE — Arc V / Ch31–35 / S2-0–S2-6 COMPLETE; NEXT CONTENT PACK IV**
 >
 > Working arc title: **Arc V — 共観測 / Handshake**
 
@@ -245,7 +245,7 @@ Requirements:
 - no mandatory horizontal side-content grind,
 - arc conclusion advances mystery without naming Japan/Tokyo/Earth.
 
-### [ ] S2-6 — Story Expansion II integration audit
+### [x] S2-6 — Story Expansion II integration audit
 
 Cross-check:
 - Ch1–30 unchanged,
@@ -257,6 +257,9 @@ Cross-check:
 - save compatibility,
 - lore/catalog docs synchronized,
 - Blade Vale Tests + Phase 8 Validation green.
+
+Deliverable:
+- `STORY_EXPANSION_II_S2_6_INTEGRATION_AUDIT.md`.
 
 ## Post-Arc horizontal handoff
 

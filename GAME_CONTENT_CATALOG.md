@@ -12,8 +12,13 @@
 | Ch21–25 | `js/data/chapters21to25.js` |
 | Ch26–29 | `js/data/chapters26to29.js` |
 | Ch30 | `js/data/chapters30.js` |
+| Ch31 | `js/data/chapters31.js` |
+| Ch32 | `js/data/chapters32.js` |
+| Ch33 | `js/data/chapters33.js` |
+| Ch34 | `js/data/chapters34.js` |
+| Ch35 | `js/data/chapters35.js` |
 | Generated story enemies | `js/data/enemies.js` |
-| Ch21–30 region rules/events | `js/data/regionsPhase9.js` |
+| Ch21–35 region rules/events | `js/data/regionsPhase9.js` |
 | Phase12 optional dungeons | `js/data/secretRealmExpansion.js` / related Phase12 data |
 | CP2 rumors / encounters / routes | `js/data/contentPackIIAB.js` |
 | CP2 chains / bosses / companions | `js/data/contentPackIICD.js` |
@@ -23,7 +28,7 @@
 
 ## 2. Story chapter enemy index
 
-Story enemy IDs are mostly generated as `chXX_normal`, `chXX_fast`, `chXX_tank`, `chXX_boss`; expanded Ch16–30 also have `chXX_midboss` and branch bosses.
+Story enemy IDs are mostly generated as `chXX_normal`, `chXX_fast`, `chXX_tank`, `chXX_boss`; expanded Ch16–35 also have `chXX_midboss` and branch bosses.
 
 | Ch | Region | Normal | Fast | Tank | Main Boss |
 |---:|---|---|---|---|---|
@@ -57,6 +62,11 @@ Story enemy IDs are mostly generated as `chXX_normal`, `chXX_fast`, `chXX_tank`,
 | 28 | 機界監査層 | 監査端末兵 | 照合ドローン | 権限壁機兵 | 上位監査体オーディタ |
 | 29 | 逆観測門 | 逆観測従体 | 焦点跳躍獣 | 二重視差巨像 | 接続監守パラドクス |
 | 30 | 外部観測核 | 外部照合従体 | 応答走査獣 | 観測隔壁巨兵 | 外界照合者オブザーバ |
+| 31 | 応答文法層 | 応答走査体 | 再送跳躍獣 | 確認隔壁機 | 未完了同期機構グラマ |
+| 32 | 第八鍵裏面層 | 鍵式走査体 | 対向跳躍体 | 例外隔壁機 | 対向同期機構デュプレクス |
+| 33 | 欠落観測層 | 欠落走査体 | 一拍跳躍体 | 空白補正殻 | 欠落補正機構ブラインドスポット |
+| 34 | 共通参照窓 | 参照ずらし体 | 配列跳躍体 | 座標固定殻 | 共通参照拒絶機構アラインメント |
+| 35 | 共観測点 | 同期漂移体 | 共焦点跳躍体 | 観測固定殻 | 同期破綻機構ディソナンス |
 
 ## 3. Expanded-story midboss / branch boss index
 
@@ -77,8 +87,13 @@ Story enemy IDs are mostly generated as `chXX_normal`, `chXX_fast`, `chXX_tank`,
 | 28 | 非権限守護機ヴェリファ | 削除された設計補助体 |
 | 29 | 第八鍵照合官オクタ | 外側を向く門番 |
 | 30 | 双方向監査官リプライ | 名を返さない観測者 |
+| 31 | 再試行監査官リトライ | 二度返る受信者 |
+| 32 | 裏面監査官リバース | 片側だけの鍵守 |
+| 33 | 無記録監査官ヌル | 忘却を拒む残響獣 |
+| 34 | 座標監査官オーバーレイ | 地図に載らない標識獣 |
+| 35 | 参照断絶官スプリット | 二重輪郭残響獣 |
 
-## 4. Ch21–30 exploration event index
+## 4. Ch21–35 exploration event index
 
 These events live on the existing regional exploration surface; they are not separate screens.
 
@@ -131,6 +146,31 @@ These events live on the existing regional exploration surface; they are not sep
 - 返された座標 — Lore
 - 生活圏信号記録 — Loot
 - 双方向照合端末 — Choice
+
+### Ch31 応答文法層
+- 受理状態列 — Lore
+- 再試行時標 — Lore
+- 送信元なき重複応答 — Choice
+
+### Ch32 第八鍵裏面層
+- 七鍵認証樹 — Lore
+- 第八鍵裏面痕跡 — Lore
+- 存在しない第二署名 — Choice
+
+### Ch33 欠落観測層
+- 機械記録の空白時標 — Lore
+- 根脈に残る一拍 — Lore
+- 削除か表現不能か — Choice
+
+### Ch34 共通参照窓
+- 点と線だけの返答 — Lore
+- 境界図の重なり — Lore
+- 双方が指す同一点 — Choice
+
+### Ch35 共観測点
+- 独立観測の同一点 — Lore
+- 数十拍の第八鍵安定 — Lore
+- 深緑の森の二重輪郭 — Choice
 
 ## 5. Phase12 / Content Pack II optional boss index
 
