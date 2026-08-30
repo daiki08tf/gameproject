@@ -373,7 +373,7 @@ Dungeon専用engineを作らずRoute Graphの設定差で表現する。
 
 ## Foundation
 
-### [ ] W0 — Existing World Architecture Audit
+### [x] W0 — Existing World Architecture Audit
 コード変更を急がず、以下の正本・接続点・save ownershipを徹底監査する。
 - Story / CHAPTERS / Stage
 - BattleEngine / TextBattleScreen
@@ -403,22 +403,22 @@ Deliverables:
 - World 4.0 architecture contract
 - このroadmapの監査結果による改訂
 
-### [ ] W1 — World / Region Data Model
+### [x] W1 — World / Region Data Model
 - 既存Worldを壊さずRegion metadata layerを定義。
 - Region theme / recommended range / state / route entry / discovery references。
 - raw internal IDをUIへ露出しない。
 
-### [ ] W2 — Adventure Session Foundation
+### [x] W2 — Adventure Session Foundation
 - 出発 / 中断保存 / 再開 / 帰還。
 - Adventure-only stateとpersistent discovery stateを分離。
 - legacy save backfill。
 
-### [ ] W3 — Route Graph & Node Engine
+### [x] W3 — Route Graph & Node Engine
 - authored graph、分岐、合流、node condition、shortcut。
 - Battle/Event/Discovery/Treasure/Camp/NPC/Secret等の共通node contract。
 - deterministic variation用seed/進行方式はW0で既存RNGと整合させる。
 
-### [ ] W4 — Adventure UI Foundation
+### [x] W4 — Adventure UI Foundation
 - World → Region → Adventureの最小導線。
 - 半可視Route情報。
 - 1画面1目的、スマホ優先。
@@ -426,53 +426,53 @@ Deliverables:
 
 ## Exploration & Events
 
-### [ ] W5 — Scene Exploration Engine
+### [x] W5 — Scene Exploration Engine
 - Observation → Investigation → Resolution。
 - nested investigation。
 - requirement付き選択肢。
 - Immediate / Adventure / Region / World consequence scopes。
 
-### [ ] W6 — Data-Driven Event Framework
+### [x] W6 — Data-Driven Event Framework
 - event definition / conditions / choices / results / follow-up / flags。
 - weighted conditional pool。
 - oneShot / repeatable / chain / adventure-count cooldown / rare。
 - 同一Event連打防止。
 
-### [ ] W7 — Discovery 4.0
+### [x] W7 — Discovery 4.0
 - Landmark/Lore/Creature/Civilization/Ancient/Anomaly/Secret。
 - 既存Discovery正本との統合。
 - Region completion。
 - 未知Secretネタバレ防止。
 
-### [ ] W8 — Trace / Clue / Investigation Board
+### [x] W8 — Trace / Clue / Investigation Board
 - Monster/Human/Ancient/Rift/Secret traces。
 - Clue chain。
 - Settlement側の調査記録表示。
 - Quest Logの単純置換ではなく「情報を繋ぐ」UI。
 
-### [ ] W9 — Ambient & Investigation Content Pack I
+### [x] W9 — Ambient & Investigation Content Pack I
 - 最初の複数Regionへ十分なAmbient/Investigation Sceneを投入。
 - 「何も起きない静かなScene」も適量追加。
 - 選択肢に一意の善悪正解を作りすぎない。
 
-### [ ] W10 — Event Chains & Persistent Memory
+### [x] W10 — Event Chains & Persistent Memory
 - 複数Adventureに跨るchain。
 - Event memory / 再訪文章変化。
 - failure branch。
 - 「今は解けない → 記録 → 帰還 → 後で解決」。
 
-### [ ] W11 — Mystery System
+### [x] W11 — Mystery System
 - Rumor → Trace → Discovery → Research → 再探索 → Secret/Boss等の長期Mystery。
 - Mysteryは必須Storyから分離。
 - ヒント段階を用意し詰みを防止。
 
-### [ ] W12 — Hidden Routes & Secret Locations
+### [x] W12 — Hidden Routes & Secret Locations
 - Secretの存在自体を隠す。
 - 複合条件と複数解法。
 - permanent shortcut。
 - authored secret scenes。
 
-### [ ] W13 — NPC / Traveler Network
+### [x] W13 — NPC / Traveler Network
 - 再登場NPC。
 - Region ↔ Settlement移動。
 - Merchant/Traveler/Scholar/Tamer等。
@@ -480,66 +480,66 @@ Deliverables:
 
 ## Build Expression
 
-### [ ] W14 — Job Exploration Actions
+### [x] W14 — Job Exploration Actions
 - 既存Jobからfield actionsを派生。
 - 専用選択肢は常時最適解にしない。
 - Job変更で同じSceneの解法が変わる。
 
-### [ ] W15 — Companion Field Actions
+### [x] W15 — Companion Field Actions
 - species/nature/existing traitsからfield reaction。
 - Trace / scouting / anomaly / route hint等。
 - Companion必須の取り返し不能コンテンツは禁止。
 
-### [ ] W16 — Equipment Expansion I: Regional Gear
+### [x] W16 — Equipment Expansion I: Regional Gear
 - Region固有武器/防具/Unique。
 - 既存Loot/Item Power正本へ統合。
 - 地域へ行く理由を作る。
 
-### [ ] W17 — Rune 2.0 Adventure Expansion
+### [x] W17 — Rune 2.0 Adventure Expansion
 - Exploration information runes。
 - Nemesis/Boss/enemy-type conditional runes。
 - build-changing runes。
 - Rune 2.0正本のみを拡張し旧socket/crafting系を復活させない。
 
-### [ ] W18 — Exploration Gear & Utility Sets
+### [x] W18 — Exploration Gear & Utility Sets
 - 情報開示 / Event option / Camp / Trace等を変えるutility gear。
 - 2–3部位setはutility中心。
 - DPS最強set固定化を避ける。
 
 ## Living World
 
-### [ ] W19 — Nemesis Hunt 4.0
+### [x] W19 — Nemesis Hunt 4.0
 - Activity → Trace → Clue → location → existing Nemesis battle。
 - Adventure進行によるRegion移動。
 - 逃走/再追跡。
 - Nemesis撃破によるRegion変化。
 
-### [ ] W20 — World Event Adventure Integration
+### [x] W20 — World Event Adventure Integration
 - World EventがRegion node/event poolを変える。
 - 既存reward/scalingは再実装しない。
 
-### [ ] W21 — Seasons / Weather / Daypart Integration
+### [x] W21 — Seasons / Weather / Daypart Integration
 - Settlement S12 hooksをWorld Adventureで実消費。
 - Rain/Mist/Night/SeasonによるRoute/Scene/Secret変化。
 - 単純倍率中心にしない。
 
-### [ ] W22 — World Tier Adventure Integration
+### [x] W22 — World Tier Adventure Integration
 - 既存WT倍率はそのまま。
 - Elite/Nemesis/Anomaly/Secret/Endgame content availabilityを変える。
 
-### [ ] W23 — Rift / Secret Realm / Machine Realm Discovery
+### [x] W23 — Rift / Secret Realm / Machine Realm Discovery
 - Adventure内で痕跡/入口発見。
 - 侵入 / 位置記録 / 撤退。
 - 既存Realm進行・報酬を正本として利用。
 
-### [ ] W24 — Dynamic Region State
+### [x] W24 — Dynamic Region State
 - Stable / Threatened / Event / Corrupted / Recovered等。
 - プレイヤー行動と既存system状態で変化。
 - description / NPC / event pool / route availabilityへ反映。
 
 ## Full RPG Loop
 
-### [ ] W25 — Settlement Feedback Loop
+### [x] W25 — Settlement Feedback Loop
 - Tavern Rumor → Adventure。
 - Discovery → Research。
 - Resident knowledge → Route/Event。
@@ -547,18 +547,18 @@ Deliverables:
 - Ranch/Companion → field interaction。
 - Adventure成果 → Chronicle。
 
-### [ ] W26 — Story → Free Adventure Integration
+### [x] W26 — Story → Free Adventure Integration
 - existing Story StageをRegion Story Routeとして包む。
 - Story攻略後Free Adventure解禁。
 - Story save/progression互換。
 
-### [ ] W27 — Region Boss / Secret Boss Framework
+### [x] W27 — Region Boss / Secret Boss Framework
 - existing Boss正本を優先。
 - authored Region Boss endpoint。
 - Secret/Mystery/Nemesisとの複合Boss条件。
 - BattleEngineを再実装しない。
 
-### [ ] W28 — Dungeon Adventures & Shortcuts
+### [x] W28 — Dungeon Adventures & Shortcuts
 - Route GraphによるDungeon。
 - branch / treasure / camp / secret / boss。
 - permanent shortcutで周回負荷軽減。
@@ -572,35 +572,35 @@ Deliverables:
 - 新規save rootなし。`state.adventure4HighLevelStateForRegion(regionId)`は既存`activeWorldTier`/`world4RegionState`/`adventure4NemesisHuntState`を読むだけのderived view。
 - UIはWorld選択画面の既存Region cardへ1行のバッジ（`normal`時は非表示）を足しただけで、新しいボタン・新しい画面は追加していない。
 
-### [ ] W30 — Equipment Expansion II: Endgame Horizontal Gear
+### [x] W30 — Equipment Expansion II: Endgame Horizontal Gear
 - 高Lvで単純Item Powerだけではない横方向Unique / conditional gear。
 - Rift/Nemesis/Machine/Secret等の活動に由来する装備。
 - 既存Endgame reward multiplierを二重適用しない。
 
 ## Content & Finish
 
-### [ ] W31 — Event Content Pack II
+### [x] W31 — Event Content Pack II
 - Region固有Ambient/Investigation/NPC/Mystery/Secretを拡充。
 - data追加中心で拡張できることを実証。
 - 重複文章・同型選択肢を監査。
 
-### [ ] W32 — Exploration Chronicle & World Records
+### [x] W32 — Exploration Chronicle & World Records
 - Discovery / Region Boss / Nemesis / Mystery / Secretの記録。
 - Settlement Chronicle/Codexと役割重複しない形へ統合。
 
-### [ ] W33 — Adventure UI 4.0 Final
+### [x] W33 — Adventure UI 4.0 Final
 - World/Region/Adventure/Investigation Boardの情報階層を最終整理。
 - 長文折り畳み、compact status、主要CTA優先。
 - Homeのボタン増殖を防ぐ。
 - raw IDs / debug text / duplicate panels除去。
 
-### [ ] W34 — Save Migration & Compatibility Audit
+### [x] W34 — Save Migration & Compatibility Audit
 - old save / mid-game / endgame / Settlement 3.0 save。
 - current Adventure途中save。
 - unknown/missing fields backfill。
 - canonical roots重複監査。
 
-### [ ] W35 — Full Integration Regression & Balance
+### [x] W35 — Full Integration Regression & Balance
 - Story / Battle / Loot / Job / Companion / Rune / World Tier / World Event / Nemesis / Rift / Secret Realm / Machine Realm / Settlementを横断。
 - reward double application無し。
 - BattleEngine duplication無し。
@@ -609,7 +609,7 @@ Deliverables:
 - mobile navigation regression無し。
 - CI green。
 
-### [ ] W36 — Adventure / World 4.0 Completion Audit
+### [x] W36 — Adventure / World 4.0 Completion Audit
 - 全phase contract確認。
 - 未接続hook / dead UI / zero-consumer eventを検索。
 - roadmapと実装差分を明記。
