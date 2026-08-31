@@ -5,6 +5,8 @@ import { CHAPTERS,isChapterUnlocked } from '../data/stages.js';
 import { journeyName } from '../data/worldVeil.js';
 import { buildWorld4RegionCatalog,world4RegionState } from '../data/adventureWorld4Regions.js';
 import { isStageDiscovered } from '../screens/stageSelect.js';
+import { observedBranchById } from '../data/observedBranches.js';
+import { buildObservedBranchStage } from '../data/observedBranchStages.js';
 import { state } from '../state.js';
 import { renderAdventureRoute } from './adventureWorld4Ui.js';
 import './adventureWorld4RouteEngine.js';
@@ -36,7 +38,12 @@ function canonicalStageById(id){
     const stage=chapter.stages.find(item=>item.id===id);
     if(stage)return{chapter,stage};
   }
-  return null;
+  // CLR-21: Observed Branch Stages are findStage()-resolvable but not part
+  // of CHAPTERS (same shape as Abyss/Secret Realm/Raid stages) — resolve
+  // them here too so Stage detail decoration covers them, with chapter:null
+  // signalling "no Region/Chapter Hunt context" to callers below.
+  const branchStage=buildObservedBranchStage(id);
+  return branchStage?{chapter:null,stage:branchStage}:null;
 }
 
 function regionCatalog(){return buildWorld4RegionCatalog(CHAPTERS);}
@@ -85,6 +92,13 @@ function statusLabel(stage){
 
 function nextCanonicalMainStage(stageId){
   const found=canonicalStageById(stageId);if(!found)return null;
+  if(!found.chapter){
+    // Observed Branch Stage: advance through the Branch's own authored
+    // stageIds order instead of a CHAPTERS chapter.
+    const stageIds=observedBranchById(found.stage.observedBranchId)?.stageIds||[];
+    const index=stageIds.indexOf(stageId);
+    return index>=0&&index+1<stageIds.length?buildObservedBranchStage(stageIds[index+1]):null;
+  }
   const main=found.chapter.stages.filter(stage=>!stage.branch&&!stage.bounty);
   const index=main.findIndex(stage=>stage.id===stageId);
   return index>=0?main[index+1]||null:null;
