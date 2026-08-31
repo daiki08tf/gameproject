@@ -6,6 +6,7 @@ import { buildWorld4RegionCatalog } from '../js/data/adventureWorld4Regions.js';
 import { buildAdventure4PilotRoute,adventure4RegionBossEndpoint } from '../js/data/adventureWorld4Pilot.js';
 import { CLR1_COMBAT_CHAIN_TAG } from '../js/data/coreLoopClr1.js';
 import { CLR2_BRANCH_NODE_IDS,CLR2_PRESSURE_TAG,CLR2_STEADY_TAG } from '../js/data/coreLoopClr2.js';
+import { adventure4Clr5CadenceProfile } from '../js/data/coreLoopClr5.js';
 import {
   CLR9_MIDRUN_INVESTIGATION_REGION_ID,
   CLR9_MIDRUN_INVESTIGATION_SCENE_ID,
@@ -19,9 +20,23 @@ function completedRoute(region,options={}){
   return buildAdventure4PilotRoute(region,{status:'completed',routeEntry:null},options);
 }
 function chain(route){return route.nodes.filter(node=>node.tags.includes(CLR1_COMBAT_CHAIN_TAG));}
-function canonicalStageIds(region){
+function ownedChapters(region){
   const chapterNumbers=new Set(region.chapterNumbers.map(Number));
-  return new Set(CHAPTERS.filter(chapter=>chapterNumbers.has(Number(chapter.num))).flatMap(chapter=>(chapter.stages||[]).filter(stage=>!stage.branch).map(stage=>stage.id)));
+  return CHAPTERS.filter(chapter=>chapterNumbers.has(Number(chapter.num)));
+}
+function canonicalStageIds(region){
+  return new Set(ownedChapters(region).flatMap(chapter=>(chapter.stages||[]).filter(stage=>!stage.branch).map(stage=>stage.id)));
+}
+function huntStageCapacity(region){
+  let count=0;
+  for(const chapter of ownedChapters(region)){
+    const primary=(chapter.stages||[]).filter(stage=>!stage.branch);
+    const first=primary[0]||null;
+    const boss=(chapter.stages||[]).find(stage=>stage.boss&&!stage.branch)||(chapter.stages||[]).find(stage=>stage.boss)||(chapter.stages||[]).at(-1)||null;
+    if(first)count++;
+    if(boss&&boss.id!==first?.id)count++;
+  }
+  return count;
 }
 
 test('CLR-19 derives all completed Hunt routes from the existing eight-Region catalog',()=>{
@@ -85,14 +100,17 @@ test('CLR-19 preserves legacy free-adventure node IDs for suspended-session reco
   }
 });
 
-test('CLR-19 applies the existing World Tier cadence contract once per Region route',()=>{
+test('CLR-19 applies the existing World Tier cadence contract once and never invents Stage authority',()=>{
   for(const region of catalog()){
+    const baseProfile=adventure4Clr5CadenceProfile(0);
+    const tierProfile=adventure4Clr5CadenceProfile(4);
+    const capacity=huntStageCapacity(region);
     const base=completedRoute(region,{worldTierRank:0});
     const tiered=completedRoute(region,{worldTierRank:4});
     assert.equal(base.tags.filter(tag=>tag==='clr5-tier-cadence').length,1,`base cadence tag duplicated for ${region.id}`);
     assert.equal(tiered.tags.filter(tag=>tag==='clr5-tier-cadence').length,1,`tier cadence tag duplicated for ${region.id}`);
-    assert.equal(chain(base).length,6,`unexpected base cadence for ${region.id}`);
-    assert.equal(chain(tiered).length,8,`unexpected tier cadence for ${region.id}`);
+    assert.equal(chain(base).length,Math.min(baseProfile.pressureBattles,capacity),`unexpected base cadence for ${region.id}`);
+    assert.equal(chain(tiered).length,Math.min(tierProfile.pressureBattles,capacity),`unexpected tier cadence for ${region.id}`);
   }
 });
 
