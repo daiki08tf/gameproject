@@ -5,6 +5,7 @@ import { CHAPTERS,isChapterUnlocked } from '../data/stages.js';
 import { buildWorld4RegionCatalog,world4RegionPresentation,world4RegionState,world4RegionById } from '../data/adventureWorld4Regions.js';
 import { buildAdventure4PilotRoute,adventure4PilotPreview } from '../data/adventureWorld4Pilot.js';
 import { buildAdventure4PilotSceneCatalog,adventure4SceneById,adventure4SceneStep,adventure4SceneChoices,resolveAdventure4SceneChoice } from '../data/adventureWorld4Scenes.js';
+import { adventure4Clr1BattleResultPatch } from '../data/coreLoopClr1.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
@@ -34,7 +35,7 @@ function currentRegionAndRoute(){const session=state.adventure4Session();const r
 function returnAdventure(){state.returnFromAdventure4();activeRoute=null;goHome();}
 function suspendAdventure(){state.suspendAdventure4();goHome();}
 
-function launchAdventureBattle(node){if(!node?.stageId)return;state.checkpointAdventure4({pendingEncounter:{nodeId:node.id,stageId:node.stageId}});showScreen('textBattleScreen');battle.start(node.stageId,result=>{if(result?.cleared&&state.rollRune2DropForStage)result.rune2Drops=state.rollRune2DropForStage(node.stageId);state.checkpointAdventure4({pendingEncounter:null});renderResult(result);configureAdventureResultActions(()=>renderAdventureRoute());showScreen('resultScreen');});}
+function launchAdventureBattle(node){if(!node?.stageId)return;state.checkpointAdventure4({pendingEncounter:{nodeId:node.id,stageId:node.stageId}});showScreen('textBattleScreen');battle.start(node.stageId,result=>{if(result?.cleared&&state.rollRune2DropForStage)result.rune2Drops=state.rollRune2DropForStage(node.stageId);const resultPatch=adventure4Clr1BattleResultPatch(node,result,state.adventure4Session());if(resultPatch)state.checkpointAdventure4(resultPatch);renderResult(result);configureAdventureResultActions(()=>renderAdventureRoute());showScreen('resultScreen');});}
 
 function nodeButton(node,route){const button=document.createElement('button');button.type='button';button.className=`adventure4-choice adventure4-${node.type}`;const typeLabel={battle:'戦闘',boss:'強敵',elite:'強敵',event:'調査',camp:'帰還',scene:'移動'}[node.type]||'探索';button.innerHTML=`<span><strong>${node.name}</strong><small>${typeLabel}</small></span><span>›</span>`;button.addEventListener('click',()=>{Audio_.tap();const moved=state.moveAdventure4ToNode(route,node.id);if(!moved.ok)return;if(['battle','elite','boss'].includes(node.type)){launchAdventureBattle(node);return;}if(node.type==='camp'&&node.tags?.includes('return')){returnAdventure();return;}renderAdventureRoute();});return button;}
 
