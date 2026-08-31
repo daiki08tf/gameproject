@@ -44,6 +44,14 @@ test('Story aftermath is invisible until the canonical Story stage is cleared',(
   assert.deepEqual(after.map(n=>n.id),[CLR6_STORY_AFTERMATH_NODE_ID,'return']);
 });
 
+test('CLR-6 direct Story battle entry exposes a playable current-node battle action',()=>{
+  const ui=fs.readFileSync('js/patches/adventureWorld4Ui.js','utf8');
+  assert.match(ui,/const currentCombat=\['battle','elite','boss'\]\.includes\(current\.type\)/);
+  assert.match(ui,/currentCombat&&!pendingCurrent/);
+  assert.match(ui,/戦闘開始/);
+  assert.match(ui,/launchAdventureBattle\(current\)/);
+});
+
 test('CLR-6 aftermath uses a short post-combat scene and returns through existing route authority',()=>{
   const route=storyRoute();
   const node=route.nodes.find(n=>n.id===CLR6_STORY_AFTERMATH_NODE_ID);
