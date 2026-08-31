@@ -540,7 +540,7 @@ Deliverable: PR #389.
 
 ---
 
-## [ ] CLR-20 — Endgame Alignment
+## [x] CLR-20 — Endgame Alignment ✅ COMPLETE
 
 Verify Stage-first/Region-Hunt flow complements rather than replaces:
 
@@ -552,6 +552,18 @@ Verify Stage-first/Region-Hunt flow complements rather than replaces:
 - other existing endgame systems.
 
 Abyss remains a strong vertical push. Region Hunt provides world-based gear/level farming. Neither should duplicate the other.
+
+Implemented:
+
+- Added `tests/core-loop-clr20.test.js` as an explicit boundary audit instead of adding new Endgame integration code.
+- Stage-first Hunt remains gated to completed canonical non-Branch/non-Bounty Stages and continues to reuse the existing Adventure4 session authority.
+- Generalized Region Hunt routes are verified to contain only Region-owned canonical Stage IDs; Rift / Secret Realm / Machine World / Bounty IDs cannot leak into CLR Hunt routes.
+- Abyss keeps its existing independent Home entry (`#goAbyssBtn`) and is not redirected through Stage-first Hunt.
+- Rift, Secret Realm, Machine World, EX Bounty and Nemesis retain their existing identity flags, progress/reward authorities and save/runtime ownership.
+- Region Hunt imports none of the Endgame builders and adds no bridge save root, Hunt level/currency/stamina, or duplicate World Tier authority.
+- Both **Blade Vale Tests** and **Phase 8 Validation** passed on PR and on main after merge.
+
+Deliverable: PR #391.
 
 ---
 
