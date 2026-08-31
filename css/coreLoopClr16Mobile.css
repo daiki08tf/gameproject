@@ -1,0 +1,190 @@
+/* CLR-16 — Stage-first mobile navigation / playability pass */
+
+#chapterSelectScreen,
+#stageSelectScreen{
+  overflow:hidden;
+}
+
+#chapterSelectScreen .subbar,
+#stageSelectScreen .subbar{
+  flex:0 0 auto;
+  position:sticky;
+  top:0;
+  z-index:4;
+  padding:4px 0 8px;
+  background:var(--bg);
+}
+
+#chapterSelectScreen .stage-list,
+#stageSelectScreen .stage-list{
+  flex:1 1 auto;
+  min-height:0;
+  padding-bottom:calc(18px + env(safe-area-inset-bottom));
+}
+
+#stageSelectScreen .stage-card{
+  gap:10px;
+  min-height:62px;
+}
+
+#stageSelectScreen .stage-card > div:first-child{
+  min-width:0;
+}
+
+#stageSelectScreen .stage-card .name{
+  overflow-wrap:anywhere;
+}
+
+#stageSelectScreen .stage-card .cleared{
+  flex:0 0 auto;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.04em;
+  padding:4px 6px;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:999px;
+}
+
+#stageConfirmScreen{
+  overflow:hidden;
+}
+
+#stageConfirmScreen .panel,
+#resultScreen .panel{
+  max-height:calc(100dvh - max(24px, env(safe-area-inset-top)) - max(24px, env(safe-area-inset-bottom)));
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+
+#stageConfirmScreen .panel{
+  text-align:left;
+}
+
+#stageConfirmScreen #confirmStageName{
+  margin-bottom:8px;
+  overflow-wrap:anywhere;
+}
+
+#stageConfirmScreen #confirmStageRec,
+#stageConfirmScreen #confirmStageRewards,
+#stageConfirmScreen #confirmModifiers{
+  margin:6px 0;
+}
+
+#stageFirstHuntContext{
+  padding:9px 10px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:8px;
+  background:rgba(255,255,255,.035);
+  line-height:1.45;
+}
+
+#stageConfirmScreen .confirm-actions,
+#resultScreen .confirm-actions{
+  position:sticky;
+  bottom:-1px;
+  z-index:3;
+  margin:14px -10px -10px;
+  padding:10px;
+  background:linear-gradient(180deg,rgba(12,12,20,.72),rgba(12,12,20,.98) 28%);
+  backdrop-filter:blur(8px);
+}
+
+#stageConfirmScreen #confirmStartBtn{
+  order:1;
+  flex:1 1 100%;
+}
+
+#stageConfirmScreen #stageFirstHuntBtn{
+  order:2;
+  flex:1 1 100%;
+}
+
+#stageConfirmScreen #confirmBackBtn{
+  order:3;
+  flex:1 1 100%;
+}
+
+#resultScreen #resultNextBtn{
+  order:1;
+  flex:1 1 100%;
+}
+
+#resultScreen #stageFirstResultStagesBtn{
+  order:2;
+}
+
+#resultScreen #resultRetryBtn{
+  order:3;
+}
+
+#resultScreen #resultHomeBtn,
+#resultScreen #resultEquipBtn{
+  order:4;
+}
+
+@media(max-width:480px){
+  #chapterSelectScreen,
+  #stageSelectScreen{
+    padding-left:10px;
+    padding-right:10px;
+  }
+
+  #chapterSelectScreen .stage-list,
+  #stageSelectScreen .stage-list{
+    gap:7px;
+  }
+
+  #stageSelectScreen .stage-card{
+    padding:11px 12px;
+    min-height:56px;
+  }
+
+  #stageSelectScreen .stage-card .name{
+    font-size:14px;
+  }
+
+  #stageSelectScreen .stage-card .rec{
+    margin-top:2px;
+    font-size:11px;
+  }
+
+  #stageConfirmScreen,
+  #resultScreen{
+    padding-left:10px;
+    padding-right:10px;
+  }
+
+  #stageConfirmScreen .panel,
+  #resultScreen .panel{
+    width:100%;
+    padding:18px 16px 12px;
+    border-radius:12px;
+  }
+
+  #stageConfirmScreen .panel h2{
+    font-size:20px;
+  }
+
+  #stageConfirmScreen .confirm-actions .btn-main,
+  #stageConfirmScreen .confirm-actions .btn-sub,
+  #resultScreen .confirm-actions .btn-main,
+  #resultScreen .confirm-actions .btn-sub{
+    min-height:46px;
+    white-space:normal;
+    line-height:1.25;
+  }
+}
+
+@media(max-width:360px){
+  #stageSelectScreen .stage-card .cleared{
+    font-size:10px;
+    padding:3px 5px;
+  }
+
+  #stageConfirmScreen .panel,
+  #resultScreen .panel{
+    padding-left:13px;
+    padding-right:13px;
+  }
+}
