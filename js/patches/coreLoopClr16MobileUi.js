@@ -1,5 +1,6 @@
 /* CLR-16 — behavior-oriented mobile navigation semantics.
    Clarifies suspend/return meaning without changing Adventure/session authority. */
+import './coreLoopClr18StoryDensityUi.js';
 
 function ensureStyles(){
   if(document.querySelector('link[data-clr16-mobile]'))return;
