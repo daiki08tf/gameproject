@@ -22,8 +22,8 @@ export function syncCP4BranchSight(){
   return progress;
 }
 
-function recordAwakening(stageId,wasReady){
-  if(!wasReady)return null;
+function recordAwakening(stageId,wasReady,result){
+  if(!wasReady||!result?.cleared)return null;
   const d=world().discoveries,event=cp4BranchSightActivationForStage(stageId,{discoveries:d});
   if(!event)return null;
   put(event.discoveryId,{
@@ -47,18 +47,21 @@ const previousStart=TextBattleScreen.prototype.start;
 TextBattleScreen.prototype.start=function cp4BranchSightStart(stageId,onEnd,blessingId){
   const before=cp4BranchSightProgress({discoveries:world().discoveries});
   const wasReady=before.ready&&before.nextStageId===stageId;
-  const out=previousStart.call(this,stageId,onEnd,blessingId);
-  const event=recordAwakening(stageId,wasReady);
-  if(event){
-    this._pushLines?.([
-      `知覚安定 — ${event.label}`,
-      event.intro,
-      ...event.lines,
-      `分岐視 / Branch Sight — ${event.activation}`,
-      event.next,
-    ]);
-  }
-  return out;
+  const wrappedOnEnd=(result)=>{
+    const event=recordAwakening(stageId,wasReady,result);
+    if(event){
+      this._pushLines?.([
+        `知覚安定 — ${event.label}`,
+        event.intro,
+        ...event.lines,
+        `分岐視 / Branch Sight — ${event.activation}`,
+        event.next,
+      ]);
+      this._renderLog?.();
+    }
+    return onEnd?.(result);
+  };
+  return previousStart.call(this,stageId,wrappedOnEnd,blessingId);
 };
 
 syncCP4BranchSight();
