@@ -11,14 +11,12 @@ import {
   CLR2_STEADY_TAG,
   adventure4Clr2AftermathNodeId,
 } from './coreLoopClr2.js';
+import { adventure4Clr5CadenceProfile } from './coreLoopClr5.js';
 
 const CLR_COMBAT_FIRST_REGIONS=Object.freeze(new Set(['frontier','elemental']));
 
 function chapterByNumber(number){return CHAPTERS.find(ch=>Number(ch.num)===Number(number))||CHAPTERS[Number(number)-1]||null;}
 function primaryStages(chapter){return (chapter?.stages||[]).filter(stage=>!stage.branch);}
-/* Keep the same endpoint rule as the existing World3/World4 Region authorities:
-   prefer an authored Boss, otherwise the chapter's final Stage is the canonical
-   completion endpoint. Adventure must not invent a separate boss progression. */
 function canonicalBoss(chapter){return chapter?.stages?.find(stage=>stage.boss&&!stage.branch)||chapter?.stages?.find(stage=>stage.boss)||chapter?.stages?.at(-1)||null;}
 function ownedChapters(region){return (region?.chapterNumbers||[]).map(chapterByNumber).filter(Boolean);}
 
@@ -81,23 +79,19 @@ function buildLegacyFreeAdventureRoute(region,{secretBoss=null}={}){
   return normalizeAdventure4Route({id:`${region.id}-free-adventure`,regionId:region.id,name:`${region.name}・自由探索`,entryNodeId:'entry',nodes,tags:['free-adventure','dungeon','authored'],stageRefs:refs});
 }
 
-/* CLR combat-first slice.
-   CLR-1 supplies the canonical multi-battle expedition. CLR-2 inserts concise
-   aftermath checkpoints and one meaningful mid-run route decision. CLR-4
-   reuses this exact route adapter in a second cleared Region rather than copying
-   battle, reward, or save authorities. */
 function buildClrCombatFirstFreeAdventureRoute(region,options={}){
   const legacy=buildLegacyFreeAdventureRoute(region,options);
   const bossEndpoint=adventure4RegionBossEndpoint(region);
   const candidates=freeAdventureStageRefs(region).filter(ref=>ref.stage?.id&&ref.stage.id!==bossEndpoint?.stageId);
-  const selected=candidates.slice(0,5);
+  const cadence=adventure4Clr5CadenceProfile(options.worldTierRank);
+  const selected=candidates.slice(0,Math.max(0,cadence.pressureBattles-1));
   if(bossEndpoint)selected.push({chapter:bossEndpoint.chapterNumber,kind:'final-boss',stage:{id:bossEndpoint.stageId,name:bossEndpoint.stageName}});
   if(selected.length<4)return legacy;
 
   const battleIds=selected.map((_,index)=>`clr1-battle-${index+1}`);
   const aftermathIds=battleIds.map(adventure4Clr2AftermathNodeId);
   const hasMidRunBranch=selected.length>=6;
-  const battleNames=['前哨戦','第二遭遇','中枢戦','追加強敵','深部戦'];
+  const battleNames=['前哨戦','第二遭遇','中枢戦','追加強敵','深部戦','深層戦','最奥戦'];
 
   const battleNodes=selected.map((ref,index)=>{
     const id=battleIds[index],final=index===selected.length-1;
@@ -166,7 +160,7 @@ function buildClrCombatFirstFreeAdventureRoute(region,options={}){
     name:`${region.name}・自由探索`,
     entryNodeId:'entry',
     nodes,
-    tags:['free-adventure','dungeon','authored','clr1-combat-first','clr2-aftermath-branching','clr4-shared-combat-loop'],
+    tags:['free-adventure','dungeon','authored','clr1-combat-first','clr2-aftermath-branching','clr4-shared-combat-loop','clr5-tier-cadence'],
   });
 }
 
