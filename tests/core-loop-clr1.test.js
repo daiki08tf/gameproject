@@ -9,6 +9,7 @@ import {
   adventure4Clr1BattleClearFlag,
   adventure4Clr1BattleResultPatch,
 } from '../js/data/coreLoopClr1.js';
+import { CLR2_AFTERMATH_TAG,adventure4Clr2AftermathNodeId } from '../js/data/coreLoopClr2.js';
 
 function frontier(){
   return buildWorld4RegionCatalog(CHAPTERS).find(region=>region.id==='frontier');
@@ -43,7 +44,7 @@ test('non-CLR Adventure battles keep the existing result contract',()=>{
   assert.deepEqual(adventure4Clr1BattleResultPatch({id:'story',tags:['story']},{cleared:true},{}),{pendingEncounter:null});
 });
 
-test('frontier cleared Free Adventure becomes a 6-battle combat-first slice using distinct canonical stages',()=>{
+test('frontier cleared Free Adventure keeps six distinct canonical CLR-1 battles and the Region Boss finisher',()=>{
   const {region,route}=completedFrontierRoute();
   assert.equal(route.id,'frontier-free-adventure');
   assert.ok(route.tags.includes('clr1-combat-first'));
@@ -53,9 +54,12 @@ test('frontier cleared Free Adventure becomes a 6-battle combat-first slice usin
   assert.equal(chain.at(-1).type,'boss');
   assert.equal(chain.at(-1).stageId,adventure4RegionBossEndpoint(region).stageId);
   assert.equal(chain[0].condition,null);
-  for(let i=1;i<chain.length;i++){
-    assert.deepEqual(chain[i].condition,{flag:adventure4Clr1BattleClearFlag(chain[i-1].id)});
-  }
+  assert.deepEqual(chain[1].condition,{flag:adventure4Clr1BattleClearFlag(chain[0].id)});
+  assert.deepEqual(chain[2].condition,{flag:adventure4Clr1BattleClearFlag(chain[1].id)});
+  assert.deepEqual(chain[3].condition,{flag:adventure4Clr1BattleClearFlag(chain[2].id)});
+  // CLR-2 steady route may skip battle 4, so deep battle 5 converges from battle 3.
+  assert.deepEqual(chain[4].condition,{flag:adventure4Clr1BattleClearFlag(chain[2].id)});
+  assert.deepEqual(chain[5].condition,{flag:adventure4Clr1BattleClearFlag(chain[4].id)});
 });
 
 test('new frontier entry exposes the first battle and return, while legacy nodes remain for suspended-session compatibility',()=>{
@@ -66,7 +70,7 @@ test('new frontier entry exposes the first battle and return, while legacy nodes
   assert.ok(route.nodes.some(node=>node.id==='deep-route'));
 });
 
-test('next CLR-1 battle stays locked until this expedition clears the previous battle',()=>{
+test('CLR-1 victory unlocks a CLR-2 aftermath checkpoint; defeat still exposes only return',()=>{
   const {route}=completedFrontierRoute();
   const first=route.nodes.find(node=>node.id==='clr1-battle-1');
   const noClear=adventure4AvailableNext(route,first.id,context());
@@ -74,20 +78,21 @@ test('next CLR-1 battle stays locked until this expedition clears the previous b
 
   const flag=adventure4Clr1BattleClearFlag(first.id);
   const cleared=adventure4AvailableNext(route,first.id,context({[flag]:true}));
-  assert.deepEqual(cleared.map(node=>node.id),['clr1-battle-2','return']);
+  assert.deepEqual(cleared.map(node=>node.id),[adventure4Clr2AftermathNodeId(first.id),'return']);
+  assert.ok(cleared[0].tags.includes(CLR2_AFTERMATH_TAG));
 });
 
-test('route preview never leaks a condition-locked next battle',()=>{
+test('route preview never leaks the post-victory continuation before the battle is cleared',()=>{
   const {route}=completedFrontierRoute();
   const first=route.nodes.find(node=>node.id==='clr1-battle-1');
   const noClear=adventure4AvailableNext(route,first.id,context());
   const hiddenPreview=adventure4PilotPreview(route,first.id,noClear).map(item=>item.name);
-  assert.ok(!hiddenPreview.some(name=>name.includes('2戦目')));
+  assert.ok(!hiddenPreview.some(name=>name.includes('戦果整理')));
 
   const flag=adventure4Clr1BattleClearFlag(first.id);
   const cleared=adventure4AvailableNext(route,first.id,context({[flag]:true}));
   const visiblePreview=adventure4PilotPreview(route,first.id,cleared).map(item=>item.name);
-  assert.ok(visiblePreview.some(name=>name.includes('2戦目')));
+  assert.ok(visiblePreview.some(name=>name.includes('戦果整理')));
 });
 
 test('CLR-1 does not alter uncleared Story routes or non-frontier Free Adventure topology',()=>{
