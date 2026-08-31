@@ -20,8 +20,8 @@ export function syncCP4Parallax(){
   return progress;
 }
 
-function recordContact(stageId,wasReady){
-  if(!wasReady)return null;
+function recordContact(stageId,wasReady,result){
+  if(!wasReady||!result?.cleared)return null;
   const d=world().discoveries,event=cp4ParallaxContactForStage(stageId,{discoveries:d});
   if(!event)return null;
   put(event.discoveryId,{
@@ -44,19 +44,22 @@ const previousStart=TextBattleScreen.prototype.start;
 TextBattleScreen.prototype.start=function cp4ParallaxStart(stageId,onEnd,blessingId){
   const before=cp4ParallaxProgress({discoveries:world().discoveries});
   const wasReady=before.ready&&before.nextStageId===stageId;
-  const out=previousStart.call(this,stageId,onEnd,blessingId);
-  const event=recordContact(stageId,wasReady);
-  if(event){
-    this._pushLines?.([
-      `重複座標 — ${event.label}`,
-      event.intro,
-      `${event.core.name} — ${event.core.description}`,
-      ...event.perceptions,
-      event.collapse,
-      event.next,
-    ]);
-  }
-  return out;
+  const wrappedOnEnd=(result)=>{
+    const event=recordContact(stageId,wasReady,result);
+    if(event){
+      this._pushLines?.([
+        `重複座標 — ${event.label}`,
+        event.intro,
+        `${event.core.name} — ${event.core.description}`,
+        ...event.perceptions,
+        event.collapse,
+        event.next,
+      ]);
+      this._renderLog?.();
+    }
+    return onEnd?.(result);
+  };
+  return previousStart.call(this,stageId,wrappedOnEnd,blessingId);
 };
 
 syncCP4Parallax();
