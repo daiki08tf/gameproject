@@ -6,6 +6,8 @@ import { adventure4ConditionMet } from './adventureWorld4Routes.js';
 
 export const ADVENTURE4_CONSEQUENCE_SCOPES=Object.freeze(['immediate','adventure','region','world']);
 const SCOPE_SET=new Set(ADVENTURE4_CONSEQUENCE_SCOPES);
+const CLR6_STORY_AFTERMATH_NODE_ID='clr6-story-aftermath';
+const CLR6_STORY_AFTERMATH_SCENE_ID='clr6-story-aftermath-scene';
 
 function str(value){return typeof value==='string'&&value.length?value:null;}
 function object(value){return value&&typeof value==='object'&&!Array.isArray(value)?value:{};}
@@ -88,8 +90,7 @@ export function resolveAdventure4SceneChoice(scene,stepId,choiceId,context={}){
   };
 }
 
-export function buildAdventure4PilotSceneCatalog(region,route){
-  if(!region||!route)return[];
+function buildPilotForkScene(region,route){
   const story=route.nodes.find(node=>node.id==='story');
   const inspectedEffects=[
     {scope:'adventure',type:'flag',key:'inspectedPilotFork',value:true},
@@ -112,7 +113,36 @@ export function buildAdventure4PilotSceneCatalog(region,route){
     {id:'resolve-return',phase:'resolution',title:'帰還',text:'無理に先へ進まず、現在の成果を持って拠点へ戻ることにした。',choices:[{id:'continue-return',label:'帰還する',consequences:[{scope:'immediate',type:'routeTarget',targetId:'return'}]}]},
     {id:'resolve-return-inspected',phase:'resolution',title:'記録して帰還',text:'道標と足跡の様子を記録した。次の冒険に備えて拠点へ持ち帰る。',choices:[{id:'continue-return-inspected',label:'記録を持ち帰る',consequences:[...inspectedEffects,{scope:'immediate',type:'routeTarget',targetId:'return'}]}]},
   ];
-  return [normalizeAdventure4Scene({id:'pilot-fork',name:'分かれ道',entryStepId:'observe',tags:['pilot','route-choice'],steps})];
+  return normalizeAdventure4Scene({id:'pilot-fork',name:'分かれ道',entryStepId:'observe',tags:['pilot','route-choice','legacy-entry'],steps});
+}
+
+function buildClr6StoryAftermathScene(region,route){
+  const story=route.nodes.find(node=>node.id==='story');
+  const aftermath=route.nodes.find(node=>node.id===CLR6_STORY_AFTERMATH_NODE_ID);
+  if(!story||!aftermath)return null;
+  return normalizeAdventure4Scene({
+    id:CLR6_STORY_AFTERMATH_SCENE_ID,
+    name:'戦いの跡',
+    entryStepId:'observe',
+    tags:['story','clr6-story-outcome','combat-aftermath'],
+    steps:[
+      {
+        id:'observe',phase:'observation',title:'戦いの跡',
+        text:`${story.name}を越えた先に、戦う前には見えなかった痕跡が残されている。${region.name}で何が起きているのか、その断片を拾えそうだ。`,
+        choices:[{id:'inspect',label:'痕跡を確かめる',detail:'戦闘の結果から世界の断片を読む',nextStepId:'resolve'}],
+      },
+      {
+        id:'resolve',phase:'resolution',title:'見えてきた断片',
+        text:'敵の配置、傷跡、残された痕跡が一本につながる。物語は説明として与えられるのではなく、勝ち抜いた場所そのものから見えてきた。',
+        choices:[{id:'record-and-return',label:'記録して帰還する',consequences:[{scope:'immediate',type:'routeTarget',targetId:'return'}]}],
+      },
+    ],
+  });
+}
+
+export function buildAdventure4PilotSceneCatalog(region,route){
+  if(!region||!route)return[];
+  return [buildPilotForkScene(region,route),buildClr6StoryAftermathScene(region,route)].filter(Boolean);
 }
 
 export function adventure4SceneById(catalog,id){return catalog?.find(scene=>scene?.id===id)||null;}
