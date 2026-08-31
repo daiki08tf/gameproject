@@ -12,6 +12,11 @@ import {
   adventure4Clr2AftermathNodeId,
 } from './coreLoopClr2.js';
 import { adventure4Clr5CadenceProfile } from './coreLoopClr5.js';
+import {
+  CLR9_MIDRUN_INVESTIGATION_REGION_ID,
+  CLR9_MIDRUN_INVESTIGATION_SCENE_ID,
+  CLR9_MIDRUN_INVESTIGATION_TAG,
+} from './coreLoopClr9.js';
 
 const CLR_COMBAT_FIRST_REGIONS=Object.freeze(new Set(['frontier','elemental']));
 export const CLR6_STORY_AFTERMATH_NODE_ID='clr6-story-aftermath';
@@ -137,10 +142,12 @@ function buildClrCombatFirstFreeAdventureRoute(region,options={}){
       next=[battleIds[4],'return'];
       name='戦果整理：追加強敵を突破';
     }
+    const clr9MidrunInvestigation=region.id===CLR9_MIDRUN_INVESTIGATION_REGION_ID&&hasMidRunBranch&&index===2;
     aftermathNodes.push({
       id:aftermathIds[index],type:'event',name,next,
+      sceneId:clr9MidrunInvestigation?CLR9_MIDRUN_INVESTIGATION_SCENE_ID:null,
       condition:{flag:adventure4Clr1BattleClearFlag(currentBattleId)},
-      tags:['free-adventure',CLR2_AFTERMATH_TAG,'choice','combat-aftermath'],
+      tags:['free-adventure',CLR2_AFTERMATH_TAG,'choice','combat-aftermath',clr9MidrunInvestigation?CLR9_MIDRUN_INVESTIGATION_TAG:''].filter(Boolean),
     });
   }
 
@@ -174,7 +181,7 @@ function buildClrCombatFirstFreeAdventureRoute(region,options={}){
     name:`${region.name}・自由探索`,
     entryNodeId:'entry',
     nodes,
-    tags:['free-adventure','dungeon','authored','clr1-combat-first','clr2-aftermath-branching','clr4-shared-combat-loop','clr5-tier-cadence'],
+    tags:['free-adventure','dungeon','authored','clr1-combat-first','clr2-aftermath-branching','clr4-shared-combat-loop','clr5-tier-cadence','clr9-combat-milestone-investigation'],
   });
 }
 

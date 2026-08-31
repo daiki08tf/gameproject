@@ -3,6 +3,13 @@
    Scene data describes choices and consequence scopes; authoritative systems
    remain responsible for permanent Story/Discovery/Region/World mutations. */
 import { adventure4ConditionMet } from './adventureWorld4Routes.js';
+import { CLR2_BRANCH_NODE_IDS } from './coreLoopClr2.js';
+import {
+  CLR9_MIDRUN_INVESTIGATION_REGION_ID,
+  CLR9_MIDRUN_INVESTIGATION_SCENE_ID,
+  CLR9_MIDRUN_INVESTIGATION_TRACE_ID,
+  CLR9_MIDRUN_INVESTIGATION_TAG,
+} from './coreLoopClr9.js';
 
 export const ADVENTURE4_CONSEQUENCE_SCOPES=Object.freeze(['immediate','adventure','region','world']);
 const SCOPE_SET=new Set(ADVENTURE4_CONSEQUENCE_SCOPES);
@@ -143,9 +150,38 @@ function buildClr6StoryAftermathScene(region,route){
   });
 }
 
+function buildClr9MidrunInvestigationScene(region,route){
+  if(region.id!==CLR9_MIDRUN_INVESTIGATION_REGION_ID)return null;
+  const milestone=route.nodes.find(node=>node.sceneId===CLR9_MIDRUN_INVESTIGATION_SCENE_ID);
+  if(!milestone)return null;
+  const traceEffect={scope:'adventure',type:'trace',key:CLR9_MIDRUN_INVESTIGATION_TRACE_ID};
+  return normalizeAdventure4Scene({
+    id:CLR9_MIDRUN_INVESTIGATION_SCENE_ID,
+    name:'戦果整理：戦いの先で道標を読む',
+    entryStepId:'observe',
+    tags:['free-adventure','combat-aftermath',CLR9_MIDRUN_INVESTIGATION_TAG],
+    steps:[
+      {
+        id:'observe',phase:'observation',title:'三戦を越えた先',
+        text:'連戦を抜けたことで、敵に遮られていた古い道標へ近づけるようになった。表面には自然な風化ではない削り跡が残っている。',
+        choices:[{id:'inspect',label:'削られた道標を調べる',detail:'戦果整理のついでに、勝ち抜いた先で初めて触れられる痕跡を確認する',nextStepId:'resolve'}],
+      },
+      {
+        id:'resolve',phase:'resolution',title:'削られた道標',
+        text:'文字は意図的に削られている。ここを通った誰かが、行き先を知られたくなかったらしい。痕跡を記録し、この先の狩り方を決める。',
+        choices:[
+          {id:'steady',label:'記録して安全路へ',detail:'1戦省いて深部へ進む',consequences:[traceEffect,{scope:'immediate',type:'routeTarget',targetId:CLR2_BRANCH_NODE_IDS.steady}]},
+          {id:'pressure',label:'記録して圧力路へ',detail:'追加の強敵も狩る',consequences:[traceEffect,{scope:'immediate',type:'routeTarget',targetId:CLR2_BRANCH_NODE_IDS.pressure}]},
+          {id:'return',label:'記録して帰還する',detail:'戦果と痕跡を安全に持ち帰る',consequences:[traceEffect,{scope:'immediate',type:'routeTarget',targetId:'return'}]},
+        ],
+      },
+    ],
+  });
+}
+
 export function buildAdventure4PilotSceneCatalog(region,route){
   if(!region||!route)return[];
-  return [buildPilotForkScene(region,route),buildClr6StoryAftermathScene(region,route)].filter(Boolean);
+  return [buildPilotForkScene(region,route),buildClr6StoryAftermathScene(region,route),buildClr9MidrunInvestigationScene(region,route)].filter(Boolean);
 }
 
 export function adventure4SceneById(catalog,id){return catalog?.find(scene=>scene?.id===id)||null;}
