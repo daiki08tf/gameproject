@@ -6,14 +6,17 @@ const homeNavigation=fs.readFileSync('js/patches/homeNavigation.js','utf8');
 const stageFirst=fs.readFileSync('js/patches/stageFirstNavigationUi.js','utf8');
 const main=fs.readFileSync('js/main.js','utf8');
 
-test('CLR-13 restores the canonical Home Adventure click path instead of Region-first interception',()=>{
-  assert.doesNotMatch(homeNavigation,/import '\.\/adventureWorld4Ui\.js'/);
-  assert.doesNotMatch(homeNavigation,/import '\.\/adventureWorld4HiddenRouteUi\.js'/);
+test('CLR-13 restores the canonical Home Adventure click path while preserving World 4 UI modules',()=>{
+  assert.match(homeNavigation,/import '\.\/adventureWorld4Ui\.js'/);
+  assert.match(homeNavigation,/import '\.\/adventureWorld4HiddenRouteUi\.js'/);
   assert.match(homeNavigation,/import '\.\/stageFirstNavigationUi\.js'/);
+  assert.match(stageFirst,/function restoreCanonicalAdventureEntry\(\)/);
+  assert.match(stageFirst,/cloneNode\(true\)/);
+  assert.match(stageFirst,/button\.replaceWith\(replacement\)/);
   assert.match(main,/goStageBtn'\)\.addEventListener\('click',\(\)=>\{Audio_\.tap\(\);goChapterSelect\(\);\}\)/);
 });
 
-test('CLR-13 keeps World 4 runtime support without installing the Region-first entry handler',()=>{
+test('CLR-13 keeps World 4 runtime support behind the Stage-first Story spine',()=>{
   assert.match(stageFirst,/import '\.\/adventureWorld4RouteEngine\.js'/);
   assert.match(stageFirst,/import '\.\/adventureWorld4SceneRuntime\.js'/);
   assert.match(stageFirst,/import '\.\/adventureWorld4ContentPackI\.js'/);
