@@ -83,13 +83,17 @@ test('CLR-2 branch converges on battle 5 and then the existing Region Boss witho
   assert.equal(r.nodes.find(node=>node.id==='clr1-battle-6').type,'boss');
 });
 
-test('CLR-2 remains scoped to cleared combat-first Free Adventure regions only',()=>{
+test('CLR-2 remains scoped to cleared combat-first Free Adventure routes, which CLR-19 extends to every Region',()=>{
   const frontier=buildWorld4RegionCatalog(CHAPTERS).find(item=>item.id==='frontier');
   const story=buildAdventure4PilotRoute(frontier,{status:'available',routeEntry:{stageId:'1-1',stageName:'story'}});
   assert.ok(!story.tags.includes('clr2-aftermath-branching'));
+  // Before CLR-19, only frontier/elemental got the combat-first route (and
+  // therefore CLR-2 branching); CLR-19 generalizes the shared route to every
+  // canonical World3 Region, so a completed non-frontier/elemental Region
+  // now carries the same branching tag.
   const other=buildWorld4RegionCatalog(CHAPTERS).find(item=>!['frontier','elemental'].includes(item.id)&&item.chapterNumbers?.length);
   if(other){
     const free=buildAdventure4PilotRoute(other,{status:'completed',routeEntry:null});
-    assert.ok(!free.tags.includes('clr2-aftermath-branching'));
+    assert.ok(free.tags.includes('clr2-aftermath-branching'));
   }
 });

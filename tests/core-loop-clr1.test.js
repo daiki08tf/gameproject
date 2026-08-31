@@ -94,16 +94,21 @@ test('route preview never leaks the post-victory continuation before the battle 
   assert.ok(visiblePreview.some(name=>name.includes('戦果整理')));
 });
 
-test('CLR-1 does not alter uncleared Story routes or untouched Free Adventure topology',()=>{
+test('CLR-1 does not alter uncleared Story routes; CLR-19 extends combat-first Hunt to every completed Region',()=>{
   const region=frontier();
   const story=buildAdventure4PilotRoute(region,{status:'available',routeEntry:{stageId:'1-1',stageName:'story'}});
   assert.ok(!story.tags.includes('clr1-combat-first'));
   assert.equal(story.nodes.filter(node=>node.tags.includes(CLR1_COMBAT_CHAIN_TAG)).length,0);
 
+  // Before CLR-19, only frontier/elemental got the combat-first Free
+  // Adventure route and every other completed Region was untouched. CLR-19
+  // generalizes that shared route to every canonical World3 Region (see
+  // coreLoopClr19.js), so a completed non-frontier/elemental Region now gets
+  // the same combat-first shape instead of being left alone.
   const other=buildWorld4RegionCatalog(CHAPTERS).find(r=>!['frontier','elemental'].includes(r.id)&&r.chapterNumbers?.length);
   if(other){
     const free=buildAdventure4PilotRoute(other,{status:'completed',routeEntry:null});
-    assert.ok(!free.tags.includes('clr1-combat-first'));
-    assert.equal(free.nodes.filter(node=>node.tags.includes(CLR1_COMBAT_CHAIN_TAG)).length,0);
+    assert.ok(free.tags.includes('clr1-combat-first'));
+    assert.ok(free.nodes.filter(node=>node.tags.includes(CLR1_COMBAT_CHAIN_TAG)).length>0);
   }
 });
