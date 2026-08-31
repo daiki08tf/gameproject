@@ -8,14 +8,19 @@ export function adventure4Clr1BattleClearFlag(nodeId){
   return typeof nodeId==='string'&&nodeId.length?`clr1:cleared:${nodeId}`:null;
 }
 
+export function adventure4Clr1BattleTypeClearFlag(type){
+  return ['battle','elite','boss'].includes(type)?`clr1:clearedType:${type}`:null;
+}
+
 export function adventure4Clr1BattleResultPatch(node,result,session={}){
   const isClr1=Array.isArray(node?.tags)&&node.tags.includes(CLR1_COMBAT_CHAIN_TAG);
   if(!isClr1)return{pendingEncounter:null};
   if(!result?.cleared)return null;
   const flag=adventure4Clr1BattleClearFlag(node.id);
   if(!flag)return{pendingEncounter:null};
+  const typeFlag=adventure4Clr1BattleTypeClearFlag(node.type);
   return{
     pendingEncounter:null,
-    temporaryFlags:{...(session?.temporaryFlags||{}),[flag]:true},
+    temporaryFlags:{...(session?.temporaryFlags||{}),[flag]:true,...(typeFlag?{[typeFlag]:true}:{})},
   };
 }
