@@ -7,11 +7,15 @@
    identity toward the realm's preferred elemental family. Item Power, rarity,
    Greater flags, Legendary/Curse packages and instance persistence remain the
    canonical Equipment 3.0 systems.
+
+   CLR-17 extends the same bounded target-farm bridge to active Region Hunt runs.
+   Region identity never replaces an existing stronger/specialized drop context.
    ============================================================ */
 import { state } from '../state.js';
 import { getItem, baseItemId } from '../data/equipment.js';
 import { AFFIXES } from '../data/affixes.js';
 import { applyItemPowerAffixQuality } from '../data/equipment3AffixQuality.js';
+import { clr17MergeDropContext } from '../data/coreLoopClr17.js';
 import { canonicalDisplayName } from './equipment3Foundation.js';
 import { canonicalGearName } from '../data/equipment3Gear.js';
 
@@ -29,11 +33,17 @@ function targetIds(ctx) {
     .filter(id => !!AFFIXES[id]);
 }
 
+function huntDropContext(target, dropCtx) {
+  const session = target.adventure4Session?.();
+  if (!session?.active || !String(session.routeId || '').endsWith('-free-adventure')) return dropCtx;
+  return clr17MergeDropContext(dropCtx, session.regionId);
+}
+
 export function steerRealmAffix(inst, ctx = {}, instanceId = '') {
   if (!inst || !Array.isArray(inst.affixes) || inst.affixes.length === 0 || ctx.informationalOnly) return false;
   const ids = targetIds(ctx);
   const chance = Math.max(0, Math.min(1, Number(ctx.targetAffixChance) || 0));
-  if (!ids.length || chance <= 0 || hashUnit(`${instanceId}:${ctx.world2KeyType}:target`) >= chance) return false;
+  if (!ids.length || chance <= 0 || hashUnit(`${instanceId}:${ctx.world2KeyType || ctx.clr17RegionId || 'target'}:target`) >= chance) return false;
   if (inst.affixes.some(a => ids.includes(a.id))) {
     inst.targetFarm = ctx.targetFarm || null;
     inst.targetFarmHit = true;
@@ -61,10 +71,10 @@ function refreshDisplayName(instanceId, inst) {
 
 const previousAddItem = state.addItem.bind(state);
 state.addItem = function loot3RealmAddItem(itemId, qty = 1, dropCtx = null) {
+  const ctx = huntDropContext(this, dropCtx) || {};
   const beforeSeq = Math.max(1, Math.floor(Number(this.data.nextInstanceSeq) || 1));
-  const result = previousAddItem(itemId, qty, dropCtx);
+  const result = previousAddItem(itemId, qty, ctx);
   const afterSeq = Math.max(beforeSeq, Math.floor(Number(this.data.nextInstanceSeq) || beforeSeq));
-  const ctx = dropCtx && typeof dropCtx === 'object' ? dropCtx : {};
   if (!targetIds(ctx).length || ctx.informationalOnly || afterSeq <= beforeSeq) return result;
 
   let changed = false;
@@ -81,3 +91,5 @@ state.addItem = function loot3RealmAddItem(itemId, qty = 1, dropCtx = null) {
   if (changed) this.save();
   return result;
 };
+
+export { huntDropContext };
