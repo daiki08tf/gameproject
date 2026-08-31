@@ -17,6 +17,7 @@ import { regionProfileForChapter } from './regionsPhase9.js';
 import { buildAbyssStage } from './abyss.js';
 import { buildSecretRealmStage } from './secretRealms.js';
 import { buildRaidStage } from './raidBosses.js';
+import { buildObservedBranchStage } from './observedBranchStages.js';
 
 const CHAPTER_1 = {
   id: 'ch1', num: 1, name: '第1章 はじまりの平原', stages: [
@@ -73,6 +74,7 @@ export function findStage(stageId){
  }
  if(stageId.startsWith('secret-')){const stage=buildSecretRealmStage(stageId);return stage?{chapter:null,stage}:null;}
  if(stageId.startsWith('raid-')){const stage=buildRaidStage(stageId);return stage?{chapter:null,stage}:null;}
+ if(stageId.startsWith('observedbranch-')){const stage=buildObservedBranchStage(stageId);return stage?{chapter:null,stage}:null;}
  for(const ch of CHAPTERS){const st=ch.stages.find(s=>s.id===stageId);if(st)return{chapter:ch,stage:st};}
  return null;
 }

@@ -8,6 +8,8 @@ import { Audio_ } from '../audio.js';
 import { rollBlessingChoices } from '../data/blessings.js';
 import { KEY_DUNGEON_TYPES } from '../data/world2.js';
 import { world2KeyStageDescriptor } from '../data/world2Stages.js';
+import { knownObservedBranchesForPrimeRegion } from '../data/observedBranchDiscovery.js';
+import { observedBranchStageProgress, buildObservedBranchStage } from '../data/observedBranchStages.js';
 
 export function isStageDiscovered(chapter, stage, stageIndex) {
   if (!chapter || !stage) return false;
@@ -77,6 +79,56 @@ function renderWorld2StageSelect(onPick){
   const riftCount=state.riftKeys?.().length||0;if(riftCount){const r=document.createElement('div');r.className='stage-card branch';r.innerHTML=`<div><div class="name">裂界鍵</div><div class="rec">所持 ${riftCount}本。既存のRift Key処理を維持しつつ、World 3の発見物として追跡する。</div></div>`;list.appendChild(r);}
 }
 
+// CLR-21 — appends the one authored, playable Observed Branch (currently
+// only 王樹領・深緑の森, tied to Chapter 2) beneath its Prime chapter's own
+// Stage list, once its existing CP4 discovery is satisfied. Branch Stage
+// unlock/clear comes entirely from the existing stageProgress/isStageCleared
+// authority via observedBranchStageProgress() — this function only renders.
+// Cards are always appended after the chapter's own stage cards so
+// stageFirstNavigationUi.js's index-based decoration of ordinary stage cards
+// is unaffected.
+function renderObservedBranchStageCards(chapter, list, onPick) {
+  const branches = knownObservedBranchesForPrimeRegion(
+    { chapterId: chapter.id, chapterNum: chapter.num },
+    { discoveries: state.data.world2?.discoveries || {} },
+  );
+  for (const branch of branches) {
+    const progress = observedBranchStageProgress(branch.id, { isStageCleared: id => state.isStageCleared(id) });
+    if (!progress.stages.length) continue;
+    const heading = document.createElement('div');
+    heading.className = 'section-heading';
+    heading.textContent = `◈ ${branch.observedLabel || branch.name}`;
+    list.appendChild(heading);
+    for (const stageInfo of progress.stages) {
+      if (!stageInfo.unlocked) {
+        const locked = document.createElement('div');
+        locked.className = 'stage-card locked';
+        locked.innerHTML = `<div><div class="name">🔒 ？？？</div><div class="rec">直前のStageをクリアすると開放</div></div><div class="cleared">LOCKED</div>`;
+        list.appendChild(locked);
+        break; // later Branch Stages stay unrendered until reached, like ordinary chapters.
+      }
+      const stage = buildObservedBranchStage(stageInfo.id);
+      const card = document.createElement('div');
+      card.className = 'stage-card' + (stageInfo.boss ? ' boss' : '');
+      card.dataset.stageId = stage.id;
+      card.dataset.stageState = stageInfo.cleared ? 'clear' : 'next';
+      const icon = stageInfo.boss ? '👑 ' : '◈ ';
+      card.innerHTML = `<div><div class="name">${icon}${stage.name}</div><div class="rec">推奨Lv ${stage.recLevel}</div></div><div class="cleared">${stageInfo.cleared ? '★' : ''}</div>`;
+      card.addEventListener('click', () => { Audio_.tap(); onPick(buildObservedBranchStage(stageInfo.id)); });
+      list.appendChild(card);
+    }
+    if (progress.cleared) {
+      const hunt = document.createElement('div');
+      hunt.className = 'stage-card branch';
+      hunt.dataset.stageId = progress.bossStageId;
+      hunt.dataset.stageState = 'next';
+      hunt.innerHTML = `<div><div class="name">🔁 Branch Hunt（周回）</div><div class="rec">${branch.observedLabel || branch.name}を再訪し、大樹霊へ再戦する。</div></div><div class="cleared">→</div>`;
+      hunt.addEventListener('click', () => { Audio_.tap(); onPick(buildObservedBranchStage(progress.bossStageId)); });
+      list.appendChild(hunt);
+    }
+  }
+}
+
 export function renderStageSelect(chapterIndex, onPick) {
   if(chapterIndex==='world2'||chapterIndex==='world3-branches'){renderWorld2StageSelect(onPick);return;}
   const chapter = CHAPTERS[chapterIndex];
@@ -94,6 +146,7 @@ export function renderStageSelect(chapterIndex, onPick) {
     card.addEventListener('click', () => { Audio_.tap(); onPick(stage); });
     list.appendChild(card);
   });
+  renderObservedBranchStageCards(chapter, list, onPick);
 }
 
 let currentBlessingChoices = [];
@@ -111,6 +164,7 @@ export function renderStageConfirm(stage) {
   else if(stage.secretRealm){modEl.textContent=`異界：${stage.abyssEra||stage.name}\n${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if (stage.bounty) {const hint = stage.bountyRewardHint ? ` ／ 戦利品の噂：${stage.bountyRewardHint}` : '';modEl.textContent = `手配書：${stage.rumor || '詳細不明'} ／ 特徴：${stage.bountyGimmick || '未知の強敵'}${hint}`;modEl.classList.remove('hidden');}
   else if (stage.isAbyss) {const lines = [];if (stage.abyssRoute) lines.push(`${stage.abyssRoute.icon} ${stage.abyssRoute.name}：☠ ${stage.abyssRoute.risk} ／ ◆ ${stage.abyssRoute.reward}`);if (stage.modifiers?.length) lines.push(`環境：${stage.modifiers.map(m => `${m.name}（${m.desc}）`).join(' ／ ')}`);if (stage.abyssPacts?.length) lines.push(`盟約：${stage.abyssPacts.map(p => p.name).join(' ／ ')}　危険度${stage.abyssPactDanger}`);modEl.textContent = lines.join('\n');modEl.style.whiteSpace = 'pre-line';modEl.classList.toggle('hidden', lines.length === 0);}
+  else if (stage.observedBranch) {modEl.textContent = `観測分岐：${stage.observedBranchLabel || ''}\nPrime世界とは異なる歴史が観測されている。`;modEl.style.whiteSpace = 'pre-line';modEl.classList.remove('hidden');}
   else {modEl.textContent = '';modEl.classList.add('hidden');}
   const blessingRow = document.getElementById('confirmBlessingRow');
   if (stage.isAbyss) {currentBlessingChoices = rollBlessingChoices(3);selectedBlessingId = null;blessingRow.classList.remove('hidden');renderBlessingChoices(blessingRow);} else {currentBlessingChoices = [];selectedBlessingId = null;blessingRow.innerHTML = '';blessingRow.classList.add('hidden');}

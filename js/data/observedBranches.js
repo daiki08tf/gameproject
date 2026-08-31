@@ -51,6 +51,12 @@ export const OBSERVED_BRANCHES=Object.freeze([
       rngRequired:false,
     }),
     traversable:false,
+    // CLR-21: references into the existing canonical Stage authority
+    // (js/data/observedBranchStages.js resolves these through the same
+    // findStage()/stageProgress pipeline as every other Stage). This Branch
+    // definition still owns no combat, reward or clear state itself.
+    stageIds:freezeList(['observedbranch-tree-sovereign-1','observedbranch-tree-sovereign-2','observedbranch-tree-sovereign-boss']),
+    bossStageId:'observedbranch-tree-sovereign-boss',
   }),
 ]);
 
