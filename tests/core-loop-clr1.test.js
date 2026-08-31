@@ -57,7 +57,6 @@ test('frontier cleared Free Adventure keeps six distinct canonical CLR-1 battles
   assert.deepEqual(chain[1].condition,{flag:adventure4Clr1BattleClearFlag(chain[0].id)});
   assert.deepEqual(chain[2].condition,{flag:adventure4Clr1BattleClearFlag(chain[1].id)});
   assert.deepEqual(chain[3].condition,{flag:adventure4Clr1BattleClearFlag(chain[2].id)});
-  // CLR-2 steady route may skip battle 4, so deep battle 5 converges from battle 3.
   assert.deepEqual(chain[4].condition,{flag:adventure4Clr1BattleClearFlag(chain[2].id)});
   assert.deepEqual(chain[5].condition,{flag:adventure4Clr1BattleClearFlag(chain[4].id)});
 });
@@ -95,13 +94,13 @@ test('route preview never leaks the post-victory continuation before the battle 
   assert.ok(visiblePreview.some(name=>name.includes('戦果整理')));
 });
 
-test('CLR-1 does not alter uncleared Story routes or non-frontier Free Adventure topology',()=>{
+test('CLR-1 does not alter uncleared Story routes or untouched Free Adventure topology',()=>{
   const region=frontier();
   const story=buildAdventure4PilotRoute(region,{status:'available',routeEntry:{stageId:'1-1',stageName:'story'}});
   assert.ok(!story.tags.includes('clr1-combat-first'));
   assert.equal(story.nodes.filter(node=>node.tags.includes(CLR1_COMBAT_CHAIN_TAG)).length,0);
 
-  const other=buildWorld4RegionCatalog(CHAPTERS).find(r=>r.id!=='frontier'&&r.chapterNumbers?.length);
+  const other=buildWorld4RegionCatalog(CHAPTERS).find(r=>!['frontier','elemental'].includes(r.id)&&r.chapterNumbers?.length);
   if(other){
     const free=buildAdventure4PilotRoute(other,{status:'completed',routeEntry:null});
     assert.ok(!free.tags.includes('clr1-combat-first'));

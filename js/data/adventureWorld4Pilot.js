@@ -12,6 +12,8 @@ import {
   adventure4Clr2AftermathNodeId,
 } from './coreLoopClr2.js';
 
+const CLR_COMBAT_FIRST_REGIONS=Object.freeze(new Set(['frontier','elemental']));
+
 function chapterByNumber(number){return CHAPTERS.find(ch=>Number(ch.num)===Number(number))||CHAPTERS[Number(number)-1]||null;}
 function primaryStages(chapter){return (chapter?.stages||[]).filter(stage=>!stage.branch);}
 /* Keep the same endpoint rule as the existing World3/World4 Region authorities:
@@ -79,13 +81,12 @@ function buildLegacyFreeAdventureRoute(region,{secretBoss=null}={}){
   return normalizeAdventure4Route({id:`${region.id}-free-adventure`,regionId:region.id,name:`${region.name}・自由探索`,entryNodeId:'entry',nodes,tags:['free-adventure','dungeon','authored'],stageRefs:refs});
 }
 
-/* CLR-1/2 vertical slice.
+/* CLR combat-first slice.
    CLR-1 supplies the canonical multi-battle expedition. CLR-2 inserts concise
-   aftermath checkpoints and one meaningful mid-run route decision. The steady
-   route skips one optional elite and reaches the deep section sooner; the
-   pressure route fights that extra canonical stage, earning only the normal
-   EXP/Gold/Loot that battle already owns. No bespoke branch reward exists. */
-function buildClrFrontierFreeAdventureRoute(region,options={}){
+   aftermath checkpoints and one meaningful mid-run route decision. CLR-4
+   reuses this exact route adapter in a second cleared Region rather than copying
+   battle, reward, or save authorities. */
+function buildClrCombatFirstFreeAdventureRoute(region,options={}){
   const legacy=buildLegacyFreeAdventureRoute(region,options);
   const bossEndpoint=adventure4RegionBossEndpoint(region);
   const candidates=freeAdventureStageRefs(region).filter(ref=>ref.stage?.id&&ref.stage.id!==bossEndpoint?.stageId);
@@ -165,12 +166,12 @@ function buildClrFrontierFreeAdventureRoute(region,options={}){
     name:`${region.name}・自由探索`,
     entryNodeId:'entry',
     nodes,
-    tags:['free-adventure','dungeon','authored','clr1-combat-first','clr2-aftermath-branching'],
+    tags:['free-adventure','dungeon','authored','clr1-combat-first','clr2-aftermath-branching','clr4-shared-combat-loop'],
   });
 }
 
 function buildFreeAdventureRoute(region,options={}){
-  return region.id==='frontier'?buildClrFrontierFreeAdventureRoute(region,options):buildLegacyFreeAdventureRoute(region,options);
+  return CLR_COMBAT_FIRST_REGIONS.has(region.id)?buildClrCombatFirstFreeAdventureRoute(region,options):buildLegacyFreeAdventureRoute(region,options);
 }
 
 export function buildAdventure4PilotRoute(region,regionState,options={}){
