@@ -10,6 +10,21 @@ import './adventureWorld4SceneRuntime.js';
 import './adventureWorld4ContentPackI.js';
 import './adventureWorld4HighLevelRuntime.js';
 
+function restoreCanonicalAdventureEntry(){
+  const button=document.getElementById('goStageBtn');
+  if(!button||button.dataset.stageFirstEntry==='true')return button;
+  // adventureWorld4Ui installs a capture listener before main.js attaches the
+  // canonical Chapter handler. Replacing this not-yet-wired button removes only
+  // that early interception while keeping the same DOM id/content for main.js.
+  const replacement=button.cloneNode(true);
+  replacement.dataset.stageFirstEntry='true';
+  replacement.removeAttribute('data-adventure4-entry');
+  button.replaceWith(replacement);
+  return replacement;
+}
+
+restoreCanonicalAdventureEntry();
+
 function currentCanonicalChapter(){
   const title=document.getElementById('chapterTitle')?.textContent||'';
   return CHAPTERS.find(ch=>journeyName(ch)===title)||null;
