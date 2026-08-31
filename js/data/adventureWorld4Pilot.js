@@ -3,6 +3,7 @@
    them as Adventure route nodes and never duplicates battle/reward progression. */
 import { CHAPTERS } from './stages.js';
 import { normalizeAdventure4Route } from './adventureWorld4Routes.js';
+import { CLR1_COMBAT_CHAIN_TAG,adventure4Clr1BattleClearFlag } from './coreLoopClr1.js';
 
 function chapterByNumber(number){return CHAPTERS.find(ch=>Number(ch.num)===Number(number))||CHAPTERS[Number(number)-1]||null;}
 function primaryStages(chapter){return (chapter?.stages||[]).filter(stage=>!stage.branch);}
@@ -53,7 +54,7 @@ function freeAdventureStageRefs(region){
   return refs;
 }
 
-function buildFreeAdventureRoute(region,{secretBoss=null}={}){
+function buildLegacyFreeAdventureRoute(region,{secretBoss=null}={}){
   const refs=freeAdventureStageRefs(region),bossEndpoint=adventure4RegionBossEndpoint(region);
   const shortcutId=adventure4ShortcutDiscoveryId(region.id);
   const nodes=[
@@ -71,17 +72,69 @@ function buildFreeAdventureRoute(region,{secretBoss=null}={}){
   return normalizeAdventure4Route({id:`${region.id}-free-adventure`,regionId:region.id,name:`${region.name}・自由探索`,entryNodeId:'entry',nodes,tags:['free-adventure','dungeon','authored'],stageRefs:refs});
 }
 
+/* CLR-1 vertical slice.
+   Only the already-cleared frontier Free Adventure is reweighted here. Keeping
+   the old node IDs in the graph lets an older suspended session finish safely,
+   while every newly-entered session follows the combat-first entry path. */
+function buildClr1FrontierFreeAdventureRoute(region,options={}){
+  const legacy=buildLegacyFreeAdventureRoute(region,options);
+  const bossEndpoint=adventure4RegionBossEndpoint(region);
+  const candidates=freeAdventureStageRefs(region).filter(ref=>ref.stage?.id&&ref.stage.id!==bossEndpoint?.stageId);
+  const selected=candidates.slice(0,5);
+  if(bossEndpoint)selected.push({chapter:bossEndpoint.chapterNumber,kind:'final-boss',stage:{id:bossEndpoint.stageId,name:bossEndpoint.stageName}});
+  if(selected.length<4)return legacy;
+
+  const battleIds=selected.map((_,index)=>`clr1-battle-${index+1}`);
+  const chainNodes=selected.map((ref,index)=>{
+    const id=battleIds[index],previousId=battleIds[index-1]||null,nextId=battleIds[index+1]||null;
+    const final=index===selected.length-1;
+    return{
+      id,
+      type:final?'boss':ref.kind==='boss'?'elite':'battle',
+      name:final?ref.stage.name||'地域の強敵':`${index+1}戦目：${ref.stage.name||'遭遇戦'}`,
+      stageId:ref.stage.id,
+      next:nextId?[nextId,'return']:['return'],
+      condition:previousId?{flag:adventure4Clr1BattleClearFlag(previousId)}:null,
+      tags:['free-adventure',CLR1_COMBAT_CHAIN_TAG,final?'finisher':'combat',ref.kind||'route'],
+    };
+  });
+
+  const legacyCompatibility=legacy.nodes
+    .filter(node=>!['entry','return'].includes(node.id))
+    .map(node=>({...node,next:[...(node.next||[])],tags:[...(node.tags||[])],condition:node.condition?{...node.condition}:null}));
+  const nodes=[
+    {id:'entry',type:'scene',name:`${region.name}・連戦探索`,next:[battleIds[0],'return'],tags:['free-adventure','visible','combat-first']},
+    ...chainNodes,
+    ...legacyCompatibility,
+    {id:'return',type:'camp',name:'帰還路',next:[],tags:['return','visible']},
+  ];
+  return normalizeAdventure4Route({
+    id:`${region.id}-free-adventure`,
+    regionId:region.id,
+    name:`${region.name}・自由探索`,
+    entryNodeId:'entry',
+    nodes,
+    tags:['free-adventure','dungeon','authored','clr1-combat-first'],
+  });
+}
+
+function buildFreeAdventureRoute(region,options={}){
+  return region.id==='frontier'?buildClr1FrontierFreeAdventureRoute(region,options):buildLegacyFreeAdventureRoute(region,options);
+}
+
 export function buildAdventure4PilotRoute(region,regionState,options={}){
   if(!region?.id)return null;
   const storyCleared=regionState?.status==='completed'&&!regionState?.routeEntry;
   return storyCleared?buildFreeAdventureRoute(region,options):buildStoryRoute(region,regionState);
 }
 
-export function adventure4PilotPreview(route,currentNodeId){
+export function adventure4PilotPreview(route,currentNodeId,availableNext=null){
   if(!route)return[];
   const current=route.nodes.find(node=>node.id===currentNodeId)||route.nodes.find(node=>node.id===route.entryNodeId)||null;
   if(!current)return[];
-  const next=current.next.map(id=>route.nodes.find(node=>node.id===id)).filter(Boolean).filter(node=>!node.hidden);
+  const next=Array.isArray(availableNext)
+    ? availableNext.filter(node=>node&&!node.hidden)
+    : current.next.map(id=>route.nodes.find(node=>node.id===id)).filter(Boolean).filter(node=>!node.hidden);
   const visible=[{name:current.name,state:'current'},...next.map(node=>({name:node.name,state:'next'}))];
   if(next.some(node=>node.next?.length))visible.push({name:'この先は未詳',state:'unknown'});
   return visible;
