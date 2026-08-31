@@ -514,7 +514,7 @@ Goals:
 
 ---
 
-## [ ] CLR-19 — Full Region Hunt Generalization
+## [x] CLR-19 — Full Region Hunt Generalization ✅ COMPLETE
 
 Generalize proven Hunt contracts across eligible Regions.
 
@@ -526,6 +526,17 @@ Requirements:
 - save/resume compatibility,
 - World Tier exactly once,
 - legacy suspended sessions remain recoverable until migration can safely retire them.
+
+Implemented:
+
+- `js/data/coreLoopClr19.js` — one `CLR19_HUNT_REGION_PROFILES` entry per canonical World3 Region (frontier, elemental, fracture, last-mortal, veil, outer-world, reverse-observation, shared-observation), each `routeKind:'shared-combat-first'`.
+- `js/data/adventureWorld4Pilot.js` — replaced the frontier/elemental-only `CLR_COMBAT_FIRST_REGIONS` allowlist with `clr19RegionUsesSharedHunt()`, so every completed Region now routes through the existing `buildClrCombatFirstFreeAdventureRoute()` instead of a one-off per-Region fork.
+- Existing `${region.id}-free-adventure` route IDs and legacy node IDs (`crossroads`, `deep-route`, `treasure`, `camp`, `shortcut`, `boss-gate`, `region-boss`) are unchanged, so suspended Adventure4 sessions from any Region remain recoverable.
+- `js/data/coreLoopClr9.js`'s frontier-only mid-run Investigation was deliberately left untouched — CLR-19 does not copy that content to other Regions.
+- No new combat engine, save root, reward path, World Tier multiplier, Hunt level, currency, stamina, or Home Hunt entry point.
+- `tests/core-loop-clr19.test.js` covers all 8 Regions, canonical-Stage-only combat chains, Region-Boss finishers, shared safe/pressure/return topology, legacy node/session compatibility, single World-Tier-cadence tagging without exceeding canonical Stage capacity, and frontier-only CLR-9 Investigation.
+
+Deliverable: PR #389.
 
 ---
 
