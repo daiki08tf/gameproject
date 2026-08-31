@@ -20,7 +20,18 @@ const CH18_STORY_AFTERMATH=Object.freeze({
   '18-8':Object.freeze({title:'世界の外側',text:'アステリオンの核には、この世界の物質ではない層が残っていた。古文書の「世界の外側」が比喩ではなかったことが確かになる。'}),
 });
 
-const STORY_AFTERMATH=Object.freeze({...CH1_STORY_AFTERMATH,...CH18_STORY_AFTERMATH});
+const CH35_STORY_AFTERMATH=Object.freeze({
+  '35-1':Object.freeze({title:'二つの観測が重なる',text:'同時観測路の記録は、Blade Vale側と外側が別々に同じ境界異常を指している。偶然の一致では片づけにくい。'}),
+  '35-2':Object.freeze({title:'第八鍵の安定',text:'第八鍵は短時間だけ、双方から参照できる一点として安定する。鍵そのものより、共有できた座標の存在が重要らしい。'}),
+  '35-3':Object.freeze({title:'一致する異常',text:'共有異常照合室では、二つの観測記録が同じ揺らぎを示す。見えている世界は違っても、異常の位置だけは一致している。'}),
+  '35-4':Object.freeze({title:'参照の断絶',text:'スプリットを越えた先では、同期が崩れる瞬間だけ二つの記録が食い違う。違いは誤差ではなく、輪郭そのものにある。'}),
+  '35-5':Object.freeze({title:'共観測橋の先',text:'共観測橋を進むほど、同じ座標に二つの状態が重なる痕跡が増える。どちらか一方が偽物とは断定できない。'}),
+  '35-6':Object.freeze({title:'二重輪郭',text:'二重輪郭帯では、巨大な樹冠に覆われた反応と、森林反応が存在しない反応が同じ座標に並んで現れる。'}),
+  '35-7':Object.freeze({title:'共同焦点核前',text:'焦点核の直前で二つの観測はほぼ完全に重なる。差異は消えず、むしろ同じ場所に二つの輪郭があることだけが鮮明になる。'}),
+  '35-8':Object.freeze({title:'説明できない一致',text:'同期破綻機構を退けても、深緑の森の二重輪郭は消えない。原因も意味もまだ説明できず、観測事実だけが残る。'}),
+});
+
+const STORY_AFTERMATH=Object.freeze({...CH1_STORY_AFTERMATH,...CH18_STORY_AFTERMATH,...CH35_STORY_AFTERMATH});
 
 export function clr18StoryAftermath(stageId){
   const beat=STORY_AFTERMATH[String(stageId||'')];
@@ -31,4 +42,4 @@ export function clr18ShouldShowAftermath({stageId,cleared,wasCleared=false,retre
   return !!(cleared&&!retreated&&!wasCleared&&clr18StoryAftermath(stageId));
 }
 
-export { CH1_STORY_AFTERMATH,CH18_STORY_AFTERMATH,STORY_AFTERMATH };
+export { CH1_STORY_AFTERMATH,CH18_STORY_AFTERMATH,CH35_STORY_AFTERMATH,STORY_AFTERMATH };
