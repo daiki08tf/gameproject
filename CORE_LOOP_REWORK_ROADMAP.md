@@ -1,676 +1,670 @@
 # BLADE VALE — Core Loop Rework Roadmap
 
-> Status: **PRIORITY REWORK — Observed Branches M3+ PAUSED UNTIL CLR FOUNDATION IS STABLE**
+> Status: **PRIORITY REWORK — STAGE-FIRST NAVIGATION REBASE**
 >
 > Core thesis: **ハクスラしていたら世界やストーリーが見えてくる。**
 >
-> Design correction: **ストーリーシステムを削るのではなく、ストーリーをハクスラループの中に戻す。**
+> Navigation correction: **Chapter / Stage をプレイヤーの主導線として残し、World 4.0 / Region / Route Graph はその裏側でハクスラ体験を支える。**
+>
+> Observed Branches M3+ remains paused until this navigation/core-loop contract is stable.
 
 ---
 
-## 1. Why this rework exists
+# 1. Why this roadmap is being rebased
 
-Blade Vale has accumulated strong Story, World 4.0, Discovery, Rumor, Chronicle, Research, Codex and Observed Branch foundations. That richness created a new problem: the player can increasingly feel that combat exists to bridge story/exploration screens instead of story/exploration being rewards and consequences of combat.
+CLR-1〜11 established useful combat-first foundations:
 
-The game must return to its core fantasy:
+- repeated combat inside one Adventure Session,
+- post-battle aftermath,
+- route choice,
+- World Tier-linked cadence,
+- battle-first Story aftermath,
+- Investigation / Discovery from combat outcomes,
+- CP4 revelations gated by battle victory,
+- Elite/Boss accomplishments retained only after safe return,
+- Settlement Tavern reactions to those durable memories.
 
-```text
-戦う
-  ↓
-経験値を得る / Lvが上がる
-  ↓
-装備が落ちる
-  ↓
-ビルドが強くなる
-  ↓
-前より強い敵・危険なRouteへ行ける
-  ↓
-さらに良いLoot / Rare / Uniqueを狙う
-  ↓
-その過程で世界・人物・歴史・秘密が見えてくる
-```
+These foundations are valid and should be reused.
 
-The player should not think:
+However, mobile playtest exposed a larger presentation problem: the Adventure UI made Region/Route the primary visible structure and hid the familiar canonical Story progression represented by `1-1`, `1-2`, `2-1`, etc.
 
-> 「次のストーリーを見るために戦闘を1回こなす」
+The result was harder to understand than the original Stage structure and even produced a direct Story-battle dead end before PR #375 fixed the immediate bug.
 
-The target feeling is:
-
-> 「装備を掘って強敵を倒していたら、知らなかった世界の事情が見えてきた」
-
-Story remains important, but **combat + growth + loot is the engine**.
+The correction is therefore **not** to remove CLR work. The correction is to put the existing canonical Stage hierarchy back in front of the player and let CLR operate underneath it.
 
 ---
 
-# 2. New core pillars
+# 2. New navigation hierarchy
 
-## Pillar A — Combat is the default verb
-
-A normal expedition contains repeated combat. Non-combat Scenes are punctuation, not the majority activity.
-
-Target baseline:
-- Story expedition: roughly **5–8 battles** before/through a major story resolution.
-- Hunt expedition: roughly **8–12 battles**, with optional Elite/Rare/Boss escalation.
-- Deep/Dungeon route: roughly **10–15 encounters**, majority combat.
-
-Exact counts remain content-driven, but a route containing one battle surrounded by long Story/Event chains is no longer the default.
-
-## Pillar B — Loot is a frequent answer
-
-Combat should repeatedly answer:
-- Did something useful drop?
-- Is this stronger than my current item?
-- Does this change my build?
-- Can I now challenge a stronger enemy band?
-
-Existing Loot / Equipment / Option / Item Power / Unique / Rune authorities remain canonical. This rework does **not** create a second loot system.
-
-## Pillar C — Level growth must be felt
-
-Player Lv up to 99,999 must matter as an experiential axis, not only as a number in the save.
-
-The desired loop is:
-
-```text
-昨日: Lv 2,300帯のEliteに負ける
-  ↓
-周回 / Lv上げ / 装備更新
-  ↓
-今日: 同Eliteを撃破
-  ↓
-Lv 2,600帯のRouteへ踏み込む
-```
-
-Use **soft recommended bands**, not arbitrary hard level locks wherever possible.
-
-Important Story must not require unreasonable grinding. Hunt content is where players deliberately push above/below their comfort band.
-
-## Pillar D — Story emerges from play
-
-Lore/Story is delivered by combat consequences and expedition discoveries:
-- enemy defeat reveals a trace,
-- Elite defeat opens a hidden route,
-- Boss defeat changes a Region,
-- repeated encounters reveal ecology,
-- a dropped relic triggers Chronicle/Codex interpretation,
-- battle aftermath reveals Rumor / Discovery,
-- Branch Sight reveals an impossible post-battle observation.
-
-Long mandatory dialogue chains should not become the default progression grammar.
-
-## Pillar E — Same Region, different intent
-
-Do not add separate Home buttons for Story Mode and Gear Mode.
-
-Preferred hierarchy:
+The preferred player-facing hierarchy is now:
 
 ```text
 Home
- → 冒険する
-   → World
-     → Region
-       → [Story / 物語を追う]
-       → [Hunt / 装備を探す]
-       → existing special activities when relevant
+  ↓
+冒険
+  ↓
+Chapter
+  ↓
+Stage
+  例: 1-1 平原の入口
+      1-2 ...
+      1-3 ...
+  ↓
+[Story / 物語を進める]
+[Hunt / 周回する]  ※条件を満たしたStage/Region
 ```
 
-Story and Hunt are **intent profiles inside the same Region**, not separate games.
+## Canonical ownership
+
+- **Chapter / Stage list**: existing `CHAPTERS` and canonical stage definitions.
+- **Story completion**: existing `stageProgress` authority.
+- **Battle**: existing `TextBattleScreen` / `BattleEngine`.
+- **EXP / Gold / Loot / Equipment**: existing reward authorities.
+- **World / Region**: existing World 4.0 context and grouping.
+- **Hunt / repeated expedition**: existing Adventure Session + CLR route machinery.
+
+No second Story map, Stage progression root, battle engine, loot authority, Hunt Lv, Hunt token, stamina or Gear Score authority may be created.
 
 ---
 
-# 3. Expedition grammar
+# 3. Player mental model
 
-The new default expedition grammar is:
+The player should always be able to answer:
+
+1. **今どの章にいるか**
+2. **今どのStageを進めているか**
+3. **次にどのStageが開くか**
+4. **このStageは初回Storyなのか、周回可能なのか**
+5. **周回すると何を狙えるか**
+
+The Stage number is not internal metadata. It is part of the navigation language.
+
+Examples:
 
 ```text
-Region entry
+第1章
+  1-1 平原の入口        CLEAR
+  1-2 〇〇              NEXT
+  1-3 〇〇              LOCKED
+```
+
+and after selecting `1-1`:
+
+```text
+1-1 平原の入口
+推奨Lv xxx
+地域: 開拓辺境
+
+[物語を進める / 再戦する]
+[Hunt / 周回する]
+```
+
+Exact labels may be refined for mobile clarity, but Stage identity must remain visible.
+
+---
+
+# 4. Story contract
+
+Story remains Stage-first.
+
+```text
+Chapter
+  ↓
+Stage 1-1
+  ↓
+canonical battle
+  ↓
+short aftermath / story consequence
+  ↓
+Stage clear
+  ↓
+Stage 1-2 becomes the obvious next destination
+```
+
+## Story rules
+
+- Canonical `stageId` remains visible and authoritative.
+- Story does not require the player to understand World 4.0 node IDs.
+- Mandatory Story progression is deterministic.
+- Story cannot be gated behind Rare/RNG-only aftermath.
+- Long text chains should still be reduced where possible.
+- Battle outcomes may reveal Story/Discovery, but they do not replace the Stage map.
+- First clear may use authored aftermath; replay should be concise.
+- Existing CP4 revisit requirements such as `2-1 → 2-3 → 2-5` remain legible because Stage IDs remain visible.
+
+---
+
+# 5. Hunt contract
+
+Hunt is the repeatable hack-and-slash intent reached **from known Stage/Region context**, not a separate game mode on Home.
+
+Preferred structure:
+
+```text
+cleared Stage / Chapter context
+  ↓
+Hunt
   ↓
 Battle
   ↓
-Post-Battle Result
-  ├─ Loot
-  ├─ EXP / Lv feedback
-  └─ Aftermath Event
-       ↓
-Route Choice
-  ├─ standard battle
-  ├─ dangerous battle
-  ├─ Elite
-  ├─ treasure / resource
-  ├─ camp
-  ├─ investigation / story
-  ├─ rare encounter
-  └─ hidden route (only when discovered)
-       ↓
+Loot / EXP
+  ↓
+Aftermath
+  ↓
+Safe / Pressure / Investigation choice
+  ↓
 Battle
-       ↓
-Aftermath / Choice
-       ↓
-...
-       ↓
-Elite / Boss / Story Resolution
-       ↓
-Return + Loot summary + discoveries/world consequences
+  ↓
+Elite / Rare / Boss
+  ↓
+Return
+  ↓
+Run summary / Event Memory / world reaction
 ```
 
-### Rule: Battle → aftermath → choice
+## Hunt rules
 
-A post-battle event is the preferred place for World 4.0 narrative/exploration content.
-
-This reverses the emphasis from:
-
-```text
-Scene → Scene → Choice → Battle → Scene
-```
-
-to:
-
-```text
-Battle → Loot → Event → Choice → Battle
-```
-
-World 4.0 Scene/Discovery work remains useful; it is re-sequenced around combat rather than discarded.
+- High battle density.
+- Shorter text than Story.
+- Existing canonical stage battles are reused where appropriate.
+- Existing Region identity determines ecology and available encounter context.
+- Existing World Tier applies exactly once.
+- No Hunt Lv / Hunt currency / daily count / stamina / energy.
+- Return and suspend remain distinct.
+- Safe return may create durable Event Memory through the existing CLR-10 authority.
 
 ---
 
-# 4. Post-Battle Event model
+# 6. World 4.0 role after the rebase
 
-After a battle, the expedition may resolve one concise aftermath event.
-
-Families:
-- **Route** — choose safe / dangerous / unknown path.
-- **Elite sign** — pursue a stronger enemy.
-- **Treasure** — chest, relic, material vein, monster nest.
-- **Camp** — recovery / inspect findings / return.
-- **Lore** — corpse, ruins, weapon mark, local testimony.
-- **Discovery** — canonical `world2.discoveries` fact.
-- **Rumor / Chronicle / Research hook** — existing knowledge authorities.
-- **NPC** — short encounter that changes a later node.
-- **Nemesis trace** — existing Nemesis authority.
-- **Rift / Secret / Branch anomaly** — existing systems become discoverable through play.
-
-### Battle performance may affect opportunities
-
-Only use information the existing battle result contract safely exposes after CLR-0 audit.
-
-Possible authored conditions if supported:
-- decisive win → optional high-danger route,
-- low remaining HP → camp/rescue opportunity,
-- Elite clear → secret/treasure route,
-- specific enemy family → ecology clue,
-- first defeat of a named enemy → Codex/Chronicle reaction,
-- Branch Sight active → otherwise invisible aftermath observation.
-
-Do not invent parallel battle telemetry just to support this.
-
----
-
-# 5. Story Expedition
-
-Story mode remains canonical Story progression and still uses `CHAPTERS`, existing `stageId`s and `stageProgress` authority.
-
-But presentation changes from “Story screen with battles” to **combat expedition with authored story beats**.
-
-Target rhythm:
-
-```text
-Battle
- → short story aftermath
- → Battle
- → clue / route choice
- → Battle
- → character/world event
- → Elite
- → major reveal
- → Battle/Boss
- → story resolution
-```
-
-### Story rules
-
-- Mandatory Story anchors are deterministic.
-- Important Story cannot be gated behind Rare/RNG events.
-- Story routes may contain shortcuts/optional danger, but canonical completion remains reachable.
-- Story scenes should become shorter and more contextual where possible.
-- Existing Story canon is preserved; this is a delivery/loop rework, not a lore rewrite.
-- First clear can be more authored; replay should avoid forcing long already-read narrative.
-
-### Replay behavior
-
-After Story clear:
-- Region remains useful through Hunt.
-- Already-read mandatory story text should be skippable/condensed by existing or future presentation hooks.
-- Story completion does not consume the Region as disposable content.
-
----
-
-# 6. Hunt Expedition
-
-Hunt is the dedicated **combat / level / gear farming intent** for a known Region.
-
-It is not a second world and does not own separate progression.
-
-Core traits:
-- high battle density,
-- shorter text,
-- repeated branching,
-- frequent loot feedback,
-- Elite/Rare opportunities,
-- optional Boss escalation,
-- Region-specific enemy ecology and drop identity,
-- discoveries/story fragments can still emerge naturally.
-
-Target rhythm:
-
-```text
-Battle
- → Loot
- → [安全] [危険] [痕跡を追う]
- → Battle
- → Loot
- → Elite opportunity
- → Battle
- → Treasure / Rare / Story fragment
- → Boss or Return
-```
-
-### Hunt must not become a chore system
-
-No:
-- daily Hunt count,
-- stamina,
-- energy,
-- real-time resets,
-- Hunt currency,
-- Hunt XP / Hunt Lv,
-- mandatory streak maintenance.
-
-The reward is existing EXP + existing loot + existing discoveries/content.
-
----
-
-# 7. Danger and level-band design
-
-## Soft danger bands
-
-Each Region/Route may offer authored combat bands relative to existing content and player progression.
-
-Example presentation:
-
-```text
-安定域      推奨 Lv 2,100–2,300
-危険域      推奨 Lv 2,300–2,600
-深部        推奨 Lv 2,600–3,000
-異常個体域  推奨 Lv 3,000+
-```
-
-These are **recommendations**, not a new progression resource.
-
-Where existing stage/World Tier scaling supports it, players may deliberately overreach for harder fights.
-
-## Level-up feedback
-
-The game should make growth visible:
-- current player Lv,
-- enemy/recommended band,
-- newly comfortable danger band,
-- stronger enemy title/rank,
-- reward quality change using existing authorities.
-
-Do not add a new Gear Score gate as a replacement for Lv.
-
-## World Tier relationship
-
-World Tier remains global state pressure and existing reward/scaling authority.
-
-It must not become:
-- the Story/Hunt selector,
-- the Branch selector,
-- a duplicate danger-band system.
-
-Danger band + World Tier may combine through existing scaling authority after audit, but multipliers must never be applied twice.
-
----
-
-# 8. Loot escalation philosophy
-
-Hunt needs visible reasons to choose danger.
-
-Without creating a second reward system, harder routes should be able to influence canonical drop context such as:
-- higher enemy level,
-- Elite/Rare density,
-- Boss access,
-- Region-specific loot pool opportunities,
-- existing Item Power / rarity / Option systems,
-- Unique / fixed identity eligibility where canonically authored.
-
-The exact numeric mapping belongs to CLR-0/CLR-4 audit and existing reward authorities.
-
-### Important rule
-
-Harder route must not mean only:
-
-> same enemy, more HP, +10% gold
-
-It should increasingly mean:
-- more dangerous enemy composition,
-- Elite/Rare variants,
-- different encounter ecology,
-- better/rarer loot opportunities,
-- greater chance to expose hidden content,
-- Boss/Nemesis/Rift/Secret interactions.
-
----
-
-# 9. Story / Hunt content ratio
-
-These are design targets, not hard runtime percentages.
-
-### Story expedition
-- Combat: **~65–75% of active decisions/time**
-- Story/Investigation/Choice: **~25–35%**
-
-### Hunt expedition
-- Combat/Loot/Build decisions: **~85–95%**
-- Lore/Discovery/Events: **~5–15%**
-
-A story-heavy chapter may temporarily exceed these targets, but the full game should not drift back into a text-first default.
-
----
-
-# 10. World 4.0 reinterpretation
-
-World 4.0 is not removed.
+World 4.0 remains important, but it becomes a **supporting structure rather than the primary player-facing Story map**.
 
 Keep:
-- World / Region,
+
+- Region grouping,
 - Route Graph,
-- Node,
+- Nodes,
 - Scene,
 - Discovery,
 - Rumor / Trace / Clue,
 - Hidden Route,
 - Mystery,
-- Nemesis integration,
-- Weather/World Event integration,
-- Settlement return loop.
+- Nemesis,
+- Weather / World Event,
+- Settlement return loop,
+- Adventure Session persistence.
 
-Change the priority:
-
-### Before
-
-```text
-explore → investigate → story/event → occasional battle
-```
-
-### After
+The visible relationship becomes:
 
 ```text
-fight → loot → aftermath → choose route → fight
-                     ↓
-              discovery / story
+Chapter / Stage UI
+        ↓
+canonical Stage selection
+        ↓
+World / Region context
+        ↓
+CLR Adventure / Battle / Aftermath runtime
 ```
 
-The Adventure layer becomes the structure that gives **meaning and variation to repeated combat**, not a replacement for repeated combat.
+World 4.0 gives repeated combat meaning and variation. It does not hide the canonical Stage progression.
 
 ---
 
-# 11. Observed Branches reinterpretation
+# 7. Core hack-and-slash loop
 
-Observed Branches is particularly suited to the new core loop.
-
-A Branch must not be primarily a lore exhibit.
-
-Example — 王樹領:
+The north-star loop remains:
 
 ```text
-First Story Expedition
-  Battle: altered forest species
+戦う
   ↓
-  aftermath: impossible survival trace
+EXP / Lv
   ↓
-  Battle: symbiotic pack
+装備が落ちる
   ↓
-  Elite: 王樹騎生体
+ビルド更新
   ↓
-  reveal: canopy society / living construction
+より強いStage / Route / Eliteへ
   ↓
-  Battle
+より良いLootを狙う
   ↓
-  Boss: 王樹神体グラン・シルヴァ
-  ↓
-  Branch history resolution + first Branch loot
-
-After clear
-  ↓
-王樹領 Hunt
-  - repeated high-density battles
-  - Bio/Arcane ecology
-  - branch-specific loot opportunities
-  - Rare/Elite/Boss variants
-  - remaining discoveries and Chronicle fragments
+その過程で世界・歴史・秘密が見える
 ```
 
-Therefore **Observed Branches M3+ is paused** until CLR establishes the combat-first Region presentation and expedition contracts.
-
-M0–M2 work remains valid:
-- authority audit,
-- Branch data model,
-- discovery/secrecy.
-
-M3/M4 will resume on the new core loop instead of implementing the old story-forward presentation.
+Story should feel like a consequence and destination of play, not a replacement for play.
 
 ---
 
-# 12. Existing authority contracts
+# 8. Stage screen information design
 
-The rework must reuse existing authorities.
+Each Stage entry should progressively expose useful information without becoming a wall of text.
 
-- Story progression: existing `CHAPTERS` / stage definitions / `stageProgress`.
-- Battle: `js/battleEngine.js` + existing TextBattleScreen handoff.
-- Loot/reward: existing battle finish / reward / loot pipelines.
-- Lv/EXP: existing player progression authority.
-- World Tier: existing `worldTierId` and runtime patches.
-- Equipment: existing Gear/Option/Item Power/Unique/Rune authorities.
-- Adventure session: existing `state.data.adventure4` owner.
-- Discovery: existing `world2.discoveries`.
-- Rumor/Trace/Clue/Chronicle/Research/Codex: existing owning systems.
-- Nemesis/Rift/Secret Realm/Abyss/Machine Realm: existing systems; integrate, never clone.
+Minimum target information:
 
-No new universal:
-- combat engine,
-- loot inventory,
-- Story clear root,
-- EXP system,
-- Hunt level,
-- Hunt token,
-- exploration stamina,
-- Branch currency,
-- Gear Score progression gate.
+- `stageId` (`1-1`, `2-5`, etc.)
+- Stage name
+- clear / next / locked state
+- recommended Lv
+- Story first-clear status
+- Hunt availability if applicable
+
+Later enhancements may include:
+
+- Region identity
+- enemy family preview after discovery
+- Boss / Elite marker when not secret
+- notable drop / Unique target after discovery
+- World Tier / danger indication
+- Branch anomaly marker only when canonically known
+
+Secret information must remain hidden until its owning Discovery/Research/Codex authority reveals it.
 
 ---
 
-# 13. Implementation roadmap
+# 9. Loot and progression identity
 
-## [ ] CLR-0 — Combat / Story / Loot / Level audit
+Stage-first navigation must not turn Hunt into simple replay of the exact same fight.
 
-Measure and freeze current reality before changing behavior.
+Region/Hunt still needs a reason to repeat:
 
-Audit:
-- existing TextBattleScreen start/end/result contract,
-- battle finish hooks,
-- EXP grant authority,
-- level scaling and Lv 99,999 curve,
-- loot/drop/rarity/Item Power authority,
-- Elite/Rare/Boss encounter construction,
-- Adventure Session battle-node continuation,
-- Story-stage wrapping,
-- current Chapter/Region battle density,
-- World Tier interaction,
-- replay/skip behavior,
-- Abyss/Rift/Secret/Machine/Nemesis integration.
-
-Deliverable:
-- `CORE_LOOP_CLR0_AUDIT.md`
-- authority matrix,
-- representative current battle-density samples,
-- exact safe extension points for CLR-1–4.
-
-No gameplay rebalance in CLR-0.
-
-## [ ] CLR-1 — Multi-Battle Expedition Foundation
-
-Make repeated combat the normal Adventure Session rhythm.
-
-Requirements:
-- battle node returns safely to the same active expedition,
-- multiple sequential battle nodes work without leaving/restarting the Region flow,
-- retreat/defeat/clear remain distinguishable,
-- existing battle finish hooks run once,
-- loot/EXP/stage clear are never duplicated,
-- resume/save remains valid between encounters.
-
-Initial vertical slice should use one existing Region before broad migration.
-
-## [ ] CLR-2 — Post-Battle Aftermath & Route Choice
-
-Add concise data-driven aftermath resolution after battle.
-
-Requirements:
-- Battle → result → aftermath → next route,
-- 2–3 meaningful route choices where authored,
-- Battle/Event/Elite/Treasure/Camp/Story/Discovery targets reuse existing node contracts,
-- no huge prose wall,
-- no mandatory Story on RNG-only aftermath,
-- battle-result conditions only use audited existing result data.
-
-## [ ] CLR-3 — Story / Hunt Region Intents
-
-Expose two primary intents inside Region context:
-- **Story / 物語を追う**
-- **Hunt / 装備を探す**
-
-Requirements:
-- no new Home button,
-- same Region identity,
-- same character/equipment/Lv/save,
-- Story uses canonical progression,
-- Hunt uses known/cleared Region context,
-- Hunt never creates parallel progression,
-- compact mobile selector.
-
-## [ ] CLR-4 — Level Band & Danger Escalation
-
-Restore the pleasure of levelling and pushing stronger enemies.
-
-Requirements:
-- authored recommended Lv bands,
-- soft overreach where safe,
-- enemy difficulty uses existing scaling authority,
-- existing World Tier applies exactly once,
-- harder routes increase encounter quality/content, not only numeric HP,
-- no Gear Score gate,
-- no new Hunt Lv.
-
-Audit/rebalance representative low/mid/high/endgame bands including the long Lv curve toward 99,999.
-
-## [ ] CLR-5 — Loot Hunt Density & Elite/Rare/Boss Loop
-
-Make Hunt rewarding enough to repeat.
-
-Targets:
-- frequent canonical loot feedback,
-- authored Elite opportunities,
-- Rare encounter hooks,
+- different encounter compositions,
+- Elite / Rare opportunities,
 - optional Boss escalation,
 - Region-specific equipment identity,
-- Unique/fixed-identity targets where appropriate,
-- danger vs reward clarity.
+- existing Unique / fixed identity targets,
+- existing Item Power / rarity / Option progression,
+- Discovery / Rumor / Nemesis / Branch hooks.
 
-Do not add a new rarity or fourth random Option.
+Harder routes should mean more than HP inflation.
 
-## [ ] CLR-6 — Story Combat-Density Migration
+Do not add a new rarity or a fourth random Option merely for CLR.
 
-Migrate Story presentation toward combat-first expedition grammar.
+---
 
-Approach:
-1. choose representative early/mid/late chapters,
-2. validate pacing,
-3. migrate remaining Story routes in batches.
+# 10. Level and danger presentation
+
+Lv remains the main visible long-form growth axis toward 99,999.
+
+Use soft recommendation rather than arbitrary hard locks where possible.
+
+Example:
+
+```text
+1-8 砦門
+推奨Lv 220
+
+Hunt
+  安定路      Lv 210–230
+  危険路      Lv 230–260
+  深部        Lv 260+
+```
+
+World Tier remains a global pressure/scaling authority and must not become a duplicate danger system.
+
+---
+
+# 11. What CLR-1〜11 already gives us
+
+These completed implementation slices are retained as reusable foundations:
+
+## CLR-1 — Multi-Battle Expedition Foundation
+Repeated canonical battles in one Adventure Session; victory/defeat/resume distinguished.
+
+## CLR-2 — Post-Battle Aftermath & Route Choice
+Battle → aftermath → next route foundation.
+
+## CLR-3 — Run Summary / intent support
+Existing run state can summarize expedition progress without a new progression root.
+
+## CLR-4 — Second Region reuse
+Combat-first adapter generalized beyond the first Region.
+
+## CLR-5 — World Tier cadence
+Expedition battle count can scale through existing World Tier context without a duplicate reward multiplier.
+
+## CLR-6 — Battle-first Story aftermath
+Canonical Story battle remains authoritative; short Story consequence follows battle.
+
+## CLR-7 — Investigation from combat outcomes
+Existing Trace / Investigation authority is reused after battle.
+
+## CLR-8 — CP4 victory-gated revelation
+Deep Green contradiction / Parallax / Branch Sight progression now respects battle victory and deterministic revisits.
+
+## CLR-9 — Combat milestones → Investigation
+Mid-run Investigation can emerge from actual combat progress.
+
+## CLR-10 — Safe-return Event Memory
+Elite/Boss achievements become durable only after explicit safe return.
+
+## CLR-11 — Settlement reaction
+Existing Event Memory is projected read-only into Tavern rumors.
+
+## Playtest Fix #375
+Direct Story battle entry now exposes an actual battle action instead of a return-only dead end.
+
+These are implementation assets, not reasons to preserve the Region-first navigation mistake.
+
+---
+
+# 12. Revised implementation roadmap
+
+## [ ] CLR-12 — Stage-First Navigation Audit & Contract
+
+Freeze the new player-facing hierarchy before more gameplay work.
+
+Audit:
+
+- existing old Stage/Chapter UI and useful presentation pieces,
+- current World 4.0 Region entry flow,
+- `CHAPTERS` / `stageProgress` navigation authority,
+- Story first-clear / replay behavior,
+- existing CLR Story/Hunt route construction,
+- active/suspended Adventure Session behavior,
+- mobile layout on representative iPhone widths,
+- all places that currently hide or replace `stageId` presentation.
+
+Deliverable:
+
+- explicit `Home → Adventure → Chapter → Stage → Story/Hunt` contract,
+- exact existing UI/runtime pieces to reuse,
+- no gameplay rebalance in this phase.
+
+---
+
+## [ ] CLR-13 — Chapter / Stage Browser Restoration
+
+Restore canonical Chapter and Stage progression as the primary Adventure UI.
 
 Requirements:
-- preserve canon and stage progression,
-- increase battle density where currently too sparse,
-- split long narrative stretches with meaningful encounters,
-- move appropriate exposition to battle aftermath,
-- keep major emotional/cinematic scenes intact where needed,
-- replay does not force unnecessary long text.
 
-## [ ] CLR-7 — World 4.0 Content Rebalance
+- show Chapters and their canonical Stages,
+- always display stage IDs such as `1-1`,
+- clear / next / locked states are obvious,
+- recommended Lv visible,
+- no new Stage progression root,
+- current `stageProgress` remains authoritative,
+- mobile layout must not require excessive vertical scrolling to understand one chapter,
+- locked/secret content does not leak.
 
-Reclassify existing World 4.0 content around the new loop.
+Acceptance smoke path:
+
+```text
+Home → 冒険 → 第1章 → 1-1 → battle
+```
+
+must be playable from a clean/representative save.
+
+---
+
+## [ ] CLR-14 — Stage Detail & Story Launch
+
+Selecting a Stage opens a compact Stage detail/action surface.
+
+Requirements:
+
+- Stage ID + name + recommended Lv,
+- Story action launches the exact canonical stage battle,
+- first clear and replay both work,
+- battle result returns to a sensible Stage context,
+- short CLR-6 aftermath may still appear after victory,
+- next canonical Stage is obvious after clear,
+- no route-node terminology exposed unless useful to the player.
+
+Critical regression:
+
+A current battle node must never render a return-only dead end again.
+
+---
+
+## [ ] CLR-15 — Hunt from Cleared Stage / Region Context
+
+Attach existing combat-first Hunt loop to the Stage-first browser.
+
+Requirements:
+
+- Hunt appears only where its prerequisites are satisfied,
+- same player / equipment / EXP / Loot authorities,
+- existing CLR multi-battle route reused,
+- Stage selection gives clear context for what area is being hunted,
+- Region remains the encounter/ecology owner under the hood,
+- no separate Home Hunt button,
+- no parallel Hunt progression.
+
+---
+
+## [ ] CLR-16 — Mobile Navigation & Playability Pass
+
+Treat real-device usability as a release criterion, not polish.
+
+Test representative flows on narrow/mobile layout:
+
+```text
+Home
+→ Chapter
+→ Stage
+→ Story battle
+→ Result
+→ next Stage
+```
+
+and
+
+```text
+Home
+→ cleared Stage
+→ Hunt
+→ multiple battles
+→ aftermath choice
+→ Elite/Boss
+→ safe return
+→ Tavern reaction
+```
+
+Requirements:
+
+- primary action always visible,
+- no ambiguous duplicated tabs/cards,
+- current location vs destination visually distinct,
+- Back / Suspend / Return semantics clear,
+- no unreachable state with only a cancellation action,
+- important controls usable without guessing.
+
+Add behavior-oriented smoke/regression tests for these paths where feasible.
+
+---
+
+## [ ] CLR-17 — Stage/Region Loot Identity
+
+Now that navigation is clear, strengthen the reason to replay.
 
 Targets:
-- Ambient events become brief punctuation,
-- Investigation events more often originate from battle aftermath/traces,
-- Mystery/Secret routes culminate in meaningful combat/reward more often,
-- Nemesis becomes a strong Hunt escalation target,
-- World Events alter encounter pools and route danger,
-- Discovery remains valuable but no longer dominates moment-to-moment play.
 
-## [ ] CLR-8 — Endgame Loop Alignment
+- Region-specific enemy/ecology identity,
+- Region-specific equipment/drop targeting using existing loot authority,
+- Elite / Rare / Boss escalation,
+- known Unique targets where canonically appropriate,
+- clear danger/reward communication,
+- no new loot inventory or rarity system.
 
-Verify the new expedition loop complements rather than replaces:
+The player should be able to say:
+
+> 「この装備を狙うから、このStage/Region周辺を周回する」
+
+---
+
+## [ ] CLR-18 — Story Density Migration by Chapter
+
+Revisit Story pacing with Stage structure preserved.
+
+Approach:
+
+1. early representative Chapter,
+2. mid-game Chapter,
+3. late-game Chapter,
+4. remaining Chapters in batches.
+
+Goals:
+
+- preserve `1-1 → 1-2 → ...` progression,
+- combat remains the primary verb,
+- move appropriate exposition to victory aftermath,
+- preserve important cinematic/emotional scenes,
+- replay avoids unnecessary text,
+- no canon rewrite.
+
+---
+
+## [ ] CLR-19 — Full Region Hunt Generalization
+
+Generalize proven Hunt contracts across eligible Regions.
+
+Requirements:
+
+- Region-specific data rather than one-off runtime forks,
+- no copy-pasted combat authority,
+- consistent safe/pressure/return semantics,
+- save/resume compatibility,
+- World Tier exactly once,
+- legacy suspended sessions remain recoverable until migration can safely retire them.
+
+---
+
+## [ ] CLR-20 — Endgame Alignment
+
+Verify Stage-first/Region-Hunt flow complements rather than replaces:
+
 - Abyss,
 - Rift,
 - Secret Realm,
 - Machine Realm,
-- EX bounty / Nemesis,
-- other existing endgame modes.
+- EX Bounty / Nemesis,
+- other existing endgame systems.
 
-Abyss can remain the strongest pure vertical push. Region Hunt provides repeatable world-based gear/level hunting. Observed Branches provide horizontal ecology/build variation.
+Abyss remains a strong vertical push. Region Hunt provides world-based gear/level farming. Neither should duplicate the other.
 
-## [ ] CLR-9 — Observed Branches M3/M4 Rebase
+---
 
-Resume Observed Branches after CLR contracts are stable.
+## [ ] CLR-21 — Observed Branches M3/M4 Rebase
 
-Rebuild M3/M4 around:
-- Story/Hunt Region intent,
-- combat-first Branch expedition,
-- post-battle history reveals,
-- Branch ecology through repeated encounters,
-- Branch-specific Hunt after first clear,
-- Branch gear as a reason to return.
+Resume Observed Branches only after CLR-12〜20 contracts are stable enough.
 
 First proof remains **王樹領・深緑の森**.
 
+Branch presentation should follow the same player grammar:
+
+```text
+Branch / Chapter context
+  ↓
+visible authored Stage progression
+  ↓
+combat-first Story
+  ↓
+Branch clear
+  ↓
+Branch Hunt
+  ↓
+Branch ecology / loot / Rare / Elite / Boss replay
+```
+
+Observed Branches must become playable combat destinations, not lore-only exhibits.
+
 ---
 
-# 14. Acceptance criteria for the rework
+# 13. Required smoke tests going forward
 
-The rework is successful when all of these are true:
+Unit tests alone are insufficient for navigation work.
 
-1. A player can spend a session primarily **fighting and looting** without leaving the living World/Region structure.
-2. Story progression still feels authored and meaningful but is no longer the majority moment-to-moment verb.
-3. Clearing battles frequently produces a decision, loot evaluation, new route, or discovery.
-4. Levelling visibly expands the range of enemies/routes the player can realistically challenge.
-5. Regions remain useful after their Story clear because Hunt exists.
-6. Existing Story, World 4.0 and Observed Branch lore work is reused rather than deleted.
-7. Observed Branches become replayable combat/ecology/gear destinations, not one-time lore screens.
-8. No duplicate Battle/Loot/EXP/Story/Discovery authority is introduced.
-9. No stamina/daily/FOMO/Hunt currency/Hunt Lv is introduced.
-10. Mobile navigation remains compact and no new Home-button sprawl returns.
+Every major Adventure navigation PR should preserve at least these behavioral contracts:
+
+### Story start
+
+```text
+Home → Adventure → Chapter → available Stage → battle action exists
+```
+
+### Story progression
+
+```text
+battle victory → canonical stageProgress → next Stage becomes visible/available
+```
+
+### Hunt start
+
+```text
+cleared Stage/Region → Hunt → first battle action exists
+```
+
+### Multi-battle continuation
+
+```text
+battle victory → result → Adventure → next valid action
+```
+
+### Suspend/resume
+
+```text
+active expedition → suspend → Home → resume → same valid state
+```
+
+### Safe return
+
+```text
+Elite/Boss victory → explicit return → Event Memory → Tavern reaction
+```
+
+No screen may leave the player with only `帰還` / `中断` when forward progress is canonically available.
 
 ---
 
-# 15. North-star test
+# 14. Authority guardrails
 
-Before approving any future Story/World/Branch feature, ask:
+Always reuse existing authorities:
 
-> **これを追加すると「戦う → 強くなる → 装備を掘る → さらに強い相手へ挑む」というハクスラの循環が強くなるか？**
+- Story: `CHAPTERS` / canonical stages / `stageProgress`
+- Battle: `BattleEngine` / `TextBattleScreen`
+- Reward: existing EXP / Gold / Loot pipeline
+- Equipment: existing Gear / Option / Item Power / Unique / Rune
+- World Tier: existing global authority
+- Adventure Session: existing `state.data.adventure4`
+- Discovery: existing `world2.discoveries`
+- Event Memory: existing `world2.eventMemory`
+- Rumor / Trace / Clue / Chronicle / Research / Codex: existing owner systems
+
+Never add a duplicate authority merely to simplify UI implementation.
+
+---
+
+# 15. Acceptance criteria for the rework
+
+The rework is successful when all are true:
+
+1. The player can immediately understand Chapter and Stage progression.
+2. `1-1`, `1-2`, etc. remain visible and meaningful.
+3. Story uses canonical Stage progression without duplicate state.
+4. Hunt is accessible from Stage/Region context without a new Home mode.
+5. Combat + growth + loot remains the dominant repeatable loop.
+6. World 4.0 adds context, routes and consequences without hiding Stage progression.
+7. Battle victories can naturally reveal Investigation / Discovery / CP4 / world reactions.
+8. Safe return has meaning and remains distinct from suspend.
+9. Mobile navigation has no forward-progress dead ends.
+10. Regions remain useful after Story through Hunt and loot identity.
+11. Observed Branches can later adopt the same Stage-first + Hunt grammar.
+12. No duplicate Battle/Loot/EXP/Story/Discovery authority is introduced.
+
+---
+
+# 16. North-star tests
+
+Before approving a feature, ask:
+
+> **プレイヤーは今どのChapter / Stageにいて、次に何をすればいいか一目で分かるか？**
 
 Then ask:
 
+> **これを追加すると「戦う → 強くなる → 装備を掘る → さらに強い相手へ挑む」というハクスラ循環が強くなるか？**
+
+Finally:
+
 > **その循環の結果として、世界やストーリーが自然に見えてくるか？**
 
-If the feature tells more story but weakens the first loop, redesign it before implementation.
+If navigation is unclear or the feature tells more story while weakening the hack-and-slash loop, redesign it before implementation.
