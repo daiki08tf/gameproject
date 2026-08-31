@@ -24,7 +24,8 @@ export function syncCP4DeepGreen(){
   return progress;
 }
 
-function recordStep(stageId){
+function recordStep(stageId,result){
+  if(!result?.cleared)return null;
   const d=world().discoveries,chain=CP4_DEEP_GREEN_CHAIN;
   const step=cp4DeepGreenStepForStage(stageId,{discoveries:d,isStageCleared:stageCleared});
   if(!step)return null;
@@ -47,14 +48,17 @@ if(state.rumorNotebook&&!state.rumorNotebook.__cp4a){
 
 const previousStart=TextBattleScreen.prototype.start;
 TextBattleScreen.prototype.start=function cp4DeepGreenStart(stageId,onEnd,blessingId){
-  const out=previousStart.call(this,stageId,onEnd,blessingId);
-  const step=recordStep(stageId);
-  if(step){
-    this._pushLines?.([`記録不一致 — ${step.label}`,step.text]);
-    const progress=cp4DeepGreenProgress({discoveries:world().discoveries,isStageCleared:stageCleared});
-    if(progress.complete)this._pushLines?.(['三つの記録は互いに矛盾している。それでも同じ座標だけは一致している。','NEXT — 重複座標で観測不一致の原因を調べる。']);
-  }
-  return out;
+  const wrappedOnEnd=(result)=>{
+    const step=recordStep(stageId,result);
+    if(step){
+      this._pushLines?.([`記録不一致 — ${step.label}`,step.text]);
+      const progress=cp4DeepGreenProgress({discoveries:world().discoveries,isStageCleared:stageCleared});
+      if(progress.complete)this._pushLines?.(['三つの記録は互いに矛盾している。それでも同じ座標だけは一致している。','NEXT — 重複座標で観測不一致の原因を調べる。']);
+      this._renderLog?.();
+    }
+    return onEnd?.(result);
+  };
+  return previousStart.call(this,stageId,wrappedOnEnd,blessingId);
 };
 
 syncCP4DeepGreen();
