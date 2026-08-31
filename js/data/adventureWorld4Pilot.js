@@ -4,6 +4,13 @@
 import { CHAPTERS } from './stages.js';
 import { normalizeAdventure4Route } from './adventureWorld4Routes.js';
 import { CLR1_COMBAT_CHAIN_TAG,adventure4Clr1BattleClearFlag } from './coreLoopClr1.js';
+import {
+  CLR2_AFTERMATH_TAG,
+  CLR2_BRANCH_NODE_IDS,
+  CLR2_PRESSURE_TAG,
+  CLR2_STEADY_TAG,
+  adventure4Clr2AftermathNodeId,
+} from './coreLoopClr2.js';
 
 function chapterByNumber(number){return CHAPTERS.find(ch=>Number(ch.num)===Number(number))||CHAPTERS[Number(number)-1]||null;}
 function primaryStages(chapter){return (chapter?.stages||[]).filter(stage=>!stage.branch);}
@@ -72,11 +79,13 @@ function buildLegacyFreeAdventureRoute(region,{secretBoss=null}={}){
   return normalizeAdventure4Route({id:`${region.id}-free-adventure`,regionId:region.id,name:`${region.name}・自由探索`,entryNodeId:'entry',nodes,tags:['free-adventure','dungeon','authored'],stageRefs:refs});
 }
 
-/* CLR-1 vertical slice.
-   Only the already-cleared frontier Free Adventure is reweighted here. Keeping
-   the old node IDs in the graph lets an older suspended session finish safely,
-   while every newly-entered session follows the combat-first entry path. */
-function buildClr1FrontierFreeAdventureRoute(region,options={}){
+/* CLR-1/2 vertical slice.
+   CLR-1 supplies the canonical multi-battle expedition. CLR-2 inserts concise
+   aftermath checkpoints and one meaningful mid-run route decision. The steady
+   route skips one optional elite and reaches the deep section sooner; the
+   pressure route fights that extra canonical stage, earning only the normal
+   EXP/Gold/Loot that battle already owns. No bespoke branch reward exists. */
+function buildClrFrontierFreeAdventureRoute(region,options={}){
   const legacy=buildLegacyFreeAdventureRoute(region,options);
   const bossEndpoint=adventure4RegionBossEndpoint(region);
   const candidates=freeAdventureStageRefs(region).filter(ref=>ref.stage?.id&&ref.stage.id!==bossEndpoint?.stageId);
@@ -85,26 +94,68 @@ function buildClr1FrontierFreeAdventureRoute(region,options={}){
   if(selected.length<4)return legacy;
 
   const battleIds=selected.map((_,index)=>`clr1-battle-${index+1}`);
-  const chainNodes=selected.map((ref,index)=>{
-    const id=battleIds[index],previousId=battleIds[index-1]||null,nextId=battleIds[index+1]||null;
-    const final=index===selected.length-1;
+  const aftermathIds=battleIds.map(adventure4Clr2AftermathNodeId);
+  const hasMidRunBranch=selected.length>=6;
+  const battleNames=['前哨戦','第二遭遇','中枢戦','追加強敵','深部戦'];
+
+  const battleNodes=selected.map((ref,index)=>{
+    const id=battleIds[index],final=index===selected.length-1;
+    let condition=null;
+    if(index>0){
+      const prerequisiteIndex=hasMidRunBranch&&index===4?2:index-1;
+      condition={flag:adventure4Clr1BattleClearFlag(battleIds[prerequisiteIndex])};
+    }
     return{
       id,
       type:final?'boss':ref.kind==='boss'?'elite':'battle',
-      name:final?ref.stage.name||'地域の強敵':`${index+1}戦目：${ref.stage.name||'遭遇戦'}`,
+      name:final?ref.stage.name||'地域の強敵':`${battleNames[index]||`${index+1}戦目`}：${ref.stage.name||'遭遇戦'}`,
       stageId:ref.stage.id,
-      next:nextId?[nextId,'return']:['return'],
-      condition:previousId?{flag:adventure4Clr1BattleClearFlag(previousId)}:null,
-      tags:['free-adventure',CLR1_COMBAT_CHAIN_TAG,final?'finisher':'combat',ref.kind||'route'],
+      next:final?['return']:[aftermathIds[index],'return'],
+      condition,
+      tags:['free-adventure',CLR1_COMBAT_CHAIN_TAG,final?'finisher':'combat',ref.kind||'route',hasMidRunBranch&&index===3?CLR2_PRESSURE_TAG:''].filter(Boolean),
     };
   });
+
+  const aftermathNodes=[];
+  for(let index=0;index<selected.length-1;index++){
+    const currentBattleId=battleIds[index];
+    let next=[battleIds[index+1],'return'];
+    let name='戦果整理：装備と残存戦力を確認';
+    if(hasMidRunBranch&&index===2){
+      next=[CLR2_BRANCH_NODE_IDS.steady,CLR2_BRANCH_NODE_IDS.pressure,'return'];
+      name='戦果整理：この先の狩り方を選ぶ';
+    }else if(hasMidRunBranch&&index===3){
+      next=[battleIds[4],'return'];
+      name='戦果整理：追加強敵を突破';
+    }
+    aftermathNodes.push({
+      id:aftermathIds[index],type:'event',name,next,
+      condition:{flag:adventure4Clr1BattleClearFlag(currentBattleId)},
+      tags:['free-adventure',CLR2_AFTERMATH_TAG,'choice','combat-aftermath'],
+    });
+  }
+
+  const branchNodes=hasMidRunBranch?[
+    {
+      id:CLR2_BRANCH_NODE_IDS.steady,type:'scene',name:'安全路：1戦省いて深部へ',next:[battleIds[4],'return'],
+      condition:{flag:adventure4Clr1BattleClearFlag(battleIds[2])},
+      tags:['free-adventure','choice',CLR2_STEADY_TAG,'short-route'],
+    },
+    {
+      id:CLR2_BRANCH_NODE_IDS.pressure,type:'scene',name:'圧力路：追加の強敵も狩る',next:[battleIds[3],'return'],
+      condition:{flag:adventure4Clr1BattleClearFlag(battleIds[2])},
+      tags:['free-adventure','choice',CLR2_PRESSURE_TAG,'extra-combat'],
+    },
+  ]:[];
 
   const legacyCompatibility=legacy.nodes
     .filter(node=>!['entry','return'].includes(node.id))
     .map(node=>({...node,next:[...(node.next||[])],tags:[...(node.tags||[])],condition:node.condition?{...node.condition}:null}));
   const nodes=[
     {id:'entry',type:'scene',name:`${region.name}・連戦探索`,next:[battleIds[0],'return'],tags:['free-adventure','visible','combat-first']},
-    ...chainNodes,
+    ...battleNodes,
+    ...aftermathNodes,
+    ...branchNodes,
     ...legacyCompatibility,
     {id:'return',type:'camp',name:'帰還路',next:[],tags:['return','visible']},
   ];
@@ -114,12 +165,12 @@ function buildClr1FrontierFreeAdventureRoute(region,options={}){
     name:`${region.name}・自由探索`,
     entryNodeId:'entry',
     nodes,
-    tags:['free-adventure','dungeon','authored','clr1-combat-first'],
+    tags:['free-adventure','dungeon','authored','clr1-combat-first','clr2-aftermath-branching'],
   });
 }
 
 function buildFreeAdventureRoute(region,options={}){
-  return region.id==='frontier'?buildClr1FrontierFreeAdventureRoute(region,options):buildLegacyFreeAdventureRoute(region,options);
+  return region.id==='frontier'?buildClrFrontierFreeAdventureRoute(region,options):buildLegacyFreeAdventureRoute(region,options);
 }
 
 export function buildAdventure4PilotRoute(region,regionState,options={}){
