@@ -17,8 +17,8 @@ import {
   CLR9_MIDRUN_INVESTIGATION_SCENE_ID,
   CLR9_MIDRUN_INVESTIGATION_TAG,
 } from './coreLoopClr9.js';
+import { clr19RegionUsesSharedHunt } from './coreLoopClr19.js';
 
-const CLR_COMBAT_FIRST_REGIONS=Object.freeze(new Set(['frontier','elemental']));
 export const CLR6_STORY_AFTERMATH_NODE_ID='clr6-story-aftermath';
 export const CLR6_STORY_AFTERMATH_SCENE_ID='clr6-story-aftermath-scene';
 
@@ -164,6 +164,8 @@ function buildClrCombatFirstFreeAdventureRoute(region,options={}){
     },
   ]:[];
 
+  // Keep every pre-CLR combat-first node id reachable so suspended legacy
+  // sessions can resume after a Region is generalized instead of being reset.
   const legacyCompatibility=legacy.nodes
     .filter(node=>!['entry','return'].includes(node.id))
     .map(node=>({...node,next:[...(node.next||[])],tags:[...(node.tags||[])],condition:node.condition?{...node.condition}:null}));
@@ -181,12 +183,12 @@ function buildClrCombatFirstFreeAdventureRoute(region,options={}){
     name:`${region.name}・自由探索`,
     entryNodeId:'entry',
     nodes,
-    tags:['free-adventure','dungeon','authored','clr1-combat-first','clr2-aftermath-branching','clr4-shared-combat-loop','clr5-tier-cadence','clr9-combat-milestone-investigation'],
+    tags:['free-adventure','dungeon','authored','clr1-combat-first','clr2-aftermath-branching','clr4-shared-combat-loop','clr5-tier-cadence','clr19-full-region-hunt'],
   });
 }
 
 function buildFreeAdventureRoute(region,options={}){
-  return CLR_COMBAT_FIRST_REGIONS.has(region.id)?buildClrCombatFirstFreeAdventureRoute(region,options):buildLegacyFreeAdventureRoute(region,options);
+  return clr19RegionUsesSharedHunt(region)?buildClrCombatFirstFreeAdventureRoute(region,options):buildLegacyFreeAdventureRoute(region,options);
 }
 
 export function buildAdventure4PilotRoute(region,regionState,options={}){
