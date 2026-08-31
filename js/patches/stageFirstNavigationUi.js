@@ -1,10 +1,12 @@
-/* CLR-13/14 — Stage-first browser + Stage detail presentation bridge.
-   Restores canonical Chapter/Stage navigation as the visible Story spine while
-   preserving World 4.0 runtime modules for later Hunt attachment. */
-import { CHAPTERS } from '../data/stages.js';
+/* CLR-13/15 — Stage-first browser, Stage detail and Hunt presentation bridge.
+   Canonical Chapter/Stage navigation stays the visible Story spine while
+   World 4.0 remains the Region-owned runtime underneath repeatable Hunt. */
+import { CHAPTERS,isChapterUnlocked } from '../data/stages.js';
 import { journeyName } from '../data/worldVeil.js';
+import { buildWorld4RegionCatalog,world4RegionState } from '../data/adventureWorld4Regions.js';
 import { isStageDiscovered } from '../screens/stageSelect.js';
 import { state } from '../state.js';
+import { renderAdventureRoute } from './adventureWorld4Ui.js';
 import './adventureWorld4RouteEngine.js';
 import './adventureWorld4SceneRuntime.js';
 import './adventureWorld4ContentPackI.js';
@@ -35,6 +37,35 @@ function canonicalStageById(id){
     if(stage)return{chapter,stage};
   }
   return null;
+}
+
+function regionCatalog(){return buildWorld4RegionCatalog(CHAPTERS);}
+function regionState(region){return world4RegionState(region,CHAPTERS,{isStageCleared:id=>state.isStageCleared(id),isChapterUnlocked:index=>isChapterUnlocked(index,id=>state.isStageCleared(id))});}
+function regionForChapter(chapter){return regionCatalog().find(region=>region.chapterNumbers.includes(Number(chapter?.num)))||null;}
+
+export function stageFirstHuntContext(stageId=selectedStageId){
+  const found=canonicalStageById(stageId);if(!found)return null;
+  const {chapter,stage}=found;
+  if(stage.branch||stage.bounty||!state.isStageCleared(stage.id))return null;
+  const region=regionForChapter(chapter);if(!region)return null;
+  const progress=regionState(region);
+  if(progress.status!=='completed')return null;
+  return{chapter,stage,region,progress};
+}
+
+export function launchStageFirstHunt(stageId=selectedStageId){
+  const context=stageFirstHuntContext(stageId);if(!context)return{ok:false,reason:'hunt_locked'};
+  const existing=state.adventure4Session?.();
+  if(existing?.active){
+    if(existing.regionId!==context.region.id)return{ok:false,reason:'other_active_session'};
+    state.resumeAdventure4?.();
+    renderAdventureRoute();
+    return{ok:true,resumed:true,regionId:context.region.id};
+  }
+  const started=state.startAdventure4?.({regionId:context.region.id,returnTarget:'home'});
+  if(!started?.ok)return started||{ok:false,reason:'start_failed'};
+  renderAdventureRoute();
+  return{ok:true,resumed:false,regionId:context.region.id};
 }
 
 function currentCanonicalChapter(){
@@ -97,6 +128,29 @@ export function enhanceStageFirstChapterList(){
   return true;
 }
 
+function ensureHuntAction(stageId){
+  const screen=document.getElementById('stageConfirmScreen');
+  const actions=screen?.querySelector('.confirm-actions');
+  if(!screen||!actions)return false;
+  let hunt=document.getElementById('stageFirstHuntBtn');
+  let context=document.getElementById('stageFirstHuntContext');
+  const available=stageFirstHuntContext(stageId);
+  if(!available){hunt?.remove();context?.remove();return false;}
+  if(!context){context=document.createElement('div');context.id='stageFirstHuntContext';context.style.cssText='margin:8px 0;font-size:.88rem;opacity:.82;';actions.before(context);}
+  const nextText=`Story踏破済みの「${available.region.name}」を連戦周回。EXP・Loot・Elite/Bossは既存Adventure権威を使用。`;
+  if(context.textContent!==nextText)context.textContent=nextText;
+  if(!hunt){hunt=document.createElement('button');hunt.id='stageFirstHuntBtn';hunt.type='button';hunt.className='btn-sub';actions.appendChild(hunt);}
+  const existing=state.adventure4Session?.();
+  const sameActive=!!(existing?.active&&existing.regionId===available.region.id);
+  const blocked=!!(existing?.active&&existing.regionId!==available.region.id);
+  const label=sameActive?`Huntを再開：${available.region.name}`:`Hunt / ${available.region.name}を周回`;
+  if(hunt.textContent!==label)hunt.textContent=label;
+  hunt.disabled=blocked;
+  hunt.title=blocked?'別地域で中断中のHuntがあります。先にそちらを再開または帰還してください。':'';
+  hunt.onclick=()=>{const result=launchStageFirstHunt(stageId);if(!result?.ok&&result?.reason==='other_active_session')hunt.disabled=true;};
+  return true;
+}
+
 export function enhanceStageFirstDetail(stageId=selectedStageId){
   const found=canonicalStageById(stageId);if(!found)return false;
   const {stage}=found;
@@ -108,6 +162,7 @@ export function enhanceStageFirstDetail(stageId=selectedStageId){
     start.textContent=stage.branch||stage.bounty?(cleared?'もう一度挑む':'挑戦する'):(cleared?'再戦する':'物語を進める');
     start.dataset.stageId=stage.id;
   }
+  ensureHuntAction(stage.id);
   return true;
 }
 
@@ -162,6 +217,7 @@ document.addEventListener('click',event=>{
     return;
   }
   if(target.closest('#confirmBackBtn')){stageBattleArmed=false;queueEnhance('stage');return;}
+  if(target.closest('#stageFirstHuntBtn')){stageBattleArmed=false;return;}
   if(target.closest('#confirmStartBtn')){stageBattleArmed=!!selectedStageId;return;}
   if(target.closest('#resultRetryBtn')){stageBattleArmed=!!selectedStageId;return;}
   if(target.closest('#resultNextBtn')){
