@@ -4,7 +4,7 @@
    menu with one primary Adventure CTA plus compact category drawers.
    ============================================================ */
 import './adventureWorld4Session.js';
-import './adventureWorld4Ui.js';
+import './stageFirstNavigationUi.js';
 import './adventureWorld4EventChainRuntime.js';
 import './adventureWorld4MysterySceneRuntime.js';
 import './adventureWorld4HiddenRouteUi.js';
