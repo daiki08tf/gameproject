@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { CHAPTERS } from '../js/data/stages.js';
-import { CH1_STORY_AFTERMATH,CH18_STORY_AFTERMATH,clr18StoryAftermath,clr18ShouldShowAftermath } from '../js/data/coreLoopClr18.js';
+import { CH1_STORY_AFTERMATH,CH18_STORY_AFTERMATH,CH35_STORY_AFTERMATH,clr18StoryAftermath,clr18ShouldShowAftermath } from '../js/data/coreLoopClr18.js';
 
 test('CLR-18 Chapter 1 keeps the canonical 1-1 -> 1-5 Stage spine',()=>{
   const ch1=CHAPTERS.find(ch=>Number(ch.num)===1);
@@ -20,8 +20,17 @@ test('CLR-18 Chapter 18 keeps the canonical expanded 18-1 -> 18-8 Stage spine',(
   assert.equal(ch18.stages.find(stage=>stage.id==='18-8')?.boss,true);
 });
 
+test('CLR-18 Chapter 35 keeps the canonical expanded 35-1 -> 35-8 Stage spine',()=>{
+  const ch35=CHAPTERS.find(ch=>Number(ch.num)===35);
+  const main=ch35.stages.filter(stage=>!stage.branch&&!stage.bounty).map(stage=>stage.id);
+  assert.deepEqual(main,['35-1','35-2','35-3','35-4','35-5','35-6','35-7','35-8']);
+  assert.deepEqual(Object.keys(CH35_STORY_AFTERMATH),main);
+  assert.equal(ch35.stages.find(stage=>stage.id==='35-4')?.midBoss,true);
+  assert.equal(ch35.stages.find(stage=>stage.id==='35-8')?.boss,true);
+});
+
 test('CLR-18 aftermath is concise and tied to exact canonical representative Stages',()=>{
-  for(const id of [...Object.keys(CH1_STORY_AFTERMATH),...Object.keys(CH18_STORY_AFTERMATH)]){
+  for(const id of [...Object.keys(CH1_STORY_AFTERMATH),...Object.keys(CH18_STORY_AFTERMATH),...Object.keys(CH35_STORY_AFTERMATH)]){
     const beat=clr18StoryAftermath(id);
     assert.equal(beat.stageId,id);
     assert.ok(beat.title.length>0);
@@ -29,13 +38,14 @@ test('CLR-18 aftermath is concise and tied to exact canonical representative Sta
   }
   assert.equal(clr18StoryAftermath('1-B'),null);
   assert.equal(clr18StoryAftermath('18-B'),null);
+  assert.equal(clr18StoryAftermath('35-B'),null);
   assert.equal(clr18StoryAftermath('2-1'),null);
   assert.equal(clr18StoryAftermath('17-1'),null);
-  assert.equal(clr18StoryAftermath('19-1'),null);
+  assert.equal(clr18StoryAftermath('34-1'),null);
 });
 
 test('CLR-18 Story beat appears only after first victory, never on replay/retreat/loss',()=>{
-  for(const id of ['1-1','18-1','18-4','18-8']){
+  for(const id of ['1-1','18-1','18-4','18-8','35-1','35-4','35-8']){
     assert.equal(clr18ShouldShowAftermath({stageId:id,cleared:true,wasCleared:false}),true);
     assert.equal(clr18ShouldShowAftermath({stageId:id,cleared:true,wasCleared:true}),false);
     assert.equal(clr18ShouldShowAftermath({stageId:id,cleared:false,wasCleared:false}),false);
@@ -49,6 +59,17 @@ test('CLR-18 Chapter 18 beats build toward existing world-outside / Veil lore wi
   assert.match(ch18.lore,/The Veil/);
   assert.match(CH18_STORY_AFTERMATH['18-4'].text,/穴/);
   assert.match(CH18_STORY_AFTERMATH['18-8'].text,/世界の外側/);
+});
+
+test('CLR-18 Chapter 35 beats preserve the unresolved dual-outline canon',()=>{
+  const ch35=CHAPTERS.find(ch=>Number(ch.num)===35);
+  assert.match(ch35.lore,/第八鍵/);
+  assert.match(ch35.lore,/巨大な樹冠/);
+  assert.match(ch35.lore,/森林反応そのものが存在しない/);
+  assert.match(ch35.lore,/原因も意味もまだ説明できない/);
+  assert.match(CH35_STORY_AFTERMATH['35-6'].text,/巨大な樹冠/);
+  assert.match(CH35_STORY_AFTERMATH['35-6'].text,/森林反応/);
+  assert.match(CH35_STORY_AFTERMATH['35-8'].text,/原因も意味もまだ説明できず/);
 });
 
 test('CLR-18 UI bridges Stage-first result without adding progression/save/reward authority',()=>{
