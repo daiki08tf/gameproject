@@ -48,10 +48,11 @@ test('frontier and elemental use region-specific canonical stage IDs even though
   assert.equal(new Set([...frontier,...elemental]).size,12);
 });
 
-test('CLR-4 does not expand the combat-first loop to every completed Region at once',()=>{
-  const untouched=catalog().find(item=>!['frontier','elemental'].includes(item.id)&&item.chapterNumbers?.length);
-  assert.ok(untouched);
-  const route=buildAdventure4PilotRoute(untouched,{status:'completed',routeEntry:null});
-  assert.ok(!route.tags.includes('clr4-shared-combat-loop'));
-  assert.equal(route.nodes.filter(node=>node.tags.includes(CLR1_COMBAT_CHAIN_TAG)).length,0);
+test('CLR-4 historical shared-loop contract remains intact after CLR-19 expands it beyond the first two Regions',()=>{
+  const later=catalog().find(item=>!['frontier','elemental'].includes(item.id)&&item.chapterNumbers?.length);
+  assert.ok(later);
+  const route=buildAdventure4PilotRoute(later,{status:'completed',routeEntry:null});
+  assert.ok(route.tags.includes('clr4-shared-combat-loop'));
+  assert.ok(route.tags.includes('clr19-full-region-hunt'));
+  assert.ok(route.nodes.filter(node=>node.tags.includes(CLR1_COMBAT_CHAIN_TAG)).length>=4);
 });

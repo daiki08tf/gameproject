@@ -23,7 +23,10 @@ test('CLR-15 launches or resumes the existing Adventure Session instead of creat
 test('CLR-15 reuses the existing free-adventure multi-battle route when Region Story is complete',()=>{
   assert.match(pilot,/const storyCleared=regionState\?\.status===['"]completed['"]&&!regionState\?\.routeEntry/);
   assert.match(pilot,/storyCleared\?buildFreeAdventureRoute\(region,options\):buildStoryRoute\(region,regionState\)/);
-  assert.match(pilot,/CLR_COMBAT_FIRST_REGIONS/);
+  // CLR-19 replaced the frontier/elemental-only CLR_COMBAT_FIRST_REGIONS
+  // allowlist with clr19RegionUsesSharedHunt(), which every canonical World3
+  // Region now satisfies (see coreLoopClr19.js / core-loop-clr19.test.js).
+  assert.match(pilot,/clr19RegionUsesSharedHunt/);
   assert.match(pilot,/clr1-combat-first/);
   assert.match(pilot,/clr2-aftermath-branching/);
 });
