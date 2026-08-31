@@ -6,6 +6,7 @@ import { buildWorld4RegionCatalog,world4RegionPresentation,world4RegionState,wor
 import { buildAdventure4PilotRoute,adventure4PilotPreview } from '../data/adventureWorld4Pilot.js';
 import { buildAdventure4PilotSceneCatalog,adventure4SceneById,adventure4SceneStep,adventure4SceneChoices,resolveAdventure4SceneChoice } from '../data/adventureWorld4Scenes.js';
 import { adventure4Clr1BattleResultPatch } from '../data/coreLoopClr1.js';
+import { adventure4Clr3RunSummary } from '../data/coreLoopClr3.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
@@ -37,7 +38,7 @@ function suspendAdventure(){state.suspendAdventure4();goHome();}
 
 function launchAdventureBattle(node){if(!node?.stageId)return;state.checkpointAdventure4({pendingEncounter:{nodeId:node.id,stageId:node.stageId}});showScreen('textBattleScreen');battle.start(node.stageId,result=>{if(result?.cleared&&state.rollRune2DropForStage)result.rune2Drops=state.rollRune2DropForStage(node.stageId);const resultPatch=adventure4Clr1BattleResultPatch(node,result,state.adventure4Session());if(resultPatch)state.checkpointAdventure4(resultPatch);renderResult(result);configureAdventureResultActions(()=>renderAdventureRoute());showScreen('resultScreen');});}
 
-function nodeButton(node,route){const button=document.createElement('button');button.type='button';button.className=`adventure4-choice adventure4-${node.type}`;const typeLabel={battle:'戦闘',boss:'強敵',elite:'強敵',event:'調査',camp:'帰還',scene:'移動'}[node.type]||'探索';button.innerHTML=`<span><strong>${node.name}</strong><small>${typeLabel}</small></span><span>›</span>`;button.addEventListener('click',()=>{Audio_.tap();const moved=state.moveAdventure4ToNode(route,node.id);if(!moved.ok)return;if(['battle','elite','boss'].includes(node.type)){launchAdventureBattle(node);return;}if(node.type==='camp'&&node.tags?.includes('return')){returnAdventure();return;}renderAdventureRoute();});return button;}
+function nodeButton(node,route){const button=document.createElement('button');button.type='button';button.className=`adventure4-choice adventure4-${node.type}`;const taggedLabel=node.tags?.includes('clr2-aftermath')?'戦果':node.tags?.includes('clr2-steady')?'安全路':node.tags?.includes('clr2-pressure')?'危険路':null;const typeLabel=taggedLabel||({battle:'戦闘',boss:'強敵',elite:'強敵',event:'調査',camp:'帰還',scene:'移動'}[node.type]||'探索');button.innerHTML=`<span><strong>${node.name}</strong><small>${typeLabel}</small></span><span>›</span>`;button.addEventListener('click',()=>{Audio_.tap();const moved=state.moveAdventure4ToNode(route,node.id);if(!moved.ok)return;if(['battle','elite','boss'].includes(node.type)){launchAdventureBattle(node);return;}if(node.type==='camp'&&node.tags?.includes('return')){returnAdventure();return;}renderAdventureRoute();});return button;}
 
 function sceneStepKey(sceneId){return `sceneStep:${sceneId}`;}
 function setSceneStep(sceneId,stepId){const session=state.adventure4Session(),flags={...(session.temporaryFlags||{})};if(stepId)flags[sceneStepKey(sceneId)]=stepId;else delete flags[sceneStepKey(sceneId)];state.checkpointAdventure4({temporaryFlags:flags});}
@@ -76,6 +77,18 @@ function renderAmbientScene(body,region,route,current){
   return renderScene(body,region,route,current,scene,{onComplete:()=>state.completeAdventure4ContentPackIScene?.()});
 }
 
+function adventureSummaryText(current,session,route){
+  if(current.tags?.includes('clr2-aftermath')||current.tags?.includes('clr2-steady')||current.tags?.includes('clr2-pressure')){
+    const run=adventure4Clr3RunSummary(session,route);
+    const guidance=current.tags?.includes('clr2-steady')
+      ?'追加強敵を避け、深部へ急ぎます。'
+      :current.tags?.includes('clr2-pressure')?'追加強敵を狩るぶん、通常の戦闘報酬をもう1回狙えます。':'ここで装備と残存戦力を確認し、続行か帰還を判断できます。';
+    return `${run.progressLabel} / ${run.routeLabel} / ${run.remainingLabel}。${guidance}`;
+  }
+  if(['battle','elite','boss'].includes(current.type))return'既存Stageの戦闘へ接続します。EXP・Gold・Lootは通常の進行・報酬処理へそのまま反映されます。';
+  return'次に進む道を選びます。見えているのは直近の行き先だけです。';
+}
+
 export function renderAdventureRoute(){
   ensureStyles();const screen=makeScreen('adventureRoute4Screen','冒険');const body=screen.querySelector('.adventure4-body');const {session,region,route}=currentRegionAndRoute();
   if(!session.active||!region||!route){renderAdventureWorld();return;}
@@ -85,7 +98,7 @@ export function renderAdventureRoute(){
   if(current.id==='entry'&&renderAmbientScene(body,region,route,current)){const suspend=document.createElement('button');suspend.type='button';suspend.className='btn-sub adventure4-suspend';suspend.textContent='中断して拠点へ戻る';suspend.addEventListener('click',()=>{Audio_.tap();suspendAdventure();});body.appendChild(suspend);screen.querySelector('.adventure4-back').onclick=()=>{Audio_.tap();suspendAdventure();};showScreen(screen.id);return;}
   if(scene&&renderScene(body,region,route,current,scene)){const suspend=document.createElement('button');suspend.type='button';suspend.className='btn-sub adventure4-suspend';suspend.textContent='中断して拠点へ戻る';suspend.addEventListener('click',()=>{Audio_.tap();suspendAdventure();});body.appendChild(suspend);screen.querySelector('.adventure4-back').onclick=()=>{Audio_.tap();suspendAdventure();};showScreen(screen.id);return;}
   const preview=adventure4PilotPreview(route,current.id,view.next);body.innerHTML='';
-  const summary=document.createElement('section');summary.className='adventure4-card adventure4-current';summary.innerHTML=`<div class="adventure4-meta">${region.name}</div><h3>${current.name}</h3><p>${current.type==='battle'?'既存Storyの戦闘へ接続します。結果は通常の進行・報酬処理へそのまま反映されます。':'次に進む道を選びます。見えているのは直近の行き先だけです。'}</p>`;body.appendChild(summary);
+  const summary=document.createElement('section');summary.className='adventure4-card adventure4-current';summary.innerHTML=`<div class="adventure4-meta">${region.name}</div><h3>${current.name}</h3><p>${adventureSummaryText(current,session,route)}</p>`;body.appendChild(summary);
   const trail=document.createElement('div');trail.className='adventure4-trail';for(const item of preview){const chip=document.createElement('span');chip.className=`adventure4-trail-${item.state}`;chip.textContent=item.name;trail.appendChild(chip);}body.appendChild(trail);
   const latest=state.adventure4Session(),pending=latest.pendingEncounter;if(pending?.stageId&&pending.nodeId===current.id){const retry=document.createElement('button');retry.className='adventure4-choice adventure4-battle';retry.innerHTML='<span><strong>中断した戦闘へ戻る</strong><small>戦闘</small></span><span>›</span>';retry.addEventListener('click',()=>launchAdventureBattle({...current,stageId:pending.stageId}));body.appendChild(retry);}
   const choices=document.createElement('section');choices.className='adventure4-choices';view.next.forEach(node=>choices.appendChild(nodeButton(node,route)));body.appendChild(choices);
