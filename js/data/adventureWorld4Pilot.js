@@ -14,6 +14,8 @@ import {
 import { adventure4Clr5CadenceProfile } from './coreLoopClr5.js';
 
 const CLR_COMBAT_FIRST_REGIONS=Object.freeze(new Set(['frontier','elemental']));
+export const CLR6_STORY_AFTERMATH_NODE_ID='clr6-story-aftermath';
+export const CLR6_STORY_AFTERMATH_SCENE_ID='clr6-story-aftermath-scene';
 
 function chapterByNumber(number){return CHAPTERS.find(ch=>Number(ch.num)===Number(number))||CHAPTERS[Number(number)-1]||null;}
 function primaryStages(chapter){return (chapter?.stages||[]).filter(stage=>!stage.branch);}
@@ -40,14 +42,26 @@ export function adventure4SecretBossEndpoint({id='secret-boss',name='隠され�
 function buildStoryRoute(region,regionState){
   const story=regionState?.routeEntry||null;
   const nodes=[
-    {id:'entry',type:'scene',name:`${region.name}への道`,next:['fork'],tags:['major','visible']},
-    {id:'fork',type:'event',name:'分かれ道',sceneId:'pilot-fork',next:story?['story','return']:['return'],tags:['choice','visible']},
+    // Legacy entry/fork remain valid for suspended pre-CLR-6 sessions, but new
+    // Story sessions start directly on the canonical Story battle below.
+    {id:'entry',type:'scene',name:`${region.name}への道`,next:['fork'],tags:['major','visible','legacy-entry']},
+    {id:'fork',type:'event',name:'分かれ道',sceneId:'pilot-fork',next:story?['story','return']:['return'],tags:['choice','visible','legacy-entry']},
   ];
   if(story){
-    nodes.push({id:'story',type:'battle',name:story.stageName||'物語の戦い',stageId:story.stageId,next:['return'],tags:['story','major']});
+    nodes.push({
+      id:'story',type:'battle',name:story.stageName||'物語の戦い',stageId:story.stageId,
+      next:[CLR6_STORY_AFTERMATH_NODE_ID,'return'],tags:['story','major','clr6-combat-first-story'],
+    });
+    nodes.push({
+      id:CLR6_STORY_AFTERMATH_NODE_ID,type:'event',name:'戦いの跡から物語を読む',sceneId:CLR6_STORY_AFTERMATH_SCENE_ID,
+      next:['return'],condition:{stageCleared:story.stageId},tags:['story','clr6-story-outcome','combat-aftermath'],
+    });
   }
   nodes.push({id:'return',type:'camp',name:'帰還路',next:[],tags:['return','visible']});
-  return normalizeAdventure4Route({id:`${region.id}-story-route`,regionId:region.id,name:`${region.name}・物語路`,entryNodeId:'entry',nodes,tags:['story','authored']});
+  return normalizeAdventure4Route({
+    id:`${region.id}-story-route`,regionId:region.id,name:`${region.name}・物語路`,
+    entryNodeId:story?'story':'entry',nodes,tags:['story','authored','clr6-story-after-combat'],
+  });
 }
 
 function freeAdventureStageRefs(region){
