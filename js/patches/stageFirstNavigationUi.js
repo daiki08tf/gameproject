@@ -1,4 +1,4 @@
-/* CLR-13 — Stage-first browser presentation bridge.
+/* CLR-13/14 — Stage-first browser + Stage detail presentation bridge.
    Restores canonical Chapter/Stage navigation as the visible Story spine while
    preserving World 4.0 runtime modules for later Hunt attachment. */
 import { CHAPTERS } from '../data/stages.js';
@@ -9,6 +9,9 @@ import './adventureWorld4RouteEngine.js';
 import './adventureWorld4SceneRuntime.js';
 import './adventureWorld4ContentPackI.js';
 import './adventureWorld4HighLevelRuntime.js';
+
+let selectedStageId=null;
+let stageBattleArmed=false;
 
 function restoreCanonicalAdventureEntry(){
   const button=document.getElementById('goStageBtn');
@@ -25,6 +28,15 @@ function restoreCanonicalAdventureEntry(){
 
 restoreCanonicalAdventureEntry();
 
+function canonicalStageById(id){
+  if(!id)return null;
+  for(const chapter of CHAPTERS){
+    const stage=chapter.stages.find(item=>item.id===id);
+    if(stage)return{chapter,stage};
+  }
+  return null;
+}
+
 function currentCanonicalChapter(){
   const title=document.getElementById('chapterTitle')?.textContent||'';
   return CHAPTERS.find(ch=>journeyName(ch)===title)||null;
@@ -38,6 +50,13 @@ function statusLabel(stage){
   if(state.isStageCleared(stage.id))return 'CLEAR';
   if(stage.branch||stage.bounty)return 'OPEN';
   return 'NEXT';
+}
+
+function nextCanonicalMainStage(stageId){
+  const found=canonicalStageById(stageId);if(!found)return null;
+  const main=found.chapter.stages.filter(stage=>!stage.branch&&!stage.bounty);
+  const index=main.findIndex(stage=>stage.id===stageId);
+  return index>=0?main[index+1]||null:null;
 }
 
 export function enhanceStageFirstStageList(){
@@ -78,19 +97,86 @@ export function enhanceStageFirstChapterList(){
   return true;
 }
 
+export function enhanceStageFirstDetail(stageId=selectedStageId){
+  const found=canonicalStageById(stageId);if(!found)return false;
+  const {stage}=found;
+  const name=document.getElementById('confirmStageName');
+  const start=document.getElementById('confirmStartBtn');
+  if(name){name.textContent=`${stage.id} ${stage.name}`;name.dataset.stageId=stage.id;}
+  if(start){
+    const cleared=state.isStageCleared(stage.id);
+    start.textContent=stage.branch||stage.bounty?(cleared?'もう一度挑む':'挑戦する'):(cleared?'再戦する':'物語を進める');
+    start.dataset.stageId=stage.id;
+  }
+  return true;
+}
+
+function showExistingStageList(){
+  document.querySelectorAll('.screen').forEach(screen=>screen.classList.remove('active'));
+  document.getElementById('stageSelectScreen')?.classList.add('active');
+  enhanceStageFirstStageList();
+}
+
+function ensureStageResultContext(){
+  const result=document.getElementById('resultScreen');
+  if(!result?.classList.contains('active'))return false;
+  const existing=document.getElementById('stageFirstResultStagesBtn');
+  if(!stageBattleArmed||!selectedStageId){existing?.classList.add('hidden');return false;}
+  const found=canonicalStageById(selectedStageId);if(!found){existing?.classList.add('hidden');return false;}
+  const actions=result.querySelector('.confirm-actions');if(!actions)return false;
+  let back=existing;
+  if(!back){
+    back=document.createElement('button');
+    back.id='stageFirstResultStagesBtn';
+    back.className='btn-sub';
+    back.textContent='ステージ一覧へ';
+    back.addEventListener('click',()=>{stageBattleArmed=false;showExistingStageList();});
+    actions.appendChild(back);
+  }
+  back.classList.remove('hidden');
+  const next=nextCanonicalMainStage(selectedStageId);
+  const nextButton=document.getElementById('resultNextBtn');
+  if(next&&nextButton&&!nextButton.classList.contains('hidden'))nextButton.textContent=`次へ：${next.id} ${next.name}`;
+  stageBattleArmed=false;
+  return true;
+}
+
 function queueEnhance(target){
   queueMicrotask(()=>{
     if(target==='chapter')enhanceStageFirstChapterList();
     if(target==='stage')enhanceStageFirstStageList();
+    if(target==='detail')enhanceStageFirstDetail();
   });
 }
 
 document.addEventListener('click',event=>{
   const target=event.target instanceof Element?event.target:null;
   if(!target)return;
-  if(target.closest('#goStageBtn')||target.closest('#stageBackBtn'))queueEnhance('chapter');
-  if(target.closest('#chapterList .stage-card')||target.closest('#confirmBackBtn'))queueEnhance('stage');
+  if(target.closest('#goStageBtn')){selectedStageId=null;stageBattleArmed=false;queueEnhance('chapter');return;}
+  if(target.closest('#stageBackBtn')){queueEnhance('chapter');return;}
+
+  const stageCard=target.closest('#stageList .stage-card[data-stage-id]');
+  if(stageCard&&stageCard.dataset.stageState!=='locked'){
+    selectedStageId=stageCard.dataset.stageId||null;
+    queueEnhance('detail');
+    return;
+  }
+  if(target.closest('#confirmBackBtn')){stageBattleArmed=false;queueEnhance('stage');return;}
+  if(target.closest('#confirmStartBtn')){stageBattleArmed=!!selectedStageId;return;}
+  if(target.closest('#resultRetryBtn')){stageBattleArmed=!!selectedStageId;return;}
+  if(target.closest('#resultNextBtn')){
+    const next=nextCanonicalMainStage(selectedStageId);
+    if(next){selectedStageId=next.id;stageBattleArmed=true;}
+    return;
+  }
+  if(target.closest('#goAbyssBtn')||target.closest('#resultHomeBtn')){selectedStageId=null;stageBattleArmed=false;}
 });
+
+const resultScreen=document.getElementById('resultScreen');
+if(resultScreen){
+  const observer=new MutationObserver(()=>queueMicrotask(ensureStageResultContext));
+  observer.observe(resultScreen,{attributes:true,attributeFilter:['class']});
+}
 
 window.addEventListener('DOMContentLoaded',()=>{
   enhanceStageFirstChapterList();
