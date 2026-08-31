@@ -1,4 +1,4 @@
-/* CLR-18 — Story Density representative slices.
+/* CLR-18 — Story Density representative slices and bounded bulk migration.
    Presentation-only post-combat beats. Canonical Stage progression remains stageProgress. */
 
 const CH1_STORY_AFTERMATH=Object.freeze({
@@ -7,6 +7,38 @@ const CH1_STORY_AFTERMATH=Object.freeze({
   '1-3':Object.freeze({title:'洞窟は通り道',text:'洞窟の入口には新しい爪痕と踏み跡が重なっている。ここはただの棲み処ではなく、さらに奥へ続く通り道らしい。'}),
   '1-4':Object.freeze({title:'巣窟の統率',text:'巣窟の魔物は無秩序に集まっていたわけではない。奥へ進むほど配置が揃い、何者かに従っている気配が強くなる。'}),
   '1-5':Object.freeze({title:'平原を押さえていた者',text:'オークキングを倒すと、城の周囲に満ちていた魔物の気配が崩れ始める。はじまりの平原を覆っていた圧力の中心は、ここだった。'}),
+});
+
+const CH2_STORY_AFTERMATH=Object.freeze({
+  '2-1':Object.freeze({title:'森へ続く獣道',text:'森狼の足跡は深緑の森の奥へ集中している。外から迷い込んだ群れではなく、この森に根づいた動きだ。'}),
+  '2-2':Object.freeze({title:'毒胞子の流れ',text:'毒胞子の精が消えると風向きが見える。胞子は森の奥から絶えず運ばれ、通り道を塞ぐように広がっていた。'}),
+  '2-3':Object.freeze({title:'大猪が守る道',text:'苔むした大猪の縄張りは奥へ向かう一本道に重なる。森の中心へ近づくほど、魔物の配置に役割が見えてくる。'}),
+  '2-4':Object.freeze({title:'深緑の中心',text:'最深部では獣道も胞子も一つの方向へ集まっている。森全体の異変には中心となる存在がいるようだ。'}),
+  '2-5':Object.freeze({title:'大樹霊の静まり',text:'森の大樹霊を倒すと、周囲の魔物の気配が散り始める。深緑の森を縛っていた中心はここにあった。'}),
+});
+
+const CH3_STORY_AFTERMATH=Object.freeze({
+  '3-1':Object.freeze({title:'動き続ける遺跡',text:'亡者の兵を退けても、遺跡の奥では石の擦れる音が続く。忘れられた場所なのに守りだけは今も動いている。'}),
+  '3-2':Object.freeze({title:'朽ちた影の巡回',text:'朽ちた影は無秩序に漂わず、決まった経路を繰り返していた。遺跡には今も古い警戒の仕組みが残っている。'}),
+  '3-3':Object.freeze({title:'石像兵の配置',text:'石像兵は奥へ進む道を塞ぐ位置に並んでいる。守るべき何かが深部に残されていることだけは確かだ。'}),
+  '3-4':Object.freeze({title:'守護の最終線',text:'最深部の守りは入口より明らかに厳重だ。遺跡の中心に近づくほど、古い防衛機構が強く反応している。'}),
+  '3-5':Object.freeze({title:'古代守護者の停止',text:'古代守護者ゴーレムが止まると、遺跡を満たしていた作動音が弱まる。長く続いた守護機構の中心だったようだ。'}),
+});
+
+const CH4_STORY_AFTERMATH=Object.freeze({
+  '4-1':Object.freeze({title:'凍結した狩場',text:'氷狼の群れは霊峰の奥から下りてきている。寒さだけでなく、上方の何かに追われるような動きが残っている。'}),
+  '4-2':Object.freeze({title:'氷精の集まる風',text:'氷精が消えると冷気の流れが一本にまとまる。霊峰の奥ほど空気そのものが強く凍りついている。'}),
+  '4-3':Object.freeze({title:'イエティの壁',text:'イエティは狭い登路を塞ぐように居座っていた。頂へ近づく者を拒むような配置に見える。'}),
+  '4-4':Object.freeze({title:'竜の気配',text:'最深部では巨大な爪痕と凍りついた岩壁が続く。霊峰の異常な冷気の中心が近い。'}),
+  '4-5':Object.freeze({title:'霊峰の冷気が緩む',text:'フロストドラゴンを倒すと、張りつめていた冷気がわずかに緩む。霊峰を覆う圧力の中心は竜だった。'}),
+});
+
+const CH5_STORY_AFTERMATH=Object.freeze({
+  '5-1':Object.freeze({title:'火口へ向かう群れ',text:'火山トカゲの足跡は火口側へ密集している。灼熱を避けるどころか、より熱い場所へ集まっていた。'}),
+  '5-2':Object.freeze({title:'飛び火の流れ',text:'飛び火の精が消えても熱風は奥から吹き続ける。火山の異常は地表ではなく深部から押し上がっている。'}),
+  '5-3':Object.freeze({title:'溶岩ゴーレムの番',text:'溶岩ゴーレムは狭い道を塞ぎ、さらに奥を守るように立っていた。火山の中心には近づかせたくない何かがある。'}),
+  '5-4':Object.freeze({title:'炎帝の領域',text:'最深部では岩壁まで焼け、通常の噴火だけではない熱が残る。強大な魔物の気配が火口全体を支配している。'}),
+  '5-5':Object.freeze({title:'火山の圧力が落ちる',text:'炎帝ドレイクを倒すと、荒れていた魔物の動きが鈍る。灼熱の火山を煽っていた中心が崩れた。'}),
 });
 
 const CH18_STORY_AFTERMATH=Object.freeze({
@@ -31,7 +63,11 @@ const CH35_STORY_AFTERMATH=Object.freeze({
   '35-8':Object.freeze({title:'説明できない一致',text:'同期破綻機構を退けても、深緑の森の二重輪郭は消えない。原因も意味もまだ説明できず、観測事実だけが残る。'}),
 });
 
-const STORY_AFTERMATH=Object.freeze({...CH1_STORY_AFTERMATH,...CH18_STORY_AFTERMATH,...CH35_STORY_AFTERMATH});
+const STORY_AFTERMATH=Object.freeze({
+  ...CH1_STORY_AFTERMATH,
+  ...CH2_STORY_AFTERMATH,...CH3_STORY_AFTERMATH,...CH4_STORY_AFTERMATH,...CH5_STORY_AFTERMATH,
+  ...CH18_STORY_AFTERMATH,...CH35_STORY_AFTERMATH,
+});
 
 export function clr18StoryAftermath(stageId){
   const beat=STORY_AFTERMATH[String(stageId||'')];
@@ -42,4 +78,7 @@ export function clr18ShouldShowAftermath({stageId,cleared,wasCleared=false,retre
   return !!(cleared&&!retreated&&!wasCleared&&clr18StoryAftermath(stageId));
 }
 
-export { CH1_STORY_AFTERMATH,CH18_STORY_AFTERMATH,CH35_STORY_AFTERMATH,STORY_AFTERMATH };
+export {
+  CH1_STORY_AFTERMATH,CH2_STORY_AFTERMATH,CH3_STORY_AFTERMATH,CH4_STORY_AFTERMATH,CH5_STORY_AFTERMATH,
+  CH18_STORY_AFTERMATH,CH35_STORY_AFTERMATH,STORY_AFTERMATH,
+};
