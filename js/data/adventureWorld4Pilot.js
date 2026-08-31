@@ -18,7 +18,6 @@ import {
   CLR9_MIDRUN_INVESTIGATION_TAG,
 } from './coreLoopClr9.js';
 
-const CLR_COMBAT_FIRST_REGIONS=Object.freeze(new Set(['frontier','elemental']));
 export const CLR6_STORY_AFTERMATH_NODE_ID='clr6-story-aftermath';
 export const CLR6_STORY_AFTERMATH_SCENE_ID='clr6-story-aftermath-scene';
 
@@ -186,7 +185,7 @@ function buildClrCombatFirstFreeAdventureRoute(region,options={}){
 }
 
 function buildFreeAdventureRoute(region,options={}){
-  return CLR_COMBAT_FIRST_REGIONS.has(region.id)?buildClrCombatFirstFreeAdventureRoute(region,options):buildLegacyFreeAdventureRoute(region,options);
+  return buildClrCombatFirstFreeAdventureRoute(region,options);
 }
 
 export function buildAdventure4PilotRoute(region,regionState,options={}){
