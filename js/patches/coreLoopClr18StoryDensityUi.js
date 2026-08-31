@@ -1,8 +1,8 @@
 /* CLR-18 — Stage-first Story density bridge.
-   Shows concise representative-Chapter aftermath only after the first canonical clear.
+   Shows concise first-clear aftermath across all canonical main Story Stages.
    No Story/save/progression authority is added. */
 import { state } from '../state.js';
-import { clr18StoryAftermath,clr18ShouldShowAftermath } from '../data/coreLoopClr18.js';
+import { clr18StoryAftermath,clr18ShouldShowAftermath } from '../data/coreLoopClr18Final.js';
 
 let armedStageId=null;
 let armedWasCleared=false;
