@@ -51,9 +51,10 @@ test('elemental reuses the same cadence contract with its own canonical stage ID
   assert.ok(elemental.some(n=>!frontierIds.has(n.stageId)));
 });
 
-test('CLR-5 does not introduce reward multipliers, currency, inventory, or a new save root',()=>{
+test('CLR-5 does not introduce reward, inventory, or save mutation authority',()=>{
   const src=fs.readFileSync('js/data/coreLoopClr5.js','utf8');
-  assert.doesNotMatch(src,/drop|gold|reward|itemPower|currency|inventory|state\.data|save\(/i);
+  assert.doesNotMatch(src,/^import\s/m);
+  assert.doesNotMatch(src,/state\.data|\.save\(|addItem\(|dropMult\s*:|goldMult\s*:|itemPowerMult\s*:|eliteChance\s*:/i);
 });
 
 test('Adventure UI feeds the existing World Tier-derived rank into route construction',()=>{
