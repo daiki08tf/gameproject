@@ -119,10 +119,12 @@ function showExistingStageList(){
 
 function ensureStageResultContext(){
   const result=document.getElementById('resultScreen');
-  if(!result?.classList.contains('active')||!stageBattleArmed||!selectedStageId)return false;
-  const found=canonicalStageById(selectedStageId);if(!found)return false;
+  if(!result?.classList.contains('active'))return false;
+  const existing=document.getElementById('stageFirstResultStagesBtn');
+  if(!stageBattleArmed||!selectedStageId){existing?.classList.add('hidden');return false;}
+  const found=canonicalStageById(selectedStageId);if(!found){existing?.classList.add('hidden');return false;}
   const actions=result.querySelector('.confirm-actions');if(!actions)return false;
-  let back=document.getElementById('stageFirstResultStagesBtn');
+  let back=existing;
   if(!back){
     back=document.createElement('button');
     back.id='stageFirstResultStagesBtn';
