@@ -51,7 +51,13 @@ test('CP4-2 reuses world2 discoveries, Rumor Notebook and TextBattleScreen and b
 test('CP4-2 captures readiness before the previous start so CP4-1 cannot chain directly into first contact',()=>{
   const runtime=fs.readFileSync(new URL('../js/patches/contentPackIVB.js',import.meta.url),'utf8');
   const beforeIndex=runtime.indexOf('const before=cp4ParallaxProgress');
-  const previousIndex=runtime.indexOf('previousStart.call');
-  const recordIndex=runtime.lastIndexOf('recordContact(stageId,wasReady)');
-  assert.ok(beforeIndex>=0&&previousIndex>beforeIndex&&recordIndex>previousIndex);
+  const wrappedIndex=runtime.indexOf('const wrappedOnEnd=(result)=>');
+  const recordIndex=runtime.lastIndexOf('recordContact(stageId,wasReady,result)');
+  const callIndex=runtime.indexOf('previousStart.call(this,stageId,wrappedOnEnd,blessingId)');
+  // CLR-8: readiness (`wasReady`) must be snapshotted before the battle
+  // actually starts, and recordContact can only run from inside the wrapped
+  // onEnd callback that TextBattleScreen invokes when the battle resolves —
+  // never synchronously chained into the same start() call that CP4-1 uses
+  // to record its own evidence.
+  assert.ok(beforeIndex>=0&&beforeIndex<wrappedIndex&&wrappedIndex<recordIndex&&recordIndex<callIndex);
 });

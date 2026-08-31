@@ -53,7 +53,13 @@ test('CP4-3 reuses world2 discoveries, Rumor Notebook and TextBattleScreen with 
 test('CP4-3 does not chain directly into CP4-2 first contact in the same start',()=>{
   const runtime=fs.readFileSync(new URL('../js/patches/contentPackIVC.js',import.meta.url),'utf8');
   const beforeIndex=runtime.indexOf('const before=cp4BranchSightProgress');
-  const previousIndex=runtime.indexOf('previousStart.call');
-  const recordIndex=runtime.lastIndexOf('recordAwakening(stageId,wasReady)');
-  assert.ok(beforeIndex>=0&&previousIndex>beforeIndex&&recordIndex>previousIndex);
+  const wrappedIndex=runtime.indexOf('const wrappedOnEnd=(result)=>');
+  const recordIndex=runtime.lastIndexOf('recordAwakening(stageId,wasReady,result)');
+  const callIndex=runtime.indexOf('previousStart.call(this,stageId,wrappedOnEnd,blessingId)');
+  // CLR-8: readiness (`wasReady`) must be snapshotted before the battle
+  // actually starts, and recordAwakening can only run from inside the
+  // wrapped onEnd callback that TextBattleScreen invokes when the battle
+  // resolves — never synchronously chained into the same start() call that
+  // CP4-2 uses to record its own first-contact evidence.
+  assert.ok(beforeIndex>=0&&beforeIndex<wrappedIndex&&wrappedIndex<recordIndex&&recordIndex<callIndex);
 });

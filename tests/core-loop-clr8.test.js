@@ -44,6 +44,28 @@ test('CLR-8 records all CP4 core discoveries from battle-end callbacks only afte
   }
 });
 
+test('CLR-8 battle victory is idempotent: re-evaluating a victory on an already-recorded stage is a no-op',()=>{
+  // Deep Green: once a step's discoveryId is already present, progress has
+  // moved past it, so cp4DeepGreenStepForStage no longer matches that stage
+  // as the "next" step — a repeated victory on the same stage records
+  // nothing new.
+  const deepGreen={discoveries:{'cp4:deepgreen:prime-record':{}},isStageCleared:cleared};
+  assert.equal(cp4DeepGreenStepForStage('2-1',deepGreen),null);
+  // Parallax first contact: once recorded, cp4ParallaxContactForStage never
+  // reissues the same event for a re-evaluated victory on the same revisit.
+  const parallax={discoveries:{
+    [CP4_PARALLAX_CONTACT.prerequisiteDiscoveryId]:{},
+    [CP4_PARALLAX_CONTACT.discoveryId]:{},
+  }};
+  assert.equal(cp4ParallaxContactForStage(CP4_PARALLAX_CONTACT.investigationStageId,parallax),null);
+  // Branch Sight activation: same guarantee.
+  const branchSight={discoveries:{
+    [CP4_BRANCH_SIGHT_AWAKENING.prerequisiteDiscoveryId]:{},
+    [CP4_BRANCH_SIGHT_AWAKENING.discoveryId]:{},
+  }};
+  assert.equal(cp4BranchSightActivationForStage(CP4_BRANCH_SIGHT_AWAKENING.activationStageId,branchSight),null);
+});
+
 test('CLR-8 keeps existing Discovery IDs and does not add RNG or reward authority',()=>{
   assert.equal(CP4_DEEP_GREEN_CHAIN.steps[0].discoveryId,'cp4:deepgreen:prime-record');
   assert.equal(CP4_PARALLAX_CONTACT.discoveryId,'cp4:parallax:first-contact');
