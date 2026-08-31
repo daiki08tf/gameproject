@@ -14,6 +14,8 @@ export function tavernRequestComplete(request,context){return tavernContextValue
 export function buildTavernRumors(context={}){
  const rumors=[];
  const nemesis=context.activeNemesis;
+ if(context.frontierBossSafeReturn)rumors.push({id:'clr11_frontier_boss_return',kind:'victory',icon:'⚔️',title:'辺境深部からの帰還',text:'開拓辺境の深部を塞いでいた主を討ち、冒険者が自力で帰還したという。酒場では次に深部へ向かう者たちが、その戦い方を聞き出そうとしている。',source:'帰還者の証言'});
+ if(context.frontierEliteSafeReturn)rumors.push({id:'clr11_frontier_elite_return',kind:'victory',icon:'🛡️',title:'強敵を越えた者の話',text:'開拓辺境で通常の群れとは違う強敵を倒し、そのまま帰還した者がいるらしい。危険路にも突破できる道筋があると噂されている。',source:'冒険者の噂'});
  if(nemesis)rumors.push({id:'nemesis',kind:'bounty',icon:'🎯',title:'手配書の噂',text:`${nemesis.title||'危険な標的'}がまだ活動中らしい。敗北を重ねるほど厄介になる。`,source:'賞金首'});
  if((context.abyssBestDepth||0)>0)rumors.push({id:'abyss',kind:'abyss',icon:'🕳️',title:'深淵帰りの話',text:`現在の到達記録は ${context.abyssBestDepth}F。深層ほど境界石に関する話が増えている。`,source:'Abyss'});
  if((context.rareSeen||0)>0)rumors.push({id:'rare',kind:'rare',icon:'👁️',title:'珍しい個体の目撃談',text:`CodexにはRare以上の観測が ${context.rareSeen}件ある。見張り塔では再遭遇地点を照合している。`,source:'Codex'});
