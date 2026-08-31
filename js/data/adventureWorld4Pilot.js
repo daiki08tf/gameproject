@@ -128,11 +128,13 @@ export function buildAdventure4PilotRoute(region,regionState,options={}){
   return storyCleared?buildFreeAdventureRoute(region,options):buildStoryRoute(region,regionState);
 }
 
-export function adventure4PilotPreview(route,currentNodeId){
+export function adventure4PilotPreview(route,currentNodeId,availableNext=null){
   if(!route)return[];
   const current=route.nodes.find(node=>node.id===currentNodeId)||route.nodes.find(node=>node.id===route.entryNodeId)||null;
   if(!current)return[];
-  const next=current.next.map(id=>route.nodes.find(node=>node.id===id)).filter(Boolean).filter(node=>!node.hidden);
+  const next=Array.isArray(availableNext)
+    ? availableNext.filter(node=>node&&!node.hidden)
+    : current.next.map(id=>route.nodes.find(node=>node.id===id)).filter(Boolean).filter(node=>!node.hidden);
   const visible=[{name:current.name,state:'current'},...next.map(node=>({name:node.name,state:'next'}))];
   if(next.some(node=>node.next?.length))visible.push({name:'この先は未詳',state:'unknown'});
   return visible;
