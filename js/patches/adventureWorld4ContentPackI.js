@@ -6,6 +6,7 @@ import { adventure4ContentPackIForRegion,adventure4ContentPackISceneById } from 
 import './adventureWorld4EventRuntime.js';
 import './adventureWorld4HorizontalGearRuntime.js';
 import './adventureWorld4ContentPackII.js';
+import './coreLoopClr10Runtime.js';
 
 const EVENT_FLAG='contentPackI:eventId';
 const DONE_FLAG='contentPackI:done';
