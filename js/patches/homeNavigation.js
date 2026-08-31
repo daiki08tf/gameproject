@@ -10,6 +10,7 @@ import './adventureWorld4MysterySceneRuntime.js';
 import './adventureWorld4HiddenRouteUi.js';
 import './stageFirstNavigationUi.js';
 import './coreLoopClr16MobileUi.js';
+import './coreLoopClr17LootIdentityUi.js';
 import './settlementCore.js';
 import './settlementTavern.js';
 import './settlementProduction.js';
