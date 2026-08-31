@@ -120,11 +120,14 @@ function buildClr6StoryAftermathScene(region,route){
   const story=route.nodes.find(node=>node.id==='story');
   const aftermath=route.nodes.find(node=>node.id===CLR6_STORY_AFTERMATH_NODE_ID);
   if(!story||!aftermath)return null;
+  const outcomeEffects=region.id==='frontier'
+    ?[{scope:'adventure',type:'trace',key:'frontier-pilot-fresh-tracks'}]
+    :[];
   return normalizeAdventure4Scene({
     id:CLR6_STORY_AFTERMATH_SCENE_ID,
     name:'戦いの跡',
     entryStepId:'observe',
-    tags:['story','clr6-story-outcome','combat-aftermath'],
+    tags:['story','clr6-story-outcome','combat-aftermath','clr7-investigation-outcome'],
     steps:[
       {
         id:'observe',phase:'observation',title:'戦いの跡',
@@ -134,7 +137,7 @@ function buildClr6StoryAftermathScene(region,route){
       {
         id:'resolve',phase:'resolution',title:'見えてきた断片',
         text:'敵の配置、傷跡、残された痕跡が一本につながる。物語は説明として与えられるのではなく、勝ち抜いた場所そのものから見えてきた。',
-        choices:[{id:'record-and-return',label:'記録して帰還する',consequences:[{scope:'immediate',type:'routeTarget',targetId:'return'}]}],
+        choices:[{id:'record-and-return',label:'記録して帰還する',consequences:[...outcomeEffects,{scope:'immediate',type:'routeTarget',targetId:'return'}]}],
       },
     ],
   });
