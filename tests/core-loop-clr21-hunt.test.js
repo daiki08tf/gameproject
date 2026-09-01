@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { getItem } from '../js/data/equipment.js';
+import { ENEMY_TYPES } from '../js/data/enemies.js';
+import { CHAPTER_REGION_TAGS } from '../js/data/chapters.js';
+import { planRareOverrideTypes, markGenericElite } from '../js/data/enemyRankVariants2.js';
 import { observedBranchById } from '../js/data/observedBranches.js';
 import { buildObservedBranchStage, observedBranchHuntTargets } from '../js/data/observedBranchStages.js';
 
@@ -25,6 +28,7 @@ test('CLR-21 Branch Hunt reuses every authored Branch Stage after clear', () => 
 
   assert.deepEqual(targets.map(target => target.stageId), [...branch.stageIds]);
   assert.deepEqual(targets.map(target => target.role), ['ecology', 'deep', 'boss']);
+  assert.match(targets[1].name, /Rare \/ Elite/);
 
   for (const target of targets) {
     const stage = buildObservedBranchStage(target.stageId);
@@ -34,6 +38,31 @@ test('CLR-21 Branch Hunt reuses every authored Branch Stage after clear', () => 
       assert.ok(getItem(drop.itemId), `${drop.itemId} must resolve through getItem()`);
     }
   }
+});
+
+test('CLR-21 Branch stages project the existing Chapter 2 Enemy 2.0 encounter contract', () => {
+  const branch = observedBranchById(BRANCH_ID);
+  for (const stageId of branch.stageIds) {
+    const stage = buildObservedBranchStage(stageId);
+    assert.ok(stage.encounterPool, `${stageId} must expose the existing Encounter 2.0 pool`);
+    assert.equal(stage.encounterPool.id, 'ch2-e8-field');
+    assert.equal(stage.encounterPool.rareChance, .04);
+    assert.deepEqual(stage.encounterPool.rareTypes, [{ type: 'ch2_rare', weight: 1 }]);
+    assert.deepEqual(stage.encounterPool.regionTags, CHAPTER_REGION_TAGS.ch2);
+    assert.equal(ENEMY_TYPES.ch2_rare.rareIdentity, true);
+    assert.equal(stage.encounterPool.types.some(entry => ENEMY_TYPES[entry.type]?.boss), false);
+  }
+
+  const fieldStage = buildObservedBranchStage(branch.stageIds[1]);
+  const rarePlan = planRareOverrideTypes(fieldStage, fieldStage.waves[0], ENEMY_TYPES, { rank: 0 }, () => 0);
+  assert.equal(rarePlan.filter(Boolean).length, 1);
+  assert.equal(rarePlan.find(Boolean), 'ch2_rare');
+
+  const elite = { ...ENEMY_TYPES.ch2_normal, elite: false };
+  markGenericElite(elite);
+  assert.equal(elite.rank, 'elite');
+  assert.equal(elite.genericElite, true);
+  assert.equal(elite.elite, false, 'generic World Tier Elite must not enter the Abyss Elite reward path');
 });
 
 test('CLR-21 Branch Hunt is derived-only and the Stage browser launches canonical Branch Stages', () => {
