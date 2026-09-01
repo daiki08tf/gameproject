@@ -9,7 +9,7 @@ import { rollBlessingChoices } from '../data/blessings.js';
 import { KEY_DUNGEON_TYPES } from '../data/world2.js';
 import { world2KeyStageDescriptor } from '../data/world2Stages.js';
 import { knownObservedBranchesForPrimeRegion } from '../data/observedBranchDiscovery.js';
-import { observedBranchStageProgress, buildObservedBranchStage } from '../data/observedBranchStages.js';
+import { observedBranchStageProgress, observedBranchHuntTargets, buildObservedBranchStage } from '../data/observedBranchStages.js';
 
 export function isStageDiscovered(chapter, stage, stageIndex) {
   if (!chapter || !stage) return false;
@@ -118,13 +118,21 @@ function renderObservedBranchStageCards(chapter, list, onPick) {
       list.appendChild(card);
     }
     if (progress.cleared) {
-      const hunt = document.createElement('div');
-      hunt.className = 'stage-card branch';
-      hunt.dataset.stageId = progress.bossStageId;
-      hunt.dataset.stageState = 'next';
-      hunt.innerHTML = `<div><div class="name">🔁 Branch Hunt（周回）</div><div class="rec">${branch.observedLabel || branch.name}を再訪し、大樹霊へ再戦する。</div></div><div class="cleared">→</div>`;
-      hunt.addEventListener('click', () => { Audio_.tap(); onPick(buildObservedBranchStage(progress.bossStageId)); });
-      list.appendChild(hunt);
+      const huntHeading = document.createElement('div');
+      huntHeading.className = 'section-heading';
+      huntHeading.textContent = 'Branch Hunt — 周回先';
+      list.appendChild(huntHeading);
+      const roleLabels = { ecology: '生態巡回', deep: '深部巡回', boss: 'Boss再戦' };
+      const targets = observedBranchHuntTargets(branch.id, { isStageCleared: id => state.isStageCleared(id) });
+      for (const target of targets) {
+        const hunt = document.createElement('div');
+        hunt.className = 'stage-card branch' + (target.role === 'boss' ? ' boss' : '');
+        hunt.dataset.stageId = target.stageId;
+        hunt.dataset.stageState = 'next';
+        hunt.innerHTML = `<div><div class="name">🔁 ${roleLabels[target.role]}：${target.name}</div><div class="rec">推奨Lv ${target.recLevel} / 戦利品候補 ${target.dropTable.length}種</div></div><div class="cleared">→</div>`;
+        hunt.addEventListener('click', () => { Audio_.tap(); onPick(buildObservedBranchStage(target.stageId)); });
+        list.appendChild(hunt);
+      }
     }
   }
 }
