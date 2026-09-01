@@ -1,95 +1,126 @@
-# Core Loop Rework — CLR-21 Observed Branches M3/M4 Rebase (Proof)
+# Core Loop Rework — CLR-21 Observed Branches M3/M4 Rebase ✅ COMPLETE
 
 ## Goal
-Resume Observed Branches under the now-stable Stage-first Core Loop (CLR-12–20)
-by making the first authored Branch, 王樹領・深緑の森, an actual playable
-Stage-first destination instead of a Lore-only discovery card — without
-introducing a second game loop or any new authority.
+Resume Observed Branches under the stable Stage-first Core Loop (CLR-12–20) by making the first authored Branch, **王樹領・深緑の森**, a playable combat destination instead of a lore-only exhibit, without introducing a parallel Branch progression, combat, reward, Hunt, save, or World Tier authority.
 
-## Scope
-This is the first proof, scoped to exactly one Branch as instructed. It does
-not generalize to any other `OBSERVED_BRANCHES` entry yet.
+## Final player grammar
 
-## Player grammar delivered
+```text
+Chapter 2 / Branch context
+  → 観測分岐：王樹領・深緑の森
+  → visible authored Branch Stage progression
+  → normal Stage detail / combat-first Story
+  → existing stageProgress clear
+  → Branch Boss clear derives Branch clear
+  → Branch Hunt
+  → ecology / loot / Rare / generic Elite / Boss replay
 ```
-Chapter 2 Stage list
-  → 観測分岐：王樹領 heading (once the existing CP4 anchor discovery is known)
-  → Branch Stage 1/2/Boss cards (locked/next/clear, same visual language as
-    ordinary Chapter stages)
-  → Stage detail (existing stageConfirmScreen)
-  → Battle (existing TextBattleScreen/BattleEngine via findStage())
-  → Result / Loot / EXP (existing pipeline)
-  → next Branch Stage unlocks
-  → Boss clear → Branch clear (derived) → Branch Hunt (周回) replay card
-```
+
+## Delivered slices
+
+### PR #393 — Stage-first Branch proof
+- Added `stageIds` / `bossStageId` references to the existing Branch definition.
+- Added ordinary `findStage()`-resolvable Observed Branch Stage definitions.
+- Branch Stage unlock/clear derives only from existing `state.data.stageProgress` / `state.isStageCleared()`.
+- Existing Stage confirmation and `TextBattleScreen` / `BattleEngine` launch path is reused.
+- Existing CP4 Branch discovery remains the visibility/discovery authority.
+
+### PR #394 — M4 loot/profile presentation
+- Fixed the Boss first-clear reward to the existing equipment id `ch2_weapon_epic`.
+- Ecology and technology presentation is derived from existing `observedBranches.js` profile data.
+- No new persistence or Codex authority was introduced.
+
+### PR #395 — Branch Hunt generalization
+After Branch clear, all three existing authored Branch Stages become replay targets:
+
+1. `observedbranch-tree-sovereign-1` — ecology/common replay
+2. `observedbranch-tree-sovereign-2` — deep / Rare / Elite target replay
+3. `observedbranch-tree-sovereign-boss` — Boss replay
+
+The Hunt surface is a read-only projection of already-authored Stages. It adds no Hunt Lv, currency, stamina, session root, or progression flag.
+
+### PR #396 — Enemy 2.0 encounter reuse
+- Each 王樹領 Branch Stage projects the canonical Chapter 2 Encounter Pool through `buildChapterEncounterPool()`.
+- Fixed authored `waves` remain the fallback/headcount authority.
+- Existing Chapter 2 enemy/ecology and Region tags are reused.
+- Existing loot ids continue to resolve through the normal Equipment authority.
+
+### PR #400 — Runtime contract proof
+Final audit verified that `BattleEngine` itself intentionally keeps fixed-wave construction simple while the already-existing Enemy 2.0 / World Tier patch chain consumes the optional Stage encounter contract:
+
+- `enemy2EncounterPilot.js` passes `this.stage` to `pickEncounterPoolType()`.
+- `enemy2RankVariants.js` uses `planRareOverrideTypes()` and `chooseEnvironmentalVariant()` from the Stage encounter pool.
+- `worldTierRuntime.js` promotes eligible non-Boss / non-Rare enemies through the existing `eliteChance` and `markGenericElite()` path.
+- `enemy2RankVariants.js` finalizes `genericElite` level/rank without setting the historical Abyss `enemy.elite` flag.
+- `main.js` imports World Tier runtime before the Enemy 2.0 rank-variant wrapper, preserving the intended wrapper order.
+- A focused regression test proves the actual canonical helper behavior against the Observed Branch Stage rather than duplicating runtime logic.
 
 ## Authority reuse
-- **Stage clear**: `state.data.stageProgress` / `state.isStageCleared()` /
-  `state.recordStageResult()` — the exact same authority as every other
-  Stage. No parallel clear array.
-- **Battle**: `js/data/stages.js`'s `findStage()` gained one more ID-prefix
-  branch (`observedbranch-`), the same pattern already used for
-  `abyss-`/`secret-`/`raid-`. Waves reference the already-registered
-  `ch2_normal`/`ch2_fast`/`ch2_tank`/`ch2_boss` enemy archetypes — zero new
-  enemy types.
-- **Loot/EXP**: `rewards`/`dropTable` reference the existing Chapter 2 item
-  pool (`ch2_accessory`, `ch2_shield`, `ch2_weapon`, `ch2_body`,
-  `ch2_named_weapon`). No new Loot authority.
-- **Story/Battle launch UI**: Branch Stage cards are appended inside the
-  existing `renderStageSelect()` (js/screens/stageSelect.js), using the exact
-  same `onPick(stage)` contract as every other Stage source in that file
-  (Eighth Key, World2 keys, exploration sites) — so `pendingStage`,
-  `renderStageConfirm`, and `startBattle` in main.js need no changes at all.
-- **World Tier**: not referenced anywhere in the new files; Branch Stages
-  carry no Region/World Tier context (`stageFirstHuntContext()` naturally
-  returns null for them since they have `chapter:null`), so there is no
-  double-application risk.
-- **Discovery**: unchanged. `js/data/observedBranchDiscovery.js` and the CP4
-  anchor discovery (`cp4:branch-anchor:tree-sovereign`) still gate whether
-  the Branch is known at all; `stageIds`/`bossStageId` were added to the
-  Branch's own definition (`js/data/observedBranches.js`) as plain ID
-  references only — no combat/reward authority moved into that file.
+
+- **Story / Stage clear:** existing canonical `stageProgress` authority.
+- **Battle:** existing `TextBattleScreen` / `BattleEngine`.
+- **Stage resolution:** existing `findStage()` dynamic-stage pattern.
+- **Encounter composition:** existing Enemy 2.0 Encounter Pool helpers and runtime patches.
+- **Rare:** existing `rareIdentity` / `ch2_rare` authority and Rare planner.
+- **Elite:** existing World Tier `eliteChance` → `genericElite` path. Historical Abyss `enemy.elite` semantics remain separate.
+- **Loot / EXP / Gold:** existing Stage reward and Equipment authorities.
+- **World Tier:** existing global World Tier authority, applied through its existing runtime patch.
+- **Discovery:** existing Observed Branch / CP4 discovery authority.
+- **Ecology / technology presentation:** derived from existing Observed Branch profile data.
 
 ## New authority introduced
-None. `js/data/observedBranchStages.js` is derived/read-only: it resolves
-Stage IDs into `findStage()`-compatible objects and derives unlock/clear
-state from `state.isStageCleared()` — it owns no save key.
+None.
 
-## Branch Hunt
-Kept intentionally minimal per scope: once the Boss Stage is cleared, an
-additional "🔁 Branch Hunt（周回）" card appears that replays the Boss Stage
-through the same existing Stage/battle pipeline. It does not create an
-Adventure4 session or Region — that CLR-19-style generalization is left for
-a later phase once this proof has been played and confirmed.
+Specifically, CLR-21 adds no:
 
-## Files changed
-- `js/data/observedBranches.js` — added `stageIds`/`bossStageId` references.
-- `js/data/observedBranchStages.js` (new) — Stage definitions + derived
-  progress/clear helpers.
-- `js/data/stages.js` — one `findStage()` prefix branch.
-- `js/screens/stageSelect.js` — appends Branch Stage cards after a chapter's
-  own cards; one added `observedBranch` modifier line in `renderStageConfirm`.
-- `js/patches/stageFirstNavigationUi.js` — `canonicalStageById()` and
-  `nextCanonicalMainStage()` recognize Branch Stages so Stage detail
-  decoration and "next stage" navigation work for them too.
-- `tests/core-loop-clr21.test.js` (new) — 13 regression tests.
+- Branch clear save flag,
+- Branch Story progression root,
+- Branch combat engine,
+- Branch Loot inventory/rarity,
+- Branch Hunt Lv,
+- Branch currency,
+- stamina / energy,
+- Branch World Tier,
+- duplicate Discovery/Codex save root.
 
-## Tests
-`node --test tests/*.test.js`: 1430/1430 pass. `npm run test:syntax`: clean.
-Existing `tests/observed-branches-m1.test.js` / `m2.test.js`: unchanged,
-still pass.
+## Regression coverage
 
-## Verification note
-A live Playwright smoke test was attempted but the sandbox's headless
-Chromium instance is currently hanging on `domcontentloaded` for this
-session regardless of branch content (confirmed by reproducing the same
-hang against the unmodified, already-merged CLR-11 bundle) — an environment
-issue, not a regression from this change. Verification instead relied on
-direct Node `findStage()` resolution checks plus the full regression suite.
+Relevant focused suites:
+
+- `tests/core-loop-clr21.test.js`
+- `tests/core-loop-clr21-m4.test.js`
+- `tests/core-loop-clr21-hunt.test.js`
+- `tests/core-loop-clr21-runtime.test.js`
+
+The runtime-proof test locks:
+
+- Branch Stage encounter-pool consumption through the existing BattleEngine patch chain,
+- actual canonical pool selection using the Branch Stage object,
+- Rare planning and Boss protection,
+- generic Elite separation from Abyss Elite authority,
+- World Tier / Enemy 2.0 wrapper import order.
+
+## CI / merge record
+
+- PR #393 — first Stage-first playable proof.
+- PR #394 — M4 loot/profile completion; PR and main CI green.
+- PR #395 — all authored Branch Stages exposed as Hunt replay targets; PR and main CI green.
+- PR #396 — Chapter 2 Enemy 2.0 Encounter Pool projection; PR and main CI green. Merge SHA: `acb5b53018bc79d4aa69f31e14ec6b40e056a55e`.
+- PR #400 — runtime integration proof; PR **Blade Vale Tests** and **Phase 8 Validation** green. Merge SHA: `69252a339b866b2edd7a92cf0d845e41467af558`. Both workflows also green on `main` after merge.
+
+## Completion judgment
+CLR-21's first-proof contract is complete for **王樹領・深緑の森**:
+
+```text
+Branch / Chapter context
+→ visible authored Stage progression
+→ combat-first Story
+→ Branch clear
+→ Branch Hunt
+→ Branch ecology / loot / Rare / Elite / Boss replay
+```
+
+The remaining Observed Branches are future content/generalization work and must reuse this proven shape rather than creating a second Branch game loop.
 
 ## Next
-Once this proof is played and confirmed stable, generalize the same
-data-driven shape (`stageIds`/`bossStageId` on an `OBSERVED_BRANCHES` entry,
-resolved through `findStage()`) to the remaining M3/M4 Branches, and revisit
-whether Branch Hunt should graduate to reusing a full Adventure4 session
-(CLR-19-style) once there is more than one Branch to justify it.
+Proceed from this stable CLR-21 proof to the next roadmap/content slice. When additional Observed Branches are authored, generalize via data (`stageIds`, `bossStageId`, standard Stage definitions, existing Encounter Pool/loot authorities) rather than new runtime or save ownership.
