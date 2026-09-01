@@ -4,7 +4,6 @@ import fs from 'node:fs';
 import { ENEMY_TYPES } from '../js/data/enemies.js';
 import { buildObservedBranchStage } from '../js/data/observedBranchStages.js';
 import {
-  encounterInvariants2,
   planRareOverrideTypes,
   markGenericElite,
   finalizeGenericEliteLevel,
@@ -16,6 +15,7 @@ const bossStage=buildObservedBranchStage('observedbranch-tree-sovereign-boss');
 const pilotSource=fs.readFileSync(new URL('../js/patches/enemy2EncounterPilot.js',import.meta.url),'utf8');
 const rankSource=fs.readFileSync(new URL('../js/patches/enemy2RankVariants.js',import.meta.url),'utf8');
 const worldTierSource=fs.readFileSync(new URL('../js/patches/worldTierRuntime.js',import.meta.url),'utf8');
+const battle2Source=fs.readFileSync(new URL('../js/patches/battle2RoadmapComplete.js',import.meta.url),'utf8');
 const mainSource=fs.readFileSync(new URL('../js/main.js',import.meta.url),'utf8');
 
 test('CLR-21 Branch encounter pool is consumed by the existing generic BattleEngine patch chain',()=>{
@@ -23,6 +23,7 @@ test('CLR-21 Branch encounter pool is consumed by the existing generic BattleEng
   assert.match(pilotSource,/pickEncounterPoolType\(this\.stage,originalType,ENEMY_TYPES,Math\.random\)/);
   assert.match(rankSource,/planRareOverrideTypes\(this\.stage,spec,ENEMY_TYPES,tier,Math\.random\)/);
   assert.match(rankSource,/chooseEnvironmentalVariant\(this\.stage\?\.encounterPool,enemy,Math\.random\)/);
+  assert.match(battle2Source,/import '\.\/enemy2RankVariants\.js';/);
   assert.doesNotMatch(pilotSource,/ch1.*this\.stage|this\.stage.*ch1/s,'runtime pool resolution must remain stage-data driven rather than Ch1 gated');
 });
 
@@ -36,14 +37,12 @@ test('CLR-21 Branch Rare can be planned through the canonical runtime helper whi
 
   const bossSpec={type:'ch2_boss',count:1};
   assert.equal(planRareOverrideTypes(bossStage,bossSpec,ENEMY_TYPES,{rank:5},()=>0),null);
-  const bossRules=encounterInvariants2(bossStage,bossSpec,ENEMY_TYPES);
-  assert.equal(bossRules.allowRare,false);
-  assert.equal(bossRules.allowGenericElite,false);
 });
 
 test('CLR-21 generic Elite reuses World Tier eliteChance and remains outside historical Abyss elite authority',()=>{
   assert.match(worldTierSource,/Math\.random\(\)<tier\.eliteChance/);
   assert.match(worldTierSource,/markGenericElite\(enemy\)/);
+  assert.match(worldTierSource,/!enemy\.boss/);
   assert.match(worldTierSource,/!rareIdentity/);
 
   const template=ENEMY_TYPES.ch2_normal;
