@@ -3,10 +3,13 @@
    same way Abyss/Secret Realm/Raid stages are (see stages.js's findStage()
    prefix dispatch and raidBosses.js's buildRaidStage()) — a static authored
    definition resolved into a full stage object on demand. They reuse the
-   existing Chapter 2 enemy archetypes (ch2_normal/fast/tank/boss) and the
+   existing Chapter 2 enemy archetypes and Encounter 2.0 pool, plus the
    existing state.data.stageProgress / state.isStageCleared authority.
-   No new combat, save, clear, or loot authority is introduced here. */
+   No new combat, save, clear, encounter, or loot authority is introduced here. */
 import { observedBranchById, OBSERVED_BRANCH_PROFILE_LEVELS } from './observedBranches.js';
+import { CHAPTER_REGION_TAGS } from './chapters.js';
+import { ENEMY_TYPES } from './enemies.js';
+import { buildChapterEncounterPool } from './encounterMigration2.js';
 
 // Keyed by the exact Stage IDs referenced from observedBranches.js's
 // `stageIds` — one authored definition per Branch Stage. Waves reference the
@@ -49,6 +52,27 @@ const BRANCH_STAGE_DATA=Object.freeze({
   }),
 });
 
+// Observed 王樹領 is the divergent form of Prime Chapter 2, so it projects the
+// same E8 Encounter Pool contract instead of inventing a Branch-only enemy
+// table. Fixed authored waves remain the fallback/headcount authority; the
+// pool only enables the already-live Chapter Rare, generic World Tier Elite,
+// regional roles and environmental Variant behavior.
+const CH2_ENCOUNTER_SOURCE=Object.freeze({
+  id:'ch2',
+  stages:Object.freeze([Object.freeze({dropRegionTags:Object.freeze([...(CHAPTER_REGION_TAGS.ch2||[])])})]),
+});
+
+function buildObservedBranchEncounterPool(){
+  const pool=buildChapterEncounterPool(CH2_ENCOUNTER_SOURCE,ENEMY_TYPES);
+  return{
+    ...pool,
+    types:(pool.types||[]).map(entry=>({...entry})),
+    templates:[...(pool.templates||[])],
+    rareTypes:(pool.rareTypes||[]).map(entry=>({...entry})),
+    regionTags:[...(pool.regionTags||[])],
+  };
+}
+
 function branchIdForStage(stageId){
   for(const branch of [observedBranchById('tree-sovereign-deep-green')]){
     if(branch?.stageIds?.includes(stageId))return branch.id;
@@ -85,6 +109,8 @@ export function buildObservedBranchStage(stageId){
     rewards:{...data.rewards},
     dropTable:data.dropTable.map(drop=>({...drop})),
     firstClear:data.firstClear?{...data.firstClear}:undefined,
+    encounterPool:buildObservedBranchEncounterPool(),
+    dropRegionTags:[...(CHAPTER_REGION_TAGS.ch2||[])],
     observedBranch:true,
     observedBranchId:branchId,
     // stageSelect's existing observed-Branch confirmation surface renders this
@@ -131,10 +157,11 @@ export function observedBranchHuntTargets(branchId,{isStageCleared=()=>false}={}
   return Object.freeze(progress.stages.map(stageInfo=>{
     const stage=buildObservedBranchStage(stageInfo.id);
     const role=stageInfo.boss?'boss':stageInfo.index===0?'ecology':'deep';
+    const huntName=role==='deep'?`Rare / Elite：${stage?.name||stageInfo.name}`:(stage?.name||stageInfo.name);
     return Object.freeze({
       stageId:stageInfo.id,
       role,
-      name:stage?.name||stageInfo.name,
+      name:huntName,
       recLevel:stage?.recLevel||0,
       dropTable:Object.freeze((stage?.dropTable||[]).map(drop=>Object.freeze({...drop}))),
     });
