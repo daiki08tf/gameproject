@@ -1,0 +1,78 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { ENEMY_TYPES } from '../js/data/enemies.js';
+import { buildObservedBranchStage } from '../js/data/observedBranchStages.js';
+import {
+  encounterInvariants2,
+  planRareOverrideTypes,
+  markGenericElite,
+  finalizeGenericEliteLevel,
+} from '../js/data/enemyRankVariants2.js';
+
+const fieldStage=buildObservedBranchStage('observedbranch-tree-sovereign-2');
+const bossStage=buildObservedBranchStage('observedbranch-tree-sovereign-boss');
+
+const pilotSource=fs.readFileSync(new URL('../js/patches/enemy2EncounterPilot.js',import.meta.url),'utf8');
+const rankSource=fs.readFileSync(new URL('../js/patches/enemy2RankVariants.js',import.meta.url),'utf8');
+const worldTierSource=fs.readFileSync(new URL('../js/patches/worldTierRuntime.js',import.meta.url),'utf8');
+const mainSource=fs.readFileSync(new URL('../js/main.js',import.meta.url),'utf8');
+
+test('CLR-21 Branch encounter pool is consumed by the existing generic BattleEngine patch chain',()=>{
+  assert.ok(fieldStage?.encounterPool,'Observed Branch field stage must opt into Encounter 2.0');
+  assert.match(pilotSource,/pickEncounterPoolType\(this\.stage,originalType,ENEMY_TYPES,Math\.random\)/);
+  assert.match(rankSource,/planRareOverrideTypes\(this\.stage,spec,ENEMY_TYPES,tier,Math\.random\)/);
+  assert.match(rankSource,/chooseEnvironmentalVariant\(this\.stage\?\.encounterPool,enemy,Math\.random\)/);
+  assert.doesNotMatch(pilotSource,/ch1.*this\.stage|this\.stage.*ch1/s,'runtime pool resolution must remain stage-data driven rather than Ch1 gated');
+});
+
+test('CLR-21 Branch Rare can be planned through the canonical runtime helper while Boss encounter stays protected',()=>{
+  const fieldSpec={type:'ch2_normal',count:3};
+  const fieldRolls=[0,0,0];
+  const overrides=planRareOverrideTypes(fieldStage,fieldSpec,ENEMY_TYPES,{rank:0},()=>fieldRolls.shift()??0);
+  assert.ok(overrides,'Branch field encounter should be Rare-capable');
+  assert.equal(overrides.filter(Boolean).length,1);
+  assert.equal(overrides.find(Boolean),'ch2_rare');
+
+  const bossSpec={type:'ch2_boss',count:1};
+  assert.equal(planRareOverrideTypes(bossStage,bossSpec,ENEMY_TYPES,{rank:5},()=>0),null);
+  const bossRules=encounterInvariants2(bossStage,bossSpec,ENEMY_TYPES);
+  assert.equal(bossRules.allowRare,false);
+  assert.equal(bossRules.allowGenericElite,false);
+});
+
+test('CLR-21 generic Elite reuses World Tier eliteChance and remains outside historical Abyss elite authority',()=>{
+  assert.match(worldTierSource,/Math\.random\(\)<tier\.eliteChance/);
+  assert.match(worldTierSource,/markGenericElite\(enemy\)/);
+  assert.match(worldTierSource,/!rareIdentity/);
+
+  const template=ENEMY_TYPES.ch2_normal;
+  const enemy={
+    name:template.name,
+    boss:false,
+    elite:false,
+    rareIdentity:false,
+    hp:template.hp,
+    maxHp:template.hp,
+    atk:template.atk,
+    def:template.def,
+    spd:template.speed,
+    xp:template.xp,
+    gold:template.gold,
+    baseLevel:fieldStage.recLevel,
+    level:fieldStage.recLevel,
+  };
+  markGenericElite(enemy);
+  finalizeGenericEliteLevel(enemy,fieldStage,()=>0);
+  assert.equal(enemy.rank,'elite');
+  assert.equal(enemy.genericElite,true);
+  assert.equal(enemy.elite,false);
+  assert.ok(enemy.level>=Math.round(fieldStage.recLevel*1.2));
+});
+
+test('application import order preserves World Tier promotion before Enemy 2.0 rank finalization',()=>{
+  const worldTierPos=mainSource.indexOf("import './patches/worldTierRuntime.js'");
+  const battle2Pos=mainSource.indexOf("import './patches/battle2RoadmapComplete.js'");
+  assert.ok(worldTierPos>=0&&battle2Pos>worldTierPos,'worldTierRuntime must wrap spawn before Enemy 2.0 rank/variant wrappers');
+  assert.match(rankSource,/enemy\.genericElite\)finalizeGenericEliteLevel\(enemy,this\.stage,Math\.random\)/);
+});
