@@ -119,3 +119,24 @@ export function isObservedBranchCleared(branchId,{isStageCleared=()=>false}={}){
   if(!branch?.bossStageId)return false;
   return isStageCleared(branch.bossStageId);
 }
+
+// CLR-21 Branch Hunt is a read-only projection of the already-cleared Branch
+// Stages. It deliberately owns no session/progression state: each target is
+// launched through the same buildObservedBranchStage() -> existing battle /
+// reward path as Story replay. The UI can present different hunt intentions
+// without inventing a Hunt level, currency, stamina, or save root.
+export function observedBranchHuntTargets(branchId,{isStageCleared=()=>false}={}){
+  const progress=observedBranchStageProgress(branchId,{isStageCleared});
+  if(!progress.cleared)return Object.freeze([]);
+  return Object.freeze(progress.stages.map(stageInfo=>{
+    const stage=buildObservedBranchStage(stageInfo.id);
+    const role=stageInfo.boss?'boss':stageInfo.index===0?'ecology':'deep';
+    return Object.freeze({
+      stageId:stageInfo.id,
+      role,
+      name:stage?.name||stageInfo.name,
+      recLevel:stage?.recLevel||0,
+      dropTable:Object.freeze((stage?.dropTable||[]).map(drop=>Object.freeze({...drop}))),
+    });
+  }));
+}
