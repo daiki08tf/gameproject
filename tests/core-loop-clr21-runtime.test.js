@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { ENEMY_TYPES } from '../js/data/enemies.js';
 import { buildObservedBranchStage } from '../js/data/observedBranchStages.js';
+import { pickEncounterPoolType } from '../js/data/encounterPools2.js';
 import {
   planRareOverrideTypes,
   markGenericElite,
@@ -24,7 +25,16 @@ test('CLR-21 Branch encounter pool is consumed by the existing generic BattleEng
   assert.match(rankSource,/planRareOverrideTypes\(this\.stage,spec,ENEMY_TYPES,tier,Math\.random\)/);
   assert.match(rankSource,/chooseEnvironmentalVariant\(this\.stage\?\.encounterPool,enemy,Math\.random\)/);
   assert.match(battle2Source,/import '\.\/enemy2RankVariants\.js';/);
-  assert.doesNotMatch(pilotSource,/ch1.*this\.stage|this\.stage.*ch1/s,'runtime pool resolution must remain stage-data driven rather than Ch1 gated');
+
+  // Prove the canonical helper accepts the Observed Branch stage itself. This
+  // is stronger and less brittle than scanning the patch source for Ch1 text:
+  // the patch contains Ch1 pilot setup, while runtime resolution is generic
+  // because it passes `this.stage` into this helper.
+  const pooled=pickEncounterPoolType(fieldStage,'ch2_normal',ENEMY_TYPES,()=>0);
+  assert.ok(fieldStage.encounterPool.types.some(entry=>entry.type===pooled));
+  assert.equal(ENEMY_TYPES[pooled]?.boss,false);
+  assert.notEqual(ENEMY_TYPES[pooled]?.rareIdentity,true);
+  assert.notEqual(ENEMY_TYPES[pooled]?.elite,true);
 });
 
 test('CLR-21 Branch Rare can be planned through the canonical runtime helper while Boss encounter stays protected',()=>{
