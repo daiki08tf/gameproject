@@ -42,5 +42,7 @@ test('CLR-21 M4 reuses the existing Stage confirmation surface and introduces no
   const stageSrc = fs.readFileSync('js/data/observedBranchStages.js', 'utf8');
   assert.match(selectSrc, /stage\.observedBranchLabel/);
   assert.match(selectSrc, /Prime世界とは異なる歴史が観測されている/);
-  assert.doesNotMatch(stageSrc, /localStorage|\.save\(\)|state\.data\./);
+  assert.doesNotMatch(stageSrc, /from ['"]\.\.\/state\.js['"]/);
+  assert.doesNotMatch(stageSrc, /localStorage|\.save\(\)/);
+  assert.doesNotMatch(stageSrc, /state\.data(?:\.[\w$]+|\[[^\]]+\])+\s*=/);
 });
