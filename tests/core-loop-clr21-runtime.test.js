@@ -32,7 +32,9 @@ test('CLR-21 Branch encounter pool is consumed by the existing generic BattleEng
   // because it passes `this.stage` into this helper.
   const pooled=pickEncounterPoolType(fieldStage,'ch2_normal',ENEMY_TYPES,()=>0);
   assert.ok(fieldStage.encounterPool.types.some(entry=>entry.type===pooled));
-  assert.equal(ENEMY_TYPES[pooled]?.boss,false);
+  // Canonical enemy data marks Boss/Rare/Abyss-Elite positively; ordinary
+  // enemies may omit these flags rather than storing explicit false values.
+  assert.notEqual(ENEMY_TYPES[pooled]?.boss,true);
   assert.notEqual(ENEMY_TYPES[pooled]?.rareIdentity,true);
   assert.notEqual(ENEMY_TYPES[pooled]?.elite,true);
 });
