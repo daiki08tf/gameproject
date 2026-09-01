@@ -6,7 +6,7 @@
    existing Chapter 2 enemy archetypes (ch2_normal/fast/tank/boss) and the
    existing state.data.stageProgress / state.isStageCleared authority.
    No new combat, save, clear, or loot authority is introduced here. */
-import { observedBranchById } from './observedBranches.js';
+import { observedBranchById, OBSERVED_BRANCH_PROFILE_LEVELS } from './observedBranches.js';
 
 // Keyed by the exact Stage IDs referenced from observedBranches.js's
 // `stageIds` — one authored definition per Branch Stage. Waves reference the
@@ -41,7 +41,10 @@ const BRANCH_STAGE_DATA=Object.freeze({
       {type:'ch2_boss',count:1,interval:0},
     ]),
     rewards:Object.freeze({gold:220,exp:170}),
-    firstClear:Object.freeze({itemId:'ch2_named_weapon'}),
+    // Reuse Chapter 2's canonical epic weapon reward. `ch2_named_weapon`
+    // never existed in the equipment authority and would create an orphan
+    // inventory id when BattleEngine forwards firstClear.itemId to addItem().
+    firstClear:Object.freeze({itemId:'ch2_weapon_epic'}),
     dropTable:Object.freeze([{itemId:'ch2_weapon',weight:1},{itemId:'ch2_body',weight:1}]),
   }),
 });
@@ -53,6 +56,16 @@ function branchIdForStage(stageId){
   return null;
 }
 
+export function observedBranchProfileSummary(branchId){
+  const branch=observedBranchById(branchId);
+  if(!branch)return'';
+  const ecology=Object.values(branch.ecologyProfile||{}).join(' / ');
+  const technology=Object.entries(branch.technologyProfile||{})
+    .map(([axis,level])=>`${axis} ${OBSERVED_BRANCH_PROFILE_LEVELS[level]||level}`)
+    .join(' / ');
+  return `生態：${ecology}\n技術：${technology}`;
+}
+
 // findStage()-compatible builder: mirrors buildRaidStage()/buildSecretRealmStage()
 // shape exactly (id, name, waves, rewards, dropTable, optional boss/firstClear),
 // plus a small observedBranch marker so UI/confirm screens can present it
@@ -62,6 +75,7 @@ export function buildObservedBranchStage(stageId){
   if(!data)return null;
   const branchId=branchIdForStage(stageId);
   const branch=branchId?observedBranchById(branchId):null;
+  const profile=branchId?observedBranchProfileSummary(branchId):'';
   return{
     id:stageId,
     name:data.name,
@@ -73,7 +87,10 @@ export function buildObservedBranchStage(stageId){
     firstClear:data.firstClear?{...data.firstClear}:undefined,
     observedBranch:true,
     observedBranchId:branchId,
-    observedBranchLabel:branch?.observedLabel||branch?.name||null,
+    // stageSelect's existing observed-Branch confirmation surface renders this
+    // label, so M4 ecology/technology presentation is derived from canonical
+    // Branch history data without adding a new screen or persistence root.
+    observedBranchLabel:[branch?.observedLabel||branch?.name||null,profile].filter(Boolean).join('\n'),
   };
 }
 
