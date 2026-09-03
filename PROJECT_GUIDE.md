@@ -12,6 +12,8 @@
 |---|---|
 | ゲーム全体の概要 | `README.md` |
 | 開発全体の正式方針・現在地 | `ROADMAP.md` |
+| 現在のUI全面改修 | `UI_OVERHAUL_ROADMAP.md` |
+| Claude Code / AIの現在タスク | `CLAUDE.md` |
 | World 4.0 / Living Adventure の設計思想と W0–W36 | `ADVENTURE_WORLD_4_ROADMAP.md` |
 | World 4.0 実装前のアーキテクチャ監査 | `ADVENTURE_WORLD_4_W0_AUDIT.md` |
 | Lv1–99,999 の進行・報酬・章設計 | `LEVEL_ROADMAP_99999.md` |
