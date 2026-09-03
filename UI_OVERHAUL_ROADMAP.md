@@ -279,6 +279,8 @@ Implemented source contract:
 
 ### [ ] UIX-3 — Stage-first Adventure Suite
 
+Source implementation: complete in `js/screens/chapterSelect.js`, `js/screens/stageSelect.js`, `js/patches/stageFirstNavigationUi.js`, `js/patches/coreLoopClr17LootIdentityUi.js` and `css/style.css`. Live viewport acceptance remains pending.
+
 Goal: make Chapter → Stage → Story/Hunt the clearest part of the game.
 
 Scope:
@@ -297,6 +299,17 @@ Acceptance:
 - secret information does not leak;
 - no World4 node terminology is required for Story progression;
 - the entire clean-save 1-1 route is operable at narrow mobile width.
+
+Implemented source contract:
+
+- removed every rendered platform-emoji glyph from Chapter selection, World-layer nodes, the Stage ledger, Stage confirm (including 8th Key, Rift/Secret Realm discovery and Observed Branch cards) and the CLR-17 loot-identity panel — the emoji regression scan for these files now asserts zero `\p{Extended_Pictographic}` matches, and `scripts/uix-emoji-check.js`'s application-wide migration ceiling is ratcheted down from 446 to 425;
+- stopped rendering the presentation-only `node.icon` (World-layer realm nodes) and `stage.abyssRoute.icon` data fields at their point of render, per `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §5's migration decision — the underlying data fields are untouched;
+- replaced bare `★`/`?`/blank state glyphs with explicit `CLEAR` / `LOCKED` / `OPEN` / `BOSS` / `NEW` text across Chapter cards, World-layer nodes, the 8th Key gate, Rift/Secret Realm discovery rows and Observed Branch Stage/Hunt cards — Stage IDs, `stageFirstNavigationUi.js`'s existing `CLEAR`/`NEXT`/`OPEN` labeling and the CLR-13 LOCKED-card contract are unchanged;
+- gave `.stage-card`, `.stage-card .cleared`, `.section-heading`, the new `.world3-badge` and `.clr17-loot-identity` a Dark Chronicle treatment (`--dc-ink`/`--dc-iron`/`--dc-brass`/`--dc-observe`/`--dc-danger` tokens, a left-accent bar instead of a full bright border, a text badge instead of a bare colored star) in place of the old per-feature bright rgba borders — inline per-node `style="color:var(--accent)"` badges/notes were moved to `.world3-badge`/`.accent-note` classes;
+- verified live at 390×844 (title → Home → Adventure → Chapter → Stage → Stage confirm) with zero rendered emoji, zero new console/page errors and no change to the pre-existing benign `favicon.ico` 404;
+- `tests/uix3-stage-first-adventure.test.js` locks the emoji-free contract, the CLEAR/LOCKED/BOSS text states, the data-field-icon migration and the token-based CSS; `tests/core-loop-clr13.test.js`'s locked-card assertion was updated to match (same behavior, emoji dropped).
+
+Remaining before the live-viewport acceptance gate can close: 375×667 and desktop capture, and the cleared-Stage → Hunt → aftermath → return, Abyss/Rift/Secret Realm and Observed Branch Hunt live paths (only the clean-save Chapter → Stage → Story path was walked above).
 
 ### [ ] UIX-4 — Text Battle and Result Suite
 

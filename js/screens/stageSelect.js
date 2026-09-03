@@ -23,21 +23,21 @@ function renderEighthKeyStages(list,onPick){
   if(!state.phase9NextWorldUnlocked?.())return;
   const progress=eighthKeyProgress(id=>state.isStageCleared(id));
   const h=document.createElement('div');h.className='section-heading';h.textContent=`第八鍵観測路　—　${progress.cleared}/${progress.total}`;list.appendChild(h);
-  const intro=document.createElement('div');intro.className='stage-card boss';intro.innerHTML=`<div><div class="name">🔑 存在しない第八鍵</div><div class="rec">5地域MASTERで観測された人工的な境界。3つの高難度区画を突破すると、未知の世界層へ接触できる。</div></div><div class="cleared">${progress.open?'OPEN':'?'}</div>`;list.appendChild(intro);
+  const intro=document.createElement('div');intro.className='stage-card boss';intro.innerHTML=`<div><div class="name">存在しない第八鍵</div><div class="rec">5地域MASTERで観測された人工的な境界。3つの高難度区画を突破すると、未知の世界層へ接触できる。</div></div><div class="cleared">${progress.open?'OPEN':'LOCKED'}</div>`;list.appendChild(intro);
   for(const def of EIGHTH_KEY_STAGES){
     const unlocked=!def.requires||state.isStageCleared(def.requires),cleared=state.isStageCleared(def.id),stage=unlocked?buildSecretRealmStage(def.id):null;
     const card=document.createElement('div');card.className='stage-card branch'+(!unlocked?' locked':'')+(def.final?' boss':'');
-    card.innerHTML=`<div><div class="name">${unlocked?(def.final?'🚪 ':'◇ ')+def.name:'🔒 ?????'}</div><div class="rec">${unlocked?`推奨Lv ${stage.recLevel} / ${def.modifier.desc}`:'直前の第八鍵区画を突破すると観測可能'}</div></div><div class="cleared">${cleared?'★':unlocked?'→':''}</div>`;
+    card.innerHTML=`<div><div class="name">${unlocked?(def.final?'':'◇ ')+def.name:'?????'}</div><div class="rec">${unlocked?`推奨Lv ${stage.recLevel} / ${def.modifier.desc}`:'直前の第八鍵区画を突破すると観測可能'}</div></div><div class="cleared">${cleared?'CLEAR':unlocked?(def.final?'BOSS':'→'):'LOCKED'}</div>`;
     if(unlocked)card.addEventListener('click',()=>{Audio_.tap();onPick(stage);});list.appendChild(card);
   }
-  if(progress.open){const open=document.createElement('div');open.className='stage-card boss';open.innerHTML='<div><div class="name">📡 WORLD LAYER CONTACT</div><div class="rec">零号門が開いた。直線的な建造物、規則的な光、機械文明の信号を明確に観測。次世界「機界」への接続座標を確立した。</div></div><div class="cleared">NEW</div>';list.appendChild(open);}
+  if(progress.open){const open=document.createElement('div');open.className='stage-card boss';open.innerHTML='<div><div class="name">WORLD LAYER CONTACT</div><div class="rec">零号門が開いた。直線的な建造物、規則的な光、機械文明の信号を明確に観測。次世界「機界」への接続座標を確立した。</div></div><div class="cleared">NEW</div>';list.appendChild(open);}
 }
 
 function renderWorld2StageSelect(onPick){
   document.getElementById('chapterTitle').textContent='発見された分岐';
   const list=document.getElementById('stageList');list.innerHTML='';
   const refresh=()=>renderWorld2StageSelect(onPick);
-  const head=document.createElement('div');head.className='stage-card boss';head.innerHTML=`<div><div class="name">🧭 世界の外側へ続く道</div><div class="rec">鍵穴、探索で得た縁と手掛かり、深淵で発見した異界、境界異常をまとめて確認する。</div></div>`;list.appendChild(head);
+  const head=document.createElement('div');head.className='stage-card boss';head.innerHTML=`<div><div class="name">世界の外側へ続く道</div><div class="rec">鍵穴、探索で得た縁と手掛かり、深淵で発見した異界、境界異常をまとめて確認する。</div></div>`;list.appendChild(head);
   renderEighthKeyStages(list,onPick);
   const keyHeading=document.createElement('div');keyHeading.className='section-heading';keyHeading.textContent=`境界鍵路　—　鍵片 ${state.world2KeyFragments?.()||0}`;list.appendChild(keyHeading);
   const progress=state.world2Progress?.()||0,visibility=state.world2RealmVisibility?.()||{};
@@ -48,7 +48,7 @@ function renderWorld2StageSelect(onPick){
     let displayName=stage.name;if(def.id==='celestial'&&visibility.heaven==='hidden')displayName='？？？';if(def.id==='infernal'&&visibility.underworld==='hidden')displayName='？？？';if(def.id==='anomaly'&&visibility.modern!=='hint')displayName='鍵界・？？？？';
     const identity=stage.world3Identity?` / ${stage.world3Identity}`:'';
     const goal=stage.world3Goal?`<br><span style="opacity:.8">${stage.world3Goal}</span>`:'';
-    card.innerHTML=`<div><div class="name">${displayName}${identity}</div><div class="rec">推奨Lv ${stage.recLevel} / 所持鍵 ${count} / 作成: 鍵片${def.fragmentCost}${goal}</div></div><div class="cleared">${state.isStageCleared(stage.id)?'★':''}</div>`;
+    card.innerHTML=`<div><div class="name">${displayName}${identity}</div><div class="rec">推奨Lv ${stage.recLevel} / 所持鍵 ${count} / 作成: 鍵片${def.fragmentCost}${goal}</div></div><div class="cleared">${state.isStageCleared(stage.id)?'CLEAR':''}</div>`;
     const actions=document.createElement('div');actions.style.cssText='display:flex;gap:5px;flex-wrap:wrap;margin-top:5px';
     const forge=document.createElement('button');forge.className='btn-sub';forge.textContent='鍵を作る';forge.disabled=(state.world2KeyFragments?.()||0)<def.fragmentCost;forge.addEventListener('click',ev=>{ev.stopPropagation();Audio_.tap();state.world2ForgeKey(def.id);refresh();});actions.appendChild(forge);
     const enter=document.createElement('button');enter.className='btn-main';enter.textContent='挑む';enter.disabled=count<=0;enter.addEventListener('click',ev=>{ev.stopPropagation();Audio_.tap();onPick(stage);});actions.appendChild(enter);
@@ -61,7 +61,7 @@ function renderWorld2StageSelect(onPick){
       const stage=world3EventStageByFlag(d.id);
       const card=document.createElement('div');card.className='stage-card branch';
       const playable=!!stage;
-      card.innerHTML=`<div><div class="name">✦ ${d.name}</div><div class="rec">${d.hint||'探索中に得た手掛かり。'}${playable?` / 推奨Lv ${stage.recLevel}`:''}</div></div><div class="cleared">${playable&&state.isStageCleared(stage.id)?'★':playable?'→':''}</div>`;
+      card.innerHTML=`<div><div class="name">✦ ${d.name}</div><div class="rec">${d.hint||'探索中に得た手掛かり。'}${playable?` / 推奨Lv ${stage.recLevel}`:''}</div></div><div class="cleared">${playable&&state.isStageCleared(stage.id)?'CLEAR':playable?'→':''}</div>`;
       if(playable){const actions=document.createElement('div');actions.style.cssText='display:flex;gap:5px;flex-wrap:wrap;margin-top:5px';const enter=document.createElement('button');enter.className='btn-main';enter.textContent=state.isStageCleared(stage.id)?'もう一度調べる':'手掛かりを追う';enter.addEventListener('click',ev=>{ev.stopPropagation();Audio_.tap();onPick(buildSecretRealmStage(stage.id));});actions.appendChild(enter);card.firstElementChild.appendChild(actions);}
       list.appendChild(card);
     }
@@ -69,8 +69,8 @@ function renderWorld2StageSelect(onPick){
   const visibleSites=(state.explorationSites||[]).map(site=>({site,p:state.explorationProgress?.(site.id)})).filter(x=>x.p&&x.p.state!=='hidden');
   if(visibleSites.length){const h=document.createElement('div');h.className='section-heading';h.textContent='深淵で発見した異界';list.appendChild(h);}
   for(const {site,p} of visibleSites){
-    const card=document.createElement('div');card.className='stage-card branch';const title=p.unlocked&&site.realm?`🚪 ${site.realmName}`:`🔎 ${site.discoveredName}`;const clue=site.fragmentsRequired?`手掛かり ${p.fragments}/${site.fragmentsRequired}`:(p.inspected?'調査済み':'未調査');
-    card.innerHTML=`<div><div class="name">${title}</div><div class="rec">${clue}${site.finalGoal?' / 七つの鍵穴を持つ最終目標':''}</div></div><div class="cleared">${p.unlocked?'→':'?'}</div>`;
+    const card=document.createElement('div');card.className='stage-card branch';const title=p.unlocked&&site.realm?site.realmName:site.discoveredName;const clue=site.fragmentsRequired?`手掛かり ${p.fragments}/${site.fragmentsRequired}`:(p.inspected?'調査済み':'未調査');
+    card.innerHTML=`<div><div class="name">${title}</div><div class="rec">${clue}${site.finalGoal?' / 七つの鍵穴を持つ最終目標':''}</div></div><div class="cleared">${p.unlocked?'→':'LOCKED'}</div>`;
     const actions=document.createElement('div');actions.style.cssText='display:flex;gap:5px;flex-wrap:wrap;margin-top:5px';
     if(!p.inspected){const inspect=document.createElement('button');inspect.className='btn-sub';inspect.textContent='調べる';inspect.addEventListener('click',ev=>{ev.stopPropagation();if(state.inspectExplorationSite?.(site.id)){Audio_.tap();refresh();}});actions.appendChild(inspect);}
     if(p.unlocked&&site.realm){const enter=document.createElement('button');enter.className='btn-main';enter.textContent='異界へ入る';enter.addEventListener('click',ev=>{ev.stopPropagation();Audio_.tap();onPick(buildSecretRealmStage(site.realm.id));});actions.appendChild(enter);}
@@ -103,7 +103,7 @@ function renderObservedBranchStageCards(chapter, list, onPick) {
       if (!stageInfo.unlocked) {
         const locked = document.createElement('div');
         locked.className = 'stage-card locked';
-        locked.innerHTML = `<div><div class="name">🔒 ？？？</div><div class="rec">直前のStageをクリアすると開放</div></div><div class="cleared">LOCKED</div>`;
+        locked.innerHTML = `<div><div class="name">？？？</div><div class="rec">直前のStageをクリアすると開放</div></div><div class="cleared">LOCKED</div>`;
         list.appendChild(locked);
         break; // later Branch Stages stay unrendered until reached, like ordinary chapters.
       }
@@ -112,8 +112,8 @@ function renderObservedBranchStageCards(chapter, list, onPick) {
       card.className = 'stage-card' + (stageInfo.boss ? ' boss' : '');
       card.dataset.stageId = stage.id;
       card.dataset.stageState = stageInfo.cleared ? 'clear' : 'next';
-      const icon = stageInfo.boss ? '👑 ' : '◈ ';
-      card.innerHTML = `<div><div class="name">${icon}${stage.name}</div><div class="rec">推奨Lv ${stage.recLevel}</div></div><div class="cleared">${stageInfo.cleared ? '★' : ''}</div>`;
+      const icon = stageInfo.boss ? '' : '◈ ';
+      card.innerHTML = `<div><div class="name">${icon}${stage.name}</div><div class="rec">推奨Lv ${stage.recLevel}</div></div><div class="cleared">${stageInfo.cleared ? 'CLEAR' : stageInfo.boss ? 'BOSS' : ''}</div>`;
       card.addEventListener('click', () => { Audio_.tap(); onPick(buildObservedBranchStage(stageInfo.id)); });
       list.appendChild(card);
     }
@@ -129,7 +129,7 @@ function renderObservedBranchStageCards(chapter, list, onPick) {
         hunt.className = 'stage-card branch' + (target.role === 'boss' ? ' boss' : '');
         hunt.dataset.stageId = target.stageId;
         hunt.dataset.stageState = 'next';
-        hunt.innerHTML = `<div><div class="name">🔁 ${roleLabels[target.role]}：${target.name}</div><div class="rec">推奨Lv ${target.recLevel} / 戦利品候補 ${target.dropTable.length}種</div></div><div class="cleared">→</div>`;
+        hunt.innerHTML = `<div><div class="name">${roleLabels[target.role]}：${target.name}</div><div class="rec">推奨Lv ${target.recLevel} / 戦利品候補 ${target.dropTable.length}種</div></div><div class="cleared">${target.role === 'boss' ? 'BOSS' : '→'}</div>`;
         hunt.addEventListener('click', () => { Audio_.tap(); onPick(buildObservedBranchStage(target.stageId)); });
         list.appendChild(hunt);
       }
@@ -148,9 +148,8 @@ export function renderStageSelect(chapterIndex, onPick) {
     const card = document.createElement('div');
     card.className = 'stage-card' + (stage.boss ? ' boss' : '') + (stage.branch ? ' branch' : '') + (stage.bounty ? ' bounty' : '');
     const cleared = state.isStageCleared(stage.id);
-    const icon = stage.bounty ? '🎯 ' : stage.branch ? '🔀 ' : (stage.boss ? '👑 ' : '');
     const sub = stage.bounty ? `${stage.bountyRank}級賞金首 / 推奨Lv ${stage.recLevel}` : `推奨Lv ${stage.recLevel}`;
-    card.innerHTML = `<div><div class="name">${icon}${stage.name}</div><div class="rec">${sub}</div></div><div class="cleared">${cleared ? '★' : ''}</div>`;
+    card.innerHTML = `<div><div class="name">${stage.name}</div><div class="rec">${sub}</div></div><div class="cleared">${cleared ? 'CLEAR' : stage.boss ? 'BOSS' : ''}</div>`;
     card.addEventListener('click', () => { Audio_.tap(); onPick(stage); });
     list.appendChild(card);
   });
@@ -167,11 +166,11 @@ export function renderStageConfirm(stage) {
   document.getElementById('confirmStageRewards').textContent = rewardText;
   const modEl = document.getElementById('confirmModifiers');
   if(stage.raid){const tags=(stage.raidDangerTags||[]).join(' / ');modEl.textContent=`RAID PREPARATION\n危険: ${tags}\nMechanic: ${stage.raidMechanic}\n攻略ヒント: ${stage.raidCounterHint}\n報酬: ${stage.raidRewardHint}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
-  else if(stage.keyDungeon){modEl.textContent=`🔑 ${stage.world3Identity||'境界鍵ダンジョン'}：出撃時に鍵を1本消費\n${stage.world3Goal||''}${stage.world3Goal?'\n':''}${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
+  else if(stage.keyDungeon){modEl.textContent=`${stage.world3Identity||'境界鍵ダンジョン'}：出撃時に鍵を1本消費\n${stage.world3Goal||''}${stage.world3Goal?'\n':''}${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if(stage.worldEventStage){modEl.textContent=`探索分岐：${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||stage.name}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if(stage.secretRealm){modEl.textContent=`異界：${stage.abyssEra||stage.name}\n${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if (stage.bounty) {const hint = stage.bountyRewardHint ? ` ／ 戦利品の噂：${stage.bountyRewardHint}` : '';modEl.textContent = `手配書：${stage.rumor || '詳細不明'} ／ 特徴：${stage.bountyGimmick || '未知の強敵'}${hint}`;modEl.classList.remove('hidden');}
-  else if (stage.isAbyss) {const lines = [];if (stage.abyssRoute) lines.push(`${stage.abyssRoute.icon} ${stage.abyssRoute.name}：☠ ${stage.abyssRoute.risk} ／ ◆ ${stage.abyssRoute.reward}`);if (stage.modifiers?.length) lines.push(`環境：${stage.modifiers.map(m => `${m.name}（${m.desc}）`).join(' ／ ')}`);if (stage.abyssPacts?.length) lines.push(`盟約：${stage.abyssPacts.map(p => p.name).join(' ／ ')}　危険度${stage.abyssPactDanger}`);modEl.textContent = lines.join('\n');modEl.style.whiteSpace = 'pre-line';modEl.classList.toggle('hidden', lines.length === 0);}
+  else if (stage.isAbyss) {const lines = [];if (stage.abyssRoute) lines.push(`${stage.abyssRoute.name}：${stage.abyssRoute.risk} ／ ◆ ${stage.abyssRoute.reward}`);if (stage.modifiers?.length) lines.push(`環境：${stage.modifiers.map(m => `${m.name}（${m.desc}）`).join(' ／ ')}`);if (stage.abyssPacts?.length) lines.push(`盟約：${stage.abyssPacts.map(p => p.name).join(' ／ ')}　危険度${stage.abyssPactDanger}`);modEl.textContent = lines.join('\n');modEl.style.whiteSpace = 'pre-line';modEl.classList.toggle('hidden', lines.length === 0);}
   else if (stage.observedBranch) {const label = stage.observedBranchLabel || '観測分岐';modEl.textContent = `${label}\nPrime世界とは異なる歴史が観測されている。`;modEl.style.whiteSpace = 'pre-line';modEl.classList.remove('hidden');}
   else {modEl.textContent = '';modEl.classList.add('hidden');}
   const blessingRow = document.getElementById('confirmBlessingRow');

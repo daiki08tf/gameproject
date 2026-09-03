@@ -44,7 +44,8 @@ test('CLR-13 makes canonical Stage identity and state visible',()=>{
   assert.match(stageFirst,/return 'CLEAR'/);
   assert.match(stageFirst,/return 'NEXT'/);
   assert.match(stageFirst,/return 'OPEN'/);
-  assert.match(stageFirst,/🔒 \$\{stage\.id\} \?\?\?/);
+  assert.match(stageFirst,/\$\{stage\.id\} \?\?\?/);
+  assert.doesNotMatch(stageFirst,/\p{Extended_Pictographic}/u);
   assert.match(stageFirst,/LOCKED/);
 });
 

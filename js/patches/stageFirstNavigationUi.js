@@ -128,7 +128,7 @@ export function enhanceStageFirstStageList(){
     card.className='stage-card locked';
     card.dataset.stageId=stage.id;
     card.dataset.stageState='locked';
-    card.innerHTML=`<div><div class="name">🔒 ${stage.id} ???</div><div class="rec">直前のステージをクリアすると開放</div></div><div class="cleared">LOCKED</div>`;
+    card.innerHTML=`<div><div class="name">${stage.id} ???</div><div class="rec">直前のステージをクリアすると開放</div></div><div class="cleared">LOCKED</div>`;
     list.appendChild(card);
   }
   return true;
