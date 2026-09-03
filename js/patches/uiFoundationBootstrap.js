@@ -37,9 +37,9 @@ function installBladeValeNavigation() {
   installPrimaryNavigation({
     home: showHomeDirect,
     adventure: () => clickRoute('goStageBtn'),
-    growth: () => clickRoute('goStatusBtn'),
-    companions: () => clickRoute('goCompanionBtn'),
-    menu: () => openHomeHub('records'),
+    character: () => clickRoute('goStatusBtn'),
+    equipment: () => clickRoute('goEquipBtn'),
+    records: () => openHomeHub('records'),
   });
 
   updatePrimaryNavigation(activeScreenId());

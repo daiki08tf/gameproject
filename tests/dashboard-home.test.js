@@ -22,9 +22,9 @@ test('character dashboard exposes the growth tab and saved progression', async (
 test('home navigation groups existing buttons without replacing their IDs', async () => {
   const text = await source('js/patches/homeNavigation.js');
   assert.match(text, /adventureLabel\.textContent = '冒険する'/);
-  assert.match(text, /title: '育成'/);
-  assert.match(text, /title: '仲間・拠点'/);
-  assert.match(text, /title: '記録・その他'/);
+  assert.match(text, /title: 'キャラクター'/);
+  assert.match(text, /title: '装備'/);
+  assert.match(text, /title: '記録'/);
   for (const id of ['goStageBtn','goAbyssBtn','goStatusBtn','goCompanionBtn','goEquipBtn','goJobBtn','goBlacksmithBtn','goRebirthBtn','goSpellBtn']) {
     assert.match(text, new RegExp(id));
   }

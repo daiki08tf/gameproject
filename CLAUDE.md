@@ -4,7 +4,7 @@
 
 **UI Overhaul (UIX)** is the active default priority.
 
-UIX-0 source/ownership analysis and UIX-1 source implementation are recorded in the UIX audit and design-system documents. Their live viewport acceptance remains incomplete.
+UIX-0 source/ownership analysis and UIX-1/UIX-2 source implementation are recorded in the UIX audit, design-system and roadmap documents. Their live viewport acceptance remains incomplete.
 
 The stable baseline is main after:
 
@@ -114,4 +114,4 @@ Report:
 
 ## Default next action
 
-On a browser-capable checkout, complete the UIX-0/UIX-1 live viewport pass and update UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md. Do not claim either phase complete or begin UIX-2 production work until the live gate is recorded.
+On a browser-capable checkout, complete the combined UIX-0–2 live viewport pass and update UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md. Exercise fresh-save, cleared-Stage and suspended-Adventure Home states at 390×844, 375×667 and desktop. Verify one primary Adventure action, Character/Equipment/Records Home hubs, the Home/Adventure/Character/Equipment/Records persistent navigation and return-time context refresh. Do not claim the phases complete or begin UIX-3 production work until the live gate is recorded.

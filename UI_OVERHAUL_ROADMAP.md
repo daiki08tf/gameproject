@@ -247,6 +247,10 @@ Do not restyle every feature here. Build the foundation and prove it on the shel
 
 ### [ ] UIX-2 — Application Shell and Home Command Center
 
+Source implementation: complete in the shared navigation, Home organizer and final-integration Home renderer. Live viewport acceptance remains pending.
+
+The user authorized UIX-2 source work to proceed on 2026-09-03 while this environment remains unable to open the local runtime. This does not waive the live acceptance gate or mark the phase complete.
+
 Goal: make the first screen distinctive and immediately actionable.
 
 Deliverables:
@@ -261,6 +265,17 @@ Deliverables:
 - compact notification/record treatment without noisy badges.
 
 Acceptance: within three seconds, a player can identify current location and the next primary action.
+
+Implemented source contract:
+
+- the context ledger reads existing `CHAPTERS`, `stageProgress` and Adventure4 session state;
+- the existing `goStageBtn` remains the only primary Adventure action;
+- the context ledger itself is informational, not a competing click target;
+- Home and persistent navigation share Home / Adventure / Character / Equipment / Records ownership;
+- Character owns Status, Job, Companion and Rebirth; Equipment owns inventory and Blacksmith; Records owns Codex, Abyss, Settlement and restoration;
+- build, Story-clear and Abyss signals are derived from existing equipment/progression state;
+- Home refresh watches only the screen's active-class transition and does not observe the subtree it rewrites;
+- the Home/shared-shell emoji regression scan covers the context ledger, summary and endgame guidance.
 
 ### [ ] UIX-3 — Stage-first Adventure Suite
 
@@ -436,6 +451,6 @@ Gear Overhaul Phase 6 and later remain valid and resume after UIX-8. UIX-5 may i
 
 ## 10. Handoff summary
 
-The next default task is **UIX-0 — Live UI Inventory and Ownership Audit**.
+UIX-0 source/ownership audit and UIX-1/UIX-2 source implementations are complete. None of these phases may be checked complete until the required live viewport flows are recorded.
 
-Do not start by globally deleting emoji or rewriting CSS. First identify every rendered source, its owning renderer, its observer/patch dependencies and the live player path. The first production visual implementation begins in UIX-1 after the audit is merged.
+The next default task on a browser-capable checkout is the combined **UIX-0–2 live viewport acceptance pass**. Validate Home context for a fresh save, a cleared Stage and a suspended Adventure4 session at 390×844, 375×667 and desktop. Confirm that the one primary Adventure action, three Home hubs and five-item persistent navigation remain reachable and correctly owned. Record screenshots and findings in `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` before starting UIX-3.

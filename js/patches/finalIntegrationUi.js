@@ -2,6 +2,8 @@
 import { state } from '../state.js';
 import { CHAPTERS } from '../data/stages.js';
 import { buildSecretRealmStage } from '../data/secretRealms.js';
+import { getItem } from '../data/equipment.js';
+import { buildWorld4RegionCatalog,world4RegionById } from '../data/adventureWorld4Regions.js';
 
 function ensureStyles(){
   if(document.querySelector('link[data-final-integration]'))return;
@@ -35,26 +37,38 @@ function stageFromCard(card){
   return allKnownStages().find(s=>name.includes(s.name)||s.name.includes(name))||null;
 }
 function nextGoal(){
+  const session=state.adventure4Session?.();
+  if(session?.active){
+    const region=world4RegionById(buildWorld4RegionCatalog(CHAPTERS),session.regionId);
+    const pending=allKnownStages().find(stage=>stage.id===session.pendingEncounter?.stageId);
+    return {kicker:'SUSPENDED EXPEDITION',record:region?.name||'中断中の地域探索',status:'RESUME',title:pending?.name||'中断中の冒険',sub:'前回の地点から再開できます',stageId:pending?.id||null,suspended:true};
+  }
   for(const chapter of CHAPTERS){
     for(const stage of chapter.stages||[]){
       if(stage.branch||stage.bounty)continue;
-      if(!state.isStageCleared(stage.id))return {title:stage.name,sub:`メイン進行 / 推奨Lv ${stage.recLevel}`,stageId:stage.id};
+      if(!state.isStageCleared(stage.id))return {kicker:'NEXT STORY',record:`CHAPTER ${String(chapter.num).padStart(2,'0')} / STAGE ${stage.id}`,status:'NEXT',title:stage.name,sub:`${chapter.name} / 推奨Lv ${stage.recLevel}`,stageId:stage.id,suspended:false};
     }
   }
   const mastery=state.phase12HorizontalMastery?.();
-  if(mastery&&!mastery.complete)return {title:'横軸探索を進める',sub:`任意異界 ${mastery.cleared}/${mastery.total} 踏破`,stageId:null};
-  if((state.data.abyssBestDepth||0)<3000)return {title:'深淵をさらに進む',sub:`最高 ${state.data.abyssBestDepth||0}F / 3000F`,stageId:null};
-  return {title:'記録とビルドを更新する',sub:'Challenge / REMATCH+ / Rare Hunt',stageId:null};
+  if(mastery&&!mastery.complete)return {kicker:'NEXT OBJECTIVE',record:'HORIZONTAL ROUTES',status:'OPEN',title:'横軸探索を進める',sub:`任意異界 ${mastery.cleared}/${mastery.total} 踏破`,stageId:null,suspended:false};
+  if((state.data.abyssBestDepth||0)<3000)return {kicker:'NEXT OBJECTIVE',record:'ABYSS RECORD',status:'OPEN',title:'深淵をさらに進む',sub:`最高 ${state.data.abyssBestDepth||0}F / 3000F`,stageId:null,suspended:false};
+  return {kicker:'NEXT OBJECTIVE',record:'FIELD ARCHIVE',status:'OPEN',title:'記録とビルドを更新する',sub:'Challenge / REMATCH+ / Rare Hunt',stageId:null,suspended:false};
 }
 function enhanceHome(){
   const menu=document.querySelector('#homeScreen .home-menu');if(!menu)return;
   let goal=menu.querySelector('.phase14-next-goal');
   if(!goal){goal=document.createElement('div');goal.className='phase14-next-goal';menu.prepend(goal);}
-  const n=nextGoal();goal.innerHTML=`<div class="phase14-next-kicker">NEXT GOAL</div><div class="phase14-next-title">${n.title}</div><div class="phase14-next-sub">${n.sub}</div>`;
-  goal.onclick=()=>document.getElementById('goStageBtn')?.click();
+  const n=nextGoal();goal.setAttribute('aria-live','polite');goal.removeAttribute('role');goal.removeAttribute('tabindex');goal.onclick=null;
+  goal.innerHTML=`<div class="phase14-next-head"><span class="phase14-next-kicker">${n.kicker}</span><span class="phase14-next-state">${n.status}</span></div><div class="phase14-next-record">${n.record}</div><div class="phase14-next-title">${n.title}</div><div class="phase14-next-sub">${n.sub}</div>`;
+  const adventure=document.getElementById('goStageBtn'),adventureLabel=adventure?.querySelector('span:last-child');
+  const actionLabel=n.suspended?'冒険を確認':n.stageId?`続ける　${n.stageId}`:'冒険を選ぶ';
+  if(adventureLabel&&adventureLabel.textContent!==actionLabel)adventureLabel.textContent=actionLabel;
+  if(adventure)adventure.setAttribute('aria-label',`${actionLabel}：${n.title}`);
   let sum=menu.querySelector('.phase14-home-summary');if(!sum){sum=document.createElement('div');sum.className='phase14-home-summary';goal.after(sum);}
-  const d=uiData(),p13=state.phase13Data?.()||{};
-  sum.innerHTML=`<span class="phase14-chip">最高Lv ${state.highestCharacterLevel||state.currentLevel}</span><span class="phase14-chip">深淵 ${state.data.abyssBestDepth||0}F</span><span class="phase14-chip">Challenge ${p13.challengeWins||0}勝</span><span class="phase14-chip">★ ${d.favoriteStageIds.length}</span>`;
+  const equippedId=state.data.equipped?.weapon,baseItemId=state.data.weaponInstances?.[equippedId]?.itemId||equippedId,weapon=getItem(baseItemId);
+  const storyStages=CHAPTERS.flatMap(chapter=>(chapter.stages||[]).filter(stage=>!stage.branch&&!stage.bounty));
+  const storyClears=storyStages.filter(stage=>state.isStageCleared(stage.id)).length;
+  sum.innerHTML=`<span class="phase14-chip"><small>BUILD</small>${weapon?.name||'武器未装備'}</span><span class="phase14-chip"><small>STORY</small>${storyClears}/${storyStages.length}</span><span class="phase14-chip"><small>ABYSS</small>${state.data.abyssBestDepth||0}F</span>`;
 }
 function applyStageFilter(list,mode){
   const d=uiData();

@@ -32,7 +32,7 @@ test('CLR-20 Region Hunt routes contain only canonical Region-owned Stage ids, n
 test('CLR-20 keeps Abyss Home navigation independent from Stage-first Adventure entry',()=>{
   const home=source('js/patches/homeNavigation.js');
   const ui=source('js/patches/stageFirstNavigationUi.js');
-  assert.match(home,/buttons: \['goMonsterCodexBtn', 'goAbyssBtn', 'goSpellBtn'\]/);
+  assert.match(home,/buttons: \['goMonsterCodexBtn', 'goAbyssBtn', 'goSettlementBtn', 'goSpellBtn'\]/);
   assert.match(home,/const adventure = buttons\.get\('goStageBtn'\)/);
   assert.match(ui,/target\.closest\('#goAbyssBtn'\)/);
   assert.doesNotMatch(ui,/launchStageFirstHunt\([^)]*goAbyssBtn/);

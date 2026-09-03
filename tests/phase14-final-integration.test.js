@@ -12,7 +12,8 @@ const main=fs.readFileSync(new URL('../js/main.js',import.meta.url),'utf8');
 
 test('Phase 14 keeps final integration inside existing navigation surfaces',()=>{
   assert.match(home,/enhanceHome/);
-  assert.match(runtime,/NEXT GOAL/);
+  assert.match(runtime,/NEXT STORY/);
+  assert.match(runtime,/SUSPENDED EXPEDITION/);
   assert.match(runtime,/favoriteStageIds/);
   assert.match(runtime,/recentStageIds/);
   assert.match(runtime,/未攻略/);

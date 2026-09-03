@@ -4,7 +4,7 @@ import path from 'node:path';
 const ROOTS = ['index.html', 'js', 'css'];
 const SOURCE_EXTENSION = /\.(?:html|js|css)$/;
 const PICTOGRAPH = /\p{Extended_Pictographic}/gu;
-const SHELL_MARKERS = /homeGoldText|abyssShardText|manastoneText|menu-icon|weaponCodexBtn|autoEquipBtn|home-hero/;
+const SHELL_MARKERS = /homeGoldText|abyssShardText|manastoneText|menu-icon|weaponCodexBtn|autoEquipBtn|home-hero|phase14-next|phase14-home-summary|endgame-guide/;
 const MAX_APP_PICTOGRAPHS = 446;
 
 function collect(target, output = []) {
