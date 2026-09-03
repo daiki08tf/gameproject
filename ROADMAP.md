@@ -1,8 +1,8 @@
 # Blade Vale — Official Roadmap
 
-> **Current:** Core/Foundation ✅ / System Deepening ✅ / Content Pack II ✅ / Story Expansion I ✅ / Difficulty + Constraint Unlock ✅ / **Content Pack III ✅**
+> **Current:** Core/Foundation ✅ / Content Pack III ✅ / Stage-first Core Loop Rework CLR-12–21 ✅ / Automated RC baseline ✅
 >
-> **NEXT / ACTIVE:** **GEAR OVERHAUL — loot identity, max-3 Options, Option Lv1–100, weapon/job audit.**
+> **NEXT / ACTIVE:** **UI OVERHAUL (UIX) — Dark Chronicle identity, emoji-free interface, mobile information architecture and live playability.**
 
 Blade Vale is a personal evolving text-command hack-and-slash RPG.
 
@@ -27,6 +27,7 @@ Preferred rhythm:
 13. Gear Overhaul random Options are capped at **3 per item**; Named/Unique fixed effects are separate.
 14. Gear Overhaul keeps seven Option rarities and adds **Option Lv1–100** with deterministic duplicate-fusion progress.
 15. High difficulty must preserve **No Single Correct Build**: intended builds can clear efficiently, while extreme raw investment may brute-force most soft checks.
+16. Rendered application UI uses no platform emoji; meaning comes from language, hierarchy and restrained labeled monochrome icons.
 
 ### System-sprawl guardrails
 
@@ -145,10 +146,30 @@ Completed:
 - `CONTENT_PACK_III_B_NOTES.md` — compact CP3-B implementation handoff
 - `GEAR_OVERHAUL_ROADMAP.md` — active Gear Overhaul design, phases and non-negotiable rules
 - `GEAR_OVERHAUL_AUDIT.md` — live equipment/Affix/weapon-job audit and migration decisions
+- `UI_OVERHAUL_ROADMAP.md` — active UIX visual direction, phases, architecture guardrails and acceptance gates
+- `CLAUDE.md` — current AI/Claude Code execution handoff
 
 Exact numeric stats remain in code.
 
-## ACTIVE — Gear Overhaul
+## ACTIVE — UI Overhaul
+
+The current priority is a full presentation and information-architecture overhaul while preserving the now-stable Stage-first and gameplay authorities.
+
+Locked direction:
+
+- **Dark Chronicle**: black iron, soot navy, ash white, restrained aged metal, record/ledger/map structure and sharp geometry;
+- text-first, dense and readable rather than giant repeated cards;
+- no rendered platform emoji in application UI;
+- one obvious primary action and visible current Chapter/Stage context;
+- mobile-first at 390×844, with 375×667 compact coverage;
+- no new gameplay/save/progression authority and no framework rewrite;
+- live-browser and screenshot evidence required, not static source tests alone.
+
+Phases UIX-0 through UIX-8 are defined in `UI_OVERHAUL_ROADMAP.md`. The next default task is **UIX-0 — Live UI Inventory and Ownership Audit**.
+
+The existing Release Candidate audit remains the functional regression baseline. UIX may change presentation and navigation structure, but must keep its gameplay, save, mobile-command and endgame gates green.
+
+## PAUSED AFTER PHASE 5 — Gear Overhaul
 
 The current priority is the hack-and-slash core: **finding gear, evaluating three meaningful Options, and making even non-jackpot drops useful through Option growth**.
 
@@ -208,7 +229,7 @@ Do not add new mastery weapon families before Phase 6 closes. Equipment 3.0 alre
 
 See `GEAR_OVERHAUL_ROADMAP.md` and `GEAR_OVERHAUL_AUDIT.md` before modifying gear code.
 
-## Deferred while Gear Overhaul is active
+## Deferred while UI Overhaul is active
 
 Further Deep Survey expansion / Survey Conditions / Convergence Apex remain valid future directions, but they are intentionally behind Gear Overhaul so the new high-difficulty content has a stronger loot reason to exist.
 
@@ -217,32 +238,34 @@ Story Ch31+ is also not the default next task.
 ## Development rhythm
 
 ```text
-CONTENT PACK III ✅
+STAGE-FIRST CORE LOOP ✅
       ↓
-GEAR OVERHAUL ← ACTIVE
+AUTOMATED RC + LIVE PLAYABILITY BASELINE ✅
+      ↓
+UI OVERHAUL UIX-0..8 ← ACTIVE
+      ↓
+GEAR OVERHAUL PHASE 6..9 RESUMES
       ↓
 LOOT / BUILD PLAYTEST & TUNE
       ↓
 DEEP SURVEY / ENDGAME RETURN
       ↓
 NEXT STORY EXPANSION WHEN EARNED
-      ↓
-HORIZONTAL CONTENT AGAIN
-      ↺
 ```
 
 ## AI handoff
 
 For a new ChatGPT / Claude Code session:
-1. read this file
-2. read `GEAR_OVERHAUL_ROADMAP.md`
-3. read `GEAR_OVERHAUL_AUDIT.md`
-4. read `STORY_CANON.md`
-5. read `WORLD_LORE_BIBLE.md`
-6. read `GAME_CONTENT_CATALOG.md`
-7. do not redo Content Pack II, Story Expansion I, Difficulty/Constraint Unlock, or Content Pack III
-8. active default work is **GEAR OVERHAUL**, starting from the first incomplete Gear phase
-9. preserve max 3 random Options, seven Option rarities, Option Lv1–100, no new Option currency, and the brute-force route
-10. do not add a new mastery weapon family before the Weapon × Job/Fusion × archetype audit
-11. preserve Lv99,999, Item Power 10,000, SD-4 deferral, no rotating challenges, no extra Home route/currency
-12. preserve mobile command safety, startup dependency guards, MutationObserver idempotence and save compatibility
+
+1. read `CLAUDE.md`;
+2. read `PROJECT_GUIDE.md`;
+3. read this file;
+4. read `UI_OVERHAUL_ROADMAP.md`;
+5. read `RELEASE_CANDIDATE_AUDIT.md` and `docs/MUTATION_OBSERVER_SAFETY.md`;
+6. active default work is **UIX**, starting from the first incomplete UIX phase;
+7. at roadmap creation, the next task is UIX-0 audit only — do not begin a global CSS rewrite;
+8. preserve Stage-first Home → Adventure → Chapter → Stage → Story/Hunt;
+9. preserve max-3 Options, seven Option rarities, Option Lv1–100 and existing Gear authorities;
+10. preserve Lv99,999, save compatibility, mobile command safety, startup dependency guards and MutationObserver idempotence;
+11. do not add emoji replacements through another pictograph set or a broad generic icon library;
+12. merge only after full tests, syntax, live-browser checks and both CI workflows are green.
