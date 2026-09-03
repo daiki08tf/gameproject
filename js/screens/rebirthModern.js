@@ -58,7 +58,7 @@ function renderAwakening(content) {
   for (const def of state.awakeningV2Ranks) {
     const progress = state.awakeningV2Progress(def.rank); const unlocked = rank >= def.rank; const current = def.rank === rank + 1;
     const card = document.createElement('div'); card.className = 'forge-card';
-    card.innerHTML = `<div class="forge-card-top"><div class="forge-card-name">${def.name}</div><strong>${unlocked ? '★解放済み' : current ? 'NEXT' : 'LOCK'}</strong></div><div class="forge-card-sub">${def.description}</div><div class="forge-card-sub">${progress.checks.map((c) => `${c.met ? '✅' : '⬜'} ${c.label}`).join('<br>')}</div><div class="forge-card-sub"><strong>解放：</strong>${def.unlocks.join(' / ')}</div>${current ? `<button class="forge-card-btn" id="claimAwakeningBtn" ${progress.met ? '' : 'disabled'}>覚醒Rank ${def.rank} を解放する</button>` : ''}`;
+    card.innerHTML = `<div class="forge-card-top"><div class="forge-card-name">${def.name}</div><strong>${unlocked ? '★解放済み' : current ? 'NEXT' : 'LOCK'}</strong></div><div class="forge-card-sub">${def.description}</div><div class="forge-card-sub">${progress.checks.map((c) => `${c.met ? '✓' : '○'} ${c.label}`).join('<br>')}</div><div class="forge-card-sub"><strong>解放：</strong>${def.unlocks.join(' / ')}</div>${current ? `<button class="forge-card-btn" id="claimAwakeningBtn" ${progress.met ? '' : 'disabled'}>覚醒Rank ${def.rank} を解放する</button>` : ''}`;
     content.appendChild(card);
     card.querySelector('#claimAwakeningBtn')?.addEventListener('click', () => { if (state.claimAwakeningV2()) { Audio_.jobMastered(); renderRebirth(); } });
   }
@@ -75,7 +75,7 @@ function renderArtifacts(content) {
   for (let i=0;i<3;i++) {
     const unlocked = i < slotCount; const id = state.data.equippedArtifacts?.[i]; const a = id ? getArtifact(id) : null;
     const slot = document.createElement('div'); slot.className = 'rune-slot' + (a ? ' filled' : '') + (!unlocked ? ' locked' : '');
-    slot.textContent = !unlocked ? '🔒' : a ? '✨' : '+'; slot.title = !unlocked ? `覚醒Rank ${i+1}で解放` : (a?.name || '空きスロット');
+    slot.textContent = !unlocked ? '✕' : a ? '●' : '+'; slot.title = !unlocked ? `覚醒Rank ${i+1}で解放` : (a?.name || '空きスロット');
     if (unlocked) slot.addEventListener('click', () => { selectedArtifactSlot = selectedArtifactSlot === i ? null : i; Audio_.tap(); renderRebirth(); });
     row.appendChild(slot);
   }
@@ -86,9 +86,9 @@ function renderArtifacts(content) {
     const unlocked = state.isArtifactUnlocked(a.id); const isRelic = !!a.kind; const gate = state.artifactProgressionGate(a.id); const cost = state.artifactUnlockCostV2();
     const card = document.createElement('div'); card.className='forge-card';
     let gateHtml = '';
-    if (!unlocked && !gate.rankMet) gateHtml = `<div class="forge-card-sub">🔒 覚醒Rank ${gate.awakeningRequired}で解放候補</div>`;
-    else if (!unlocked && isRelic && !gate.depthMet) gateHtml = `<div class="forge-card-sub">🔒 ${gate.era || '深淵'}：深淵 ${gate.depthRequired.toLocaleString()}F 到達で解放候補（最高 ${gate.bestDepth.toLocaleString()}F）</div>`;
-    else if (!unlocked) gateHtml = `<button class="forge-card-btn" ${state.canUnlockArtifact(a.id) ? '' : 'disabled'}>解放する（💰${cost.gold.toLocaleString()} + 💎${cost.manastone}）</button>`;
+    if (!unlocked && !gate.rankMet) gateHtml = `<div class="forge-card-sub">覚醒Rank ${gate.awakeningRequired}で解放候補</div>`;
+    else if (!unlocked && isRelic && !gate.depthMet) gateHtml = `<div class="forge-card-sub">${gate.era || '深淵'}：深淵 ${gate.depthRequired.toLocaleString()}F 到達で解放候補（最高 ${gate.bestDepth.toLocaleString()}F）</div>`;
+    else if (!unlocked) gateHtml = `<button class="forge-card-btn" ${state.canUnlockArtifact(a.id) ? '' : 'disabled'}>解放する（Gold${cost.gold.toLocaleString()} + 魔石${cost.manastone}）</button>`;
     card.innerHTML = `<div class="forge-card-top"><div class="forge-card-name">${a.name}</div><strong>${unlocked ? '★解放済み' : isRelic ? `${a.progressionEra || 'Relic'}` : 'Artifact'}</strong></div><div class="forge-card-sub">${a.desc}</div>${gateHtml}`;
     card.querySelector('button')?.addEventListener('click', () => { if (state.unlockArtifact(a.id)) { Audio_.pickup(); renderRebirth(); } });
     content.appendChild(card);

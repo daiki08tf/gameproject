@@ -75,7 +75,7 @@ function openCodex(){ document.querySelectorAll('.screen').forEach(s=>s.classLis
 function backToJobs(){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('jobsScreen').classList.add('active'); }
 function install(){
   const jobs=document.getElementById('jobsScreen'); if(!jobs||document.getElementById('jobCodexScreen'))return;
-  const header=jobs.querySelector('.subbar'); const btn=document.createElement('button'); btn.id='jobCodexBtn';btn.className='btn-sub';btn.textContent='📖 図鑑';header.appendChild(btn);btn.addEventListener('click',()=>{Audio_.tap();openCodex();});
+  const header=jobs.querySelector('.subbar'); const btn=document.createElement('button'); btn.id='jobCodexBtn';btn.className='btn-sub';btn.textContent='図鑑';header.appendChild(btn);btn.addEventListener('click',()=>{Audio_.tap();openCodex();});
   const screen=document.createElement('section');screen.id='jobCodexScreen';screen.className='screen';screen.innerHTML='<header class="subbar"><button class="btn-back" id="jobCodexBackBtn">←</button><h2>職業図鑑</h2></header><div id="jobCodexContent" class="blacksmith-content"></div>';document.body.appendChild(screen);
   document.getElementById('jobCodexBackBtn').addEventListener('click',()=>{Audio_.tap();backToJobs();});
 }

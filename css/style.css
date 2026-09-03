@@ -508,8 +508,8 @@ button { font-family: inherit; }
 .section-heading { font: 700 11px/1.4 var(--dc-font-number, inherit); text-transform: uppercase; letter-spacing: .14em; color: var(--dc-ash-300); opacity: 1; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--dc-iron-500); }
 
 .rebirth-panel { text-align: center; padding: 24px 12px; }
-.rebirth-count { font-size: 40px; font-weight: bold; color: var(--accent); }
-.rebirth-bonus { opacity: 0.85; margin-bottom: 18px; }
+.rebirth-count { font-size: 40px; font-weight: bold; color: var(--dc-brass-300, var(--accent)); font-family: var(--dc-font-number, inherit); }
+.rebirth-bonus { color: var(--dc-ash-300); opacity: 1; margin-bottom: 18px; }
 
 /* ---------------------------------------------------------
    ふっかつのじゅもん
@@ -673,8 +673,8 @@ button { font-family: inherit; }
 /* 詳細ステータス画面（Part B） */
 .status-section { margin: 10px 0; }
 .status-section h3 {
-  font-size: 13px; opacity: 0.7; margin: 0 0 6px; padding-bottom: 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.12);
+  font: 700 13px/1.4 var(--dc-font-display, inherit); color: var(--dc-ash-300); opacity: 1; margin: 0 0 6px; padding-bottom: 4px;
+  border-bottom: 1px solid var(--dc-iron-500, rgba(255,255,255,0.12));
 }
 .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
 .status-row {
@@ -682,18 +682,18 @@ button { font-family: inherit; }
   font-size: 13px; padding: 4px 0; cursor: default;
 }
 .status-row.tappable { cursor: pointer; }
-.status-row .status-label { opacity: 0.7; }
-.status-row .status-value { font-weight: bold; }
-.status-row .status-cap { font-size: 11px; opacity: 0.55; margin-left: 4px; }
-.status-row .status-cap.maxed { color: #f2c94c; }
+.status-row .status-label { color: var(--dc-ash-300); opacity: 1; }
+.status-row .status-value { font-weight: bold; font-family: var(--dc-font-number, inherit); }
+.status-row .status-cap { font-size: 11px; color: var(--dc-ash-300); opacity: .8; margin-left: 4px; }
+.status-row .status-cap.maxed { color: var(--dc-brass-300, #f2c94c); }
 .status-breakdown {
-  font-size: 11px; opacity: 0.75; margin: 2px 0 8px; padding: 6px 10px;
-  background: rgba(255,255,255,0.05); border-radius: 6px; display: none;
+  font-size: 11px; color: var(--dc-ash-300); opacity: 1; margin: 2px 0 8px; padding: 6px 10px;
+  background: var(--dc-ink-900, rgba(255,255,255,0.05)); border-radius: var(--dc-radius-control, 6px); display: none;
 }
 .status-breakdown.open { display: block; }
 .status-breakdown .bd-line { display: flex; justify-content: space-between; }
 .status-equip-card {
   display: flex; justify-content: space-between; align-items: center;
-  background: var(--card-bg); border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 8px; padding: 10px 12px; margin-top: 6px;
+  background: var(--dc-ink-800, var(--card-bg)); border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.12));
+  border-radius: var(--dc-radius-panel, 8px); padding: 10px 12px; margin-top: 6px;
 }

@@ -388,13 +388,27 @@ Goal: bring all secondary surfaces into the same system without flattening their
 
 Batches:
 
-1. Status / Job / Rebirth;
-2. Companion / Monster Ranch;
-3. Settlement facilities;
-4. Codex / Rumor / records;
-5. Abyss / Rift / Secret Realm / Machine Realm / Bounty/Nemesis.
+1. [x] Status / Job / Rebirth — **COMPLETE**;
+2. [ ] Companion / Monster Ranch;
+3. [ ] Settlement facilities;
+4. [ ] Codex / Rumor / records;
+5. [ ] Abyss / Rift / Secret Realm / Machine Realm / Bounty/Nemesis.
 
 Each batch is a separate PR unless the audit proves it is genuinely small.
+
+#### [x] Batch 1 — Status / Job / Rebirth ✅ COMPLETE
+
+A prior live pass had undercounted this batch's emoji debt: it recorded only `⚔` on Status and `📖` on Job, and claimed Rebirth was already clean. A full static source scan (the reliable ground truth — a live pass only sees the conditional branches it happens to exercise) found 10 glyphs total: 1 in `js/screens/status.js` (`character-avatar`'s fixed `⚔️`), 8 in `js/screens/rebirthModern.js` (awakening checklist `✅/⬜`, artifact slot `🔒/✨`, two `🔒` gate-hint prefixes), and 1 in `js/patches/jobCodexUi.js` (the Job screen's `📖 図鑑` button). `js/screens/jobConstellation.js`, `js/screens/jobsPhase8.js` and `js/screens/jobs.js` were confirmed already emoji-free and needed no changes.
+
+Implemented source contract:
+
+- Status: `character-avatar` now shows the current job's first character (`(job.name||'').charAt(0)||'?'`) instead of a fixed sword emoji — the mark changes with the player's job instead of being decorative filler.
+- Rebirth: awakening checklist uses `✓`/`○` for met/unmet; artifact slots use `✕`/`●`/`+` for locked/filled/empty; gate-hint text drops the `🔒` prefix (the "解放候補"/disabled-button state already carries the meaning); the artifact-unlock cost line follows the existing Gold/魔石 plain-text convention (`Gold${…} + 魔石${…}`) already used elsewhere in the app.
+- Job: the Codex entry-point button reads `図鑑` instead of `📖 図鑑`. The Job Constellation/Fusion Galaxy view (`jobConstellation.js` + its inline styles in `js/patches/phase8JobUiStyles.js`) is deliberately left untouched — no emoji present, and it is a large, deliberately distinct space/star visual identity whose full token harmonization (many hardcoded `#f2c94c`/`rgba(242,201,76,…)` golds and glow effects) is real, separate work deferred to its own future pass rather than a partial unverified retouch inside this batch.
+- CSS: `.status-*` selectors in `css/style.css` and all of `css/character.css` (Status/Character-dashboard-owned, correctly back in this phase's scope after being deliberately deferred out of UIX-5) migrated from bare rgba/hex to `--dc-*` tokens (`--dc-ash-300`, `--dc-brass-300`/`--dc-brass-500`, `--dc-ink-800`/`--dc-ink-900`/`--dc-ink-950`, `--dc-iron-500`, `--dc-radius-control`/`--dc-radius-panel`, `--dc-font-display`/`--dc-font-number`), each with the prior literal value kept as its fallback.
+- `tests/uix6-batch1-status-job-rebirth.test.js` locks the emoji-free contract, the specific glyph/text replacements, the token CSS, the deliberate Job Constellation deferral (still zero emoji, `★`/`◇` confirmed non-pictographic), and no new calculation authority (Status/Rebirth read `state.getStats()`/`state.getCombatStats()`/`state.inheritancePreview()`/`state.awakeningV2Rank()` only, no `localStorage`).
+
+Live-viewport pass (390×844/375×667/desktop, fresh-save; progressed-save at 390×844): Status (基本ステータス, 戦闘ハイライト, Challenge Records, Progression 3.0), Job (図鑑 button, 星盤/共鳴銀河 constellation view), Rebirth (継承/覚醒/秘宝 tabs). Zero rendered emoji across all 27 fresh-run and 20 progressed-run captured steps at every viewport; zero new console/page errors beyond the pre-existing benign `favicon.ico` 404 and the already-documented UIX-3 residual (`安全に帰還する` only reachable a few Hunt waves in — unrelated to this batch's Status/Job/Rebirth scope). Desktop's wider layout for the Status stat grid and highlight cards confirmed working at 1280×900.
 
 ### [ ] UIX-7 — Motion, Feedback and Accessibility Pass
 
@@ -490,6 +504,6 @@ Gear Overhaul Phase 6 and later remain valid and resume after UIX-8. UIX-5 may i
 
 ## 10. Handoff summary
 
-UIX-0 through UIX-5 are complete, source and live-viewport gate both. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 for the full live-viewport record (390×844/375×667/desktop, fresh-save and progressed-save).
+UIX-0 through UIX-5 are complete, source and live-viewport gate both. UIX-6 batch 1 (Status / Job / Rebirth) is also complete, source and live-viewport gate both. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10–§13 for the full live-viewport record (390×844/375×667/desktop, fresh-save and progressed-save).
 
-The next default task is **UIX-6 — Character, Ranch, Settlement, Records and Endgame**, batch 1 (Status / Job / Rebirth) first. Prior live passes already located this batch's emoji debt at the source level: Character/Status (`⚔`, 1 glyph — `js/screens/status.js`'s `character-avatar`), Job (`📖`, 1 glyph). Rebirth was already emoji-free as of the UIX-3 pass. Batch 2 (Companion/Ranch: `🧬🔵`) and later batches (Settlement: 33 glyphs — confirmed the highest concentration in the app, "must be split" per §3; Monster Codex: `🗺⚔`; Abyss: 15 glyphs) remain separate PRs per this section's own rule. Follow the same protocol as UIX-3–5: focused tests, full `npm test`, `npm run test:syntax`, `node scripts/uix-emoji-check.js` with the ceiling ratcheted down by the exact count removed, and a live-browser pass at all three required viewports before checking a batch complete.
+The next default task is **UIX-6 batch 2 — Companion / Monster Ranch**. Prior audits located this batch's emoji debt at the source level: `🧬🔵` in the Companion/Ranch surfaces, plus the `🐾` default recruit-prompt icon in `js/patches/companionRecruitment.js` (explicitly flagged as this batch's territory during both UIX-3 and UIX-6 batch 1). Later batches remain separate PRs per this section's own rule: batch 3 Settlement facilities (33 glyphs — confirmed the highest concentration in the app, "must be split" per §3), batch 4 Codex/Rumor/records (Monster Codex `🗺⚔`), batch 5 Abyss/Rift/Secret Realm/Machine Realm/Bounty-Nemesis (Abyss: 15 glyphs). Follow the same protocol as UIX-3–6b1: full static source scan for ground-truth emoji counts (do not trust a prior live pass's count alone — it only sees the conditional branches it happened to exercise), focused tests, full `npm test`, `npm run test:syntax`, `node scripts/uix-emoji-check.js` with the ceiling ratcheted down by the exact count removed, and a live-browser pass at all three required viewports before checking a batch complete.

@@ -4,7 +4,7 @@
 
 **UI Overhaul (UIX)** is the active default priority.
 
-UIX-0 through UIX-5 are complete: source implementation and the live-viewport acceptance gate (390×844/375×667/desktop, fresh-save and progressed-save) both. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 for the full record. UIX-6 (Character, Ranch, Settlement, Records and Endgame) is next; `UI_OVERHAUL_ROADMAP.md` §10 names its batch order and the emoji debt already located at the source level.
+UIX-0 through UIX-5 are complete: source implementation and the live-viewport acceptance gate (390×844/375×667/desktop, fresh-save and progressed-save) both. UIX-6 batch 1 (Status/Job/Rebirth) is also complete, same gate. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10–§13 for the full record. UIX-6 batch 2 (Companion/Monster Ranch) is next; `UI_OVERHAUL_ROADMAP.md` §10 names the remaining batch order and the emoji debt already located at the source level.
 
 The stable baseline is main after:
 
@@ -115,4 +115,4 @@ Report:
 
 ## Default next action
 
-Begin UIX-6 — Character, Ranch, Settlement, Records and Endgame, batch 1 (Status/Job/Rebirth) first (scope, batch order and known emoji debt: `UI_OVERHAUL_ROADMAP.md` §10). Each batch is a separate PR unless the audit proves it genuinely small. Follow the same protocol as UIX-3–5: focused tests, full `npm test`, `npm run test:syntax`, ratchet `scripts/uix-emoji-check.js`'s ceiling down by the exact count removed, and a live-browser pass at 390×844/375×667/desktop before checking a batch complete. Do not claim it complete until that live gate is recorded, matching the standard UIX-0–5 set.
+Continue UIX-6 — Character, Ranch, Settlement, Records and Endgame, with batch 2 (Companion/Monster Ranch) next (scope, remaining batch order and known emoji debt: `UI_OVERHAUL_ROADMAP.md` §10). Each batch is a separate PR unless the audit proves it genuinely small. Follow the same protocol as UIX-3–6b1: run a full static source scan for ground-truth emoji counts before trusting any prior live-pass note (a live pass only proves the conditional branches it exercised — see `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §13), focused tests, full `npm test`, `npm run test:syntax`, ratchet `scripts/uix-emoji-check.js`'s ceiling down by the exact count removed, and a live-browser pass at 390×844/375×667/desktop before checking a batch complete. Do not claim it complete until that live gate is recorded, matching the standard UIX-0–6b1 set.
