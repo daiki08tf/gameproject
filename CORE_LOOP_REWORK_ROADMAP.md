@@ -567,7 +567,7 @@ Deliverable: PR #391.
 
 ---
 
-## [ ] CLR-21 — Observed Branches M3/M4 Rebase
+## [x] CLR-21 — Observed Branches M3/M4 Rebase ✅ COMPLETE
 
 Resume Observed Branches only after CLR-12〜20 contracts are stable enough.
 
@@ -590,6 +590,16 @@ Branch ecology / loot / Rare / Elite / Boss replay
 ```
 
 Observed Branches must become playable combat destinations, not lore-only exhibits.
+
+Implemented:
+
+- **王樹領・深緑の森** is the first playable Stage-first proof with three authored Branch Stages and a derived Boss-clear completion state.
+- Existing `stageProgress`, `findStage()`, `TextBattleScreen` / `BattleEngine`, EXP / Gold / Loot, Discovery and World Tier authorities are reused.
+- Branch Hunt projects all three authored Stages as ecology / deep Rare-Elite / Boss replay targets without a Hunt Lv, currency, stamina, session root or parallel progression.
+- Chapter 2 Enemy 2.0 Encounter Pool, Rare planning and generic World Tier Elite runtime are consumed through the existing BattleEngine patch chain.
+- Remaining Branches are future authored content and must reuse the same data-driven `stageIds` / `bossStageId` shape rather than adding another Branch runtime.
+- Final implementation record: `CORE_LOOP_CLR21_IMPLEMENTATION.md`.
+- Final documentation merge: PR #401, squash merge SHA `9691e2b95dd94c152cad1369103f64a452188c3f`.
 
 ---
 
