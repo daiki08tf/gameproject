@@ -223,6 +223,12 @@ document.addEventListener('click',event=>{
   if(!target)return;
   if(target.closest('#goStageBtn')){selectedStageId=null;stageBattleArmed=false;queueEnhance('chapter');return;}
   if(target.closest('#stageBackBtn')){queueEnhance('chapter');return;}
+  // Entering a Chapter's Stage list for the first time (Chapter card click)
+  // used to skip this decoration entirely — it previously only re-ran on the
+  // way back from Stage confirm (#confirmBackBtn below) — so a fresh visit
+  // never got Stage IDs or LOCKED cards for undiscovered stages, breaking
+  // CLR-13's "always display stage IDs" contract on first entry.
+  if(target.closest('#chapterList .stage-card')){queueEnhance('stage');return;}
 
   const stageCard=target.closest('#stageList .stage-card[data-stage-id]');
   if(stageCard&&stageCard.dataset.stageState!=='locked'){

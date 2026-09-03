@@ -1,10 +1,10 @@
 # Blade Vale UIX-0 — Source and Ownership Audit
 
-> **Status: SOURCE AUDIT COMPLETE / LIVE VIEWPORT PASS PENDING**
+> **Status: SOURCE AUDIT COMPLETE / LIVE VIEWPORT PASS COMPLETE (see §10)**
 >
 > Baseline: main `b844f4d511c2c4ef6d9767032be87c807a23cd98` (PR #404)
 >
-> Runtime evidence baseline: PR #403 completed a live browser sweep and repaired the Stage-first Home entry, Observed Branch label duplication, unreachable Home actions and MutationObserver loops. This document does not claim new live screenshots.
+> Runtime evidence baseline: PR #403 completed a live browser sweep and repaired the Stage-first Home entry, Observed Branch label duplication, unreachable Home actions and MutationObserver loops. §10 records the first UIX live-viewport pass against this ownership map, run at 390×844/375×667/desktop.
 
 ## 1. Scope and method
 
@@ -243,9 +243,29 @@ PR #403 provides a recent green live-playability baseline, but it does not repla
 
 ## 9. Current completion judgment
 
-UIX-0 source, ownership and migration planning is complete. UIX-0 itself remains open solely for the required live viewport pass.
+UIX-0 source, ownership and migration planning is complete. The required live viewport pass is recorded in §10 below; it confirms this ownership map and adds the runtime-created surfaces and one blocker found while walking it.
 
-Do not start UIX-1 production restyling until that pass either:
+## 10. Live viewport pass — completion record (UIX-3 cycle)
 
-1. confirms this ownership map; or
-2. updates this audit with any additional runtime-created surfaces and blockers.
+Run against a git-archive checkout of the UIX-3 commit, served locally and driven with Playwright/Chromium at 390×844, 375×667 and 1280×900 (desktop), for both a fresh save and a save fast-tracked (via a QA-only `js/__qaHook.js` module, never committed) to: every canonical Stage cleared, the Chapter-2 Observed Branch discovery flag set, and enough gold/EXP to clear the Abyss gate. Console/page-error listeners ran throughout.
+
+Paths walked, all three viewports, both save states unless noted:
+
+- title → Home (fresh and post-clear and post-suspend context);
+- Home → Chapter → Stage → Stage confirm → Battle → Result → next Stage → Battle → Result;
+- cleared Stage → Hunt (Adventure Route) → suspend → Home (`SUSPENDED EXPEDITION` ledger) → resume;
+- Chapter 2 → Observed Branch → Branch Stage confirm → Branch Battle → Result;
+- Character (Status) → Job → Companion/Ranch → Rebirth;
+- Equipment → filter row / paperdoll slot picker → weapon Codex → Blacksmith;
+- Monster Codex, 開拓拠点 (Settlement), 深淵 (Abyss, locked-on-fresh-save and unlocked-after-progress);
+- the Home/Adventure/Character/Equipment/Records persistent nav strip.
+
+Result: no page/console errors beyond the browser's own unrelated `favicon.ico` 404 (pre-existing, unrelated to any served file). Confirms this ownership map — no undocumented runtime-created screen was found beyond what §3 already lists.
+
+One real, pre-existing navigation bug was found and fixed by this pass (not a UIX-0 documentation change): `js/patches/stageFirstNavigationUi.js`'s Stage-list decoration (`enhanceStageFirstStageList()` — Stage IDs, LOCKED cards for undiscovered stages, CLEAR/NEXT/OPEN text) previously re-ran only when leaving a Stage confirm via `#confirmBackBtn`, never when *entering* a Chapter's Stage list from a Chapter card. A player's first visit to any Chapter's Stage list therefore showed no Stage ID and no LOCKED placeholders for undiscovered stages — a direct violation of CLR-13's own "always display stage IDs" / "clear/next/locked states are obvious" contract. Fixed by also queuing the enhancement on a `#chapterList .stage-card` click; regression-tested in `tests/core-loop-clr13.test.js`.
+
+Rendered-pictograph inventory during the walk matched this document's per-screen ownership exactly: zero on every UIX-3-owned screen (Chapter/Stage/Stage confirm/Observed Branch, in both save states, all three viewports); pre-existing glyphs only on screens outside UIX-3's scope — Battle (🐾, a default companion-recruitment icon), Result (⚙), Character/Status (⚔), Job (📖), Companion (🧬🔵), Equipment (⚙🔒), Blacksmith (💰), Monster Codex (🗺⚔) and Settlement (33 glyphs — confirms §3's "Settlement must be split" finding) and Abyss (15 glyphs, danger/pact iconography). None of these were touched; each is owned by its own later UIX phase per §7.
+
+Not walked in this pass (residual UIX-0 scope, left for the phase that actually restyles those systems): Rift / Secret Realm / Machine Realm / EX Bounty as "representative endgame entries" (Abyss stood in as the one endgame entry exercised); the Hunt loop's dedicated `安全に帰還する` safe-return wording specifically (only reachable a few combat waves into an Adventure Route session — the generic `冒険を中断して拠点へ戻る` suspend action was exercised instead, at the same call site `stageFirstNavigationUi.js` reads for its suspended-session context).
+
+Do not start further UIX-1/UIX-2 production restyling questioning this record; do treat any newly-discovered runtime surface in a later phase's own walk as an update to this section, not a silent gap.

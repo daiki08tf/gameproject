@@ -193,11 +193,11 @@ Equipment, Blacksmith, Ranch, Codex and records use compact rows, comparison pan
 
 ## 6. Implementation phases
 
-### [ ] UIX-0 — Live UI Inventory and Ownership Audit
+### [x] UIX-0 — Live UI Inventory and Ownership Audit ✅ COMPLETE
 
 Source/ownership audit: complete in `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md`.
 
-Remaining gate: live screenshots and rendered-screen inventory at the required viewports. UIX-0 stays unchecked until that gate is completed.
+Live-viewport gate: complete. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 for the full record (390×844/375×667/desktop, fresh-save and progressed-save, every required path below except the deep-endgame and safe-return-wording residuals it names). One real navigation bug (Stage IDs/LOCKED cards missing on first entry to a Chapter's Stage list) was found and fixed by this pass.
 
 The user authorized UIX-1 source work to proceed on 2026-09-03 while this environment remains unable to open the local runtime. This does not waive the live acceptance gate.
 
@@ -226,9 +226,9 @@ Required live paths:
 
 No production visual rewrite in UIX-0.
 
-### [ ] UIX-1 — Design System and Emoji Removal Foundation
+### [x] UIX-1 — Design System and Emoji Removal Foundation ✅ COMPLETE
 
-Source implementation: complete in `css/darkChronicle.css`, `UI_DESIGN_SYSTEM.md` and the shared UI foundation. Live viewport acceptance remains pending.
+Source implementation: complete in `css/darkChronicle.css`, `UI_DESIGN_SYSTEM.md` and the shared UI foundation. Live viewport acceptance: complete, see `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 — the shell (title, header, nav, focus/disabled/pressed states) rendered correctly and emoji-free across all three required viewports in both save states.
 
 Goal: create one visual language and remove platform-emoji dependence from the shared shell.
 
@@ -245,11 +245,11 @@ Deliverables:
 
 Do not restyle every feature here. Build the foundation and prove it on the shell.
 
-### [ ] UIX-2 — Application Shell and Home Command Center
+### [x] UIX-2 — Application Shell and Home Command Center ✅ COMPLETE
 
-Source implementation: complete in the shared navigation, Home organizer and final-integration Home renderer. Live viewport acceptance remains pending.
+Source implementation: complete in the shared navigation, Home organizer and final-integration Home renderer. Live viewport acceptance: complete, see `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 — fresh-save, cleared-Stage and suspended-Adventure Home states, the Character/Equipment/Records hub accordion (opens one at a time; a second click on an already-open hub's own toggle closes it) and the persistent nav strip all verified at 390×844/375×667/desktop with zero rendered emoji and zero new console/page errors.
 
-The user authorized UIX-2 source work to proceed on 2026-09-03 while this environment remains unable to open the local runtime. This does not waive the live acceptance gate or mark the phase complete.
+The user authorized UIX-2 source work to proceed on 2026-09-03 while this environment remains unable to open the local runtime. The live acceptance gate above closes this authorization's condition.
 
 Goal: make the first screen distinctive and immediately actionable.
 
@@ -277,9 +277,9 @@ Implemented source contract:
 - Home refresh watches only the screen's active-class transition and does not observe the subtree it rewrites;
 - the Home/shared-shell emoji regression scan covers the context ledger, summary and endgame guidance.
 
-### [ ] UIX-3 — Stage-first Adventure Suite
+### [x] UIX-3 — Stage-first Adventure Suite ✅ COMPLETE
 
-Source implementation: complete in `js/screens/chapterSelect.js`, `js/screens/stageSelect.js`, `js/patches/stageFirstNavigationUi.js`, `js/patches/coreLoopClr17LootIdentityUi.js` and `css/style.css`. Live viewport acceptance remains pending.
+Source implementation: complete in `js/screens/chapterSelect.js`, `js/screens/stageSelect.js`, `js/patches/stageFirstNavigationUi.js`, `js/patches/coreLoopClr17LootIdentityUi.js` and `css/style.css`. Live viewport acceptance: complete, see `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10.
 
 Goal: make Chapter → Stage → Story/Hunt the clearest part of the game.
 
@@ -309,7 +309,7 @@ Implemented source contract:
 - verified live at 390×844 (title → Home → Adventure → Chapter → Stage → Stage confirm) with zero rendered emoji, zero new console/page errors and no change to the pre-existing benign `favicon.ico` 404;
 - `tests/uix3-stage-first-adventure.test.js` locks the emoji-free contract, the CLEAR/LOCKED/BOSS text states, the data-field-icon migration and the token-based CSS; `tests/core-loop-clr13.test.js`'s locked-card assertion was updated to match (same behavior, emoji dropped).
 
-Remaining before the live-viewport acceptance gate can close: 375×667 and desktop capture, and the cleared-Stage → Hunt → aftermath → return, Abyss/Rift/Secret Realm and Observed Branch Hunt live paths (only the clean-save Chapter → Stage → Story path was walked above).
+Live-viewport pass (390×844/375×667/desktop, fresh-save and progressed-save): clean-save Chapter → Stage → Story → Result → next Stage; cleared-Stage → Hunt (Adventure Route) → suspend → Home (`SUSPENDED EXPEDITION`) → resume; Chapter 2 → Observed Branch → Branch Battle → Result; Abyss (locked-on-fresh-save, unlocked-after-progress). Zero rendered emoji on every UIX-3-owned screen in either save state at any viewport; zero new console/page errors. Found and fixed one real pre-existing bug in the same pass: a Chapter card click never queued `stageFirstNavigationUi.js`'s Stage-list enhancement, so a first-ever visit to a Chapter's Stage list showed no Stage ID and no LOCKED cards for undiscovered stages (fixed; regression-tested in `tests/core-loop-clr13.test.js`). Not walked: Rift/Secret Realm/Machine Realm/EX Bounty as additional endgame entries (Abyss stood in), and the Hunt loop's specific `安全に帰還する` wording (only reachable a few waves into a session; the generic suspend action was exercised at the same call site instead). See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 for the full record.
 
 ### [ ] UIX-4 — Text Battle and Result Suite
 
@@ -464,6 +464,6 @@ Gear Overhaul Phase 6 and later remain valid and resume after UIX-8. UIX-5 may i
 
 ## 10. Handoff summary
 
-UIX-0 source/ownership audit and UIX-1/UIX-2 source implementations are complete. None of these phases may be checked complete until the required live viewport flows are recorded.
+UIX-0 through UIX-3 are complete, source and live-viewport gate both. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 for the full live-viewport record (390×844/375×667/desktop, fresh-save and progressed-save).
 
-The next default task on a browser-capable checkout is the combined **UIX-0–2 live viewport acceptance pass**. Validate Home context for a fresh save, a cleared Stage and a suspended Adventure4 session at 390×844, 375×667 and desktop. Confirm that the one primary Adventure action, three Home hubs and five-item persistent navigation remain reachable and correctly owned. Record screenshots and findings in `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` before starting UIX-3.
+The next default task is **UIX-4 — Text Battle and Result Suite**. Its scope is `js/screens/textBattle.js`, `js/screens/result.js`, `js/patches/fusionBattleUi.js`, `js/patches/combat2SkillModifierUi.js` and Battle/Result selectors in `css/style.css` and mobile CSS. The UIX-3 live pass already located this phase's emoji debt at the source level: the Battle screen's default companion-recruitment icon (`js/patches/companionRecruitment.js`'s `candidate.icon||'🐾'`, out of that file's UIX-6 Companion scope but rendered on the Battle screen) and the Result screen's reward icon (⚙). Follow the same protocol as UIX-3: focused tests, full `npm test`, `npm run test:syntax`, `node scripts/uix-emoji-check.js` with the ceiling ratcheted down by the exact count removed, and a live-browser pass at all three required viewports before checking the phase complete.

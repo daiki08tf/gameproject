@@ -49,6 +49,18 @@ test('CLR-13 makes canonical Stage identity and state visible',()=>{
   assert.match(stageFirst,/LOCKED/);
 });
 
+test('UIX-3 live-viewport pass: entering a Chapter\'s Stage list re-decorates it on the way in, not only on the way back',()=>{
+  // Found live at 390x844/375x667/desktop while completing UIX-3's
+  // acceptance gate: queueEnhance('stage') previously fired only from
+  // #confirmBackBtn (leaving a Chapter card click), so the very first visit
+  // to a Chapter's Stage list rendered no Stage IDs and no LOCKED cards for
+  // undiscovered stages until the player drilled into a Stage confirm and
+  // came back once. A #chapterList click must also queue the 'stage' pass.
+  const clickHandlerMatch = stageFirst.match(/document\.addEventListener\('click',event=>\{[\s\S]*?\}\);/);
+  assert.ok(clickHandlerMatch, 'delegated click handler must exist');
+  assert.match(clickHandlerMatch[0], /target\.closest\('#chapterList \.stage-card'\)\)\{queueEnhance\('stage'\);return;\}/);
+});
+
 test('CLR-13 keeps locked optional content secret while exposing only canonical main-stage placeholders',()=>{
   assert.match(stageFirst,/!stage\.branch&&!stage\.bounty/);
   assert.match(stageFirst,/isStageDiscovered\(chapter,stage,index\)/);

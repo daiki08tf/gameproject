@@ -227,6 +227,8 @@ button { font-family: inherit; }
   cursor: pointer;
   transition: border-color var(--dc-motion-fast, 90ms) var(--dc-ease, ease), background var(--dc-motion-fast, 90ms) var(--dc-ease, ease);
 }
+.stage-card > *:first-child { flex: 1; min-width: 0; }
+.stage-card .cleared { flex-shrink: 0; }
 .stage-card:active { background: var(--dc-ink-700, rgba(255,255,255,0.04)); }
 .stage-card.boss { border-left-color: var(--dc-danger-500, rgba(230,66,90,0.5)); background: linear-gradient(180deg, rgba(168,71,80,.1), var(--dc-ink-800, rgba(230,66,90,0.08))); }
 .stage-card.locked { opacity: 0.55; cursor: default; }

@@ -4,13 +4,14 @@
 
 **UI Overhaul (UIX)** is the active default priority.
 
-UIX-0 source/ownership analysis and UIX-1/UIX-2 source implementation are recorded in the UIX audit, design-system and roadmap documents. Their live viewport acceptance remains incomplete.
+UIX-0 through UIX-3 are complete: source implementation and the live-viewport acceptance gate (390×844/375×667/desktop, fresh-save and progressed-save) both. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 for the full record. UIX-4 (Text Battle and Result Suite) is next; `UI_OVERHAUL_ROADMAP.md` §10 names its scope and the emoji debt already located at the source level.
 
 The stable baseline is main after:
 
 - Stage-first Core Loop Rework CLR-12–21;
 - PR #401/#402 roadmap closeout;
-- PR #403 live-browser playability and MutationObserver fixes.
+- PR #403 live-browser playability and MutationObserver fixes;
+- UIX-0–3 (source and live-viewport gate).
 
 ## Read before changing code
 
@@ -114,4 +115,4 @@ Report:
 
 ## Default next action
 
-On a browser-capable checkout, complete the combined UIX-0–2 live viewport pass and update UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md. Exercise fresh-save, cleared-Stage and suspended-Adventure Home states at 390×844, 375×667 and desktop. Verify one primary Adventure action, Character/Equipment/Records Home hubs, the Home/Adventure/Character/Equipment/Records persistent navigation and return-time context refresh. Do not claim the phases complete or begin UIX-3 production work until the live gate is recorded.
+Begin UIX-4 — Text Battle and Result Suite (scope and known emoji debt: `UI_OVERHAUL_ROADMAP.md` §10). Follow the same protocol as UIX-3: focused tests, full `npm test`, `npm run test:syntax`, ratchet `scripts/uix-emoji-check.js`'s ceiling down by the exact count removed, and a live-browser pass at 390×844/375×667/desktop (fresh-save and a save with at least one Stage cleared, to see both the victory and a subsequent Result) before checking the phase complete. Do not claim it complete until that live gate is recorded, matching the standard UIX-0–3 set.
