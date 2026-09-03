@@ -4,7 +4,7 @@
 
 **UI Overhaul (UIX)** is the active default priority.
 
-Start with the first incomplete phase in UI_OVERHAUL_ROADMAP.md. At creation, that is UIX-0: Live UI Inventory and Ownership Audit.
+Start with the first incomplete phase in UI_OVERHAUL_ROADMAP.md. UIX-0 source/ownership analysis is recorded in UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md; its live viewport pass remains incomplete.
 
 The stable baseline is main after:
 
@@ -114,4 +114,4 @@ Report:
 
 ## Default next action
 
-Perform UIX-0 only. Produce the audit and exact implementation map. Do not perform a global visual rewrite in the audit PR.
+Complete the UIX-0 live viewport pass and update UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md. Do not begin UIX-1 production restyling until UIX-0 is checked complete.
