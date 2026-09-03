@@ -46,3 +46,18 @@ test('CLR-21 M4 reuses the existing Stage confirmation surface and introduces no
   assert.doesNotMatch(stageSrc, /localStorage|\.save\(\)/);
   assert.doesNotMatch(stageSrc, /state\.data(?:\.[\w$]+|\[[^\]]+\])+\s*=/);
 });
+
+test('CLR-21 Stage confirm text does not double the 観測分岐 prefix (observedBranchLabel already carries it)', () => {
+  // stage.observedBranchLabel is built from branch.observedLabel, which is
+  // already the full '観測分岐：王樹領' string (see observedBranches.js).
+  // renderStageConfirm() must not prepend '観測分岐：' a second time on top
+  // of it, or the Stage confirm screen shows "観測分岐：観測分岐：王樹領".
+  const selectSrc = fs.readFileSync('js/screens/stageSelect.js', 'utf8');
+  assert.doesNotMatch(selectSrc, /`観測分岐：\$\{stage\.observedBranchLabel/);
+
+  const stage = buildObservedBranchStage(observedBranchById(BRANCH_ID).stageIds[0]);
+  const label = stage.observedBranchLabel || '観測分岐';
+  const confirmText = `${label}\nPrime世界とは異なる歴史が観測されている。`;
+  assert.equal((confirmText.match(/観測分岐：/g) || []).length, 1);
+  assert.doesNotMatch(confirmText, /観測分岐：観測分岐：/);
+});

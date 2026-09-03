@@ -1,6 +1,7 @@
 /* Gear Overhaul Phase 5 — Option-aware filters + tuned protection controls */
 import { state } from '../state.js';
 import { OPTION_RARITY } from '../data/options4.js';
+import { setTextIfChanged } from './domSafety.js';
 
 const RARITY_LABEL = {
   common: 'Common', uncommon: 'Uncommon', rare: 'Rare', epic: 'Epic',
@@ -132,7 +133,14 @@ function syncAdvancedBadge(filter) {
   const baseCount = Math.max(0, currentTotal - previousOptionCount);
   const total = baseCount + optionCount;
   button.dataset.smartloot4Count = String(optionCount);
-  button.textContent = `⚙ 詳細${total ? ` (${total})` : ''}`;
+  // textContent assignment replaces the button's children unconditionally,
+  // even to an identical string, which is a childList mutation on a direct
+  // child of #lootFilterRow — exactly what decorateSmartLoot4Filters' own
+  // filterObserver watches (childList:true, subtree:true). Writing it on
+  // every call retriggers that observer forever. setTextIfChanged only
+  // writes when the label would actually change.
+  const nextText = `⚙ 詳細${total ? ` (${total})` : ''}`;
+  setTextIfChanged(button, nextText);
   button.classList.toggle('active', total > 0);
 }
 

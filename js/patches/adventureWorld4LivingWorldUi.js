@@ -4,6 +4,7 @@ import { state } from '../state.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
 import { renderResult } from '../screens/result.js';
 import { renderAdventureRoute } from './adventureWorld4Ui.js';
+import { ensureInserted } from './domSafety.js';
 import './adventureWorld4LivingWorldRuntime.js';
 
 const battle=new TextBattleScreen();
@@ -53,5 +54,11 @@ function render(){
   body.appendChild(box);
 }
 
-const observer=new MutationObserver(()=>queueMicrotask(render));observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});queueMicrotask(render);
+// render() unconditionally removes+recreates its box, so wiring the
+// MutationObserver straight to render() would retrigger itself forever.
+// ensureInserted() only calls render() when the box is actually missing
+// (e.g. the underlying route repaint wiped it), same pattern as
+// monsterRanch2CompleteUi.js.
+function reinsertIfMissing(){ensureInserted(()=>document.querySelector('[data-adventure4-living-world]'),render);}
+const observer=new MutationObserver(()=>queueMicrotask(reinsertIfMissing));observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});queueMicrotask(render);
 export { render as renderAdventure4LivingWorld, launchNemesis as launchAdventure4NemesisBattle };

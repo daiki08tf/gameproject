@@ -16,6 +16,21 @@ test('CLR-13 restores the canonical Home Adventure click path while preserving W
   assert.match(main,/goStageBtn'\)\.addEventListener\('click',\(\)=>\{Audio_\.tap\(\);goChapterSelect\(\);\}\)/);
 });
 
+test('CLR-13 World 4 entry install does not re-hijack the button after Stage-first restoration',()=>{
+  // adventureWorld4Ui installs its capture listener once at module-eval time
+  // and again on DOMContentLoaded (to cover a button that didn't exist yet).
+  // stageFirstNavigationUi's restoreCanonicalAdventureEntry() clones/replaces
+  // the button between those two calls to hand '#goStageBtn' back to
+  // main.js's canonical Chapter handler. Without also checking the
+  // stageFirstEntry marker, the DOMContentLoaded re-install silently
+  // re-hijacks the already-restored button on every load, since a fresh
+  // clone always passes the adventure4Entry==='true' check.
+  const adventure4 = fs.readFileSync('js/patches/adventureWorld4Ui.js', 'utf8');
+  const installMatch = adventure4.match(/function installEntry\(\)\{[^}]*\}/);
+  assert.ok(installMatch, 'installEntry() must exist');
+  assert.match(installMatch[0], /stageFirstEntry===['"]true['"]/);
+});
+
 test('CLR-13 keeps World 4 runtime support behind the Stage-first Story spine',()=>{
   assert.match(stageFirst,/import '\.\/adventureWorld4RouteEngine\.js'/);
   assert.match(stageFirst,/import '\.\/adventureWorld4SceneRuntime\.js'/);

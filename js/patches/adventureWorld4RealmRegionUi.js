@@ -1,6 +1,7 @@
 /* Adventure / World 4.0 — W23/W24 contextual Realm + Dynamic Region UI.
    Unknown signals are not listed or counted. */
 import { state } from '../state.js';
+import { ensureInserted } from './domSafety.js';
 import './adventureWorld4RealmRegionRuntime.js';
 
 const STATUS={stable:'安定',watch:'要観測',unstable:'不安定',transformed:'変質中'};
@@ -18,5 +19,12 @@ function render(){
   if(signal){const p=document.createElement('p');p.className='hint';p.textContent=`境界兆候: ${signal.name} / ${signal.stage}`;box.appendChild(p);}
   body.appendChild(box);
 }
-const observer=new MutationObserver(()=>queueMicrotask(render));observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});queueMicrotask(render);
+// render() unconditionally removes+recreates its box, so wiring the
+// MutationObserver straight to render() would retrigger itself forever
+// (the remove/append are themselves childList mutations of the watched
+// subtree). ensureInserted() only calls render() when the box is actually
+// missing (e.g. the underlying route repaint wiped it), same pattern as
+// monsterRanch2CompleteUi.js.
+function reinsertIfMissing(){ensureInserted(()=>document.querySelector('[data-adventure4-region-state]'),render);}
+const observer=new MutationObserver(()=>queueMicrotask(reinsertIfMissing));observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});queueMicrotask(render);
 export {render as renderAdventure4RealmRegionState};
