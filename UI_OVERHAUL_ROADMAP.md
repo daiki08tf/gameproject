@@ -195,6 +195,10 @@ Equipment, Blacksmith, Ranch, Codex and records use compact rows, comparison pan
 
 ### [ ] UIX-0 — Live UI Inventory and Ownership Audit
 
+Source/ownership audit: complete in `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md`.
+
+Remaining gate: live screenshots and rendered-screen inventory at the required viewports. UIX-0 stays unchecked until that gate is completed.
+
 Goal: establish evidence before redesign.
 
 Deliverables:
