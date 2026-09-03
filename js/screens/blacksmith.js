@@ -22,7 +22,7 @@ export function initBlacksmithTabs() {
 }
 
 export function renderBlacksmith() {
-  document.getElementById('manastoneText').textContent = `💎 ${state.data.manastone}`;
+  document.getElementById('manastoneText').textContent = `魔石 ${state.data.manastone}`;
   document.querySelectorAll('#blacksmithScreen .tab-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.tab === activeTab);
   });

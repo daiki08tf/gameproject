@@ -4,7 +4,7 @@
 
 **UI Overhaul (UIX)** is the active default priority.
 
-Start with the first incomplete phase in UI_OVERHAUL_ROADMAP.md. UIX-0 source/ownership analysis is recorded in UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md; its live viewport pass remains incomplete.
+UIX-0 source/ownership analysis and UIX-1 source implementation are recorded in the UIX audit and design-system documents. Their live viewport acceptance remains incomplete.
 
 The stable baseline is main after:
 
@@ -114,4 +114,4 @@ Report:
 
 ## Default next action
 
-Complete the UIX-0 live viewport pass and update UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md. Do not begin UIX-1 production restyling until UIX-0 is checked complete.
+On a browser-capable checkout, complete the UIX-0/UIX-1 live viewport pass and update UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md. Do not claim either phase complete or begin UIX-2 production work until the live gate is recorded.

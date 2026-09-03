@@ -171,7 +171,7 @@ function renderEquipment3Forge() {
   ensureCraftingState();
   document.querySelectorAll('#blacksmithScreen .tab-btn').forEach((b) => b.classList.toggle('active', b.dataset.tab === 'equipment3'));
   const badge = document.getElementById('manastoneText');
-  if (badge) badge.textContent = `💎 ${state.data.manastone}`;
+  if (badge) badge.textContent = `魔石 ${state.data.manastone}`;
   const content = document.getElementById('blacksmithContent');
   if (!content) return;
   content.innerHTML = '';
