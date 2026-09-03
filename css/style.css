@@ -73,6 +73,26 @@ button { font-family: inherit; }
 .panel h1.over { font-size: 28px; }
 .panel .sub { opacity: 0.85; margin-bottom: 18px; line-height: 1.6; }
 
+/* リザルト：勝敗を左枠アクセントでも示す（テキスト自体が既にSTAGE CLEAR /
+   DEFEATED... / RETREAT等を明示しているので、色だけに依存しない補強） */
+#resultScreen .panel {
+  position: relative;
+  border: 1px solid var(--dc-iron-500);
+  border-top: 2px solid var(--dc-iron-400);
+}
+#resultScreen .panel::before {
+  display: block;
+  margin-bottom: var(--dc-space-3, 12px);
+  color: var(--dc-ash-300);
+  content: "BATTLE RECORD";
+  font: 10px/1.4 var(--dc-font-number);
+  letter-spacing: .18em;
+}
+#resultScreen .panel[data-tone="success"] { border-top-color: var(--dc-brass-500); }
+#resultScreen .panel[data-tone="danger"] { border-top-color: var(--dc-danger-500); }
+#resultScreen .panel[data-tone="neutral"] { border-top-color: var(--dc-iron-400); }
+#resultScreen .panel h1.over { text-shadow: none; letter-spacing: .1em; }
+
 /* パネル内スクロールが必要な時（結果画面のドロップが多い/仲間勧誘の文章が
    長い等）に「まだ下に続きがある」ことを視覚的に示す。overflow-y:autoは
    ついていても、モバイルではスクロールバーが常時表示されないため、この
@@ -290,7 +310,22 @@ button { font-family: inherit; }
    リザルト
 --------------------------------------------------------- */
 .result-items { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 16px; }
-.result-item-chip { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 6px 10px; font-size: 12px; }
+.result-drop-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.result-loot-headline {
+  font: 700 11px/1.4 var(--dc-font-number, inherit);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--dc-brass-300);
+}
+.result-item-chip {
+  background: var(--dc-ink-800, var(--card-bg));
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.15));
+  border-radius: var(--dc-radius-control, 8px);
+  padding: 6px 10px;
+  font-size: 12px;
+  text-align: center;
+}
+.result-drop-wrap.eq3-special .result-item-chip { border-color: var(--dc-brass-500); }
 
 /* ---------------------------------------------------------
    装備
@@ -495,10 +530,11 @@ button { font-family: inherit; }
    モバイル縦持ち・大きめタップ領域・読みやすいログを優先する。
 --------------------------------------------------------- */
 #textBattleScreen { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+#textBattleScreen .bar { background: var(--dc-ink-900, rgba(0,0,0,0.55)); border-color: var(--dc-iron-500, rgba(255,255,255,0.2)); }
 
 .tb-hud { flex-shrink: 0; }
 .tb-topline { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 6px; }
-.tb-topline .name { font-weight: bold; font-size: 15px; }
+.tb-topline .name { font-weight: 700; font-size: 15px; font-family: var(--dc-font-display, inherit); }
 .tb-mp-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
 .tb-mp-row .bar { flex: 1; }
 .tb-mp-label { font-size: 11px; opacity: 0.75; width: 28px; }
@@ -515,15 +551,17 @@ button { font-family: inherit; }
   flex-direction: column;
   gap: 3px;
   padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: var(--card-bg);
+  border-radius: var(--dc-radius-panel, 8px);
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.15));
+  border-left: 2px solid var(--dc-iron-400, transparent);
+  background: var(--dc-ink-800, var(--card-bg));
   cursor: pointer;
+  transition: border-color var(--dc-motion-fast, 90ms) var(--dc-ease, ease);
 }
-.tb-enemy-card.selected { border-color: var(--accent); background: rgba(242,201,76,0.12); }
+.tb-enemy-card.selected { border-left-color: var(--dc-brass-500); background: rgba(169,139,79,0.12); }
 .tb-enemy-card.dead { opacity: 0.35; text-decoration: line-through; cursor: default; }
-.tb-enemy-card.boss { border-color: rgba(230,66,90,0.6); background: rgba(230,66,90,0.1); }
-.tb-enemy-card.telegraph { border-color: #ff9a4d; box-shadow: 0 0 10px rgba(255,154,77,0.5); }
+.tb-enemy-card.boss { border-left-color: var(--dc-danger-500); background: linear-gradient(180deg, rgba(168,71,80,.1), var(--dc-ink-800)); }
+.tb-enemy-card.telegraph { border-left-color: var(--dc-danger-300); box-shadow: 0 0 8px rgba(212,119,126,0.35); }
 .tb-enemy-name-row { display: flex; justify-content: space-between; font-size: 13px; }
 .tb-enemy-name-row .tag { font-size: 11px; opacity: 0.8; }
 
@@ -531,16 +569,16 @@ button { font-family: inherit; }
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  background: rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 8px;
+  background: var(--dc-ink-900, rgba(0,0,0,0.4));
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.15));
+  border-radius: var(--dc-radius-panel, 8px);
   padding: 10px 12px;
   font-size: 13px;
   line-height: 1.7;
 }
 .tb-log p { margin: 0 0 4px; }
-.tb-log p.tb-log-highlight { color: var(--accent); font-weight: bold; }
-.tb-log p.tb-log-danger { color: #ff8a94; }
+.tb-log p.tb-log-highlight { color: var(--dc-brass-300, var(--accent)); font-weight: bold; }
+.tb-log p.tb-log-danger { color: var(--dc-danger-300, #ff8a94); }
 
 .tb-command-grid {
   flex-shrink: 0;
@@ -551,18 +589,19 @@ button { font-family: inherit; }
 }
 .tb-cmd-btn {
   padding: 16px 6px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.08);
-  color: #f0f0f5;
+  border-radius: var(--dc-radius-control, 10px);
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.2));
+  background: var(--dc-ink-800, rgba(255,255,255,0.08));
+  color: var(--dc-ash-100, #f0f0f5);
   font-size: 15px;
   font-weight: bold;
   cursor: pointer;
+  transition: border-color var(--dc-motion-fast, 90ms) var(--dc-ease, ease), background var(--dc-motion-fast, 90ms) var(--dc-ease, ease);
 }
 .tb-cmd-btn:active { transform: scale(0.96); }
 .tb-cmd-btn[disabled] { opacity: 0.35; cursor: default; }
-.tb-cmd-btn.tb-cmd-guard { background: rgba(74,194,232,0.15); }
-.tb-cmd-btn.tb-cmd-flee { background: rgba(255,255,255,0.05); }
+.tb-cmd-btn.tb-cmd-guard { border-color: var(--dc-observe-400); background: rgba(98,168,173,0.12); }
+.tb-cmd-btn.tb-cmd-flee { background: var(--dc-ink-700, rgba(255,255,255,0.05)); }
 
 /* とくぎ・じゅもんの技一覧サブメニュー */
 .tb-tech-menu {
@@ -574,7 +613,7 @@ button { font-family: inherit; }
   max-height: 260px;
 }
 .tb-tech-menu-header { display: flex; align-items: center; gap: 10px; }
-.tb-tech-menu-header span { font-weight: bold; font-size: 15px; }
+.tb-tech-menu-header span { font-weight: 700; font-size: 15px; font-family: var(--dc-font-display, inherit); }
 .tb-tech-list {
   display: flex;
   flex-direction: column;
@@ -586,10 +625,10 @@ button { font-family: inherit; }
   justify-content: space-between;
   align-items: center;
   padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.08);
-  color: #f0f0f5;
+  border-radius: var(--dc-radius-control, 10px);
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.2));
+  background: var(--dc-ink-800, rgba(255,255,255,0.08));
+  color: var(--dc-ash-100, #f0f0f5);
   font-size: 14px;
   cursor: pointer;
 }
@@ -597,6 +636,27 @@ button { font-family: inherit; }
 .tb-tech-item[disabled] { opacity: 0.4; cursor: default; }
 .tb-tech-item .tb-tech-cost { font-size: 12px; opacity: 0.8; }
 .tb-tech-empty { padding: 14px; text-align: center; opacity: 0.6; font-size: 13px; }
+
+/* Phase 8 Fusion command panel（fusionBattleUi.js）— コマンドグリッドと
+   同じDark Chronicleトーンで、観測色を職業ゲージの識別に使う */
+.tb-fusion-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--dc-iron-500);
+  border-left: 2px solid var(--dc-observe-400);
+  border-radius: var(--dc-radius-panel, 8px);
+  background: rgba(13, 18, 24, .92);
+}
+.tb-fusion-label { font-size: 12px; color: var(--dc-ash-300); }
+.tb-fusion-bar { height: 8px; }
+.tb-fusion-bar .fill { background: linear-gradient(90deg, var(--dc-observe-400), var(--dc-brass-300)); }
+.tb-fusion-command { width: 100%; }
+
+/* Combat 2.0 skill-modifier badge（combat2SkillModifierUi.js） */
+.combat2-modifier-btn { margin-left: 8px; padding: 3px 7px; font-size: 11px; }
 
 /* 武器ランダムAffix（Part A）：装備画面・武器詳細でのAffix一覧表示 */
 .affix-block { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }

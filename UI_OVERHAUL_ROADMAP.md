@@ -311,9 +311,11 @@ Implemented source contract:
 
 Live-viewport pass (390×844/375×667/desktop, fresh-save and progressed-save): clean-save Chapter → Stage → Story → Result → next Stage; cleared-Stage → Hunt (Adventure Route) → suspend → Home (`SUSPENDED EXPEDITION`) → resume; Chapter 2 → Observed Branch → Branch Battle → Result; Abyss (locked-on-fresh-save, unlocked-after-progress). Zero rendered emoji on every UIX-3-owned screen in either save state at any viewport; zero new console/page errors. Found and fixed one real pre-existing bug in the same pass: a Chapter card click never queued `stageFirstNavigationUi.js`'s Stage-list enhancement, so a first-ever visit to a Chapter's Stage list showed no Stage ID and no LOCKED cards for undiscovered stages (fixed; regression-tested in `tests/core-loop-clr13.test.js`). Not walked: Rift/Secret Realm/Machine Realm/EX Bounty as additional endgame entries (Abyss stood in), and the Hunt loop's specific `安全に帰還する` wording (only reachable a few waves into a session; the generic suspend action was exercised at the same call site instead). See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 for the full record.
 
-### [ ] UIX-4 — Text Battle and Result Suite
+### [x] UIX-4 — Text Battle and Result Suite ✅ COMPLETE
 
 Goal: give combat a distinctive tactical-record identity without harming speed.
+
+Source implementation: complete in `js/screens/result.js`, `js/patches/combat2SkillModifierUi.js` and Battle/Result selectors in `css/style.css`. `js/screens/textBattle.js` and `js/patches/fusionBattleUi.js` needed no emoji removal (already clean) and got CSS-only token treatment. Live viewport acceptance: complete, see `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10.
 
 Scope:
 
@@ -332,6 +334,18 @@ Permanent release blockers:
 - only Return/Cancel when forward progress exists;
 - observer loops or repeated DOM rebuild;
 - result screen with no sensible destination.
+
+Implemented source contract:
+
+- removed the 6 rendered platform-emoji glyphs found at the source level (`⚙` reward/option-meta prefix ×2, `✨` rune-drop prefix ×2, `☀` RELIC RESONANCE, `🔥` UNIQUE ECHO) from `js/screens/result.js` — `scripts/uix-emoji-check.js`'s application-wide ceiling ratcheted down from 425 to 419;
+- gave the Result panel an outcome tone (`panel.dataset.tone = 'success' | 'danger' | 'neutral'`) driven by the same branch that already sets the STAGE CLEAR / DEFEATED... / RETREAT / BOUNTY CLEARED text, reinforcing outcome with a brass/danger/iron top border without making color the only signal; swapped the old bright inline hex colors (`#e6425a`, `#f2c94c`, `#b9c0cc`) for the `--dc-danger-300` / `--dc-brass-300` / `--dc-ash-300` tokens;
+- gave `#resultScreen .panel` its own "BATTLE RECORD" kicker (same idiom as `#titleScreen .panel`'s "EXPEDITION ARCHIVE / 01" from UIX-1) and dropped the shared `.panel h1`'s gold text-shadow glow there in favor of a flat, restrained heading;
+- styled the previously entirely unstyled `.result-drop-wrap` / `.result-loot-headline` (TARGET FARM BONUS record) and re-tokened `.result-item-chip`;
+- re-tokened `.tb-enemy-card` (incl. `.selected`/`.boss`/`.telegraph` states), `.tb-log` (incl. `.tb-log-danger`), `.tb-cmd-btn` (incl. `.tb-cmd-guard`/`.tb-cmd-flee`), `.tb-tech-item` and `#textBattleScreen .bar` from bare rgba/hex to `--dc-ink`/`--dc-iron`/`--dc-brass`/`--dc-observe`/`--dc-danger`, and gave Phase 8's previously entirely unstyled `.tb-fusion-panel` (fusionBattleUi.js) a matching observe-accent treatment;
+- moved `combat2SkillModifierUi.js`'s inline `btn.style.cssText` to a `.combat2-modifier-btn` class rule;
+- `tests/uix4-battle-result-suite.test.js` locks the emoji-free contract, the tone/token CSS, and the permanent mobile-command/next-action release blockers (`attackBtn`/`guardBtn` disabled logic, `resultTitle` presence) — combat authority (`BattleEngine` import, `result.expGained`/`goldGained` reads) is asserted unchanged.
+
+Live-viewport pass (390×844/375×667/desktop, fresh-save and progressed-save): Chapter → Stage → Battle → Result → next Stage, and Chapter 2 → Observed Branch → Branch Battle → Result. Zero rendered emoji on Result in either save state at any viewport (the one remaining `🐾` on the Battle screen itself is `js/patches/companionRecruitment.js`'s default recruit-prompt icon — out of this phase's file scope, left as UIX-6 Companion debt per UIX-3's note). The desktop fresh-save run happened to lose its battle, live-confirming the `danger` tone (`DEFEATED...` in `--dc-danger-300` with a danger-red top border) alongside the more common `success` tone (`STAGE CLEAR` in brass). Zero new console/page errors beyond the pre-existing benign `favicon.ico` 404.
 
 ### [ ] UIX-5 — Equipment, Build and Blacksmith Workbench
 
@@ -464,6 +478,6 @@ Gear Overhaul Phase 6 and later remain valid and resume after UIX-8. UIX-5 may i
 
 ## 10. Handoff summary
 
-UIX-0 through UIX-3 are complete, source and live-viewport gate both. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 for the full live-viewport record (390×844/375×667/desktop, fresh-save and progressed-save).
+UIX-0 through UIX-4 are complete, source and live-viewport gate both. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 for the full live-viewport record (390×844/375×667/desktop, fresh-save and progressed-save).
 
-The next default task is **UIX-4 — Text Battle and Result Suite**. Its scope is `js/screens/textBattle.js`, `js/screens/result.js`, `js/patches/fusionBattleUi.js`, `js/patches/combat2SkillModifierUi.js` and Battle/Result selectors in `css/style.css` and mobile CSS. The UIX-3 live pass already located this phase's emoji debt at the source level: the Battle screen's default companion-recruitment icon (`js/patches/companionRecruitment.js`'s `candidate.icon||'🐾'`, out of that file's UIX-6 Companion scope but rendered on the Battle screen) and the Result screen's reward icon (⚙). Follow the same protocol as UIX-3: focused tests, full `npm test`, `npm run test:syntax`, `node scripts/uix-emoji-check.js` with the ceiling ratcheted down by the exact count removed, and a live-browser pass at all three required viewports before checking the phase complete.
+The next default task is **UIX-5 — Equipment, Build and Blacksmith Workbench**. Its scope is `js/screens/equipment.js`, `equipment4.js`, `equipmentFusion.js`, `blacksmith.js`, `weaponCodex.js`, `js/patches/equipmentCompactUi.js`, `smartLoot4EquipmentUi.js`, `gearOverhaulCraftingConsolidation.js` and build/loadout/readability patches, plus `css/equipment4.css`, `equipmentCompact.css` and `character.css` where shared stats are involved. The UIX-3 fresh-save live pass already located this phase's emoji debt at the source level: Equipment (`⚙🔒`, 2 glyphs) and Blacksmith (`💰`×2–4 depending on tab). This is Gear Overhaul territory (see `GEAR_OVERHAUL_ROADMAP.md`/`GEAR_OVERHAUL_AUDIT.md`) — UIX-5 may improve presentation of existing Gear Overhaul behavior but must not change its gameplay rules. Follow the same protocol as UIX-3/UIX-4: focused tests, full `npm test`, `npm run test:syntax`, `node scripts/uix-emoji-check.js` with the ceiling ratcheted down by the exact count removed, and a live-browser pass at all three required viewports before checking the phase complete.

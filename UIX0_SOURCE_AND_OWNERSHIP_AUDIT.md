@@ -269,3 +269,15 @@ Rendered-pictograph inventory during the walk matched this document's per-screen
 Not walked in this pass (residual UIX-0 scope, left for the phase that actually restyles those systems): Rift / Secret Realm / Machine Realm / EX Bounty as "representative endgame entries" (Abyss stood in as the one endgame entry exercised); the Hunt loop's dedicated `安全に帰還する` safe-return wording specifically (only reachable a few combat waves into an Adventure Route session — the generic `冒険を中断して拠点へ戻る` suspend action was exercised instead, at the same call site `stageFirstNavigationUi.js` reads for its suspended-session context).
 
 Do not start further UIX-1/UIX-2 production restyling questioning this record; do treat any newly-discovered runtime surface in a later phase's own walk as an update to this section, not a silent gap.
+
+## 11. Live viewport pass — completion record (UIX-4 cycle)
+
+Same method as §10 (git-archive checkout of the UIX-4 commit; QA-only `js/__qaHook.js`, never committed; 390×844/375×667/desktop; fresh-save and progressed-save; console/page-error listeners throughout).
+
+Paths walked: Chapter → Stage → Battle → Result → next Stage → Battle → Result (fresh-save, all three viewports); Chapter 2 → Observed Branch → Branch Battle → Result (progressed-save).
+
+Result: zero rendered emoji on the Result screen in either save state at any viewport (down from the `⚙` found in §10's fresh-save walk — `js/screens/result.js`'s 6 glyphs are now removed). The Battle screen's one remaining glyph (`🐾`) is confirmed to originate from `js/patches/companionRecruitment.js`'s recruit-prompt overlay, not from `js/screens/textBattle.js` itself — left as UIX-6 Companion scope, as §10 already noted. Zero new console/page errors beyond the pre-existing benign `favicon.ico` 404.
+
+This pass also live-confirmed both outcome tones the source change introduced: the desktop fresh-save run's battle was lost, rendering `#resultScreen .panel[data-tone="danger"]` (`DEFEATED...` in `--dc-danger-300` with a danger-red top border) alongside the more commonly seen `success` tone (`STAGE CLEAR` in brass) captured at every other run. `neutral` (RETREAT) was not observed live in this pass — its CSS/JS wiring is symmetric with the other two tones and is asserted in `tests/uix4-battle-result-suite.test.js`.
+
+No undocumented runtime-created surface was found. Confirms this ownership map for the Battle/Result family.
