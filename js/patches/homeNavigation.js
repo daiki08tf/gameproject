@@ -71,22 +71,22 @@ import { applyHomePixelIcons } from '../ui/pixelIcons.js';
 
 const HOME_HUBS = [
   {
-    id: 'growth',
-    title: '育成',
-    subtitle: '装備・職業・覚醒',
-    buttons: ['goEquipBtn', 'goJobBtn', 'goRebirthBtn', 'goStatusBtn'],
+    id: 'character',
+    title: 'キャラクター',
+    subtitle: '能力・職業・仲間・覚醒',
+    buttons: ['goStatusBtn', 'goJobBtn', 'goCompanionBtn', 'goRebirthBtn'],
   },
   {
-    id: 'base',
-    title: '仲間・拠点',
-    subtitle: '牧場・施設・鍛冶',
-    buttons: ['goCompanionBtn', 'goSettlementBtn', 'goBlacksmithBtn'],
+    id: 'equipment',
+    title: '装備',
+    subtitle: '所持品・比較・鍛冶',
+    buttons: ['goEquipBtn', 'goBlacksmithBtn'],
   },
   {
     id: 'records',
-    title: '記録・その他',
-    subtitle: '図鑑・深淵・セーブ',
-    buttons: ['goMonsterCodexBtn', 'goAbyssBtn', 'goSpellBtn'],
+    title: '記録',
+    subtitle: '図鑑・深淵・拠点・復元',
+    buttons: ['goMonsterCodexBtn', 'goAbyssBtn', 'goSettlementBtn', 'goSpellBtn'],
   },
 ];
 
@@ -190,4 +190,12 @@ function organizeHomeMenu() {
 }
 
 organizeHomeMenu();
+
+const homeScreen = document.getElementById('homeScreen');
+if (homeScreen && homeScreen.dataset.uix2Refresh !== 'true') {
+  homeScreen.dataset.uix2Refresh = 'true';
+  new MutationObserver((mutations) => {
+    if (homeScreen.classList.contains('active') && mutations.some((mutation) => mutation.attributeName === 'class')) enhanceHome();
+  }).observe(homeScreen, { attributes: true, attributeFilter: ['class'] });
+}
 export { organizeHomeMenu, HOME_HUBS };

@@ -8,7 +8,7 @@ const home = readFileSync(new URL('../js/patches/homeNavigation.js', import.meta
 const css = readFileSync(new URL('../css/uiFoundation.css', import.meta.url), 'utf8');
 
 test('UI Foundation exposes five persistent primary destinations', () => {
-  for (const label of ['ホーム', '冒険', '育成', '仲間', 'メニュー']) assert.match(ui, new RegExp(label));
+  for (const label of ['ホーム', '冒険', 'キャラクター', '装備', '記録']) assert.match(ui, new RegExp(label));
   assert.match(ui, /ui-primary-nav/);
   assert.match(ui, /NAV_HIDDEN_SCREENS/);
   for (const id of ['titleScreen', 'textBattleScreen', 'stageConfirmScreen', 'resultScreen']) assert.match(ui, new RegExp(id));
@@ -17,7 +17,8 @@ test('UI Foundation exposes five persistent primary destinations', () => {
 test('shared navigation reuses existing routes and can return home directly', () => {
   assert.match(bootstrap, /goStageBtn/);
   assert.match(bootstrap, /goStatusBtn/);
-  assert.match(bootstrap, /goCompanionBtn/);
+  assert.match(bootstrap, /goEquipBtn/);
+  assert.match(bootstrap, /openHomeHub\('records'\)/);
   assert.match(bootstrap, /state\.abyssRunEnd/);
   assert.match(bootstrap, /renderHome/);
   assert.match(bootstrap, /MutationObserver/);

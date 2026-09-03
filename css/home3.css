@@ -66,7 +66,8 @@
   justify-content:center;
   background:linear-gradient(180deg,#e2c77d,#b99445);
   color:#11151a;
-  border:1px solid #efd993;
+  border:1px solid var(--dc-brass-300,#d4bd7a);
+  border-radius:var(--dc-radius-control,2px);
   font-size:17px;
   letter-spacing:.08em;
   box-shadow:0 8px 22px rgba(0,0,0,.28);
@@ -89,16 +90,16 @@
   min-height:64px;
   padding:10px 22px 9px 10px;
   border:1px solid var(--ui-line);
-  border-radius:var(--ui-radius-sm);
-  background:linear-gradient(180deg,var(--ui-surface-2),rgba(15,20,28,.9));
+  border-radius:var(--dc-radius-control,var(--ui-radius-sm));
+  background:linear-gradient(180deg,var(--ui-surface-2),rgba(9,13,18,.94));
   color:var(--ui-text);
   text-align:left;
   cursor:pointer;
 }
 
 .home-hub-toggle.active{
-  border-color:rgba(214,183,106,.72);
-  background:linear-gradient(180deg,rgba(45,39,27,.92),rgba(21,24,29,.96));
+  border-color:var(--dc-observe-400,#62a8ad);
+  background:linear-gradient(180deg,rgba(26,40,45,.78),rgba(13,18,24,.96));
 }
 
 .home-hub-toggle:disabled{
@@ -147,7 +148,7 @@
 
 .home-hub-panel{
   border:1px solid var(--ui-line);
-  border-radius:var(--ui-radius);
+  border-radius:var(--dc-radius-panel,var(--ui-radius));
   background:rgba(10,14,20,.94);
   padding:8px;
   max-height:31vh;

@@ -8,9 +8,9 @@ const css = readFileSync(new URL('../css/home3.css', import.meta.url), 'utf8');
 test('home UI keeps one primary adventure action and grouped secondary navigation', () => {
   assert.match(nav, /home-adventure-primary/);
   assert.match(nav, /HOME_HUBS/);
-  assert.match(nav, /育成/);
-  assert.match(nav, /仲間・拠点/);
-  assert.match(nav, /記録・その他/);
+  assert.match(nav, /title: 'キャラクター'/);
+  assert.match(nav, /title: '装備'/);
+  assert.match(nav, /title: '記録'/);
   assert.match(nav, /goStageBtn/);
   assert.match(nav, /goAbyssBtn/);
 });

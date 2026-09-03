@@ -6,9 +6,9 @@
 const NAV_ITEMS = [
   { id: 'home', label: 'ホーム' },
   { id: 'adventure', label: '冒険' },
-  { id: 'growth', label: '育成' },
-  { id: 'companions', label: '仲間' },
-  { id: 'menu', label: 'メニュー' },
+  { id: 'character', label: 'キャラクター' },
+  { id: 'equipment', label: '装備' },
+  { id: 'records', label: '記録' },
 ];
 
 const NAV_HIDDEN_SCREENS = new Set([
@@ -67,10 +67,17 @@ function updatePrimaryNavigation(screenId) {
     homeScreen: 'home',
     chapterSelectScreen: 'adventure',
     stageSelectScreen: 'adventure',
-    abyssScreen: 'adventure',
-    statusScreen: 'growth',
-    equipmentScreen: 'growth',
-    jobsScreen: 'growth',
+    abyssScreen: 'records',
+    statusScreen: 'character',
+    jobsScreen: 'character',
+    companionScreen: 'character',
+    rebirthScreen: 'character',
+    equipmentScreen: 'equipment',
+    blacksmithScreen: 'equipment',
+    weaponCodexScreen: 'equipment',
+    monsterCodexScreen: 'records',
+    settlementScreen: 'records',
+    spellScreen: 'records',
   };
   const activeRoute = routeByScreen[screenId] || null;
   primaryNav.querySelectorAll('[data-ui-route]').forEach((button) => {
