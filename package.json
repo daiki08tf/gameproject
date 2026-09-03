@@ -10,6 +10,7 @@
     "sim:deep-survey": "node scripts/deep-survey-acceptance.js",
     "audit:post-cp3-feel": "node scripts/post-cp3-play-feel-proxy.js",
     "audit:enemy2": "node scripts/enemy2-e0-audit.js",
-    "audit:uix": "node scripts/uix-source-audit.js"
+    "audit:uix": "node scripts/uix-source-audit.js",
+    "audit:uix:emoji": "node scripts/uix-emoji-check.js"
   }
 }

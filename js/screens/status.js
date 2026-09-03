@@ -88,7 +88,7 @@ function ensureCharacterChrome() {
   const title = document.querySelector('#statusScreen .subbar h2');
   if (title) title.textContent = 'キャラクター';
   const btn = document.getElementById('goStatusBtn');
-  if (btn) { const icon = btn.querySelector('.menu-icon'); const label = btn.querySelector('span:last-child'); if (icon) icon.textContent = '👤'; if (label) label.textContent = 'キャラクター'; btn.classList.add('character-entry'); }
+  if (btn) { const label = btn.querySelector('span:last-child'); if (label) label.textContent = 'キャラクター'; btn.classList.add('character-entry'); }
 }
 
 export function renderStatus() {

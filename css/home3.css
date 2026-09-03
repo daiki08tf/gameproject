@@ -23,8 +23,28 @@
   flex:0 1 22vh;
   min-height:72px;
   max-height:150px;
-  font-size:46px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
   margin:2px 0;
+  padding-left:12px;
+  border-left:2px solid var(--dc-observe-400);
+  filter:none;
+  opacity:1;
+}
+
+#homeScreen .home-hero-index{
+  color:var(--dc-ash-100);
+  font:700 42px/.9 var(--dc-font-display);
+  letter-spacing:.12em;
+}
+
+#homeScreen .home-hero-label{
+  margin-top:8px;
+  color:var(--dc-ash-300);
+  font:9px/1 var(--dc-font-number);
+  letter-spacing:.24em;
 }
 
 #homeScreen .home-menu-v3{
@@ -173,7 +193,8 @@
 
 @media(max-width:390px){
   #homeScreen{gap:7px}
-  #homeScreen .home-hero{flex-basis:16vh;min-height:54px;font-size:38px}
+  #homeScreen .home-hero{flex-basis:16vh;min-height:54px}
+  #homeScreen .home-hero-index{font-size:34px}
   #homeScreen .home-adventure-primary{min-height:52px;font-size:16px}
   .home-hub-grid{gap:5px}
   .home-hub-toggle{min-height:58px;padding:8px 18px 8px 8px}

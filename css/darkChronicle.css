@@ -1,0 +1,302 @@
+/* Blade Vale UIX-1 — Dark Chronicle tokens and shared component contracts */
+
+:root {
+  color-scheme: dark;
+
+  --dc-ink-950: #05080b;
+  --dc-ink-900: #090d12;
+  --dc-ink-850: #0d1218;
+  --dc-ink-800: #121820;
+  --dc-ink-700: #1b2430;
+  --dc-iron-500: #354251;
+  --dc-iron-400: #536171;
+  --dc-ash-300: #939daa;
+  --dc-ash-100: #e5e8eb;
+  --dc-brass-500: #a98b4f;
+  --dc-brass-300: #d4bd7a;
+  --dc-observe-400: #62a8ad;
+  --dc-danger-500: #a84750;
+  --dc-danger-300: #d4777e;
+  --dc-success-400: #809e79;
+
+  --dc-font-body: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+  --dc-font-display: "Hiragino Mincho ProN", "Yu Mincho", YuMincho, serif;
+  --dc-font-number: "SFMono-Regular", "Roboto Mono", Consolas, monospace;
+
+  --dc-space-1: 4px;
+  --dc-space-2: 8px;
+  --dc-space-3: 12px;
+  --dc-space-4: 16px;
+  --dc-space-5: 24px;
+  --dc-space-6: 32px;
+
+  --dc-line-hairline: 1px;
+  --dc-line-strong: 2px;
+  --dc-radius-control: 2px;
+  --dc-radius-panel: 3px;
+  --dc-elevation-panel: 0 18px 50px rgba(0, 0, 0, .46);
+  --dc-elevation-raised: 0 8px 24px rgba(0, 0, 0, .34);
+  --dc-motion-fast: 90ms;
+  --dc-motion-base: 160ms;
+  --dc-ease: cubic-bezier(.2, .7, .2, 1);
+
+  /* Temporary aliases keep legacy consumers visually coherent during migration. */
+  --ui-bg: var(--dc-ink-950);
+  --ui-surface: var(--dc-ink-850);
+  --ui-surface-2: var(--dc-ink-800);
+  --ui-line: var(--dc-iron-500);
+  --ui-text: var(--dc-ash-100);
+  --ui-muted: var(--dc-ash-300);
+  --ui-gold: var(--dc-brass-500);
+  --ui-gold-soft: var(--dc-brass-300);
+  --ui-danger: var(--dc-danger-500);
+  --ui-radius: var(--dc-radius-panel);
+  --ui-radius-sm: var(--dc-radius-control);
+  --font-body: var(--dc-font-body);
+  --font-display: var(--dc-font-display);
+  --font-number: var(--dc-font-number);
+  --accent: var(--dc-brass-300);
+  --bg: var(--dc-ink-950);
+  --panel-bg: rgba(9, 13, 18, .97);
+  --card-bg: rgba(18, 24, 32, .88);
+}
+
+html,
+body {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, .018) 1px, transparent 1px) 0 0 / 28px 100%,
+    radial-gradient(circle at 50% -15%, #19232c 0, var(--dc-ink-900) 36%, var(--dc-ink-950) 76%);
+  color: var(--dc-ash-100);
+  font-family: var(--dc-font-body);
+}
+
+body::after {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0 55%, rgba(98, 168, 173, .025));
+  border: 1px solid rgba(83, 97, 113, .12);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+:where(.lv-line, .bar-text, .item-power, .stat-value, [id*="Level"], [id*="Gold"], [id*="Shard"], [id*="stoneText"]) {
+  font-family: var(--dc-font-number);
+  font-variant-numeric: tabular-nums;
+}
+
+:where(button, [href], input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--dc-observe-400);
+  outline-offset: 3px;
+}
+
+:where(button, input, select, textarea):disabled,
+:where(button, [role="button"])[aria-disabled="true"],
+:where(button, [role="button"]).locked {
+  cursor: not-allowed;
+  filter: saturate(.35);
+  opacity: .45;
+}
+
+:where(button, [role="button"]):active,
+:where(button, [role="button"])[aria-pressed="true"] {
+  transform: translateY(1px);
+  filter: brightness(.9);
+}
+
+:where(button, [role="button"])[aria-busy="true"],
+:where(button, [role="button"])[data-loading="true"] {
+  cursor: progress;
+  color: var(--dc-ash-300);
+}
+
+.panel,
+.dc-section,
+.dc-notice {
+  border-radius: var(--dc-radius-panel);
+  box-shadow: var(--dc-elevation-panel);
+}
+
+#titleScreen .panel {
+  position: relative;
+  border: var(--dc-line-hairline) solid var(--dc-iron-500);
+  border-top: var(--dc-line-strong) solid var(--dc-brass-500);
+  background: linear-gradient(180deg, rgba(18, 24, 32, .98), rgba(7, 10, 14, .98));
+}
+
+#titleScreen .panel::before {
+  display: block;
+  margin-bottom: var(--dc-space-3);
+  color: var(--dc-ash-300);
+  content: "EXPEDITION ARCHIVE / 01";
+  font: 10px/1.4 var(--dc-font-number);
+  letter-spacing: .18em;
+}
+
+.subbar,
+.dc-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--dc-space-3);
+  min-height: 48px;
+  border-bottom: var(--dc-line-hairline) solid var(--dc-iron-500);
+}
+
+.dc-header-identity {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.subbar::after,
+.dc-header::after {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 42px;
+  height: 2px;
+  content: "";
+  background: var(--dc-brass-500);
+}
+
+.subbar h2,
+.dc-header-title {
+  margin: 0;
+  font-family: var(--dc-font-display);
+  letter-spacing: .08em;
+}
+
+.btn-main,
+.btn-highlight,
+.dc-action-primary {
+  border-radius: var(--dc-radius-control);
+  transition: transform var(--dc-motion-fast) var(--dc-ease), filter var(--dc-motion-fast) var(--dc-ease);
+}
+
+.btn-sub,
+.btn-back,
+.btn-icon,
+.tab-btn,
+.dc-action {
+  min-height: 44px;
+  padding: var(--dc-space-2) var(--dc-space-3);
+  border: var(--dc-line-hairline) solid var(--dc-iron-500);
+  border-radius: var(--dc-radius-control);
+  color: var(--dc-ash-100);
+  background: var(--dc-ink-800);
+  transition: border-color var(--dc-motion-fast) var(--dc-ease), background var(--dc-motion-fast) var(--dc-ease);
+}
+
+.dc-action-primary {
+  border-color: var(--dc-brass-300);
+  color: var(--dc-ink-900);
+  background: linear-gradient(180deg, var(--dc-brass-300), var(--dc-brass-500));
+  font-weight: 800;
+}
+
+.manastone-badge,
+.dc-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 7px;
+  border: var(--dc-line-hairline) solid var(--dc-iron-500);
+  border-radius: var(--dc-radius-control);
+  color: var(--dc-brass-300);
+  background: rgba(5, 8, 11, .48);
+  font: 10px/1 var(--dc-font-number);
+  letter-spacing: .05em;
+}
+
+.dc-section {
+  padding: var(--dc-space-3);
+  border: var(--dc-line-hairline) solid var(--dc-iron-500);
+  border-left: var(--dc-line-strong) solid var(--dc-brass-500);
+  background: rgba(13, 18, 24, .92);
+}
+
+.dc-section-title {
+  margin: 0 0 var(--dc-space-2);
+  color: var(--dc-ash-100);
+  font: 700 14px/1.4 var(--dc-font-display);
+  letter-spacing: .06em;
+}
+
+.dc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--dc-space-3);
+  align-items: center;
+  min-height: 44px;
+  padding: var(--dc-space-2) var(--dc-space-3);
+  border-bottom: var(--dc-line-hairline) solid rgba(53, 66, 81, .72);
+}
+
+.dc-row:last-child {
+  border-bottom: 0;
+}
+
+.dc-row-meta {
+  display: block;
+  color: var(--dc-ash-300);
+  font: 10px/1.4 var(--dc-font-number);
+}
+
+.dc-tabs {
+  display: flex;
+  gap: var(--dc-space-1);
+  overflow-x: auto;
+}
+
+.dc-tab[aria-selected="true"],
+.dc-tab.active {
+  border-color: var(--dc-brass-500);
+  color: var(--dc-brass-300);
+  background: rgba(169, 139, 79, .1);
+}
+
+.dc-notice {
+  padding: var(--dc-space-3);
+  border: var(--dc-line-hairline) solid var(--dc-iron-500);
+  border-left: var(--dc-line-strong) solid var(--dc-observe-400);
+  color: var(--dc-ash-300);
+  background: rgba(13, 18, 24, .9);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.dc-notice[data-tone="danger"] {
+  border-left-color: var(--dc-danger-500);
+  color: var(--dc-danger-300);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .screen {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+
+  .subbar {
+    gap: var(--dc-space-2);
+  }
+}

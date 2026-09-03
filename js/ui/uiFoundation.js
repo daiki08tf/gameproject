@@ -36,13 +36,13 @@ function installPrimaryNavigation(routes = {}) {
   if (primaryNav?.isConnected) return primaryNav;
 
   const nav = document.createElement('nav');
-  nav.className = 'ui-primary-nav';
+  nav.className = 'ui-primary-nav dc-nav';
   nav.setAttribute('aria-label', 'メインナビゲーション');
 
   NAV_ITEMS.forEach((item) => {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'ui-primary-nav-item';
+    button.className = 'ui-primary-nav-item dc-action';
     button.dataset.uiRoute = item.id;
     button.textContent = item.label;
     button.addEventListener('click', () => {
@@ -124,12 +124,12 @@ function createCompactCard({ title = '', meta = '', stats = [], badge = '', clas
 
 function createTabs(items = [], onChange = () => {}) {
   const tabs = document.createElement('div');
-  tabs.className = 'ui-tabs';
+  tabs.className = 'ui-tabs dc-tabs';
   tabs.setAttribute('role', 'tablist');
   items.forEach((item, index) => {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = `ui-tab${index === 0 ? ' active' : ''}`;
+    button.className = `ui-tab dc-tab dc-action${index === 0 ? ' active' : ''}`;
     button.textContent = item.label;
     button.dataset.uiTab = item.id;
     button.setAttribute('role', 'tab');
@@ -183,6 +183,90 @@ function createFilterBar({ placeholder = '検索', filters = [] } = {}) {
   return { element: bar, input, select: bar.querySelector('select') };
 }
 
+function createHeader({ title = '', kicker = '', meta = '', onBack = null } = {}) {
+  const header = document.createElement('header');
+  header.className = 'dc-header';
+  if (typeof onBack === 'function') {
+    header.appendChild(createAction({ label: '戻る', variant: 'secondary', onClick: onBack }));
+  }
+  const identity = document.createElement('div');
+  identity.className = 'dc-header-identity';
+  if (kicker) {
+    const kickerEl = document.createElement('span');
+    kickerEl.className = 'dc-row-meta';
+    kickerEl.textContent = kicker;
+    identity.appendChild(kickerEl);
+  }
+  const heading = document.createElement('h2');
+  heading.className = 'dc-header-title';
+  heading.textContent = title;
+  identity.appendChild(heading);
+  header.appendChild(identity);
+  if (meta) header.appendChild(createBadge(meta));
+  return header;
+}
+
+function createSection({ title = '', content = '', className = '' } = {}) {
+  const section = document.createElement('section');
+  section.className = ['dc-section', className].filter(Boolean).join(' ');
+  if (title) {
+    const heading = document.createElement('h3');
+    heading.className = 'dc-section-title';
+    heading.textContent = title;
+    section.appendChild(heading);
+  }
+  if (content instanceof Node) section.appendChild(content);
+  else if (content) section.append(String(content));
+  return section;
+}
+
+function createRow({ label = '', value = '', meta = '' } = {}) {
+  const row = document.createElement('div');
+  row.className = 'dc-row';
+  const labelEl = document.createElement('span');
+  labelEl.textContent = label;
+  row.appendChild(labelEl);
+  const valueEl = document.createElement('span');
+  valueEl.className = 'dc-row-value';
+  valueEl.textContent = value;
+  row.appendChild(valueEl);
+  if (meta) {
+    const metaEl = document.createElement('small');
+    metaEl.className = 'dc-row-meta';
+    metaEl.textContent = meta;
+    labelEl.appendChild(metaEl);
+  }
+  return row;
+}
+
+function createBadge(label = '', tone = 'neutral') {
+  const badge = document.createElement('span');
+  badge.className = 'dc-badge';
+  badge.dataset.tone = tone;
+  badge.textContent = label;
+  return badge;
+}
+
+function createAction({ label = '', variant = 'secondary', disabled = false, pressed = null, busy = false, onClick = null } = {}) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `dc-action dc-action-${variant}`;
+  button.textContent = label;
+  button.disabled = disabled;
+  if (pressed !== null) button.setAttribute('aria-pressed', String(!!pressed));
+  if (busy) button.setAttribute('aria-busy', 'true');
+  if (typeof onClick === 'function') button.addEventListener('click', onClick);
+  return button;
+}
+
+function createNotice({ text = '', tone = 'info' } = {}) {
+  const notice = document.createElement('aside');
+  notice.className = 'dc-notice';
+  notice.dataset.tone = tone;
+  notice.textContent = text;
+  return notice;
+}
+
 export {
   NAV_ITEMS,
   NAV_HIDDEN_SCREENS,
@@ -192,4 +276,10 @@ export {
   createTabs,
   createDetailDisclosure,
   createFilterBar,
+  createHeader,
+  createSection,
+  createRow,
+  createBadge,
+  createAction,
+  createNotice,
 };

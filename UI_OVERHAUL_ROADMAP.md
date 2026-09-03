@@ -199,6 +199,8 @@ Source/ownership audit: complete in `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md`.
 
 Remaining gate: live screenshots and rendered-screen inventory at the required viewports. UIX-0 stays unchecked until that gate is completed.
 
+The user authorized UIX-1 source work to proceed on 2026-09-03 while this environment remains unable to open the local runtime. This does not waive the live acceptance gate.
+
 Goal: establish evidence before redesign.
 
 Deliverables:
@@ -225,6 +227,8 @@ Required live paths:
 No production visual rewrite in UIX-0.
 
 ### [ ] UIX-1 — Design System and Emoji Removal Foundation
+
+Source implementation: complete in `css/darkChronicle.css`, `UI_DESIGN_SYSTEM.md` and the shared UI foundation. Live viewport acceptance remains pending.
 
 Goal: create one visual language and remove platform-emoji dependence from the shared shell.
 
