@@ -196,7 +196,7 @@ function renderDetail() {
     <div class="equipment4-detail-actions">
       <button data-e4act="equip" ${!equipSource || equipSource.disabled ? 'disabled' : ''}>${currentId === id ? '外す' : '装備'}</button>
       <button data-e4act="favorite">${favorite ? '★ KEEP' : '☆ KEEP'}</button>
-      <button data-e4act="lock">${locked ? '🔓 解除' : '🔒 保護'}</button>
+      <button data-e4act="lock">${locked ? 'LOCK解除' : 'LOCK保護'}</button>
       <button data-e4act="fusion" ${!fusionSource ? 'disabled' : ''}>OP育成</button>
     </div>
     <div class="equipment4-action-hint">DETAILの操作は既存一覧ボタンへ中継されるため、装備可否・保護・Fusionの安全判定は従来ロジックをそのまま使います。</div>`;
@@ -210,7 +210,7 @@ function rowSummaryHtml(id, p) {
   if (p?.highestAffixRarity) parts.push(`<span>${String(p.highestAffixRarity).toUpperCase()}</span>`);
   if (p?.greaterCount) parts.push(`<span>★${p.greaterCount}</span>`);
   if (p?.fixedIdentities?.length) parts.push(`<span>FIXED${p.fixedIdentities.length}</span>`);
-  if (state.isItemLocked?.(id)) parts.push('<span>🔒</span>');
+  if (state.isItemLocked?.(id)) parts.push('<span>LOCK</span>');
   if (state.isItemFavorite?.(id)) parts.push('<span>★KEEP</span>');
   return parts.join('');
 }
@@ -243,7 +243,7 @@ function compactRow(row, id) {
       button.setAttribute('aria-label', button.title);
     } else if (button.textContent.includes('ロック')) {
       const on = state.isItemLocked?.(id);
-      button.textContent = on ? '🔓' : '🔒';
+      button.textContent = on ? 'ロック解除' : 'ロック';
       button.title = on ? 'ロック解除' : 'ロックする';
       button.setAttribute('aria-label', button.title);
     }

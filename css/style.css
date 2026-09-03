@@ -333,17 +333,18 @@ button { font-family: inherit; }
 .equip-layout { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; padding-bottom: 12px; flex: 1; }
 .paperdoll { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .equip-slot {
-  background: var(--card-bg);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 10px;
+  background: var(--dc-ink-800, var(--card-bg));
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.15));
+  border-radius: var(--dc-radius-panel, 10px);
   padding: 10px 12px;
   cursor: pointer;
   text-align: left;
+  transition: border-color var(--dc-motion-fast, 90ms) var(--dc-ease, ease);
 }
-.equip-slot .slot-label { font-size: 11px; opacity: 0.65; }
-.equip-slot .slot-item { font-weight: bold; font-size: 14px; }
-.equip-slot .slot-empty { opacity: 0.4; font-size: 13px; }
-.equip-slot.selected { border-color: var(--accent); }
+.equip-slot .slot-label { font-size: 11px; color: var(--dc-ash-300); opacity: 1; }
+.equip-slot .slot-item { font-weight: 700; font-size: 14px; font-family: var(--dc-font-display, inherit); }
+.equip-slot .slot-empty { color: var(--dc-ash-300); opacity: .7; font-size: 13px; }
+.equip-slot.selected { border-color: var(--dc-brass-500, var(--accent)); }
 
 .equip-picker { display: flex; flex-direction: column; gap: 8px; }
 .equip-picker .hint { opacity: 0.6; font-size: 13px; text-align: center; }
@@ -353,46 +354,48 @@ button { font-family: inherit; }
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  background: var(--card-bg);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 8px;
+  background: var(--dc-ink-800, var(--card-bg));
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.12));
+  border-left: 2px solid var(--dc-iron-400, transparent);
+  border-radius: var(--dc-radius-panel, 8px);
   padding: 10px 12px;
 }
 /* 情報ブロックが十分な幅を持てるよう最小幅を確保し、収まらない時は
    お気に入り/ロック等のアクションボタン群を次行へ折り返す（崩れ修正） */
 .pick-row .pick-main { flex: 1 1 200px; min-width: 0; }
-.pick-row .item-name { font-weight: bold; font-size: 14px; }
-.pick-row .item-stats { font-size: 11px; opacity: 0.7; }
+.pick-row .item-name { font-weight: 700; font-size: 14px; font-family: var(--dc-font-display, inherit); }
+.pick-row .item-stats { font-size: 11px; color: var(--dc-ash-300); opacity: 1; }
 .pick-row button {
-  background: rgba(255,255,255,0.14);
-  border: none;
-  color: #fff;
+  background: var(--dc-ink-700, rgba(255,255,255,0.14));
+  border: 1px solid var(--dc-iron-500, transparent);
+  color: var(--dc-ash-100, #fff);
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: var(--dc-radius-control, 6px);
   font-size: 12px;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .equip-inline-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-.pick-row.equipped button { background: rgba(230,66,90,0.4); }
-.pick-row button[disabled] { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); cursor: default; }
+.pick-row.equipped { border-left-color: var(--dc-brass-500); }
+.pick-row.equipped button { background: rgba(169,139,79,0.18); border-color: var(--dc-brass-500); }
+.pick-row button[disabled] { background: var(--dc-ink-900, rgba(255,255,255,0.06)); color: var(--dc-ash-300, rgba(255,255,255,0.35)); border-color: var(--dc-iron-500); cursor: default; }
 .compare-line { font-size: 11px; margin-top: 2px; }
 .compare-score { font-weight: bold; }
-.stat-up { color: #5fd97a; }
-.stat-down { color: #e6425a; }
+.stat-up { color: var(--dc-success-400, #5fd97a); }
+.stat-down { color: var(--dc-danger-300, #e6425a); }
 
 /* 加護（Blessing、深淵拡張）：stageConfirmScreenの3択カード */
 .blessing-row { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; text-align: left; }
-.blessing-row .pick-row.selected { border-color: var(--accent); background: rgba(242,201,76,0.12); }
+.blessing-row .pick-row.selected { border-left-color: var(--dc-brass-500); background: rgba(169,139,79,0.1); }
 
 /* お気に入り・ロック（Blade Vale 2.1）：装備一覧カード内の小さなトグルボタン */
 .inline-btn {
-  background: rgba(255,255,255,0.1);
-  border: none;
-  color: #fff;
+  background: var(--dc-ink-700, rgba(255,255,255,0.1));
+  border: 1px solid var(--dc-iron-500, transparent);
+  color: var(--dc-ash-100, #fff);
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--dc-radius-control, 6px);
   font-size: 11px;
   cursor: pointer;
   white-space: nowrap;
@@ -415,7 +418,7 @@ button { font-family: inherit; }
 .job-card.locked { opacity: 0.45; }
 .job-card-top { display: flex; justify-content: space-between; align-items: center; }
 .job-card-name { font-weight: bold; }
-.mastered-badge { color: var(--xp-color); margin-left: 4px; }
+.mastered-badge { color: var(--dc-brass-300, var(--xp-color)); margin-left: 4px; }
 .job-card-lv { font-size: 12px; opacity: 0.8; }
 .job-card .bar { margin-top: 6px; }
 .job-card-req { font-size: 11px; opacity: 0.65; margin-top: 4px; }
@@ -465,39 +468,41 @@ button { font-family: inherit; }
 .blacksmith-content { overflow-y: auto; flex: 1; padding-bottom: 12px; }
 
 .forge-card {
-  background: var(--card-bg);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 10px;
+  background: var(--dc-ink-800, var(--card-bg));
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.12));
+  border-left: 2px solid var(--dc-iron-400, transparent);
+  border-radius: var(--dc-radius-panel, 10px);
   padding: 12px 14px;
   margin-bottom: 10px;
 }
 .forge-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.forge-card-name { font-weight: bold; }
-.forge-card-sub { font-size: 12px; opacity: 0.7; margin-bottom: 8px; }
+.forge-card-name { font-weight: 700; font-family: var(--dc-font-display, inherit); }
+.forge-card-sub { font-size: 12px; color: var(--dc-ash-300); opacity: 1; margin-bottom: 8px; }
 .forge-card-btn {
   width: 100%;
-  background: var(--accent);
-  color: #1a1a1a;
+  background: linear-gradient(180deg, var(--dc-brass-300, var(--accent)), var(--dc-brass-500, var(--accent)));
+  color: var(--dc-ink-900, #1a1a1a);
   border: none;
   padding: 9px;
-  border-radius: 6px;
+  border-radius: var(--dc-radius-control, 6px);
   font-weight: bold;
   cursor: pointer;
 }
-.forge-card-btn[disabled] { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.4); cursor: default; }
+.forge-card-btn[disabled] { background: var(--dc-ink-700, rgba(255,255,255,0.15)); color: var(--dc-ash-300, rgba(255,255,255,0.4)); cursor: default; }
 
 .rune-slots { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
 .rune-slot {
   width: 56px; height: 56px;
-  border-radius: 8px;
-  background: rgba(0,0,0,0.35);
-  border: 1px dashed rgba(255,255,255,0.3);
+  border-radius: var(--dc-radius-control, 8px);
+  background: var(--dc-ink-900, rgba(0,0,0,0.35));
+  border: 1px dashed var(--dc-iron-500, rgba(255,255,255,0.3));
   display: flex; align-items: center; justify-content: center;
+  color: var(--dc-ash-300);
   font-size: 20px;
   cursor: pointer;
   text-align: center;
 }
-.rune-slot.filled { border-style: solid; border-color: var(--accent); background: rgba(242,201,76,0.12); }
+.rune-slot.filled { border-style: solid; border-color: var(--dc-brass-500, var(--accent)); background: rgba(169,139,79,0.12); color: var(--dc-brass-300); }
 .rune-slot.locked { opacity: 0.4; cursor: default; }
 
 .section-heading { font: 700 11px/1.4 var(--dc-font-number, inherit); text-transform: uppercase; letter-spacing: .14em; color: var(--dc-ash-300); opacity: 1; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--dc-iron-500); }
@@ -660,10 +665,10 @@ button { font-family: inherit; }
 
 /* 武器ランダムAffix（Part A）：装備画面・武器詳細でのAffix一覧表示 */
 .affix-block { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
-.affix-line { padding: 3px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; font-size: 11px; }
+.affix-line { padding: 3px 8px; background: var(--dc-ink-900, rgba(255,255,255,0.05)); border-radius: var(--dc-radius-control, 4px); font-size: 11px; }
 .affix-rarity { font-weight: bold; }
-.affix-name { font-weight: bold; opacity: 0.95; }
-.affix-desc { opacity: 0.75; }
+.affix-name { font-weight: bold; color: var(--dc-ash-100); opacity: 1; }
+.affix-desc { color: var(--dc-ash-300); opacity: 1; }
 
 /* 詳細ステータス画面（Part B） */
 .status-section { margin: 10px 0; }

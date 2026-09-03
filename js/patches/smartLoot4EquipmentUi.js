@@ -13,17 +13,17 @@ function ensureStyle() {
   const style = document.createElement('style');
   style.id = 'smartLoot4Style';
   style.textContent = `
-    #equipmentScreen .smartloot4-option-filters{display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));align-items:end;gap:6px;width:100%;padding:7px 8px;border:1px solid rgba(242,201,76,.18);border-radius:8px;background:rgba(242,201,76,.045)}
-    #equipmentScreen .smartloot4-title{font-size:9px;letter-spacing:1px;color:var(--accent);align-self:center;white-space:nowrap}
+    #equipmentScreen .smartloot4-option-filters{display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));align-items:end;gap:6px;width:100%;padding:7px 8px;border:1px solid var(--dc-iron-500,rgba(242,201,76,.18));border-left:2px solid var(--dc-brass-500);border-radius:var(--dc-radius-control,8px);background:rgba(13,18,24,.92)}
+    #equipmentScreen .smartloot4-title{font:9px/1 var(--dc-font-number,inherit);letter-spacing:.08em;text-transform:uppercase;color:var(--dc-brass-300,var(--accent));align-self:center;white-space:nowrap}
     #equipmentScreen .smartloot4-field{display:grid!important;gap:3px!important;min-width:0;font-size:9px!important}
-    #equipmentScreen .smartloot4-field>span{opacity:.62;white-space:nowrap}
-    #equipmentScreen .smartloot4-field input,#equipmentScreen .smartloot4-field select{width:100%!important;max-width:none!important;min-width:0;padding:5px 6px;font-size:10px!important;background:rgba(0,0,0,.25);color:inherit;border:1px solid rgba(255,255,255,.12);border-radius:5px}
+    #equipmentScreen .smartloot4-field>span{color:var(--dc-ash-300);opacity:1;white-space:nowrap}
+    #equipmentScreen .smartloot4-field input,#equipmentScreen .smartloot4-field select{width:100%!important;max-width:none!important;min-width:0;padding:5px 6px;font-size:10px!important;background:var(--dc-ink-900,rgba(0,0,0,.25));color:var(--dc-ash-100,inherit);border:1px solid var(--dc-iron-500,rgba(255,255,255,.12));border-radius:5px}
     #equipmentScreen .smartloot4-field input[type=checkbox]{width:auto!important;justify-self:start}
-    #equipmentScreen .smartloot4-hint{grid-column:2/-1;font-size:8px!important;line-height:1.35}
-    #equipmentScreen .smartloot4-protection{display:grid;grid-template-columns:auto repeat(6,minmax(0,1fr));align-items:end;gap:6px;width:100%;margin-top:6px;padding:7px 8px;border:1px solid rgba(120,190,255,.18);border-radius:8px;background:rgba(120,190,255,.04)}
-    #equipmentScreen .smartloot4-protection .smartloot4-title{color:#9bcfff}
+    #equipmentScreen .smartloot4-hint{grid-column:2/-1;font-size:8px!important;line-height:1.35;color:var(--dc-ash-300)}
+    #equipmentScreen .smartloot4-protection{display:grid;grid-template-columns:auto repeat(6,minmax(0,1fr));align-items:end;gap:6px;width:100%;margin-top:6px;padding:7px 8px;border:1px solid var(--dc-iron-500,rgba(120,190,255,.18));border-left:2px solid var(--dc-observe-400);border-radius:var(--dc-radius-control,8px);background:rgba(13,18,24,.92)}
+    #equipmentScreen .smartloot4-protection .smartloot4-title{color:var(--dc-observe-400,#9bcfff)}
     #equipmentScreen .smartloot4-protection .smartloot4-query-protect{grid-column:span 2}
-    #equipmentScreen .smartloot4-protection-hint{grid-column:2/-1;font-size:8px!important;line-height:1.35}
+    #equipmentScreen .smartloot4-protection-hint{grid-column:2/-1;font-size:8px!important;line-height:1.35;color:var(--dc-ash-300)}
     @media(max-width:760px){#equipmentScreen .smartloot4-protection{grid-template-columns:1fr 1fr 1fr}#equipmentScreen .smartloot4-protection .smartloot4-title{grid-column:1/-1}#equipmentScreen .smartloot4-protection .smartloot4-query-protect{grid-column:span 2}#equipmentScreen .smartloot4-protection-hint{grid-column:1/-1}}
     @media(max-width:560px){#equipmentScreen .smartloot4-option-filters{grid-template-columns:1fr 1fr}#equipmentScreen .smartloot4-title{grid-column:1/-1}#equipmentScreen .smartloot4-field:first-of-type{grid-column:1/-1}#equipmentScreen .smartloot4-hint{grid-column:1/-1}#equipmentScreen .smartloot4-protection{grid-template-columns:1fr 1fr}#equipmentScreen .smartloot4-protection .smartloot4-query-protect{grid-column:1/-1}}
   `;
@@ -124,7 +124,7 @@ function activeOptionFilterCount(filter) {
 function syncAdvancedBadge(filter) {
   const row = document.getElementById('lootFilterRow');
   if (!row) return;
-  const button = [...row.querySelectorAll(':scope > .tab-btn')].find(btn => btn.textContent.startsWith('⚙ 詳細'));
+  const button = [...row.querySelectorAll(':scope > .tab-btn')].find(btn => btn.textContent.startsWith('詳細'));
   if (!button) return;
   const optionCount = activeOptionFilterCount(filter);
   const baseMatch = button.textContent.match(/\((\d+)\)/);
@@ -139,7 +139,7 @@ function syncAdvancedBadge(filter) {
   // filterObserver watches (childList:true, subtree:true). Writing it on
   // every call retriggers that observer forever. setTextIfChanged only
   // writes when the label would actually change.
-  const nextText = `⚙ 詳細${total ? ` (${total})` : ''}`;
+  const nextText = `詳細${total ? ` (${total})` : ''}`;
   setTextIfChanged(button, nextText);
   button.classList.toggle('active', total > 0);
 }

@@ -76,9 +76,9 @@ function renderEnhanceTab(content) {
       <div class="forge-card-sub">強化ボーナス +${level * 5}%　／　素材(同じ武器)所持: ${spare}個 ／ 次の強化に必要: ${maxed ? '-' : `${need}個`}
         ／ 武器の欠片所持: ${state.data.weaponEssence}個 ／ 欠片で必要: ${maxed ? '-' : `${essenceNeed}個`}</div>
       <button class="forge-card-btn" data-mode="copy" ${maxed || !canDo ? 'disabled' : ''}>
-        ${maxed ? 'MAX' : `合成強化する（素材×${need} + 💰${cost}）`}
+        ${maxed ? 'MAX' : `合成強化する（素材×${need} + Gold${cost}）`}
       </button>
-      ${maxed ? '' : `<button class="forge-card-btn" data-mode="essence" ${canDoEssence ? '' : 'disabled'} style="margin-top:6px;">武器の欠片で強化する（欠片×${essenceNeed} + 💰${cost}）</button>`}
+      ${maxed ? '' : `<button class="forge-card-btn" data-mode="essence" ${canDoEssence ? '' : 'disabled'} style="margin-top:6px;">武器の欠片で強化する（欠片×${essenceNeed} + Gold${cost}）</button>`}
     `;
     card.querySelector('[data-mode="copy"]').addEventListener('click', () => {
       if (state.enhanceWeapon(id)) { Audio_.pickup(); renderBlacksmith(); }
@@ -117,7 +117,7 @@ function renderAwakenWeaponCard(id, item) {
     <div class="forge-card-sub">目覚めボーナス +${Math.round(rank * AWAKENED_EQUIP_LAYER.BONUS_PER_RANK * 100)}%（強化ボーナスとは別枠で加算）
       ${needAwakening ? '<br>※覚醒の祭壇で1回以上「覚醒」すると目覚めさせられるようになります' : ''}</div>
     <button class="forge-card-btn" ${maxed || !canDo ? 'disabled' : ''}>
-      ${maxed ? 'MAX' : `目覚めさせる（💎${cost}）`}
+      ${maxed ? 'MAX' : `目覚めさせる（魔石${cost}）`}
     </button>
   `;
   card.querySelector('button').addEventListener('click', () => {
@@ -141,7 +141,7 @@ function renderAffixCard(id, item) {
       ? `現在の付与効果：${AFFIX_STAT_LABEL[affix.stat] || affix.stat}+${Math.round(affix.pct * 1000) / 10}%（再抽選すると上書きされます）`
       : 'まだ極Affixは付与されていません'}</div>
     <button class="forge-card-btn" ${canDo ? '' : 'disabled'}>
-      ${affix ? '再抽選する' : '極める'}（💰${EXTREME_AFFIX_LAYER.ROLL_COST_GOLD} + 💎${EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE}）
+      ${affix ? '再抽選する' : '極める'}（Gold${EXTREME_AFFIX_LAYER.ROLL_COST_GOLD} + 魔石${EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE}）
     </button>
   `;
   card.querySelector('button').addEventListener('click', () => {
@@ -180,7 +180,7 @@ function renderRuneTab(content) {
     const rune = runeId ? getRune(runeId) : null;
     const slot = document.createElement('div');
     slot.className = 'rune-slot' + (rune ? ' filled' : '');
-    slot.textContent = rune ? '✨' : '+';
+    slot.textContent = rune ? '●' : '+';
     slot.title = rune ? rune.name : '空きスロット';
     slot.addEventListener('click', () => {
       Audio_.tap();
@@ -243,7 +243,7 @@ function renderCraftSection(content) {
         <div>${rune.stat.toUpperCase()}+${rune.value}</div>
       </div>
       <div class="forge-card-sub">所持: ${state.data.inventory[rune.id] || 0}個</div>
-      <button class="forge-card-btn" ${canCraft ? '' : 'disabled'}>作成する（💎${rune.craftCost.manastone} + 💰${rune.craftCost.gold}）</button>
+      <button class="forge-card-btn" ${canCraft ? '' : 'disabled'}>作成する（魔石${rune.craftCost.manastone} + Gold${rune.craftCost.gold}）</button>
     `;
     card.querySelector('button').addEventListener('click', () => {
       if (state.craftRune(rune.id)) { Audio_.pickup(); renderBlacksmith(); }
@@ -334,7 +334,7 @@ function renderAwakenedItemCard(id) {
       <div>${kills}/${AWAKENED_ITEM_LAYER.KILLS_TIER2}</div>
     </div>
     <div class="forge-card-sub">
-      ${(item.effects || []).map((e) => `✨${e.name}: ${e.desc}`).join('<br>')}
+      ${(item.effects || []).map((e) => `◆${e.name}: ${e.desc}`).join('<br>')}
       ${!equipped ? '<br>※装備していないと覚醒キルは増えません' : ''}
     </div>
     <div class="bar xp-bar small"><div class="fill" style="width:${pct}%"></div></div>
@@ -359,7 +359,7 @@ function appendAffix2Section(card, id, tier) {
       ? `第2Affix：${AFFIX_STAT_LABEL[affix2.stat] || affix2.stat}+${Math.round(affix2.pct * 1000) / 10}%（再抽選すると上書きされます）`
       : '第2の極Affix枠が解放されています（まだ付与されていません）'}</div>
     <button class="forge-card-btn" ${canDo ? '' : 'disabled'}>
-      ${affix2 ? '再抽選する' : '極める'}（💰${EXTREME_AFFIX_LAYER.ROLL_COST_GOLD} + 💎${EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE}）
+      ${affix2 ? '再抽選する' : '極める'}（Gold${EXTREME_AFFIX_LAYER.ROLL_COST_GOLD} + 魔石${EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE}）
     </button>
   `;
   wrap.querySelector('button').addEventListener('click', () => {
@@ -400,10 +400,10 @@ function renderDisposeTab(content) {
     card.className = 'forge-card';
     card.innerHTML = `
       <div class="forge-card-top">
-        <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${qty}${state.isItemFavorite(id) ? ' ★' : ''}${locked ? ' 🔒' : ''}</div>
+        <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${qty}${state.isItemFavorite(id) ? ' ★' : ''}${locked ? ' [LOCK]' : ''}</div>
         <div>${RARITY[item.rarity].label}</div>
       </div>
-      <div class="forge-card-sub">売却: 💰${sellGold}/個　／　分解: 🔹${dismantleEssence}欠片/個${locked ? '<br>※ロック中は売却・分解できません' : ''}</div>
+      <div class="forge-card-sub">売却: Gold${sellGold}/個　／　分解: ${dismantleEssence}欠片/個${locked ? '<br>※ロック中は売却・分解できません' : ''}</div>
     `;
     const btnRow = document.createElement('div');
     btnRow.style.display = 'flex';
@@ -421,7 +421,7 @@ function renderDisposeTab(content) {
     dismantleBtn.addEventListener('click', () => { if (state.dismantleItem(id, 1)) { Audio_.pickup(); renderBlacksmith(); } });
     const lockBtn = document.createElement('button');
     lockBtn.className = 'inline-btn';
-    lockBtn.textContent = locked ? '🔓ロック解除' : '🔒ロックする';
+    lockBtn.textContent = locked ? 'ロック解除' : 'ロックする';
     lockBtn.addEventListener('click', () => { state.toggleItemLocked(id); Audio_.tap(); renderBlacksmith(); });
     btnRow.appendChild(sellBtn);
     btnRow.appendChild(dismantleBtn);

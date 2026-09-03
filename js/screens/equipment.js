@@ -6,8 +6,8 @@ import { equipment3Presentation, equipment3MetaText, equipment3SpecialLines } fr
 import { Audio_ } from '../audio.js';
 
 const ELEMENT_LABEL = {
-  fire: '🔥炎', ice: '❄️氷', lightning: '⚡雷', wind: '🌪️風',
-  light: '✨光', dark: '🌑闇', poison: '☠️毒',
+  fire: '炎', ice: '氷', lightning: '雷', wind: '風',
+  light: '光', dark: '闇', poison: '毒',
 };
 const STAT_LABEL_JA = { atk: 'ATK', def: 'DEF', hp: 'HP', mag: 'MAG', spd: 'SPD', crit: 'CRIT', mp: 'MP', armorPen: '防御貫通', evasion: '回避' };
 const SLOT_LABELS = { weapon: '武器', shield: '盾', head: '頭', body: '胴', accessory1: 'アクセ1', accessory2: 'アクセ2' };
@@ -128,7 +128,7 @@ function renderAdvancedLootFilter(row, filter) {
   const smart = document.createElement('div');
   smart.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:8px;width:100%;padding-top:8px;border-top:1px solid rgba(255,255,255,.12);';
   const smartTitle = document.createElement('strong');
-  smartTitle.textContent = '🔒 Smart Loot 自動保護';
+  smartTitle.textContent = 'Smart Loot 自動保護';
   smart.appendChild(smartTitle);
   smart.appendChild(makeFilterField('ON', makeCheckbox(filter.autoLock.enabled, (value) => {
     state.updateLootFilter3({ autoLock: { enabled: value } }); renderEquipment();
@@ -189,7 +189,7 @@ function renderLootFilterRow() {
   ].filter(Boolean).length;
   const advancedBtn = document.createElement('button');
   advancedBtn.className = 'tab-btn' + (activeAdvanced ? ' active' : '');
-  advancedBtn.textContent = `⚙ 詳細${activeAdvanced ? ` (${activeAdvanced})` : ''}`;
+  advancedBtn.textContent = `詳細${activeAdvanced ? ` (${activeAdvanced})` : ''}`;
   advancedBtn.addEventListener('click', () => {
     Audio_.tap();
     lootFilterAdvancedOpen = !lootFilterAdvancedOpen;
@@ -201,7 +201,7 @@ function renderLootFilterRow() {
   const smartBadge = document.createElement('span');
   smartBadge.className = 'hint';
   smartBadge.style.cssText = 'align-self:center;font-size:11px;';
-  smartBadge.textContent = filter.autoLock.enabled ? '🔒 Smart Loot ON' : 'Smart Loot OFF';
+  smartBadge.textContent = filter.autoLock.enabled ? 'Smart Loot ON' : 'Smart Loot OFF';
   row.appendChild(smartBadge);
 
   if (lootFilterAdvancedOpen) renderAdvancedLootFilter(row, filter);
@@ -243,7 +243,7 @@ function statLine(item, id) {
   if (item.element && ELEMENT_LABEL[item.element]) parts.push(ELEMENT_LABEL[item.element]);
   if (item.implicit?.desc) parts.push(`【特性】${item.implicit.desc}`);
   if (item.series && WEAPON_SERIES[item.series]) parts.push(`《${WEAPON_SERIES[item.series].name}》`);
-  if (item.effects) for (const eff of item.effects) parts.push(`✨${eff.name}: ${eff.desc}`);
+  if (item.effects) for (const eff of item.effects) parts.push(`◆${eff.name}: ${eff.desc}`);
   return parts.join(' / ');
 }
 
@@ -260,7 +260,7 @@ function equipment3Block(id, item) {
   const specials = equipment3SpecialLines(p).map((line) => `<div class="eq3-special-line">${line}</div>`).join('');
   const smartReasons = state.smartLootReasons(id);
   const smartLine = state.isItemLocked(id) && smartReasons.length
-    ? `<div class="eq3-special-line">🔒 Smart Loot: ${smartReasons.join(' / ')}</div>`
+    ? `<div class="eq3-special-line">Smart Loot: ${smartReasons.join(' / ')}</div>`
     : '';
   return `<div class="eq3-meta eq3-${p.quality}">${meta}</div>`
     + (affixes ? `<div class="affix-block">${affixes}</div>` : '')
@@ -271,7 +271,7 @@ function equipment3Block(id, item) {
 function favoriteLockBadges(itemId) {
   let s = '';
   if (state.isItemFavorite(itemId)) s += ' ★';
-  if (state.isItemLocked(itemId)) s += ' 🔒';
+  if (state.isItemLocked(itemId)) s += ' [LOCK]';
   return s;
 }
 function appendFavLockButtons(row, itemId) {
@@ -283,7 +283,7 @@ function appendFavLockButtons(row, itemId) {
   favBtn.addEventListener('click', () => { state.toggleItemFavorite(itemId); Audio_.tap(); renderEquipment(); });
   const lockBtn = document.createElement('button');
   lockBtn.className = 'inline-btn';
-  lockBtn.textContent = state.isItemLocked(itemId) ? '🔓ロック解除' : '🔒ロックする';
+  lockBtn.textContent = state.isItemLocked(itemId) ? 'ロック解除' : 'ロックする';
   lockBtn.addEventListener('click', () => { state.toggleItemLocked(itemId); Audio_.tap(); renderEquipment(); });
   wrap.append(favBtn, lockBtn);
   row.appendChild(wrap);
@@ -348,8 +348,8 @@ export function renderEquipment() {
     const levelLocked = item.requiredLevel && state.currentLevel < item.requiredLevel;
     const locked = weaponTypeLocked || levelLocked;
     let lockReason = '';
-    if (weaponTypeLocked) lockReason = `🔒 職業「${state.currentJob.name}」では装備不可（あと${WEAPON_MASTERY_THRESHOLD - state.weaponKillCount(item.weaponType)}体撃破でマスター）`;
-    else if (levelLocked) lockReason = `🔒 必要Lv.${item.requiredLevel}（現在Lv.${state.currentLevel}）`;
+    if (weaponTypeLocked) lockReason = `職業「${state.currentJob.name}」では装備不可（あと${WEAPON_MASTERY_THRESHOLD - state.weaponKillCount(item.weaponType)}体撃破でマスター）`;
+    else if (levelLocked) lockReason = `必要Lv.${item.requiredLevel}（現在Lv.${state.currentLevel}）`;
 
     const row = document.createElement('div');
     row.className = `pick-row${p?.quality ? ` eq3-${p.quality}` : ''}`;

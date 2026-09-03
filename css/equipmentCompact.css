@@ -57,7 +57,7 @@
   border:1px solid var(--ui-line);
   border-radius:var(--ui-radius-sm);
   padding:8px!important;
-  background:rgba(10,14,20,.78);
+  background:var(--dc-ink-900, rgba(10,14,20,.78));
 }
 @media(max-width:390px){
   #equipmentScreen .equip-paperdoll-compact{grid-template-columns:repeat(2,minmax(0,1fr))}

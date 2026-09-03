@@ -4,14 +4,14 @@
 
 **UI Overhaul (UIX)** is the active default priority.
 
-UIX-0 through UIX-4 are complete: source implementation and the live-viewport acceptance gate (390×844/375×667/desktop, fresh-save and progressed-save) both. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 for the full record. UIX-5 (Equipment, Build and Blacksmith Workbench) is next; `UI_OVERHAUL_ROADMAP.md` §10 names its scope and the emoji debt already located at the source level.
+UIX-0 through UIX-5 are complete: source implementation and the live-viewport acceptance gate (390×844/375×667/desktop, fresh-save and progressed-save) both. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10 for the full record. UIX-6 (Character, Ranch, Settlement, Records and Endgame) is next; `UI_OVERHAUL_ROADMAP.md` §10 names its batch order and the emoji debt already located at the source level.
 
 The stable baseline is main after:
 
 - Stage-first Core Loop Rework CLR-12–21;
 - PR #401/#402 roadmap closeout;
 - PR #403 live-browser playability and MutationObserver fixes;
-- UIX-0–4 (source and live-viewport gate).
+- UIX-0–5 (source and live-viewport gate).
 
 ## Read before changing code
 
@@ -115,4 +115,4 @@ Report:
 
 ## Default next action
 
-Begin UIX-5 — Equipment, Build and Blacksmith Workbench (scope and known emoji debt: `UI_OVERHAUL_ROADMAP.md` §10). This is Gear Overhaul territory: also read `GEAR_OVERHAUL_ROADMAP.md`/`GEAR_OVERHAUL_AUDIT.md` first, and improve presentation only — do not change Gear Overhaul's gameplay rules. Follow the same protocol as UIX-3/UIX-4: focused tests, full `npm test`, `npm run test:syntax`, ratchet `scripts/uix-emoji-check.js`'s ceiling down by the exact count removed, and a live-browser pass at 390×844/375×667/desktop before checking the phase complete. Do not claim it complete until that live gate is recorded, matching the standard UIX-0–4 set.
+Begin UIX-6 — Character, Ranch, Settlement, Records and Endgame, batch 1 (Status/Job/Rebirth) first (scope, batch order and known emoji debt: `UI_OVERHAUL_ROADMAP.md` §10). Each batch is a separate PR unless the audit proves it genuinely small. Follow the same protocol as UIX-3–5: focused tests, full `npm test`, `npm run test:syntax`, ratchet `scripts/uix-emoji-check.js`'s ceiling down by the exact count removed, and a live-browser pass at 390×844/375×667/desktop before checking a batch complete. Do not claim it complete until that live gate is recorded, matching the standard UIX-0–5 set.

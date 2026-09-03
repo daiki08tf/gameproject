@@ -281,3 +281,15 @@ Result: zero rendered emoji on the Result screen in either save state at any vie
 This pass also live-confirmed both outcome tones the source change introduced: the desktop fresh-save run's battle was lost, rendering `#resultScreen .panel[data-tone="danger"]` (`DEFEATED...` in `--dc-danger-300` with a danger-red top border) alongside the more commonly seen `success` tone (`STAGE CLEAR` in brass) captured at every other run. `neutral` (RETREAT) was not observed live in this pass — its CSS/JS wiring is symmetric with the other two tones and is asserted in `tests/uix4-battle-result-suite.test.js`.
 
 No undocumented runtime-created surface was found. Confirms this ownership map for the Battle/Result family.
+
+## 12. Live viewport pass — completion record (UIX-5 cycle)
+
+Same method as §10/§11 (git-archive checkout of the UIX-5 commit; QA-only `js/__qaHook.js`, never committed; 390×844/375×667/desktop; console/page-error listeners throughout). Progressed-save was extended to also grant one rare/epic/legendary sword and one rare/epic shield directly into `state.data.inventory` (plain item IDs, not weapon instances — see the "not walked" note below), so the workbench could be checked with a real rarity/comparison spread rather than only the starting sword.
+
+Paths walked: Equipment (fresh: empty paperdoll/picker; progressed: paperdoll → filter row → a slot → SELECTED DETAIL, including a live ATK/CRIT/MAG comparison of 英雄の剣 against the equipped 鉄の剣) at all three viewports in both save states; weapon Codex; Blacksmith (強化 tab, 整理/dispose tab with populated Gold/欠片 cost lines and ロック buttons, 鍛造3.0/equipment3 tab).
+
+Result: zero rendered emoji on Equipment, weapon Codex and Blacksmith in either save state at any viewport (down from the `⚙🔒`/`💰` the UIX-3 fresh-save walk had found at this phase's source level). Zero new console/page errors beyond the pre-existing benign `favicon.ico` 404. Desktop's two-column `equip-layout` grid (paperdoll+filters+list left, sticky SELECTED DETAIL right, from equipment4.css's `@media (min-width:760px)` rule) renders correctly at 1280×900.
+
+Not walked: the Option Fusion material-consumption panel specifically — reaching it needs a same-family duplicate weapon *instance* with rolled random Options (`state.data.weaponInstances`), which plain `state.data.inventory[id] += 1` grants (used above for the rarity/comparison spread) do not produce; synthesizing a correct instance would mean duplicating `equipment3.js`'s instance-generation logic in the QA hook, which risks testing a fake path instead of the real one. `.option-fusion-panel`/`.equipment4-option` token CSS and the `globalThis.confirm` material-consumption guard are asserted at the source level in `tests/uix5-equipment-blacksmith-workbench.test.js` instead. Monster Codex (5–6 glyphs, confirmed again during this pass) remains untouched, still UIX-6 scope per §7.
+
+No undocumented runtime-created surface was found. Confirms this ownership map for the Equipment/Blacksmith/Codex family.

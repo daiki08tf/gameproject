@@ -26,7 +26,7 @@ test('Phase 5D removed the legacy visible Affix search field at the source inste
 test('Option filters contribute to the existing advanced-filter badge', () => {
   assert.match(ui, /activeOptionFilterCount/);
   assert.match(ui, /syncAdvancedBadge/);
-  assert.match(ui, /⚙ 詳細/);
+  assert.match(ui, /詳細\$\{total/);
 });
 
 test('Equipment Fusion wrapper installs Smart Loot 4 controls without a new route', () => {
