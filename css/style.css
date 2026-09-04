@@ -37,11 +37,29 @@ button { font-family: inherit; }
 .screen {
   position: fixed;
   inset: 0;
-  display: none;
+  display: flex;
   flex-direction: column;
   padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  visibility: hidden;
+  pointer-events: none;
 }
-.screen.active { display: flex; }
+.screen.active {
+  visibility: visible;
+  pointer-events: auto;
+  animation: dc-screen-in var(--dc-motion-base, 160ms) var(--dc-ease, ease-out);
+}
+/* display can't be transitioned, so screens use visibility (an instant
+   step, not animated) to disappear immediately when .active is removed —
+   no cross-fade, no double-exposure with the incoming screen. Only the
+   entrance gets a short fade-in. pointer-events/visibility both apply the
+   instant a screen becomes .active, before the animation finishes, so a
+   repeated action (e.g. attacking into the next Stage) is never blocked
+   waiting on this animation. Respects the app-wide
+   prefers-reduced-motion override in darkChronicle.css. */
+@keyframes dc-screen-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 /* ---------------------------------------------------------
    共通パーツ
