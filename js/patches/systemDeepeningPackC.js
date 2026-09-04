@@ -136,7 +136,7 @@ function appendRumorNotebook(){
   root.querySelector('[data-packc-rumors]')?.remove();
   const list=state.rumorNotebook(),summary=state.rumorNotebookSummary(),clues=state.packCClueItems(),chain=state.packCSecretChain();
   const box=document.createElement('section');box.dataset.packcRumors='1';box.className='forge-card';
-  box.innerHTML=`<div class="forge-card-name">🗺 RUMORS ${summary.resolved}/${summary.total}</div><div class="sub">追跡 ${summary.tracking} ／ 未解決 ${summary.unresolved} ／ 解決 ${summary.resolved}</div>`
+  box.innerHTML=`<div class="forge-card-name">RUMORS ${summary.resolved}/${summary.total}</div><div class="sub">追跡 ${summary.tracking} ／ 未解決 ${summary.unresolved} ／ 解決 ${summary.resolved}</div>`
     +rumorGroup('追跡中',list.filter(x=>x.rumorState==='tracking'))+rumorGroup('未解決',list.filter(x=>x.rumorState==='unresolved'))+rumorGroup('解決済み',list.filter(x=>x.rumorState==='resolved'))
     +`<details class="ui-detail-disclosure"><summary>手掛かり ${clues.length}</summary><div class="ui-detail-body">${clues.length?clues.map(c=>`<div class="forge-card-sub" style="margin:6px 0"><b>${escapeHtml(c.name?.replace(/^手掛かり：/,''))}</b><br>${escapeHtml(c.hint)}</div>`).join(''):'まだ手掛かりはない。'}</div></details>`
     +`<div class="hint" style="margin-top:6px">秘密連鎖：${chain.completed}/${chain.total}${chain.resolved?' — RESOLVED':''}</div>`;

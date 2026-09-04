@@ -14,7 +14,7 @@ function discovered(job){
 }
 function visibleName(job){ return job.secret&&!discovered(job)?'？？？？？':job.name; }
 function masteryLevel(job){ return TIERS[job.tier]?.masteryLv ?? null; }
-function pctBar(value,max){ const p=max?Math.min(100,value/max*100):100; return `<div style="height:6px;background:#242735;border-radius:99px;overflow:hidden;margin-top:5px"><div style="width:${p}%;height:100%;background:#d7b35c"></div></div>`; }
+function pctBar(value,max){ const p=max?Math.min(100,value/max*100):100; return `<div style="height:6px;background:var(--dc-ink-900, #242735);border-radius:99px;overflow:hidden;margin-top:5px"><div style="width:${p}%;height:100%;background:var(--dc-brass-300, #d7b35c)"></div></div>`; }
 function growthStars(values,key){
   const nums=Object.values(values).filter(v=>Number.isFinite(v)); const max=Math.max(...nums,1); const n=Math.max(1,Math.min(5,Math.round((values[key]||0)/max*5))); return '★'.repeat(n)+'☆'.repeat(5-n);
 }

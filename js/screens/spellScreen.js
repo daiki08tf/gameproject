@@ -36,14 +36,14 @@ export function initSpellScreen() {
       try {
         localStorage.setItem(SPELL_TARGET_SAVE_KEY, JSON.stringify(pendingRestore));
       } catch (e) {
-        msg.textContent = '⚠️ 保存に失敗しました（ブラウザのストレージが使えない可能性があります）';
+        msg.textContent = '保存に失敗しました（ブラウザのストレージが使えない可能性があります）';
         msg.style.color = 'var(--hp-color)';
         pendingRestore = null;
         applyBtn.textContent = 'このじゅもんで復活する';
         return;
       }
       Audio_.jobMastered();
-      msg.textContent = '✨ ふっかつした！';
+      msg.textContent = 'ふっかつした！';
       msg.style.color = '';
       applyBtn.disabled = true;
       setTimeout(() => location.reload(), 600);
@@ -53,7 +53,7 @@ export function initSpellScreen() {
     msg.textContent = '';
     const result = await decodeSpell(input.value);
     if (result.error) {
-      msg.textContent = `⚠️ ${result.error}`;
+      msg.textContent = result.error;
       msg.style.color = 'var(--hp-color)';
       return;
     }

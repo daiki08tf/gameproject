@@ -94,7 +94,7 @@ function decorateCodexCards(){
     const [id]=pair,g=state.codexFieldGuide?.(id); if(!g?.seen)return;
     const d=document.createElement('details'); d.className='ui-detail-disclosure packb-field-guide';
     d.innerHTML=`<summary>FIELD GUIDE — ${g.level.label}</summary><div class="ui-detail-body" style="font-size:12px;line-height:1.7">`
-      +`${g.role?`役割: ${g.role.icon||''} ${g.role.name}<br>`:''}`
+      +`${g.role?`役割: ${g.role.name}<br>`:''}`
       +`${g.behavior?`行動: ${g.behavior}<br>`:''}`
       +`${g.tacticalHint?`${g.tacticalHint}<br>`:''}`
       +`${g.habitatHint?`${g.habitatHint}<br>`:''}`
