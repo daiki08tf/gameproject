@@ -4,14 +4,14 @@
 
 **UI Overhaul (UIX)** is the active default priority.
 
-UIX-0 through UIX-5 are complete: source implementation and the live-viewport acceptance gate (390×844/375×667/desktop, fresh-save and progressed-save) both. UIX-6 batch 1 (Status/Job/Rebirth), batch 2 (Companion/Monster Ranch), batch 3 (Settlement facilities) and batch 4 (Codex/Rumor/records) are also complete, same gate. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10–§16 for the full record. UIX-6 batch 5 — Abyss/Rift/Secret Realm/Machine Realm/Bounty-Nemesis — is next and is the final UIX-6 batch; `UI_OVERHAUL_ROADMAP.md` §10 names its known emoji debt (Abyss: 15 glyphs). UIX-7 (Motion, Feedback and Accessibility) follows once it closes.
+UIX-0 through UIX-5 are complete: source implementation and the live-viewport acceptance gate (390×844/375×667/desktop, fresh-save and progressed-save) both. **UIX-6 is now fully complete** — all five batches (Status/Job/Rebirth, Companion/Monster Ranch, Settlement facilities, Codex/Rumor/records, Abyss/Rift/Secret Realm/Machine Realm/Bounty-Nemesis) have closed the same source contract and live-viewport gate. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10–§17 for the full record. UIX-7 (Motion, Feedback and Accessibility) is now the active phase.
 
 The stable baseline is main after:
 
 - Stage-first Core Loop Rework CLR-12–21;
 - PR #401/#402 roadmap closeout;
 - PR #403 live-browser playability and MutationObserver fixes;
-- UIX-0–5 (source and live-viewport gate).
+- UIX-0–6 (source and live-viewport gate).
 
 ## Read before changing code
 
@@ -115,4 +115,4 @@ Report:
 
 ## Default next action
 
-Continue UIX-6 — Character, Ranch, Settlement, Records and Endgame, with batch 5 (Abyss/Rift/Secret Realm/Machine Realm/Bounty-Nemesis) next — the final UIX-6 batch (scope and known emoji debt: `UI_OVERHAUL_ROADMAP.md` §10; Abyss: 15 glyphs, confirmed still present and untouched through every prior batch's live pass). Once it closes, move to UIX-7 (Motion, Feedback and Accessibility). Follow the same protocol as UIX-3–6b4: run a full static source scan for ground-truth emoji counts across every file that renders into the target screen's container, not just the files a prior note named, and check every file — even ones with zero emoji literals of their own — for data-object `icon`-field consumption (see `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §13–§16: every batch so far has found at least one such blind spot; batch 4 found `ENEMY_ROLES` icons leaking into three separate Codex render sites this way, on top of the Battle-screen instance batch 3 had already flagged and this batch then fixed with a `【role name】` text tag rather than dropping the reward signal outright), focused tests, full `npm test`, `npm run test:syntax`, ratchet `scripts/uix-emoji-check.js`'s ceiling down by the exact count removed, and a live-browser pass at 390×844/375×667/desktop before checking a batch complete. Do not claim a batch complete until that live gate is recorded, matching the standard UIX-0–6b4 set.
+Begin UIX-7 — Motion, Feedback and Accessibility Pass (`UI_OVERHAUL_ROADMAP.md` §6): short transition rules; damage/loot/unlock/discovery feedback; reduced-motion support; keyboard/focus behavior; a color/contrast audit; readable dynamic text sizing; safe-area handling; no animation that delays repeated farming actions. This is a different shape of phase than UIX-6's per-screen emoji/token migration — start by reading PROJECT_GUIDE.md and RELEASE_CANDIDATE_AUDIT.md per the read-before-changing-code list, then audit what motion/feedback/accessibility infrastructure already exists across the app (transition CSS, `prefers-reduced-motion` handling, focus outlines, ARIA usage, contrast) versus what UIX-7's own deliverables still require, before deciding how to phase/PR-slice the work. `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10–§17 records the now-closed UIX-6 program for reference on established conventions (Dark Chronicle tokens, the emoji-free contract, the DOM-safety/MutationObserver idempotency rules) that UIX-7 must continue to respect.

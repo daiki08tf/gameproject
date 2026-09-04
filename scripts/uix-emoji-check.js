@@ -5,7 +5,7 @@ const ROOTS = ['index.html', 'js', 'css'];
 const SOURCE_EXTENSION = /\.(?:html|js|css)$/;
 const PICTOGRAPH = /\p{Extended_Pictographic}/gu;
 const SHELL_MARKERS = /homeGoldText|abyssShardText|manastoneText|menu-icon|weaponCodexBtn|autoEquipBtn|home-hero|phase14-next|phase14-home-summary|endgame-guide/;
-const MAX_APP_PICTOGRAPHS = 276;
+const MAX_APP_PICTOGRAPHS = 266;
 
 function collect(target, output = []) {
   const stat = fs.statSync(target);

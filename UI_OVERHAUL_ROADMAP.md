@@ -382,7 +382,7 @@ Implemented source contract:
 
 Live-viewport pass (390×844/375×667/desktop, fresh-save and progressed-save with a QA-granted rare/epic/legendary sword and shield spread): Equipment (paperdoll → filter → slot picker → SELECTED DETAIL, including a real ATK/CRIT/MAG comparison against the starting sword), weapon Codex, Blacksmith (強化/整理 tabs with populated Gold/欠片 cost text and ロック buttons, 鍛造3.0). Zero rendered emoji on every UIX-5-owned screen in either save state at any viewport; zero new console/page errors. Desktop's two-column `equip-layout` grid (paperdoll+filters+list on the left, sticky SELECTED DETAIL on the right) confirmed working at 1280×900. Not separately walked: the Option Fusion material-consumption panel (needs a same-family duplicate weapon *instance* with rolled Options, which the QA save fast-track doesn't synthesize) — its token CSS and confirm-guard are asserted at the source level instead. Monster Codex (5–6 glyphs) remains untouched, confirmed still UIX-6 scope.
 
-### [ ] UIX-6 — Character, Ranch, Settlement, Records and Endgame
+### [x] UIX-6 — Character, Ranch, Settlement, Records and Endgame ✅ COMPLETE
 
 Goal: bring all secondary surfaces into the same system without flattening their identities.
 
@@ -392,7 +392,9 @@ Batches:
 2. [x] Companion / Monster Ranch — **COMPLETE**;
 3. [x] Settlement facilities — **COMPLETE**;
 4. [x] Codex / Rumor / records — **COMPLETE**;
-5. [ ] Abyss / Rift / Secret Realm / Machine Realm / Bounty/Nemesis.
+5. [x] Abyss / Rift / Secret Realm / Machine Realm / Bounty/Nemesis — **COMPLETE**.
+
+UIX-6 is now fully complete, source and live-viewport gate both. UIX-7 (Motion, Feedback and Accessibility Pass, §6 below) is next.
 
 Each batch is a separate PR unless the audit proves it is genuinely small.
 
@@ -460,6 +462,25 @@ Implemented source contract:
 - `tests/uix6-batch4-codex-records.test.js` (7 tests) locks the emoji-free contract across all 9 touched files, the point-of-render-only icon fixes, the text-tag (not dropped) fix for the tested Battle-screen reward signal, the Spell-screen message fixes, the jobCodexUi.js token fix, and no new calculation authority (`spellScreen.js`'s existing `localStorage` use for the save-code key is the one deliberate exception, asserted explicitly).
 
 Live-viewport pass (390×844/375×667/desktop, fresh-save; progressed-save at 390×844): Monster Codex (with every `<summary>` expanded — Rumor Notebook, Field Guide disclosures, ecology/tactical-analysis sections) and the Spell screen (generate, and an invalid-code submission) walked at every viewport in both save states; the progressed save's real Observed-Branch/Hunt battles populated genuine `roleKnown`/`analyzed` Codex entries (via the existing kill/inspect-driven knowledge system, not a QA shortcut), confirmed rendering plain role-name text (e.g. `役割：守護`) with no emoji. Zero rendered emoji across all 44 fresh-run and 39 progressed-run captured steps at every viewport, excluding the already-documented, out-of-scope Abyss glyphs (batch 5 territory). Zero new console/page errors beyond the same two pre-existing benign items.
+
+#### [x] Batch 5 — Abyss / Rift / Secret Realm / Machine Realm / Bounty/Nemesis ✅ COMPLETE — final UIX-6 batch
+
+Scope resolution: this batch's five-part name describes flavor content reachable from a single screen, not five separate screens. `js/screens/abyss.js` is the sole Abyss screen; "Rift" (`rift_scar`) and the other named danger routes (`armory`/`beast_den`/`blood_mist`/`golden_vault`/`veil_fracture`) are entries in `data/abyssRoutes.js`'s route-choice table, rendered by this same screen's `renderRouteChoices()`. "Secret Realm" is entered the same way, via this screen's `renderExploration()`. "Bounty/Nemesis" is a Living World feature (`js/patches/adventureWorld4LivingWorldUi.js`) rendered into the Adventure Route screen — UIX-3 territory, confirmed already emoji-free and unchanged by this batch. "Machine Realm" has no implemented standalone screen at all; the term exists only as authored flavor/lore text (`機械装甲` trait, `未知の機械音` discovery hint) scattered across Story chapters — nothing to migrate.
+
+`js/screens/abyss.js` carried 10 literal glyphs (🔒🧭🚪🔎⚖🔥☠⚖🔥🔹) plus 2 more render sites reading category-2 `icon` fields with no literal of their own in this file — `route.icon` (from `data/abyssRoutes.js`, the actual source of the "Rift" `🌀` and sibling route glyphs seen in every prior batch's live-pass screenshots) and `c.icon` (from `data/abyssChallenges.js`). Total: 12 fixes in one file — this batch needed no further splitting.
+
+Implemented source contract:
+
+- Panel/heading icon prefixes (RAID-locked `🔒`, `横軸探索`, exploration-site `🚪`/`🔎`, `深淵盟約`, `深淵への誓約`) dropped — plain text or an existing LOCKED-style text badge, matching the established pattern.
+- `route.icon` and `c.icon` (category 2, canonical `data/abyssRoutes.js`/`data/abyssChallenges.js` presentation metadata) stopped at the render site; neither data file was touched.
+- The route-choice card's risk line (`☠`) became `▲`, pairing with the reward line's existing `◆` — both already-established non-pictographic symbols, not a new one.
+- The route-choice card's inline active-pact/-challenge summary lines (`⚖️`/`🔥`) became `盟約:`/`誓約:` text labels.
+- The Abyss Tree node's upgrade-cost button (`🔹`) drops its icon — the cost number in parentheses already carries the information.
+- `tests/uix6-batch5-abyss-endgame.test.js` (5 tests) locks the emoji-free contract, the point-of-render-only icon fixes, the specific symbol/text replacements, confirms the Living-World Bounty/Nemesis feature needed no change, and no new calculation authority.
+
+Live-viewport pass (390×844/375×667/desktop, both fresh-save — where Abyss is correctly locked and not opened, per UIX-3's own established pattern — and progressed-save, where all ten chapters are cleared and Abyss is unlocked): the Abyss screen's both tabs (挑戦/深淵ツリー) walked at all three viewports on the progressed save, covering Raid, Horizontal Mastery, Exploration, Pacts, Challenges, Route Choices and the Tree panel in one page-text scan each. Zero rendered emoji across all fresh-run and progressed-run captured steps at every viewport (130 fresh-run steps and 125 progressed-run steps combined across all three viewports) — a clean sweep with no exceptions, since Abyss was the last screen carrying documented, in-scope emoji debt. Zero new console/page errors beyond the same pre-existing benign items already documented in §10–§16 (favicon.ico 404; the UIX-3 safe-return-wording residual; an occasional desktop battle-RNG variance already noted in §11).
+
+**UIX-6 is now fully complete.** Every batch (1 Status/Job/Rebirth, 2 Companion/Monster Ranch, 3 Settlement facilities, 4 Codex/Rumor/records, 5 Abyss/Rift/Secret Realm/Machine Realm/Bounty-Nemesis) has closed its source contract and live-viewport gate. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10–§17 for the complete record. UIX-7 (Motion, Feedback and Accessibility) is next.
 
 ### [ ] UIX-7 — Motion, Feedback and Accessibility Pass
 
@@ -555,6 +576,6 @@ Gear Overhaul Phase 6 and later remain valid and resume after UIX-8. UIX-5 may i
 
 ## 10. Handoff summary
 
-UIX-0 through UIX-5 are complete, source and live-viewport gate both. UIX-6 batches 1 (Status / Job / Rebirth), 2 (Companion / Monster Ranch), 3 (Settlement facilities) and 4 (Codex / Rumor / records) are also complete, source and live-viewport gate both. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10–§16 for the full live-viewport record (390×844/375×667/desktop, fresh-save and progressed-save).
+UIX-0 through UIX-5 are complete, source and live-viewport gate both. **UIX-6 is also fully complete** — all five batches (1 Status/Job/Rebirth, 2 Companion/Monster Ranch, 3 Settlement facilities, 4 Codex/Rumor/records, 5 Abyss/Rift/Secret Realm/Machine Realm/Bounty-Nemesis) have closed their source contract and live-viewport gate. See `UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md` §10–§17 for the full live-viewport record (390×844/375×667/desktop, fresh-save and progressed-save).
 
-The next default task is **UIX-6 batch 5 — Abyss / Rift / Secret Realm / Machine Realm / Bounty/Nemesis**, the final UIX-6 batch. Prior audits located this batch's emoji debt at the source level: Abyss (15 glyphs, danger/pact iconography) — confirmed still present and untouched as of every prior batch's live pass. Once this batch is complete, UIX-6 as a whole closes and UIX-7 (Motion, Feedback and Accessibility) becomes the default next program phase. Follow the same protocol as UIX-3–6b4: full static source scan for ground-truth emoji counts across every file that renders into the target screen's container, not just the files a prior note named, and check for data-object `icon`-field consumption even in files with zero emoji *literals* of their own — every batch so far has found at least one such blind spot (batch 3 found two, plus a whole extra file its container ids hid from the initial grep; batch 4 found the same `ENEMY_ROLES` icon leaking into three different Codex render sites, plus the previously-flagged Battle-screen instance) — focused tests, full `npm test`, `npm run test:syntax`, ratchet `scripts/uix-emoji-check.js`'s ceiling down by the exact count removed, and a live-browser pass at all three required viewports before checking a batch complete.
+The next default task is **UIX-7 — Motion, Feedback and Accessibility Pass** (§6 above: transition rules, damage/loot/unlock/discovery feedback, reduced-motion support, keyboard/focus behavior, color/contrast audit, dynamic text sizing, safe-area handling). Read this roadmap's §6 UIX-7 deliverables and PROJECT_GUIDE.md/RELEASE_CANDIDATE_AUDIT.md before starting, per CLAUDE.md's read-before-changing-code list — this is a different kind of phase than UIX-6's per-screen emoji/token migration and needs its own audit of what motion/feedback/accessibility infrastructure already exists versus what's missing, not a file-by-file emoji sweep. UIX-8 (Real-device Release Readiness) remains after UIX-7 closes.
