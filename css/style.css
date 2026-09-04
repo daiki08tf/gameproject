@@ -344,6 +344,33 @@ button { font-family: inherit; }
   text-align: center;
 }
 .result-drop-wrap.eq3-special .result-item-chip { border-color: var(--dc-brass-500); }
+/* UIX-7 Phase 3: loot feedback. Each chip is a freshly-created DOM node
+   every time renderResult() runs (itemsEl.innerHTML='' + rebuild), so a
+   plain CSS animation on the class replays automatically on every Result
+   — no JS retrigger needed. The whole #resultScreen already fades in via
+   UIX-7 Phase 2's dc-screen-in; this adds a second, complementary beat
+   specifically on the loot itself arriving, short and opacity/transform
+   only (no glow/particles, per the Dark Chronicle "avoid excessive glow"
+   direction), and is covered by the same app-wide reduced-motion override. */
+.result-loot-headline,
+.result-item-chip {
+  animation: dc-result-in var(--dc-motion-base, 160ms) var(--dc-ease, ease-out) both;
+}
+@keyframes dc-result-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* A jackpot/special drop already gets a text headline
+   (equipment3DropHeadline); give its chip a matching restrained border/
+   background tint so the two reinforce each other at a glance instead of
+   every drop reading with equal visual weight. */
+.result-drop-wrap.eq3-jackpot .result-item-chip {
+  border-color: var(--dc-brass-300);
+  background: linear-gradient(180deg, rgba(212, 189, 122, .16), var(--dc-ink-800, var(--card-bg)));
+}
+.result-drop-wrap.eq3-special .result-item-chip {
+  background: linear-gradient(180deg, rgba(169, 139, 79, .1), var(--dc-ink-800, var(--card-bg)));
+}
 
 /* ---------------------------------------------------------
    装備

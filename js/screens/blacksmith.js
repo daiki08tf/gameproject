@@ -3,6 +3,7 @@ import { getItem, RARITY, WEAPON_TYPES, WEAPON_MASTERY_THRESHOLD } from '../data
 import { getRune, craftableRunes } from '../data/runes.js';
 import { jobsByTier } from '../data/jobs.js';
 import { Audio_ } from '../audio.js';
+import { showToast } from '../patches/toastFeedback.js';
 import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER, WEAPON_CODEX_LAYER } from '../data/balance.js';
 
 const AFFIX_STAT_LABEL = { atk: 'ATK', def: 'DEF', hp: 'HP', mag: 'MAG', spd: 'SPD', crit: 'CRIT' };
@@ -121,7 +122,7 @@ function renderAwakenWeaponCard(id, item) {
     </button>
   `;
   card.querySelector('button').addEventListener('click', () => {
-    if (state.awakenWeapon(id)) { Audio_.jobMastered(); renderBlacksmith(); }
+    if (state.awakenWeapon(id)) { Audio_.jobMastered(); showToast(`${item.name} が目覚めた！`); renderBlacksmith(); }
   });
   return card;
 }
@@ -145,7 +146,7 @@ function renderAffixCard(id, item) {
     </button>
   `;
   card.querySelector('button').addEventListener('click', () => {
-    if (state.rollAffix(id)) { Audio_.jobMastered(); renderBlacksmith(); }
+    if (state.rollAffix(id)) { Audio_.jobMastered(); showToast(`${item.name} に極Affixを付与した！`); renderBlacksmith(); }
   });
   return card;
 }
@@ -363,7 +364,7 @@ function appendAffix2Section(card, id, tier) {
     </button>
   `;
   wrap.querySelector('button').addEventListener('click', () => {
-    if (state.rollAffix2(id)) { Audio_.jobMastered(); renderBlacksmith(); }
+    if (state.rollAffix2(id)) { Audio_.jobMastered(); showToast(`${getItem(id)?.name || ''} に第2の極Affixを付与した！`); renderBlacksmith(); }
   });
   card.appendChild(wrap);
 }

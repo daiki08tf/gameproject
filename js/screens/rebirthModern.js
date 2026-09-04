@@ -1,5 +1,6 @@
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
+import { showToast } from '../patches/toastFeedback.js';
 import { ARTIFACTS, getArtifact } from '../data/artifacts.js';
 
 let activeTab = 'reincarnate';
@@ -39,7 +40,7 @@ function renderInheritance(content) {
   panel.className = 'rebirth-panel';
   panel.innerHTML = `<div class="section-heading">継承 — Character成長の周回</div><p class="sub">Character LvをLv.1へ戻し、育てた基礎能力の一部を次の周回へ継承します。Job Lv・MASTER・装備・仲間・Rune・図鑑・進行・覚醒Rankは維持されます。</p><p class="sub">今回の継承率：<strong>${Math.round(preview.ratePct*1000)/1000}%</strong> ／ 獲得BP：<strong>${preview.bonusPoints.toLocaleString()} pt</strong></p><div class="status-grid">${rows}</div><button class="btn-main" id="doInheritanceBtn">${inheritArmed ? '本当に継承する' : '継承する'}</button>${inheritArmed ? '<button class="btn-sub" id="cancelInheritanceBtn" style="width:100%;margin-top:8px;">やめる</button>' : ''}`;
   content.appendChild(panel);
-  panel.querySelector('#doInheritanceBtn').addEventListener('click', () => { if (!inheritArmed) { inheritArmed = true; renderRebirth(); return; } state.performInheritance(); Audio_.jobMastered(); inheritArmed = false; renderRebirth(); });
+  panel.querySelector('#doInheritanceBtn').addEventListener('click', () => { if (!inheritArmed) { inheritArmed = true; renderRebirth(); return; } state.performInheritance(); Audio_.jobMastered(); showToast('継承した！'); inheritArmed = false; renderRebirth(); });
   panel.querySelector('#cancelInheritanceBtn')?.addEventListener('click', () => { inheritArmed = false; renderRebirth(); });
 
   const allocation = document.createElement('div');
@@ -60,7 +61,7 @@ function renderAwakening(content) {
     const card = document.createElement('div'); card.className = 'forge-card';
     card.innerHTML = `<div class="forge-card-top"><div class="forge-card-name">${def.name}</div><strong>${unlocked ? '★解放済み' : current ? 'NEXT' : 'LOCK'}</strong></div><div class="forge-card-sub">${def.description}</div><div class="forge-card-sub">${progress.checks.map((c) => `${c.met ? '✓' : '○'} ${c.label}`).join('<br>')}</div><div class="forge-card-sub"><strong>解放：</strong>${def.unlocks.join(' / ')}</div>${current ? `<button class="forge-card-btn" id="claimAwakeningBtn" ${progress.met ? '' : 'disabled'}>覚醒Rank ${def.rank} を解放する</button>` : ''}`;
     content.appendChild(card);
-    card.querySelector('#claimAwakeningBtn')?.addEventListener('click', () => { if (state.claimAwakeningV2()) { Audio_.jobMastered(); renderRebirth(); } });
+    card.querySelector('#claimAwakeningBtn')?.addEventListener('click', () => { if (state.claimAwakeningV2()) { Audio_.jobMastered(); showToast(`覚醒Rank ${def.rank} 解放！`); renderRebirth(); } });
   }
   if (!next.def) { const done = document.createElement('p'); done.className = 'hint'; done.textContent = '第四覚醒まで解放済みです。以後のLv3,000〜99,999は深淵Era・Relic・装備・横コンテンツで成長します。'; content.appendChild(done); }
 }
