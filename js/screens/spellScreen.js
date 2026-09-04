@@ -37,7 +37,7 @@ export function initSpellScreen() {
         localStorage.setItem(SPELL_TARGET_SAVE_KEY, JSON.stringify(pendingRestore));
       } catch (e) {
         msg.textContent = '保存に失敗しました（ブラウザのストレージが使えない可能性があります）';
-        msg.style.color = 'var(--hp-color)';
+        msg.style.color = 'var(--dc-danger-300)';
         pendingRestore = null;
         applyBtn.textContent = 'このじゅもんで復活する';
         return;
@@ -54,7 +54,7 @@ export function initSpellScreen() {
     const result = await decodeSpell(input.value);
     if (result.error) {
       msg.textContent = result.error;
-      msg.style.color = 'var(--hp-color)';
+      msg.style.color = 'var(--dc-danger-300)';
       return;
     }
     pendingRestore = result.data;
