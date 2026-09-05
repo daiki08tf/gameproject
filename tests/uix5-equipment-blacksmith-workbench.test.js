@@ -92,7 +92,13 @@ test('UIX-5 keeps destructive actions (dispose/sell/dismantle, Option Fusion mat
   assert.match(blacksmith, /sellBtn\.disabled = locked/);
   assert.match(blacksmith, /dismantleBtn\.disabled = locked/);
   assert.match(blacksmith, /ロック中は売却・分解できません/);
-  assert.match(equipmentFusion, /globalThis\.confirm/);
+  // Option Fusion material consumption moved off native globalThis.confirm()
+  // to a two-step select→"確定して融合" UI pattern (PR #408, mobile Option
+  // Fusion stabilization) — still an explicit, protected confirmation, just
+  // not a native dialog that behaves poorly on mobile.
+  assert.doesNotMatch(equipmentFusion, /globalThis\.confirm|window\.confirm/);
+  assert.match(equipmentFusion, /fusionPendingMaterialKey/);
+  assert.match(equipmentFusion, /確定して融合/);
 });
 
 test('UIX-5 preserves the compact-detail MutationObserver idempotency contract (Equipment 4 / Option Fusion decorators)', () => {
