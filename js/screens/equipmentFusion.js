@@ -193,7 +193,16 @@ function decorateRow(row, itemId) {
 
   if (open) {
     row.classList.add('option-fusion-expanded');
-    row.style.alignItems = 'stretch';
+    // No row.style.alignItems here: equipmentCompactUi.js's later decoration
+    // (loaded whenever a row also becomes .equip-compact-card) makes .pick-row
+    // a CSS Grid, where align-items:stretch on the container stretches every
+    // child lacking its own align-self to match its grid row's tallest
+    // sibling — with .option-fusion-panel's material list auto-placed next to
+    // a narrow action-button column, that inflated the whole row to
+    // near-viewport height. The "reserve full width" intent this line was
+    // trying to express is achieved for real, under both flex and grid, by
+    // the explicit width/flex-basis overrides below plus
+    // equipmentCompact.css's grid-column:1/-1 on the Fusion elements.
     const main = row.querySelector('.pick-main');
     if (main) {
       main.style.flex = '1 0 100%';

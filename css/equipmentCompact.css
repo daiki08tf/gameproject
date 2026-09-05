@@ -37,6 +37,44 @@
 #equipmentScreen .equip-compact-detail-body .affix-desc{color:var(--ui-muted)}
 #equipmentScreen .equip-compact-detail-body .eq3-special-line{font-size:10px;line-height:1.4}
 #equipmentScreen .equip-compact-compare{margin-top:1px;font-size:10px;line-height:1.4}
+/* equipment4.css's Phase 4B compact-row rule (`display:none` on
+   .item-stats/.eq3-meta/.affix-block/.eq3-special-line/.compare-line for any
+   .equipment4-compact-row, so the scanning list stays short) predates this
+   details/summary disclosure and is more specific than the plain-class rules
+   above, so it silently wins the cascade and keeps these elements hidden even
+   once moved inside .equip-compact-detail-body and expanded — this is exactly
+   the "選ぶと詳細が消えた" (Option/Affix info no longer visible from Equipment)
+   regression: the disclosure toggles open but reveals nothing. This disclosure
+   body *is* Equipment 4.0's own "selected detail" — restore visibility for
+   content once it's inside it, and do the same for the comparison line
+   equipmentCompactUi.js explicitly keeps visible via .equip-compact-compare. */
+#equipmentScreen .equip-picker > .equipment4-compact-row .equip-compact-detail-body .item-stats,
+#equipmentScreen .equip-picker > .equipment4-compact-row .equip-compact-detail-body .eq3-meta,
+#equipmentScreen .equip-picker > .equipment4-compact-row .equip-compact-detail-body .affix-block,
+#equipmentScreen .equip-picker > .equipment4-compact-row .equip-compact-detail-body .eq3-special-line,
+#equipmentScreen .equip-picker > .equipment4-compact-row .compare-line.equip-compact-compare{
+  display:block;
+}
+/* .affix-block's own children stay a flex column (matches equipment.js's
+   plain, non-compact rendering — a single `display:block` above would
+   collapse the gap between stacked .affix-line rows). */
+#equipmentScreen .equip-picker > .equipment4-compact-row .equip-compact-detail-body .affix-block{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+/* Option Fusion's injected controls (equipmentFusion.js) predate this grid
+   layout and were written assuming .pick-row is still a flexbox — without an
+   explicit grid-column they get auto-placed into single grid cells sized by
+   *other* rows' narrow action-button column, wrapping "OPTION FUSION" one
+   character per line next to a stretched, empty-looking cell. Span the full
+   row explicitly so each becomes its own full-width row regardless of what
+   other cards' columns measure. */
+#equipmentScreen .equip-compact-card > .option-fusion-actions,
+#equipmentScreen .equip-compact-card > .option-fusion-panel{
+  grid-column:1 / -1;
+  align-self:start;
+}
 #equipmentScreen .equip-paperdoll-compact{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
