@@ -1,6 +1,8 @@
 import { CHAPTERS } from '../data/stages.js';
 import { journeyName } from '../data/worldVeil.js';
 import { buildSecretRealmStage } from '../data/secretRealms.js';
+import { buildRiftStage } from '../data/riftStages.js';
+import { riftDanger, riftReward } from '../data/riftKeys.js';
 import { world3EventStageByFlag } from '../data/world3EventStages.js';
 import { EIGHTH_KEY_STAGES, eighthKeyProgress } from '../data/phase9EighthKey.js';
 import { state } from '../state.js';
@@ -76,7 +78,18 @@ function renderWorld2StageSelect(onPick){
     if(p.unlocked&&site.realm){const enter=document.createElement('button');enter.className='btn-main';enter.textContent='異界へ入る';enter.addEventListener('click',ev=>{ev.stopPropagation();Audio_.tap();onPick(buildSecretRealmStage(site.realm.id));});actions.appendChild(enter);}
     card.firstElementChild.appendChild(actions);list.appendChild(card);
   }
-  const riftCount=state.riftKeys?.().length||0;if(riftCount){const r=document.createElement('div');r.className='stage-card branch';r.innerHTML=`<div><div class="name">裂界鍵</div><div class="rec">所持 ${riftCount}本。既存のRift Key処理を維持しつつ、World 3の発見物として追跡する。</div></div>`;list.appendChild(r);}
+  const riftKeys=state.riftKeys?.()||[];
+  if(riftKeys.length){const h=document.createElement('div');h.className='section-heading';h.textContent=`裂界鍵 — 所持 ${riftKeys.length}本`;list.appendChild(h);}
+  for(const key of riftKeys){
+    const stage=buildRiftStage(key);if(!stage)continue;
+    const card=document.createElement('div');card.className='stage-card branch';card.dataset.stageId=stage.id;
+    const body=document.createElement('div');body.style.cssText='min-width:0;overflow-wrap:anywhere';
+    const name=document.createElement('div');name.className='name';name.textContent=stage.name;
+    const rec=document.createElement('div');rec.className='rec';rec.textContent=`推奨Lv ${stage.recLevel} / 目標IP ${stage.itemPowerTarget} / 出撃時にこの鍵を1本消費`;
+    const enter=document.createElement('button');enter.className='btn-main';enter.textContent='裂界へ挑む';
+    enter.addEventListener('click',()=>{Audio_.tap();onPick(stage);});
+    body.append(name,rec,enter);card.appendChild(body);list.appendChild(card);
+  }
 }
 
 // CLR-21 — appends the one authored, playable Observed Branch (currently
@@ -166,6 +179,7 @@ export function renderStageConfirm(stage) {
   document.getElementById('confirmStageRewards').textContent = rewardText;
   const modEl = document.getElementById('confirmModifiers');
   if(stage.raid){const tags=(stage.raidDangerTags||[]).join(' / ');modEl.textContent=`RAID PREPARATION\n危険: ${tags}\nMechanic: ${stage.raidMechanic}\n攻略ヒント: ${stage.raidCounterHint}\n報酬: ${stage.raidRewardHint}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
+  else if(stage.isRift){const dangers=(stage.riftKey.dangers||[]).map(riftDanger).filter(Boolean).map(d=>d.name).join(' / ');modEl.textContent=`裂界：出撃時にこの鍵を1本消費（撤退・敗北でも戻りません）\n危険：${dangers||'なし'}\n報酬特性：${riftReward(stage.riftKey.reward)?.name||'通常'}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if(stage.keyDungeon){modEl.textContent=`${stage.world3Identity||'境界鍵ダンジョン'}：出撃時に鍵を1本消費\n${stage.world3Goal||''}${stage.world3Goal?'\n':''}${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if(stage.worldEventStage){modEl.textContent=`探索分岐：${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||stage.name}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
   else if(stage.secretRealm){modEl.textContent=`異界：${stage.abyssEra||stage.name}\n${stage.modifiers?.map(m=>`${m.name}（${m.desc}）`).join(' ／ ')||''}`;modEl.style.whiteSpace='pre-line';modEl.classList.remove('hidden');}
