@@ -6,6 +6,7 @@ on:
       - chatgpt/observed-branches-m6-deep-green-absence
     paths:
       - scripts/apply-observed-branches-m6.py
+      - scripts/patch-m6-legacy-regressions.py
       - .github/workflows/chatgpt-m6-apply.yml
 
 permissions:
@@ -29,6 +30,7 @@ jobs:
       - name: Apply Observed Branches M6
         run: |
           python scripts/apply-observed-branches-m6.py
+          python scripts/patch-m6-legacy-regressions.py
           python -c "from pathlib import Path; p=Path('tests/observed-branches-m6.test.js'); s=p.read_text(); s=s.replace('const stage=findStage(stageId);', 'const found=findStage(stageId);\n    const stage=found?.stage;'); p.write_text(s)"
 
       - name: Focused M6 regression
@@ -71,7 +73,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          rm -f chatgpt-m6-full-test.log .github/workflows/chatgpt-m6-apply.yml scripts/apply-observed-branches-m6.py scripts/patch-m6-tests.py scripts/patch-m6-tests-v2.py
+          rm -f chatgpt-m6-full-test.log .github/workflows/chatgpt-m6-apply.yml scripts/apply-observed-branches-m6.py scripts/patch-m6-legacy-regressions.py scripts/patch-m6-tests.py scripts/patch-m6-tests-v2.py
           git add -A
           git commit -m "feat: implement Observed Branches M6 deep green absence"
           git push origin HEAD:chatgpt/observed-branches-m6-deep-green-absence
