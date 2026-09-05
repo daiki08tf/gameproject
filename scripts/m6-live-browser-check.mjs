@@ -9,6 +9,10 @@ const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
 const pageErrors = [];
 page.on('pageerror', error => pageErrors.push(String(error)));
+// Keep the real app document/CSS, but suppress main.js's full startup graph so this
+// smoke can drive the exact CP4 + Stage modules deterministically without racing
+// unrelated startup/navigation side effects.
+await page.route('**/js/main.js', route => route.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
 
 await page.goto(BASE, { waitUntil: 'networkidle' });
 
