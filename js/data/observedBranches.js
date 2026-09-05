@@ -78,6 +78,10 @@ export const OBSERVED_BRANCHES=Object.freeze([
       information:'advancedMajor',
       material:'advanced',
     }),
+    // Read-only presentation override: M1's shared `regressedMajor` symbol is ↓↓,
+    // while the M6 roadmap deliberately authors Bio as the more severe ↓↓↓ collapse.
+    // The semantic profile value remains `regressedMajor`; this adds no progression authority.
+    technologyPresentation:Object.freeze({bio:'↓↓↓'}),
     ecologyProfile:Object.freeze({
       settlement:'観測杭と測線で結ばれた空白域集落',
       species:'森の種族は消滅し、根の記憶だけが地形に残存',
