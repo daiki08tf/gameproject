@@ -24,6 +24,7 @@ function toggleFavorite(stageId){
   if(i>=0)d.favoriteStageIds.splice(i,1);else d.favoriteStageIds.unshift(stageId);
   state.save();return d.favoriteStageIds.includes(stageId);
 }
+function storyChapters(){return CHAPTERS.filter(chapter=>/^ch\d+$/.test(String(chapter?.id||'')));}
 function allKnownStages(){
   const out=[];
   for(const chapter of CHAPTERS)for(const stage of chapter.stages||[])out.push(stage);
@@ -43,7 +44,7 @@ function nextGoal(){
     const pending=allKnownStages().find(stage=>stage.id===session.pendingEncounter?.stageId);
     return {kicker:'SUSPENDED EXPEDITION',record:region?.name||'中断中の地域探索',status:'RESUME',title:pending?.name||'中断中の冒険',sub:'前回の地点から再開できます',stageId:pending?.id||null,suspended:true};
   }
-  for(const chapter of CHAPTERS){
+  for(const chapter of storyChapters()){
     for(const stage of chapter.stages||[]){
       if(stage.branch||stage.bounty)continue;
       if(!state.isStageCleared(stage.id))return {kicker:'NEXT STORY',record:`CHAPTER ${String(chapter.num).padStart(2,'0')} / STAGE ${stage.id}`,status:'NEXT',title:stage.name,sub:`${chapter.name} / 推奨Lv ${stage.recLevel}`,stageId:stage.id,suspended:false};
@@ -66,7 +67,7 @@ function enhanceHome(){
   if(adventure)adventure.setAttribute('aria-label',`${actionLabel}：${n.title}`);
   let sum=menu.querySelector('.phase14-home-summary');if(!sum){sum=document.createElement('div');sum.className='phase14-home-summary';goal.after(sum);}
   const equippedId=state.data.equipped?.weapon,baseItemId=state.data.weaponInstances?.[equippedId]?.itemId||equippedId,weapon=getItem(baseItemId);
-  const storyStages=CHAPTERS.flatMap(chapter=>(chapter.stages||[]).filter(stage=>!stage.branch&&!stage.bounty));
+  const storyStages=storyChapters().flatMap(chapter=>(chapter.stages||[]).filter(stage=>!stage.branch&&!stage.bounty));
   const storyClears=storyStages.filter(stage=>state.isStageCleared(stage.id)).length;
   sum.innerHTML=`<span class="phase14-chip"><small>BUILD</small>${weapon?.name||'武器未装備'}</span><span class="phase14-chip"><small>STORY</small>${storyClears}/${storyStages.length}</span><span class="phase14-chip"><small>ABYSS</small>${state.data.abyssBestDepth||0}F</span>`;
 }

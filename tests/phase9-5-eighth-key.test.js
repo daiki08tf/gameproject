@@ -36,5 +36,5 @@ test('Machine World becomes a selectable playable world layer after Zero Gate',(
   const signal=world3RealmNodeState(modern,{modern:'hidden'},{phase9EighthKeyObserved:true});
   assert.equal(signal.state,'signal');
   const open=world3RealmNodeState(modern,{modern:'hidden'},{phase9MachineWorldOpen:true});
-  assert.equal(open.name,'機界');assert.equal(open.state,'open');assert.equal(open.selectable,true);assert.equal(open.route,25);
+  assert.equal(open.name,'機界');assert.equal(open.state,'open');assert.equal(open.selectable,true);assert.equal(open.route,'machine_world');
 });
