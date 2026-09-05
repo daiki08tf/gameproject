@@ -13,6 +13,31 @@ export const CP4_FIRST_BRANCH_ANCHOR=Object.freeze({
   next:'観測点は識別できるが、まだそこへ移動する方法はない。',
 });
 
+export const CP4_SECOND_BRANCH_ANCHOR=Object.freeze({
+  id:'deep-green-absence-anchor',
+  branchSightDiscoveryId:'cp4:branch-sight:active',
+  sourceEvidenceDiscoveryId:'cp4:parallax:first-contact',
+  prerequisiteAnchorDiscoveryId:'cp4:branch-anchor:tree-sovereign',
+  discoveryId:'cp4:branch-anchor:deep-green-absence',
+  chapterNum:2,
+  hiddenLabel:'別の歴史的重なり',
+  name:'観測分岐：深緑消失域',
+  preview:'分岐視を通すと、既知の森と王樹領のさらに外側に、森のない白い境界傷だけが同じ座標へ固定されている。',
+  observed:'白い境界傷は観測ノイズではない。正史の旅より前に境界崩壊が起こり、森林圏そのものが消失した別の整合した歴史として固定されている。',
+  next:'観測座標が安定した。既知の深緑の森から、この消失域のStageを選択できる。',
+});
+
+export function cp4SecondBranchAnchorProgress({discoveries={}}={}){
+  const anchor=CP4_SECOND_BRANCH_ANCHOR;
+  const branchSight=Boolean(discoveries[anchor.branchSightDiscoveryId]);
+  const evidence=Boolean(discoveries[anchor.sourceEvidenceDiscoveryId]);
+  const firstAnchor=Boolean(discoveries[anchor.prerequisiteAnchorDiscoveryId]);
+  const observed=Boolean(discoveries[anchor.discoveryId]);
+  if(!branchSight||!evidence||!firstAnchor)return Object.freeze({state:'hidden',visible:false,observed:false});
+  if(observed)return Object.freeze({state:'observed',visible:true,observed:true});
+  return Object.freeze({state:'recognizable',visible:true,observed:false});
+}
+
 export function cp4FirstBranchAnchorProgress({discoveries={}}={}){
   const anchor=CP4_FIRST_BRANCH_ANCHOR;
   const branchSight=Boolean(discoveries[anchor.branchSightDiscoveryId]);

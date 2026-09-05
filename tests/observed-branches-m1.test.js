@@ -46,8 +46,8 @@ test('M1 discovery conditions reuse the CP4 anchor deterministically',()=>{
 
 test('M1 can resolve Branches by the existing Prime Region reference',()=>{
   const matches=observedBranchesForPrimeRegion({worldRegionId:'frontier',chapterNum:2});
-  assert.equal(matches.length,1);
-  assert.equal(matches[0].id,'tree-sovereign-deep-green');
+  assert.equal(matches.length,2);
+  assert.deepEqual(matches.map(branch=>branch.id),['tree-sovereign-deep-green','deep-green-absence']);
   assert.deepEqual(observedBranchesForPrimeRegion({worldRegionId:'elemental'}),[]);
 });
 

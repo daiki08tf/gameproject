@@ -15,9 +15,10 @@ test('CP4-5 defines authored reactions for Rumor, Codex, Chronicle and Research 
   assert.equal(def.rumorId,'rumor:cp4:deep-green-record-conflict');
   assert.match(def.rumor.hint,/誤記ではなかった|別の固定された履歴/);
   assert.equal(def.codex.title,'深緑の森 — 歴史的不整合');
-  assert.equal(def.chronicle.length,2);
+  assert.equal(def.chronicle.length,3);
   assert.equal(def.chronicle[0].sourceDiscoveryId,'cp4:parallax:first-contact');
   assert.equal(def.chronicle[1].sourceDiscoveryId,'cp4:branch-anchor:tree-sovereign');
+  assert.equal(def.chronicle[2].sourceDiscoveryId,'cp4:branch-anchor:deep-green-absence');
   assert.equal(def.research.id,'cp4-tree-sovereign-ecology-comparison');
   assert.match(def.research.text,/Prime生態|樹冠集落|確認済み/);
 });
@@ -51,9 +52,10 @@ test('CP4-5 Chronicle and Research reactions are read-only derived rows',()=>{
   assert.doesNotMatch(runtime,/reviewSettlementResearchDomain|recordSettlementFactionActivity|ranchResearch|companionInstances/);
 });
 
-test('CP4-5 keeps hidden histories and future traversal out of the reaction copy',()=>{
+test('CP4-5/M6 reveals the authored second history without exposing future histories or traversal authority',()=>{
   const data=fs.readFileSync(new URL('../js/data/contentPackIVE.js',import.meta.url),'utf8');
-  assert.doesNotMatch(data,/深緑消失域|Transcendent|超観測者|日本|東京|Earth/i);
+  assert.match(data,/深緑消失域/);
+  assert.doesNotMatch(data,/Transcendent|超観測者|日本|東京|Earth/i);
   assert.doesNotMatch(data,/teleport|portal|traversable|Branch XP|multiverse currency/i);
 });
 

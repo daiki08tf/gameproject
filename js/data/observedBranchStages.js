@@ -6,7 +6,7 @@
    existing Chapter 2 enemy archetypes and Encounter 2.0 pool, plus the
    existing state.data.stageProgress / state.isStageCleared authority.
    No new combat, save, clear, encounter, or loot authority is introduced here. */
-import { observedBranchById, OBSERVED_BRANCH_PROFILE_LEVELS } from './observedBranches.js';
+import { OBSERVED_BRANCHES, observedBranchById, OBSERVED_BRANCH_PROFILE_LEVELS } from './observedBranches.js';
 import { CHAPTER_REGION_TAGS } from './chapters.js';
 import { ENEMY_TYPES } from './enemies.js';
 import { buildChapterEncounterPool } from './encounterMigration2.js';
@@ -50,6 +50,39 @@ const BRANCH_STAGE_DATA=Object.freeze({
     firstClear:Object.freeze({itemId:'ch2_weapon_epic'}),
     dropTable:Object.freeze([{itemId:'ch2_weapon',weight:1},{itemId:'ch2_body',weight:1}]),
   }),
+  'observedbranch-deepgreen-absence-1':Object.freeze({
+    name:'空白域の測線',
+    recLevel:9,
+    waves:Object.freeze([
+      {type:'ch2_fast',count:3,interval:1.0},
+      {type:'ch2_normal',count:3,interval:1.2},
+    ]),
+    rewards:Object.freeze({gold:62,exp:50}),
+    dropTable:Object.freeze([{itemId:'ch2_accessory',weight:1}]),
+  }),
+  'observedbranch-deepgreen-absence-2':Object.freeze({
+    name:'根記憶の残響路',
+    recLevel:11,
+    waves:Object.freeze([
+      {type:'ch2_normal',count:3,interval:1.1},
+      {type:'ch2_fast',count:3,interval:0.9},
+      {type:'ch2_tank',count:2,interval:1.8},
+    ]),
+    rewards:Object.freeze({gold:88,exp:70}),
+    dropTable:Object.freeze([{itemId:'ch2_head',weight:1},{itemId:'ch2_body',weight:1}]),
+  }),
+  'observedbranch-deepgreen-absence-boss':Object.freeze({
+    name:'根無き森核・NULL CANOPY',
+    boss:true,
+    recLevel:14,
+    waves:Object.freeze([
+      {type:'ch2_fast',count:2,interval:1.0},
+      {type:'ch2_boss',count:1,interval:0},
+    ]),
+    rewards:Object.freeze({gold:225,exp:175}),
+    firstClear:Object.freeze({itemId:'uq_observed_null_root'}),
+    dropTable:Object.freeze([{itemId:'ch2_weapon',weight:1},{itemId:'ch2_accessory',weight:1}]),
+  }),
 });
 
 // Observed 王樹領 is the divergent form of Prime Chapter 2, so it projects the
@@ -74,7 +107,7 @@ function buildObservedBranchEncounterPool(){
 }
 
 function branchIdForStage(stageId){
-  for(const branch of [observedBranchById('tree-sovereign-deep-green')]){
+  for(const branch of OBSERVED_BRANCHES){
     if(branch?.stageIds?.includes(stageId))return branch.id;
   }
   return null;
@@ -85,7 +118,7 @@ export function observedBranchProfileSummary(branchId){
   if(!branch)return'';
   const ecology=Object.values(branch.ecologyProfile||{}).join(' / ');
   const technology=Object.entries(branch.technologyProfile||{})
-    .map(([axis,level])=>`${axis} ${OBSERVED_BRANCH_PROFILE_LEVELS[level]||level}`)
+    .map(([axis,level])=>`${axis} ${branch.technologyPresentation?.[axis]||OBSERVED_BRANCH_PROFILE_LEVELS[level]||level}`)
     .join(' / ');
   return `生態：${ecology}\n技術：${technology}`;
 }

@@ -22,7 +22,7 @@ export function syncCP4HorizontalRumor(){
 }
 
 state.cp4HorizontalReactions=function(){return{...reactionState(),definition:CP4_HORIZONTAL_REACTIONS};};
-state.cp4CodexHistoricalInconsistencies=function(){return active()?[CP4_HORIZONTAL_REACTIONS.codex]:[];};
+state.cp4CodexHistoricalInconsistencies=function(){if(!active())return[];const rows=[CP4_HORIZONTAL_REACTIONS.codex];const secondary=CP4_HORIZONTAL_REACTIONS.secondaryCodex;if(secondary&&discoveries()[secondary.sourceDiscoveryId])rows.push(secondary);return rows;};
 
 if(state.rumorNotebook&&!state.rumorNotebook.__cp4e){
   const previous=state.rumorNotebook.bind(state);

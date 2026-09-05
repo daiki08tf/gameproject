@@ -69,6 +69,9 @@ test('Unique 2.0 proc and specialization recipes stay inside authored safety env
         case 'normalEnemyDmgPenalty':
           assert.ok(effect.power <= 0.15, `${identity.id}: normal-enemy tradeoff`);
           break;
+        case 'noRecoveryDmgBonus':
+          assert.ok(effect.power > 0 && effect.power <= 0.22, `${identity.id}: absence damage bonus`);
+          break;
         default:
           assert.fail(`${identity.id}: ungated Unique 2.0 effect kind ${effect.kind}`);
       }

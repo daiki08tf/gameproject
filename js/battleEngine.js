@@ -400,8 +400,16 @@ export class BattleEngine {
       + (bloodChaliceMult - 1)
       + (tempAtkMult - 1)
       + (this._tempDmgBonusTurns > 0 ? this._tempDmgBonus : 0);
+    // Observed Branches M6 / NULL ROOT: the fixed identity turns the absence
+    // of recovery gear into offense. This stays inside the existing passive
+    // Damage bucket; it does not add a second proc/Option pipeline.
+    const regenBuff = this.player?.buffs?.regenAdd;
+    const recoveryActive = this._regenPower > 0
+      || (regenBuff?.turnsLeft > 0 && regenBuff.value > 0)
+      || this.effects.some((eff) => ['regen','lifesteal','lifestealLowHp','healOnCrit','guardianHeal','healOnKill','healOnGuard'].includes(eff.kind));
     for (const eff of this._effectsOf('passive')) {
-      if (eff.kind === 'dmgBonusAdd') mult += eff.power;
+      if (eff.kind === 'noRecoveryDmgBonus' && !recoveryActive) mult += eff.power;
+      else if (eff.kind === 'dmgBonusAdd') mult += eff.power;
       else if (sourceKind === 'normal' && eff.kind === 'normalDmgAdd') mult += eff.power;
       else if (sourceKind === 'skill' && eff.kind === 'skillDmgAdd') mult += eff.power;
       else if (sourceKind === 'spell' && eff.kind === 'spellDmgAdd') mult += eff.power;

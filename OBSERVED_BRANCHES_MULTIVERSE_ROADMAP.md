@@ -1,6 +1,6 @@
 # Blade Vale — Observed Branches / Multiverse Roadmap
 
-> Status: **M0–M4 COMPLETE (Story Expansion II / Arc V and Content Pack IV both closed out first, as this doc originally required). NEXT: M6 — second Branch of 深緑の森 (深緑消失域), then M9's first Branch Cluster pick (灼熱の火山), then M7 comparative records feeding directly into a new Arc VI opening chapter. See "Decision log" below.**
+> Status: **M0–M4 + M6 COMPLETE (深緑の森 Branch Cluster 1 now has both 王樹領 and 深緑消失域 vertical slices). M5/M9/M7 sequencing remains governed by the Decision log below; M7 comparative records still gate the Arc VI opening chapter.**
 >
 > Working system name: **Observed Branches / 観測分岐世界**
 >
@@ -515,7 +515,7 @@ Shipped under `CORE_LOOP_CLR21_IMPLEMENTATION.md` rather than a dedicated M3/M4 
 
 ### [ ] M5 — Divergent Technology Gear I
 
-**Deferred until after M6** (see Decision log above) — do not start this before M6 ships.
+**Queued separately after M6** (see Decision log above). M6 has shipped; this broader gear pass remains a distinct follow-up rather than part of the M6 vertical slice.
 
 Implement the first technology-origin equipment set through existing Gear authorities.
 
@@ -532,7 +532,7 @@ Rules:
 - Branch Origin metadata display,
 - technology changes mechanics/conditions rather than pure Item Power.
 
-### [ ] M6 — Second Branch vertical slice: 深緑消失域 — **NEXT UP**
+### [x] M6 — Second Branch vertical slice: 深緑消失域 — **COMPLETE**
 
 Use the same Prime Region but opposite historical consequence.
 
