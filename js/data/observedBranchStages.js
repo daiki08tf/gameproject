@@ -118,7 +118,7 @@ export function observedBranchProfileSummary(branchId){
   if(!branch)return'';
   const ecology=Object.values(branch.ecologyProfile||{}).join(' / ');
   const technology=Object.entries(branch.technologyProfile||{})
-    .map(([axis,level])=>`${axis} ${OBSERVED_BRANCH_PROFILE_LEVELS[level]||level}`)
+    .map(([axis,level])=>`${axis} ${branch.technologyPresentation?.[axis]||OBSERVED_BRANCH_PROFILE_LEVELS[level]||level}`)
     .join(' / ');
   return `生態：${ecology}\n技術：${technology}`;
 }
