@@ -4,13 +4,15 @@ on:
   push:
     branches:
       - chatgpt/observed-branches-m6-deep-green-absence
+    paths:
+      - scripts/apply-observed-branches-m6.py
+      - .github/workflows/chatgpt-m6-apply.yml
 
 permissions:
   contents: write
 
 jobs:
   apply-and-validate:
-    if: "${{ github.event.head_commit.message != 'feat: implement Observed Branches M6 deep green absence' }}"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout work branch
