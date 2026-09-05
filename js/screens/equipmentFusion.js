@@ -17,6 +17,7 @@ import { renderEquipment as renderBaseEquipment, autoEquipBest as autoEquipBestB
 const SLOT_BASE_TYPE = { weapon: 'weapon', shield: 'shield', head: 'head', body: 'body', accessory1: 'accessory', accessory2: 'accessory' };
 let fusionOpenItemId = null;
 let fusionTargetOptionIndex = null;
+let fusionPendingMaterialKey = null;
 let fusionMessage = '';
 let observer = null;
 let filterObserver = null;
@@ -84,21 +85,26 @@ function milestoneText(option) {
   return `${reached}${next ? ` / 次 Lv${next}まで約${remaining}EXP` : ''}`;
 }
 
+function pendingMaterialKey(itemId, optionIndex, material) {
+  return `${itemId}:${optionIndex}:${material.materialItemId}:${material.materialOptionIndex}`;
+}
+
 function targetPanel(itemId, inst, p) {
   const panel = document.createElement('div');
   panel.className = 'option-fusion-panel';
-  panel.style.cssText = 'width:100%;margin-top:8px;padding:8px;border:1px solid rgba(255,255,255,.12);border-radius:8px;display:grid;gap:6px;';
+  panel.style.cssText = 'width:100%;flex:1 0 100%;min-width:0;margin-top:8px;padding:8px;border:1px solid rgba(255,255,255,.12);border-radius:8px;display:grid;gap:6px;';
 
   const head = document.createElement('div');
-  head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;';
-  head.innerHTML = '<strong>OPTION FUSION</strong><span class="hint">同系統Optionを持つ装備を素材化 / Lv25・50・75・100が節目</span>';
+  head.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;min-width:0;';
+  head.innerHTML = '<strong>OPTION FUSION</strong><span class="hint" style="flex:1 1 220px;min-width:0;">同系統Optionを持つ装備を素材化 / Lv25・50・75・100が節目</span>';
   panel.appendChild(head);
 
   inst.affixes.forEach((option, index) => {
     const shown = p.affixes[index];
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid rgba(255,255,255,.08);';
+    row.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid rgba(255,255,255,.08);min-width:0;';
     const text = document.createElement('div');
+    text.style.cssText = 'flex:1 1 220px;min-width:0;overflow-wrap:anywhere;';
     const needed = optionXpToNext(option.level ?? 1);
     const xpText = (option.level ?? 1) >= 100 ? 'MAX' : `EXP ${Math.max(0, option.xp || 0)}/${needed}`;
     const color = AFFIX_RARITY_COLOR[option.rarity] || 'inherit';
@@ -107,6 +113,7 @@ function targetPanel(itemId, inst, p) {
     row.append(text, compactButton(selected ? '素材を選択中' : ((option.level ?? 1) >= 100 ? 'MASTER' : 'このOptionを育成'), () => {
       Audio_.tap();
       fusionTargetOptionIndex = selected ? null : index;
+      fusionPendingMaterialKey = null;
       fusionMessage = '';
       refreshEquipment();
     }, (option.level ?? 1) >= 100));
@@ -115,22 +122,31 @@ function targetPanel(itemId, inst, p) {
     if (!selected) return;
     const materials = state.optionFusionMaterials?.(itemId, index) || [];
     const materialBox = document.createElement('div');
-    materialBox.style.cssText = 'display:grid;gap:5px;padding:4px 0 4px 10px;';
+    materialBox.style.cssText = 'display:grid;gap:5px;padding:4px 0 4px 10px;min-width:0;';
     if (!materials.length) {
       materialBox.innerHTML = '<div class="hint">同じOption系統を持つ、未ロック・未お気に入り・未装備の素材がありません。高レア/Lv80+素材はSmart Lootで自動保護される場合があります。</div>';
     } else {
       for (const material of materials.slice(0, 8)) {
         const line = document.createElement('div');
-        line.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;';
+        line.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;min-width:0;';
         const label = document.createElement('span');
+        label.style.cssText = 'flex:1 1 220px;min-width:0;overflow-wrap:anywhere;';
         const efficiency = Math.round(material.efficiency * 100);
         const milestonePreview = material.milestones?.length ? ` → Lv${material.milestones.join('/')}到達` : '';
         label.innerHTML = `${displayName(material.materialItemId)} <span class="hint">${material.materialRarity} Lv${material.materialLevel} / +${material.xp} EXP (${efficiency}%)${milestonePreview}</span>`;
-        const fuseBtn = compactButton('融合', () => {
+        const pendingKey = pendingMaterialKey(itemId, index, material);
+        const pending = fusionPendingMaterialKey === pendingKey;
+        const fuseBtn = compactButton(pending ? '確定して融合' : '融合', () => {
           Audio_.tap();
-          const ok = typeof globalThis.confirm !== 'function' || globalThis.confirm(`${displayName(material.materialItemId)} を素材として消費します。よろしいですか？`);
-          if (!ok) return;
+          if (!pending) {
+            fusionPendingMaterialKey = pendingKey;
+            fusionMessage = `${displayName(material.materialItemId)} を素材として消費します。「確定して融合」を押すと実行します。`;
+            refreshEquipment();
+            return;
+          }
+
           const result = state.fuseEquipmentOption(itemId, index, material.materialItemId, material.materialOptionIndex);
+          fusionPendingMaterialKey = null;
           const milestone = result.ok && result.milestones?.length
             ? ` / ★ Lv${result.milestones.join('・')} MILESTONE${result.level >= 100 ? ' / MASTER' : ''}`
             : '';
@@ -155,6 +171,7 @@ function targetPanel(itemId, inst, p) {
   if (fusionMessage) {
     const message = document.createElement('div');
     message.className = 'hint';
+    message.style.cssText = 'width:100%;overflow-wrap:anywhere;';
     message.textContent = fusionMessage;
     panel.appendChild(message);
   }
@@ -171,12 +188,25 @@ function decorateRow(row, itemId) {
 
   const actions = document.createElement('div');
   actions.className = 'equip-inline-actions option-fusion-actions';
-  actions.style.width = '100%';
+  actions.style.cssText = 'width:100%;flex:1 0 100%;min-width:0;';
   const open = fusionOpenItemId === itemId;
+
+  if (open) {
+    row.classList.add('option-fusion-expanded');
+    row.style.alignItems = 'stretch';
+    const main = row.querySelector('.pick-main');
+    if (main) {
+      main.style.flex = '1 0 100%';
+      main.style.width = '100%';
+      main.style.minWidth = '0';
+    }
+  }
+
   actions.appendChild(compactButton(open ? 'OPTION育成を閉じる' : 'OPTION育成', () => {
     Audio_.tap();
     fusionOpenItemId = open ? null : itemId;
     fusionTargetOptionIndex = null;
+    fusionPendingMaterialKey = null;
     fusionMessage = '';
     refreshEquipment();
   }));
