@@ -2,8 +2,14 @@ export const WORLD3_REALM_NODES=Object.freeze([
   {id:'mortal',icon:'🌍',name:'人界',subtitle:'旅の起点となる世界',route:null},
   {id:'heaven',icon:'☀️',name:'天界',subtitle:'光・Relic・高位素材を狙う聖域',route:'world3-branches'},
   {id:'underworld',icon:'🌑',name:'冥界',subtitle:'高危険・Unique探索を狙う奈落領域',route:'world3-branches'},
-  {id:'modern',icon:'📡',name:'？？？',subtitle:'境界の向こうから機械音が響く',route:25},
+  {id:'modern',icon:'📡',name:'？？？',subtitle:'境界の向こうから機械音が響く',route:'machine_world'},
 ]);
+
+export function resolveWorld3RealmRoute(route,chapters=[]){
+  if(route!=='machine_world')return route;
+  const index=chapters.findIndex(ch=>ch?.id==='machine_world');
+  return index>=0?index:null;
+}
 
 export function world3RealmNodeState(node,visibility={},flags={}){
   const raw=visibility?.[node.id]||'hidden';
