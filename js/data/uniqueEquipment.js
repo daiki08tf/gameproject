@@ -36,6 +36,9 @@ export const BOUNTY_UNIQUES = [
   {id:'uq_u2_alka',bountyId:null,name:'連星拳アルカ',slot:'weapon',weaponType:'knuckle',rarity:'mythic',stats:{atk:268,spd:68,crit:10},unique:true,phase8:true,distributionPending:true,unique2IdentityId:'u2_knuckle_chain',effects:[{trigger:'onCrit',kind:'critExtraAttack',chance:.18,power:.50,perActionCap:1}],lore:'会心の衝撃だけが次の拳を呼び、星座のように打撃点を繋いでいく拳甲。'},
   {id:'uq_u2_cadenza',bountyId:null,name:'戦律器カデンツァ',slot:'weapon',weaponType:'instrument',rarity:'mythic',stats:{atk:145,mag:245,spd:82},unique:true,phase8:true,distributionPending:true,unique2IdentityId:'u2_instrument_crescendo',effects:[{trigger:'passive',kind:'actionDiversityBuff',power:.22,turns:3}],lore:'同じ小節を嫌う戦律器。異なる行動を繋ぐほど旋律が厚くなり、戦場のテンポを奪う。'},
   {id:'uq_u2_seraphim',bountyId:null,name:'反照錫セラフィム',slot:'weapon',weaponType:'rod',rarity:'mythic',stats:{mag:272,def:96,mp:150},unique:true,phase8:true,distributionPending:true,unique2IdentityId:'u2_rod_sanctuary',effects:[{trigger:'onGuard',kind:'guardNextAtkBuff',power:.58}],lore:'受けた災いを祈りの中へ留め、次の審判へ反射する錫杖。守るほど攻める理由が増える。'},
+
+  // Observed Branches M6 — 深緑消失域 initial Fixed Unique reward.
+  {id:'uq_observed_null_root',bountyId:null,sourceStageId:'observedbranch-deepgreen-absence-boss',name:'無根刃・NULL ROOT',slot:'weapon',weaponType:'sword',rarity:'legendary',stats:{atk:19.4,crit:3,spd:2},unique:true,observedBranch:true,unique2IdentityId:'u2_sword_null_root',effects:[{trigger:'passive',kind:'noRecoveryDmgBonus',power:.22}],lore:'森が存在しなかった履歴から切り出された残響刃。回復や再生へ接続しない時だけ、欠落した根系の輪郭が攻撃へ重なる。'},
 ];
 export function uniqueForBounty(bountyId){ return BOUNTY_UNIQUES.find(x=>x.bountyId===bountyId)||null; }
 export function bountyUniqueById(id){ return BOUNTY_UNIQUES.find(x=>x.id===id)||null; }

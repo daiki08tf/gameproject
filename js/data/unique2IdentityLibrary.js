@@ -30,6 +30,9 @@ export const UNIQUE2_WEAPON_IDENTITIES = Object.freeze({
       {trigger:'passive',kind:'highHpDoubleAttack',threshold:.60},
       {trigger:'passive',kind:'defPenalty',power:.10},
     ],['high-hp','tempo']),
+    U('u2_sword_null_root','sword','無根の不在','回復・再生の装備効果が働かない構成で、欠落そのものを与ダメージへ転換する。',['sword_crit_balance'],[
+      {trigger:'passive',kind:'noRecoveryDmgBonus',power:.22},
+    ],['absence','anti-recovery','observed-branch']),
   ]),
 
   axe:Object.freeze([

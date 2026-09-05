@@ -54,11 +54,13 @@ test('CP4-7 runtime does not introduce mandatory RNG, difficulty or real-world i
   assert.doesNotMatch(cp4Runtime,/multiverseToken|branchCurrency|branchStamina|branchEnergy|branchLevel|branchXp/i);
 });
 
-test('CP4-7 preserves hidden branch-count and absent-history boundaries',()=>{
+test('CP4-7/M6 keeps total Branch count hidden while revealing only the authored second history',()=>{
   const anchor=read('js/patches/contentPackIVD.js');
   assert.match(anchor,/deepGreenAbsentHidden:true/);
+  assert.match(anchor,/deepGreenAbsentObserved:true/);
   assert.match(anchor,/totalBranchCountHidden:true/);
-  assert.doesNotMatch(cp4Runtime,/深緑消失域/);
+  assert.match(cp4Runtime,/深緑消失域/);
+  assert.doesNotMatch(cp4Runtime,/Transcendent|超観測者|日本|東京|Earth/i);
 });
 
 test('CP4-7 audit hands off to Observed Branches M0-M4',()=>{

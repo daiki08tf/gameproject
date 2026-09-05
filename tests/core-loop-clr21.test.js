@@ -36,8 +36,10 @@ test('CLR-21 Branch contains only its own canonical Stage IDs — no cross-Branc
   // Branch Stage IDs never collide with any canonical Chapter Stage ID.
   const chapterStageIds = new Set(CHAPTERS.flatMap(ch => ch.stages.map(s => s.id)));
   for (const id of branch.stageIds) assert.equal(chapterStageIds.has(id), false);
-  // Only one Branch exists in this proof; its IDs are internally unique.
-  assert.equal(OBSERVED_BRANCHES.length, 1);
+  // M6 adds a sibling Branch, but all Branch Stage IDs remain globally unique.
+  const allBranchStageIds = OBSERVED_BRANCHES.flatMap(candidate => candidate.stageIds ?? []);
+  assert.equal(new Set(allBranchStageIds).size, allBranchStageIds.length);
+  assert.ok(OBSERVED_BRANCHES.some(candidate => candidate.id === 'deep-green-absence'));
   assert.equal(new Set(branch.stageIds).size, branch.stageIds.length);
 });
 
@@ -135,12 +137,14 @@ test('CLR-21 legacy saves without any Branch stageProgress entries resolve safel
   assert.equal(isObservedBranchCleared('no-such-branch', { isStageCleared }), false);
 });
 
-test('CLR-21 no other Observed Branch is made playable by this proof', () => {
-  // Only 王樹領・深緑の森 carries stageIds; this proof intentionally does not
-  // generalize to any other Branch yet.
-  for (const branch of OBSERVED_BRANCHES) {
-    if (branch.id === BRANCH_ID) continue;
-    assert.equal('stageIds' in branch, false);
+test('CLR-21/M6 playable Branch set expands only through the two authored Ch2 Branch stage lists', () => {
+  const playable = OBSERVED_BRANCHES
+    .filter(branch => Array.isArray(branch.stageIds) && branch.stageIds.length)
+    .map(branch => branch.id)
+    .sort();
+  assert.deepEqual(playable, ['deep-green-absence', 'tree-sovereign-deep-green'].sort());
+  for (const branch of OBSERVED_BRANCHES.filter(candidate => playable.includes(candidate.id))) {
+    for (const stageId of branch.stageIds) assert.ok(findStage(stageId), `${stageId} must resolve via findStage()`);
   }
 });
 

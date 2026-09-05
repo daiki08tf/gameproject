@@ -58,6 +58,42 @@ export const OBSERVED_BRANCHES=Object.freeze([
     stageIds:freezeList(['observedbranch-tree-sovereign-1','observedbranch-tree-sovereign-2','observedbranch-tree-sovereign-boss']),
     bossStageId:'observedbranch-tree-sovereign-boss',
   }),
+  Object.freeze({
+    id:'deep-green-absence',
+    name:'深緑消失域',
+    observedLabel:'観測分岐：深緑消失域',
+    primeRegionRef:Object.freeze({
+      worldRegionId:'frontier',
+      chapterId:'ch2',
+      chapterNum:2,
+      regionName:'深緑の森',
+    }),
+    divergencePoint:'正史の旅より前に境界崩壊が発生し、大樹霊と戦う前に森林圏そのものが消失した。',
+    historicalSummary:'森林生態系を失い、地形へ残った根の記憶と観測機器だけを頼りに空白域を渡る集落が成立した歴史。',
+    technologyProfile:Object.freeze({
+      mechanical:'baseline',
+      arcane:'regressed',
+      bio:'regressedMajor',
+      boundary:'dominant',
+      information:'advancedMajor',
+      material:'advanced',
+    }),
+    ecologyProfile:Object.freeze({
+      settlement:'観測杭と測線で結ばれた空白域集落',
+      species:'森の種族は消滅し、根の記憶だけが地形に残存',
+      construction:'位相杭と観測器を基準に、存在する地面だけを接続',
+      industry:'生態技術は崩壊し、境界観測・情報記録・位相素材加工が発達',
+    }),
+    routeRefs:freezeList([]),
+    sceneRefs:freezeList([]),
+    discoveryConditions:Object.freeze({
+      allDiscoveries:freezeList(['cp4:branch-anchor:deep-green-absence']),
+      rngRequired:false,
+    }),
+    traversable:false,
+    stageIds:freezeList(['observedbranch-deepgreen-absence-1','observedbranch-deepgreen-absence-2','observedbranch-deepgreen-absence-boss']),
+    bossStageId:'observedbranch-deepgreen-absence-boss',
+  }),
 ]);
 
 export function observedBranchById(id){
