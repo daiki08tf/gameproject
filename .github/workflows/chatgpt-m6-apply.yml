@@ -26,7 +26,9 @@ jobs:
           node-version: '22'
 
       - name: Apply Observed Branches M6
-        run: python scripts/apply-observed-branches-m6.py
+        run: |
+          python scripts/apply-observed-branches-m6.py
+          python -c "from pathlib import Path; p=Path('tests/observed-branches-m6.test.js'); s=p.read_text(); s=s.replace('const stage=findStage(stageId);', 'const found=findStage(stageId);\n    const stage=found?.stage;'); p.write_text(s)"
 
       - name: Focused M6 regression
         run: node --test tests/observed-branches-m6.test.js tests/core-loop-clr21-m4.test.js tests/observed-branches-m2.test.js
