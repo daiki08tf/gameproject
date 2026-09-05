@@ -18,7 +18,7 @@ export const CP4_HORIZONTAL_REACTIONS=Object.freeze({
     id:'cp4-deep-green-absence-history',
     sourceDiscoveryId:'cp4:branch-anchor:deep-green-absence',
     title:'深緑の森 — 観測分岐：深緑消失域',
-    text:'分岐点：正史の旅より前の境界崩壊で、大樹霊との戦いより先に森林圏そのものが消失した。生態：森の種族は消滅し、根の記憶だけが地形に残る。集落は観測杭と測線で空白域を航行する。技術：Mechanical → / Arcane ↓ / Bio ↓↓ / Boundary ↑↑↑ / Information ↑↑ / Material ↑。',
+    text:'分岐点：正史の旅より前の境界崩壊で、大樹霊との戦いより先に森林圏そのものが消失した。生態：森の種族は消滅し、根の記憶だけが地形に残る。集落は観測杭と測線で空白域を航行する。技術：Mechanical → / Arcane ↓ / Bio ↓↓↓ / Boundary ↑↑↑ / Information ↑↑ / Material ↑。',
   }),
   chronicle:Object.freeze([
     Object.freeze({id:'cp4-parallax-contact',sourceDiscoveryId:'cp4:parallax:first-contact',title:'視差核との接触',text:'深緑の重複座標で視差核に触れ、同じ場所へ複数の整合した景色が重なる瞬間を観測した。'}),
