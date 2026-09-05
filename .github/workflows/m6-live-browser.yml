@@ -1,0 +1,36 @@
+name: Temporary M6 Live Browser
+
+on:
+  push:
+    branches:
+      - chatgpt/observed-branches-m6-deep-green-absence
+    paths:
+      - scripts/m6-live-browser-check.mjs
+      - .github/workflows/m6-live-browser.yml
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start Blade Vale
+        run: |
+          python3 -m http.server 8000 > /tmp/blade-vale-http.log 2>&1 &
+          echo $! > /tmp/blade-vale-http.pid
+          sleep 2
+      - name: M6 live browser flow and screenshots
+        run: node scripts/m6-live-browser-check.mjs
+      - name: Upload screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m6-live-browser
+          path: browser-artifacts/m6
+          if-no-files-found: warn
