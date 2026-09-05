@@ -34,7 +34,7 @@ test('Machine World introduces a recruitable machine lifeform',()=>{
 
 test('Machine World realm node becomes a real chapter route after contact',()=>{
   const node=WORLD3_REALM_NODES.find(n=>n.id==='modern');
-  assert.equal(node.route,25);
+  assert.equal(node.route,'machine_world');
   const open=world3RealmNodeState(node,{}, {phase9MachineWorldOpen:true});
   assert.equal(open.name,'機界');
   assert.equal(open.selectable,true);
