@@ -19,6 +19,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: chatgpt/observed-branches-m6-deep-green-absence
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -34,21 +35,43 @@ jobs:
         run: node --test tests/observed-branches-m6.test.js tests/core-loop-clr21-m4.test.js tests/observed-branches-m2.test.js
 
       - name: Full regression suite
-        run: npm test
+        id: full
+        shell: bash
+        run: |
+          set +e
+          npm test 2>&1 | tee chatgpt-m6-full-test.log
+          status=${PIPESTATUS[0]}
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
 
-      - name: Syntax gate
-        run: npm run test:syntax
-
-      - name: Emoji gate
-        run: node scripts/uix-emoji-check.js
-
-      - name: Diff check
-        run: git diff --check
-
-      - name: Commit validated implementation
+      - name: Persist full regression failure log
+        if: steps.full.outputs.status != '0'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add chatgpt-m6-full-test.log
+          git commit -m "test: capture M6 full regression failure"
+          git push origin HEAD:chatgpt/observed-branches-m6-deep-green-absence
+          exit 1
+
+      - name: Syntax gate
+        if: steps.full.outputs.status == '0'
+        run: npm run test:syntax
+
+      - name: Emoji gate
+        if: steps.full.outputs.status == '0'
+        run: node scripts/uix-emoji-check.js
+
+      - name: Diff check
+        if: steps.full.outputs.status == '0'
+        run: git diff --check
+
+      - name: Commit validated implementation
+        if: steps.full.outputs.status == '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f chatgpt-m6-full-test.log .github/workflows/chatgpt-m6-apply.yml scripts/apply-observed-branches-m6.py scripts/patch-m6-tests.py scripts/patch-m6-tests-v2.py
           git add -A
           git commit -m "feat: implement Observed Branches M6 deep green absence"
           git push origin HEAD:chatgpt/observed-branches-m6-deep-green-absence
