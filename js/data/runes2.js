@@ -21,6 +21,11 @@ export const RUNE2_DEFS = [
   { id:'bond', name:'縁', english:'Bond', kind:'special', starAt:1000, stageIds:['7-B','12-B'], dropRate:0.01 },
   { id:'craft', name:'匠', english:'Craft', kind:'special', starAt:1000, stageIds:['9-5','15-B'], dropRate:0.008 },
   { id:'fate', name:'運命', english:'Fate', kind:'special', starAt:1000, stageIds:['10-5','15-5'], dropRate:0.0025 },
+  // Observed Branches M5 — existing Rune 2.0 statMult authority, Branch Stage routes only.
+  { id:'ob_verdant', name:'生脈', english:'Verdant Vein', kind:'statMult', stat:'hp', perMark:0.03, stageIds:['observedbranch-tree-sovereign-1'], dropRate:0.025 },
+  { id:'ob_rootsong', name:'根唱', english:'Root Song', kind:'statMult', stat:'mag', perMark:0.03, stageIds:['observedbranch-tree-sovereign-2'], dropRate:0.02 },
+  { id:'ob_boundary', name:'測界', english:'Boundary Survey', kind:'statMult', stat:'def', perMark:0.03, stageIds:['observedbranch-deepgreen-absence-1'], dropRate:0.025 },
+  { id:'ob_echo', name:'残響', english:'Echo Trace', kind:'statMult', stat:'atk', perMark:0.03, stageIds:['observedbranch-deepgreen-absence-2'], dropRate:0.02 },
 ];
 const MAP=new Map(RUNE2_DEFS.map(r=>[r.id,r]));
 export function getRune2(id){return MAP.get(id);}

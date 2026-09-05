@@ -19,7 +19,10 @@ test('CLR-21 M4 王樹領 equipment rewards resolve through the existing equipme
     }
   }
   const boss = buildObservedBranchStage(branch.bossStageId);
-  assert.equal(boss.firstClear.itemId, 'ch2_weapon_epic');
+  // M6 replaced the placeholder ch2_weapon_epic firstClear reward with the
+  // Branch-native Unique2 legendary (see observedBranchEquipment.js); M5 then
+  // registered it into the shared equipment authority (js/data/equipment.js).
+  assert.equal(boss.firstClear.itemId, 'uq_observed_verdant');
 });
 
 test('CLR-21 M4 ecology and technology presentation is derived from existing Branch history data', () => {

@@ -32,7 +32,7 @@ export function equipment3Presentation(item, inst = null) {
   if (!inst) {
     const q=lootQuality(item,null,[],{legendary:null,curse:null,greaterCount:0,itemPower:0});
     const fixedIdentities = fixedEquipmentIdentities(item, null);
-    const base={name:item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,itemPower:null,tier:null,band:null,greaterCount:0,affixes:[],fixedIdentities,legendary:null,curse:null,...q};
+    const base={name:item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,branchOrigin:item.branchOrigin||null,itemPower:null,tier:null,band:null,greaterCount:0,affixes:[],fixedIdentities,legendary:null,curse:null,...q};
     return {...base,chase:loot3EndgameChase(item,base)};
   }
   const itemPower = Math.max(1, Math.floor(Number(inst.itemPower) || 1));
@@ -59,7 +59,7 @@ export function equipment3Presentation(item, inst = null) {
     };
   });
   const q=lootQuality(item,inst,affixes,{legendary,curse,greaterCount,itemPower});
-  const base={name:inst.displayName||item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,itemPower,tier,band,greaterCount,affixes,fixedIdentities,legendary,curse,...q};
+  const base={name:inst.displayName||item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,branchOrigin:item.branchOrigin||null,itemPower,tier,band,greaterCount,affixes,fixedIdentities,legendary,curse,...q};
   return {...base,chase:loot3EndgameChase(item,base)};
 }
 
@@ -76,6 +76,7 @@ export function equipment3MetaText(p) {
 export function equipment3SpecialLines(p) {
   if (!p) return [];
   const lines=[];
+  if(p.branchOrigin)lines.push(`【Branch Origin】${p.branchOrigin.label} / Technology：${p.branchOrigin.technology} / Divergence：${p.branchOrigin.divergence}`);
   if(p.targetFarmHit&&p.targetFarm)lines.push(`【TARGET HIT】${p.targetFarm}`);
   if(p.chase?.tier) lines.push(`【CHASE：${p.chase.tier.label}】${p.chase.signals.slice(0,5).join(' / ')}`);
   else if(p.chase?.next && p.itemPower>=7000) lines.push(`【CHASE】次：${p.chase.next.label}（完成度 ${Math.round(p.chase.progress*100)}%）`);
