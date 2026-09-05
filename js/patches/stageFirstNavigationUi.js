@@ -181,6 +181,32 @@ export function enhanceStageFirstDetail(stageId=selectedStageId){
 }
 
 function showExistingStageList(){
+  // Route through the canonical Chapter-card click instead of only toggling
+  // screen visibility. #stageList's DOM may still hold whatever was last
+  // rendered before this battle (e.g. the just-cleared stage's own LOCKED
+  // "???" placeholder card, created below by this same file) — the previous
+  // implementation left that stale DOM in place and asked
+  // enhanceStageFirstStageList() to patch it, but that function only
+  // prefixes a missing stage id onto a card's existing name text, so a
+  // placeholder card (whose name already reads "<id> ???") never gets its
+  // real name/recLevel filled in once the stage unlocks, and — since it was
+  // never given the click handler renderStageSelect() attaches to a real
+  // card — stays unresponsive to taps even after enhanceStageFirstStageList
+  // relabels its status badge to NEXT. Clicking through goStageBtn and the
+  // owning Chapter's own card instead runs the real renderStageSelect(),
+  // rebuilding #stageList from scratch with correct names and working
+  // onPick handlers, exactly as a normal 冒険 tab visit would.
+  const found=canonicalStageById(selectedStageId);
+  const chapterIndex=found?.chapter?CHAPTERS.indexOf(found.chapter):-1;
+  const goStage=document.getElementById('goStageBtn');
+  if(chapterIndex>=0&&goStage){
+    goStage.click();
+    const chapterCard=document.querySelector(`#chapterList [data-chapter-index="${chapterIndex}"]`);
+    if(chapterCard){chapterCard.click();enhanceStageFirstStageList();return;}
+  }
+  // Fallback for stages with no CHAPTERS entry (e.g. Observed Branch) or if
+  // the Chapter card couldn't be found — keep the previous behavior rather
+  // than leaving the player on no screen at all.
   document.querySelectorAll('.screen').forEach(screen=>screen.classList.remove('active'));
   document.getElementById('stageSelectScreen')?.classList.add('active');
   enhanceStageFirstStageList();

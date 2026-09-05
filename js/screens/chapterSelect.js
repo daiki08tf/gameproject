@@ -15,6 +15,7 @@ function renderChapterCard(ch,idx,onPick){
   const card=document.createElement('div');
   card.className='stage-card'+(!unlocked?' locked':'')+(allCleared?' boss':'');
   card.dataset.chapterState=!unlocked?'locked':allCleared?'clear':'open';
+  card.dataset.chapterIndex=idx;
   card.style.margin='6px 0 0';
   const state2Label=!unlocked?'LOCKED':mastery?.mastered?'◆':allCleared?'CLEAR':'';
   card.innerHTML=`<div><div class="name">${unlocked?journeyName(ch):'？？？'}</div><div class="rec">${unlocked?`推奨Lv ${ch.stages[0].recLevel}〜${bossStage.recLevel}${masteryLine}`:'ひとつ前の土地の主を倒すと道が開く'}</div></div><div class="cleared">${state2Label}</div>`;
