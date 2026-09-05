@@ -98,6 +98,44 @@ export const OBSERVED_BRANCHES=Object.freeze([
     stageIds:freezeList(['observedbranch-deepgreen-absence-1','observedbranch-deepgreen-absence-2','observedbranch-deepgreen-absence-boss']),
     bossStageId:'observedbranch-deepgreen-absence-boss',
   }),
+  // M9 — Branch Cluster expansion. First Branch of a new Prime Region
+  // (灼熱の火山, Ch5), reusing the exact same shape as Branch Cluster 1.
+  Object.freeze({
+    id:'flame-king-volcano',
+    name:'炎帝領・灼熱の火山',
+    observedLabel:'観測分岐：炎帝領',
+    primeRegionRef:Object.freeze({
+      worldRegionId:'elemental',
+      chapterId:'ch5',
+      chapterNum:5,
+      regionName:'灼熱の火山',
+    }),
+    divergencePoint:'炎帝ドレイクが正史の戦いで討たれず、火山国家の神王として即位した。',
+    historicalSummary:'炎帝の即位によって火山国家は熔鉱都市として再編され、竜由来の合金技術と製鉄産業が王家の下で急速に発達した歴史。',
+    technologyProfile:Object.freeze({
+      mechanical:'advancedMajor',
+      arcane:'advanced',
+      bio:'regressed',
+      boundary:'baseline',
+      information:'regressed',
+      material:'dominant',
+    }),
+    ecologyProfile:Object.freeze({
+      settlement:'火山噴気を動力とする熔鉱都市',
+      species:'火山トカゲ・溶岩ゴーレムは王家に従属する労役獣として再編',
+      construction:'耐熔合金による築城が発達',
+      industry:'王家が独占する製鉄・製鋼が急速に発達',
+    }),
+    routeRefs:freezeList([]),
+    sceneRefs:freezeList([]),
+    discoveryConditions:Object.freeze({
+      allDiscoveries:freezeList(['cp4:branch-anchor:flame-king']),
+      rngRequired:false,
+    }),
+    traversable:false,
+    stageIds:freezeList(['observedbranch-flame-king-1','observedbranch-flame-king-2','observedbranch-flame-king-boss']),
+    bossStageId:'observedbranch-flame-king-boss',
+  }),
 ]);
 
 export function observedBranchById(id){

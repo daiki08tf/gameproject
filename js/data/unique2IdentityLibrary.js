@@ -43,6 +43,9 @@ export const UNIQUE2_WEAPON_IDENTITIES = Object.freeze({
       {trigger:'passive',kind:'bossDmg',power:.30},
       {trigger:'passive',kind:'normalEnemyDmgPenalty',power:.12},
     ],['boss','tradeoff']),
+    U('u2_axe_ember_throne','axe','戴冠の火勢','一撃ごとに王家の熔鉱が刃へ伝い、通常攻撃を継続的な炎ダメージへ変える。',['axe_breaker'],[
+      {trigger:'onHit',kind:'burnDamage',power:.30,chance:.25},
+    ],['fire','observed-branch']),
   ]),
 
   staff:Object.freeze([
