@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { nextStageAfter } from '../js/data/resultNextStage.js';
 import { CHAPTERS } from '../js/data/stages.js';
 import { buildAbyssStage } from '../js/data/abyss.js';
@@ -35,4 +36,11 @@ test('final main-story boss has no phantom next stage when optional pseudo chapt
   }finally{
     CHAPTERS.splice(CHAPTERS.indexOf(pseudo),1);
   }
+});
+
+test('Home Story context filters pseudo chapters instead of treating Machine World as NEXT STORY',()=>{
+  const src=fs.readFileSync(new URL('../js/patches/finalIntegrationUi.js',import.meta.url),'utf8');
+  assert.match(src,/function storyChapters\(\)\{return CHAPTERS\.filter/);
+  assert.match(src,/for\(const chapter of storyChapters\(\)\)/);
+  assert.match(src,/const storyStages=storyChapters\(\)\.flatMap/);
 });
