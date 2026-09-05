@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { nextStageAfter } from '../js/data/resultNextStage.js';
 import { CHAPTERS } from '../js/data/stages.js';
 import { buildAbyssStage } from '../js/data/abyss.js';
@@ -25,7 +26,21 @@ test('Abyss clear advances exactly one floor',()=>{
   assert.ok(next);assert.equal(next.abyssDepth,124);assert.equal(next.id,'abyss-124');
 });
 
-test('final main-story boss has no phantom next stage',()=>{
-  const lastChapter=CHAPTERS.at(-1),boss=lastChapter.stages.find(s=>s.boss);
-  assert.equal(nextStageAfter(boss),null);
+test('final main-story boss has no phantom next stage when optional pseudo chapters are appended',()=>{
+  const storyLast=CHAPTERS.find(ch=>ch.id==='ch35');
+  const boss=storyLast.stages.find(s=>s.boss);
+  const pseudo={id:'machine_world',num:26,stages:[{id:'machine-world-debug',name:'debug',secretRealm:true}]};
+  CHAPTERS.push(pseudo);
+  try{
+    assert.equal(nextStageAfter(boss),null);
+  }finally{
+    CHAPTERS.splice(CHAPTERS.indexOf(pseudo),1);
+  }
+});
+
+test('Home Story context filters pseudo chapters instead of treating Machine World as NEXT STORY',()=>{
+  const src=fs.readFileSync(new URL('../js/patches/finalIntegrationUi.js',import.meta.url),'utf8');
+  assert.match(src,/function storyChapters\(\)\{return CHAPTERS\.filter/);
+  assert.match(src,/for\(const chapter of storyChapters\(\)\)/);
+  assert.match(src,/const storyStages=storyChapters\(\)\.flatMap/);
 });
