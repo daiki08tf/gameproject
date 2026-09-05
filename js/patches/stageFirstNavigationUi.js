@@ -1,7 +1,7 @@
 /* CLR-13/15 — Stage-first browser, Stage detail and Hunt presentation bridge.
    Canonical Chapter/Stage navigation stays the visible Story spine while
    World 4.0 remains the Region-owned runtime underneath repeatable Hunt. */
-import { CHAPTERS,isChapterUnlocked } from '../data/stages.js';
+import { CHAPTERS,isChapterUnlocked,findStage } from '../data/stages.js';
 import { journeyName } from '../data/worldVeil.js';
 import { buildWorld4RegionCatalog,world4RegionState } from '../data/adventureWorld4Regions.js';
 import { isStageDiscovered } from '../screens/stageSelect.js';
@@ -34,6 +34,7 @@ restoreCanonicalAdventureEntry();
 
 function canonicalStageById(id){
   if(!id)return null;
+  if(id.startsWith('rift-'))return findStage(id,state.riftKeys?.()||[]);
   for(const chapter of CHAPTERS){
     const stage=chapter.stages.find(item=>item.id===id);
     if(stage)return{chapter,stage};
@@ -173,7 +174,7 @@ export function enhanceStageFirstDetail(stageId=selectedStageId){
   if(name){name.textContent=`${stage.id} ${stage.name}`;name.dataset.stageId=stage.id;}
   if(start){
     const cleared=state.isStageCleared(stage.id);
-    start.textContent=stage.branch||stage.bounty?(cleared?'もう一度挑む':'挑戦する'):(cleared?'再戦する':'物語を進める');
+    start.textContent=stage.isRift?'裂界へ出撃':stage.branch||stage.bounty?(cleared?'もう一度挑む':'挑戦する'):(cleared?'再戦する':'物語を進める');
     start.dataset.stageId=stage.id;
   }
   ensureHuntAction(stage.id);

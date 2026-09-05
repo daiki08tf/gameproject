@@ -2,7 +2,12 @@
 
 ## Current active program
 
-**UI Overhaul (UIX)** is the active default priority.
+**Confirmed runtime debug fixes** currently precede further UI Overhaul (UIX) production work. Read `CODEBASE_DEBUG_AUDIT_2026-09-05.md` for the current debug backlog.
+
+- PR #408: mobile Option Fusion fix merged.
+- PR #409: audit baseline and duplicate Phase 8 CI removal merged.
+- PR #410: Machine World semantic routing merged at `c2d9a88a2cc49922372a560b2cc070062d0760d5`.
+- DBG-01 implementation: Rift Key entry / one-time consumption / safe result return implemented; browser acceptance pending. See audit handoff and `tests/rift-entry.test.js`.
 
 UIX-0 source/ownership analysis and UIX-1/UIX-2 source implementation are recorded in the UIX audit, design-system and roadmap documents. Their live viewport acceptance remains incomplete.
 
@@ -94,7 +99,7 @@ For each phase:
 8. rebuild and run live-browser smoke flows;
 9. capture/check required mobile viewports;
 10. open a PR;
-11. merge only with Blade Vale Tests and Phase 8 Validation green and mergeable state clean;
+11. merge only with Blade Vale Tests green and mergeable state clean (the duplicate Phase 8 Validation workflow was removed in #409);
 12. squash merge and record the SHA.
 
 Do not weaken tests, add skips, use .only, swallow errors or use hard-coded exceptions merely to obtain green CI.
@@ -113,5 +118,7 @@ Report:
 - known remaining debt.
 
 ## Default next action
+
+Complete the DBG-01 live Rift entry check described in the codebase audit, then continue the bounded browser smoke / runtime reachability backlog. Keep UIX acceptance open until evidence is recorded.
 
 On a browser-capable checkout, complete the combined UIX-0–2 live viewport pass and update UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md. Exercise fresh-save, cleared-Stage and suspended-Adventure Home states at 390×844, 375×667 and desktop. Verify one primary Adventure action, Character/Equipment/Records Home hubs, the Home/Adventure/Character/Equipment/Records persistent navigation and return-time context refresh. Do not claim the phases complete or begin UIX-3 production work until the live gate is recorded.

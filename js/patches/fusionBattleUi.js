@@ -75,5 +75,5 @@ function ensureUi(screen){
  const btn=document.createElement('button'); btn.className='btn-main tb-fusion-command'; btn.addEventListener('click',()=>screen._onCommand({type:'fusion',targetId:screen.selectedTargetId}));
  wrap.append(label,bar,btn); grid.parentElement?.insertBefore(wrap,grid); screen._fusionUi={wrap,label,fill,btn}; return screen._fusionUi;
 }
-TextBattleScreen.prototype.start=function(...args){ensureBattleViewportStyles();const out=originalStart.apply(this,args);ensureUi(this);this._render();return out;};
+TextBattleScreen.prototype.start=function(...args){ensureBattleViewportStyles();const out=originalStart.apply(this,args);if(!this.engine)return out;ensureUi(this);this._render();return out;};
 TextBattleScreen.prototype._render=function(){originalRender.call(this);const ui=ensureUi(this),summary=this.engine?.fusionCombatSummary?.();if(!ui)return;ui.wrap.classList.toggle('hidden',!summary);if(!summary)return;const gauge=state.fusionGauge?.()||0;ui.label.textContent=`${summary.gauge.name} ${Math.round(gauge)}/100${gauge>=50?'  ◆TRAIT':''}`;ui.fill.style.width=`${Math.max(0,Math.min(100,gauge))}%`;ui.btn.textContent=`FUSION：${summary.command.name}`;ui.btn.disabled=!this.engine.canUseFusionCommand?.()||this.engine.over||this.locked;};

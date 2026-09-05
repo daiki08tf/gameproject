@@ -18,6 +18,7 @@ import { buildAbyssStage } from './abyss.js';
 import { buildSecretRealmStage } from './secretRealms.js';
 import { buildRaidStage } from './raidBosses.js';
 import { buildObservedBranchStage } from './observedBranchStages.js';
+import { buildRiftStage } from './riftStages.js';
 
 const CHAPTER_1 = {
   id: 'ch1', num: 1, name: '第1章 はじまりの平原', stages: [
@@ -65,7 +66,8 @@ for(const ch of CHAPTERS){
   for(const st of ch.stages){st.dropRegionTags=tags;if(profile){st.regionId=profile.id;st.regionTheme=profile.theme;st.fieldRule=profile.fieldRule;st.explorationEvents=profile.events;}}
 }
 export function finalStageOf(chapter){return chapter.stages.find(s=>s.boss)||chapter.stages[chapter.stages.length-1];}
-export function findStage(stageId){
+export function findStage(stageId,riftKeys=[]){
+ if(stageId.startsWith('rift-')){const key=riftKeys.find(key=>key?.id===stageId.slice(5)),stage=buildRiftStage(key);return stage?{chapter:null,stage}:null;}
  if(stageId.startsWith('abyss-')){
   const raw=stageId.slice('abyss-'.length),[depthText,routeId]=raw.split('~');
   const depth=parseInt(depthText,10);

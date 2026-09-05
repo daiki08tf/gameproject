@@ -60,7 +60,8 @@ const FARMER_SURVIVE_CHANCE = 0.3;
 
 export class BattleEngine {
   constructor(stageId, blessingId) {
-    const found = findStage(stageId);
+    const found = findStage(stageId, state.data.riftKeys || []);
+    if (!found && stageId.startsWith('rift-')) throw Object.assign(new Error('裂界鍵が見つからないか、使用できません。'), { code: 'RIFT_KEY_UNAVAILABLE' });
     if (!found) throw new Error(`unknown stage: ${stageId}`);
     this.stage = found.stage;
     this.chapter = found.chapter;
@@ -216,6 +217,10 @@ export class BattleEngine {
     this.round = 0;
     this.over = false;
     this.finalResult = null;
+    // Resolve and initialize first; previews and failed initialization never spend a key.
+    if (this.stage.isRift && !state.consumeRiftKey?.(this.stage.riftKey.id)) {
+      throw Object.assign(new Error('裂界鍵が見つからないか、使用できません。'), { code: 'RIFT_KEY_UNAVAILABLE' });
+    }
   }
 
   // ---------------------------------------------------------
