@@ -60,7 +60,14 @@ export class TextBattleScreen {
   }
 
   start(stageId, onEnd, blessingId) {
-    this.engine = new BattleEngine(stageId, blessingId);
+    if (this.engine?.stage.isRift && !this.engine.over && this.engine.stage.id === stageId) return;
+    try {
+      this.engine = new BattleEngine(stageId, blessingId);
+    } catch (error) {
+      if (error.code !== 'RIFT_KEY_UNAVAILABLE') throw error;
+      queueMicrotask(() => onEnd?.({ cleared: false, retreated: true, keyMissing: true, rewards: { gold: 0, exp: 0 } }));
+      return;
+    }
     this.onEnd = onEnd;
     this.selectedTargetId = null;
     this.logLines = [];
