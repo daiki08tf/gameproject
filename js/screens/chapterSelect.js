@@ -2,7 +2,7 @@ import { CHAPTERS, isChapterUnlocked, finalStageOf } from '../data/stages.js';
 import { journeyName, latestVeilFragment } from '../data/worldVeil.js';
 import { WORLD3_REGIONS, world3RegionState } from '../data/world3Regions.js';
 import { world3BranchLabel } from '../data/world3Branches.js';
-import { visibleWorld3RealmNodes } from '../data/world3Realms.js';
+import { visibleWorld3RealmNodes, resolveWorld3RealmRoute } from '../data/world3Realms.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 
@@ -33,7 +33,8 @@ function renderRealmNodes(list,onPick){
     card.className='stage-card branch'+(node.state==='hint'||node.state==='unknown'?' locked':'');
     const badge=node.badge?`<span style="color:var(--accent)">${node.badge}</span>`:'';
     card.innerHTML=`<div><div class="name">${node.icon} ${node.name} ${badge}</div><div class="rec">${node.detail||node.subtitle}</div></div><div class="cleared">${node.selectable?'→':node.state==='open'?'●':'?'}</div>`;
-    if(node.selectable&&node.route)card.addEventListener('click',()=>{Audio_.tap();onPick(node.route);});
+    const route=resolveWorld3RealmRoute(node.route,CHAPTERS);
+    if(node.selectable&&route!==null&&route!==undefined)card.addEventListener('click',()=>{Audio_.tap();onPick(route);});
     list.appendChild(card);
   }
 }
