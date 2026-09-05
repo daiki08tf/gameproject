@@ -17,12 +17,22 @@ const ABSENCE_ORIGIN=Object.freeze({
   divergence:'境界崩壊による森林圏消失',
 });
 
+// M9 — Branch Cluster 2's first Branch (灼熱の火山 / Ch5).
+const FLAME_ORIGIN=Object.freeze({
+  branchId:'flame-king-volcano',
+  label:'炎帝領・灼熱の火山',
+  technology:'Mechanical / Material',
+  divergence:'炎帝ドレイク即位',
+});
+
 // Exported so any Branch-native item authored outside this file (e.g. M6's
-// uq_observed_null_root in uniqueEquipment.js) can carry the same read-only
-// Branch Origin presentation metadata instead of a second, inconsistent shape.
+// uq_observed_null_root and M9's uq_observed_ember_throne in uniqueEquipment.js)
+// can carry the same read-only Branch Origin presentation metadata instead of
+// a second, inconsistent shape.
 export const OBSERVED_BRANCH_ORIGINS=Object.freeze({
   [TREE_ORIGIN.branchId]:TREE_ORIGIN,
   [ABSENCE_ORIGIN.branchId]:ABSENCE_ORIGIN,
+  [FLAME_ORIGIN.branchId]:FLAME_ORIGIN,
 });
 
 const item=(spec)=>Object.freeze({

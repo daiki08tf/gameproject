@@ -2,9 +2,10 @@
    Branch Stages are ordinary findStage()-resolvable battle stages, built the
    same way Abyss/Secret Realm/Raid stages are (see stages.js's findStage()
    prefix dispatch and raidBosses.js's buildRaidStage()) — a static authored
-   definition resolved into a full stage object on demand. They reuse the
-   existing Chapter 2 enemy archetypes and Encounter 2.0 pool, plus the
-   existing state.data.stageProgress / state.isStageCleared authority.
+   definition resolved into a full stage object on demand. They reuse their
+   own Prime Chapter's enemy archetypes and Encounter 2.0 pool (Ch2 for
+   Branch Cluster 1, Ch5 for M9's Branch Cluster 2), plus the existing
+   state.data.stageProgress / state.isStageCleared authority.
    No new combat, save, clear, encounter, or loot authority is introduced here. */
 import { OBSERVED_BRANCHES, observedBranchById, OBSERVED_BRANCH_PROFILE_LEVELS } from './observedBranches.js';
 import { CHAPTER_REGION_TAGS } from './chapters.js';
@@ -12,10 +13,11 @@ import { ENEMY_TYPES } from './enemies.js';
 import { buildChapterEncounterPool } from './encounterMigration2.js';
 
 // Keyed by the exact Stage IDs referenced from observedBranches.js's
-// `stageIds` — one authored definition per Branch Stage. Waves reference the
-// Chapter 2 enemy archetypes (already registered by js/data/enemies.js). M5
-// routes Branch-native equipment through the same dropTable / firstClear fields
-// already consumed by BattleEngine; no Branch loot authority exists.
+// `stageIds` — one authored definition per Branch Stage. Waves reference each
+// Branch's own Prime Chapter's enemy archetypes (already registered by
+// js/data/enemies.js). M5 routes Branch-native equipment through the same
+// dropTable / firstClear fields already consumed by BattleEngine; no Branch
+// loot authority exists.
 const BRANCH_STAGE_DATA=Object.freeze({
   'observedbranch-tree-sovereign-1':Object.freeze({
     name:'樹冠の第一階層',
@@ -99,20 +101,65 @@ const BRANCH_STAGE_DATA=Object.freeze({
       {itemId:'uq_observed_blank_compass',weight:.35},
     ]),
   }),
+  // M9 — Branch Cluster 2's first vertical slice (灼熱の火山 / Ch5). Mirrors
+  // M4's minimal-footprint precedent: regular dropTables reuse the existing
+  // generic ch5_* equipment placeholders; only the boss firstClear is a new
+  // Branch-native Unique (a follow-up M5-equivalent gear phase can enrich the
+  // regular dropTables later, exactly like M5 did for Branch Cluster 1).
+  'observedbranch-flame-king-1':Object.freeze({
+    name:'熔鉱都市の外郭',
+    recLevel:29,
+    waves:Object.freeze([{type:'ch5_normal',count:5,interval:1.3}]),
+    rewards:Object.freeze({gold:110,exp:88}),
+    dropTable:Object.freeze([{itemId:'ch5_accessory',weight:1}]),
+  }),
+  'observedbranch-flame-king-2':Object.freeze({
+    name:'王家熔鉱炉の回廊',
+    recLevel:31,
+    waves:Object.freeze([
+      {type:'ch5_normal',count:4,interval:1.1},
+      {type:'ch5_fast',count:3,interval:0.9},
+      {type:'ch5_tank',count:2,interval:1.8},
+    ]),
+    rewards:Object.freeze({gold:150,exp:120}),
+    dropTable:Object.freeze([
+      {itemId:'ch5_shield',weight:1},
+      {itemId:'ch5_head',weight:1},
+    ]),
+  }),
+  'observedbranch-flame-king-boss':Object.freeze({
+    name:'炎帝領：戴冠せし神王・EMBER THRONE',
+    boss:true,
+    recLevel:34,
+    waves:Object.freeze([
+      {type:'ch5_tank',count:2,interval:1.6},
+      {type:'ch5_boss',count:1,interval:0},
+    ]),
+    rewards:Object.freeze({gold:390,exp:300}),
+    firstClear:Object.freeze({itemId:'uq_observed_ember_throne'}),
+    dropTable:Object.freeze([
+      {itemId:'ch5_weapon',weight:1},
+      {itemId:'ch5_body',weight:1},
+    ]),
+  }),
 });
 
-// Observed 王樹領 is the divergent form of Prime Chapter 2, so it projects the
-// same E8 Encounter Pool contract instead of inventing a Branch-only enemy
-// table. Fixed authored waves remain the fallback/headcount authority; the
-// pool only enables the already-live Chapter Rare, generic World Tier Elite,
-// regional roles and environmental Variant behavior.
-const CH2_ENCOUNTER_SOURCE=Object.freeze({
-  id:'ch2',
-  stages:Object.freeze([Object.freeze({dropRegionTags:Object.freeze([...(CHAPTER_REGION_TAGS.ch2||[])])})]),
-});
+// Every authored Branch is the divergent form of its own Prime Chapter, so it
+// projects that Chapter's own E8 Encounter Pool contract instead of inventing
+// a Branch-only enemy table. Fixed authored waves remain the fallback/headcount
+// authority; the pool only enables the already-live Chapter Rare, generic
+// World Tier Elite, regional roles and environmental Variant behavior. This is
+// keyed by the Branch's own primeRegionRef.chapterId (M9 added a second Prime
+// Chapter, Ch5, alongside Ch2 — this must not stay hardcoded to one Chapter).
+function encounterSourceForChapterId(chapterId){
+  return Object.freeze({
+    id:chapterId,
+    stages:Object.freeze([Object.freeze({dropRegionTags:Object.freeze([...(CHAPTER_REGION_TAGS[chapterId]||[])])})]),
+  });
+}
 
-function buildObservedBranchEncounterPool(){
-  const pool=buildChapterEncounterPool(CH2_ENCOUNTER_SOURCE,ENEMY_TYPES);
+function buildObservedBranchEncounterPool(chapterId){
+  const pool=buildChapterEncounterPool(encounterSourceForChapterId(chapterId),ENEMY_TYPES);
   return{
     ...pool,
     types:(pool.types||[]).map(entry=>({...entry})),
@@ -149,6 +196,7 @@ export function buildObservedBranchStage(stageId){
   const branchId=branchIdForStage(stageId);
   const branch=branchId?observedBranchById(branchId):null;
   const profile=branchId?observedBranchProfileSummary(branchId):'';
+  const primeChapterId=branch?.primeRegionRef?.chapterId||'ch2';
   return{
     id:stageId,
     name:data.name,
@@ -158,8 +206,8 @@ export function buildObservedBranchStage(stageId){
     rewards:{...data.rewards},
     dropTable:data.dropTable.map(drop=>({...drop})),
     firstClear:data.firstClear?{...data.firstClear}:undefined,
-    encounterPool:buildObservedBranchEncounterPool(),
-    dropRegionTags:[...(CHAPTER_REGION_TAGS.ch2||[])],
+    encounterPool:buildObservedBranchEncounterPool(primeChapterId),
+    dropRegionTags:[...(CHAPTER_REGION_TAGS[primeChapterId]||[])],
     observedBranch:true,
     observedBranchId:branchId,
     // stageSelect's existing observed-Branch confirmation surface renders this

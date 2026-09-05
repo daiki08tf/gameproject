@@ -41,6 +41,9 @@ export const BOUNTY_UNIQUES = [
 
   // Observed Branches M6 — 深緑消失域 initial Fixed Unique reward.
   {id:'uq_observed_null_root',bountyId:null,sourceStageId:'observedbranch-deepgreen-absence-boss',name:'無根刃・NULL ROOT',slot:'weapon',weaponType:'sword',rarity:'legendary',stats:{atk:19.4,crit:3,spd:2},unique:true,observedBranch:true,branchOrigin:OBSERVED_BRANCH_ORIGINS['deep-green-absence'],unique2IdentityId:'u2_sword_null_root',effects:[{trigger:'passive',kind:'noRecoveryDmgBonus',power:.22}],lore:'森が存在しなかった履歴から切り出された残響刃。回復や再生へ接続しない時だけ、欠落した根系の輪郭が攻撃へ重なる。'},
+
+  // Observed Branches M9 — 炎帝領・灼熱の火山 initial Fixed Unique reward.
+  {id:'uq_observed_ember_throne',bountyId:null,sourceStageId:'observedbranch-flame-king-boss',name:'戴冠斧・EMBER THRONE',slot:'weapon',weaponType:'axe',rarity:'legendary',stats:{atk:20.2,crit:3.5,def:2},unique:true,observedBranch:true,branchOrigin:OBSERVED_BRANCH_ORIGINS['flame-king-volcano'],unique2IdentityId:'u2_axe_ember_throne',effects:[{trigger:'onHit',kind:'burnDamage',power:.30,chance:.25}],lore:'討たれなかった炎帝が戴冠した歴史から持ち出された王家の斧。刃が触れるたび、王家の熔鉱が対象を炎で灼き続ける。'},
 ];
 export function uniqueForBounty(bountyId){ return BOUNTY_UNIQUES.find(x=>x.bountyId===bountyId)||null; }
 export function bountyUniqueById(id){ return BOUNTY_UNIQUES.find(x=>x.id===id)||null; }

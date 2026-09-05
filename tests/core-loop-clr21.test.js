@@ -137,12 +137,12 @@ test('CLR-21 legacy saves without any Branch stageProgress entries resolve safel
   assert.equal(isObservedBranchCleared('no-such-branch', { isStageCleared }), false);
 });
 
-test('CLR-21/M6 playable Branch set expands only through the two authored Ch2 Branch stage lists', () => {
+test('CLR-21/M6/M9 playable Branch set expands only through the authored Branch stage lists', () => {
   const playable = OBSERVED_BRANCHES
     .filter(branch => Array.isArray(branch.stageIds) && branch.stageIds.length)
     .map(branch => branch.id)
     .sort();
-  assert.deepEqual(playable, ['deep-green-absence', 'tree-sovereign-deep-green'].sort());
+  assert.deepEqual(playable, ['deep-green-absence', 'flame-king-volcano', 'tree-sovereign-deep-green'].sort());
   for (const branch of OBSERVED_BRANCHES.filter(candidate => playable.includes(candidate.id))) {
     for (const stageId of branch.stageIds) assert.ok(findStage(stageId), `${stageId} must resolve via findStage()`);
   }

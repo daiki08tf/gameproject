@@ -1,6 +1,7 @@
 /* Content Pack IV A — Deep Green contradiction chain runtime. */
 import './contentPackIIIB.js';
 import './contentPackIVB.js';
+import './contentPackIVG.js';
 import { state } from '../state.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
 import { CP4_DEEP_GREEN_CHAIN,cp4DeepGreenProgress,cp4DeepGreenStepForStage } from '../data/contentPackIVA.js';

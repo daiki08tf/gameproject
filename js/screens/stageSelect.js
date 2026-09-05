@@ -154,6 +154,11 @@ export function renderStageSelect(chapterIndex, onPick) {
   if(chapterIndex==='world2'||chapterIndex==='world3-branches'){renderWorld2StageSelect(onPick);return;}
   const chapter = CHAPTERS[chapterIndex];
   document.getElementById('chapterTitle').textContent = journeyName(chapter);
+  // Read-only presentation marker so unrelated screens (e.g. contentPackIVD.js's
+  // Branch anchor cards) can tell which Chapter's Stage list is showing without
+  // parsing display text. Idempotent write — same value is a no-op.
+  const screenEl = document.getElementById('stageSelectScreen');
+  if (screenEl && screenEl.dataset.chapterNum !== String(chapter.num)) screenEl.dataset.chapterNum = String(chapter.num);
   const list = document.getElementById('stageList');
   list.innerHTML = '';
   chapter.stages.forEach((stage, stageIndex) => {

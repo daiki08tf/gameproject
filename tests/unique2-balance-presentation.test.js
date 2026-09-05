@@ -72,6 +72,10 @@ test('Unique 2.0 proc and specialization recipes stay inside authored safety env
         case 'noRecoveryDmgBonus':
           assert.ok(effect.power > 0 && effect.power <= 0.22, `${identity.id}: absence damage bonus`);
           break;
+        case 'burnDamage':
+          assert.ok(effect.chance <= 0.30, `${identity.id}: burn proc chance`);
+          assert.ok(effect.power <= 0.35, `${identity.id}: burn proc power`);
+          break;
         default:
           assert.fail(`${identity.id}: ungated Unique 2.0 effect kind ${effect.kind}`);
       }
