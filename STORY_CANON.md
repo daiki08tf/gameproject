@@ -130,6 +130,12 @@ Those require a deliberate future story reveal.
 
 ## Current development direction
 
-**Content Pack III — Observation Reflux.**
+Content Pack III (Observation Reflux) and Content Pack IV are both complete. Observed Branches M0–M4 are also complete — 王樹領・深緑の森 (Ch2) is a live, playable Branch. See `CONTENT_PACK_III_ROADMAP.md`, `CONTENT_PACK_IV_ROADMAP.md` and `CORE_LOOP_CLR21_IMPLEMENTATION.md`.
 
-Use Ch30's returned observation to create new reasons to revisit old regions through existing Rumor / Codex / Secret / Ranch / battle surfaces. See `CONTENT_PACK_III_ROADMAP.md`, `WORLD_LORE_BIBLE.md` and `GAME_CONTENT_CATALOG.md`.
+**Active direction: Observed Branches M6 → M9's first pick → M7 + a new Arc VI opening chapter (Ch36).**
+
+1. M6 — 深緑消失域, the second, contrasting Branch of the same Ch2 forest (design already authored in `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md`).
+2. M9's first new Prime Region — 灼熱の火山.
+3. M7's comparative Codex/Chronicle record across Prime/王樹領/深緑消失域 becomes the direct lead-in to Ch36, opening Arc VI, using the two Branches' accumulated records to partially recover the "missing observation interval" (`WORLD_LORE_BIBLE.md` open mysteries #8/#9) without resolving the larger external-civilization mysteries (#1/#2).
+
+See `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md`'s "Decision log" for the full rationale. Do not invent a new parallel progression layer; this reuses the existing Observed Branch / Adventure / Codex / Chronicle authorities throughout.
