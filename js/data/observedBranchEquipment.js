@@ -17,6 +17,14 @@ const ABSENCE_ORIGIN=Object.freeze({
   divergence:'境界崩壊による森林圏消失',
 });
 
+// Exported so any Branch-native item authored outside this file (e.g. M6's
+// uq_observed_null_root in uniqueEquipment.js) can carry the same read-only
+// Branch Origin presentation metadata instead of a second, inconsistent shape.
+export const OBSERVED_BRANCH_ORIGINS=Object.freeze({
+  [TREE_ORIGIN.branchId]:TREE_ORIGIN,
+  [ABSENCE_ORIGIN.branchId]:ABSENCE_ORIGIN,
+});
+
 const item=(spec)=>Object.freeze({
   ...spec,
   branchOrigin:Object.freeze({...spec.branchOrigin}),
