@@ -32,7 +32,7 @@ test('Observed Branches M6 authors 深緑消失域 as the second Ch2 Branch with
   const summary=observedBranchProfileSummary(BRANCH_ID);
   assert.match(summary,/mechanical →/);
   assert.match(summary,/arcane ↓/);
-  assert.match(summary,/bio ↓↓/);
+  assert.match(summary,/bio ↓↓↓(?: \/|$)/);
   assert.match(summary,/boundary ↑↑↑/);
   assert.match(summary,/information ↑↑/);
   assert.match(summary,/material ↑/);
@@ -124,7 +124,7 @@ test('M6 Codex/Chronicle definitions record divergence, ecology and all six tech
   assert.match(codex.text,/生態：/);
   assert.match(codex.text,/Mechanical →/);
   assert.match(codex.text,/Arcane ↓/);
-  assert.match(codex.text,/Bio ↓↓/);
+  assert.match(codex.text,/Bio ↓↓↓(?: \/|。)/);
   assert.match(codex.text,/Boundary ↑↑↑/);
   assert.match(codex.text,/Information ↑↑/);
   assert.match(codex.text,/Material ↑/);
