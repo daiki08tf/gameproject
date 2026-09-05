@@ -13,16 +13,19 @@ import { buildChapterEncounterPool } from './encounterMigration2.js';
 
 // Keyed by the exact Stage IDs referenced from observedBranches.js's
 // `stageIds` — one authored definition per Branch Stage. Waves reference the
-// Chapter 2 enemy archetypes (already registered by js/data/enemies.js) and
-// drop tables reference the existing Chapter 2 equipment item pool, so
-// 王樹領・深緑の森's identity comes entirely from data, not new runtime.
+// Chapter 2 enemy archetypes (already registered by js/data/enemies.js). M5
+// routes Branch-native equipment through the same dropTable / firstClear fields
+// already consumed by BattleEngine; no Branch loot authority exists.
 const BRANCH_STAGE_DATA=Object.freeze({
   'observedbranch-tree-sovereign-1':Object.freeze({
     name:'樹冠の第一階層',
     recLevel:9,
     waves:Object.freeze([{type:'ch2_normal',count:5,interval:1.3}]),
     rewards:Object.freeze({gold:60,exp:48}),
-    dropTable:Object.freeze([{itemId:'ch2_accessory',weight:1}]),
+    dropTable:Object.freeze([
+      {itemId:'ob_tree_crown_seed',weight:2},
+      {itemId:'ob_tree_thorn_bow',weight:1},
+    ]),
   }),
   'observedbranch-tree-sovereign-2':Object.freeze({
     name:'生体建築の回廊',
@@ -33,7 +36,11 @@ const BRANCH_STAGE_DATA=Object.freeze({
       {type:'ch2_tank',count:2,interval:1.8},
     ]),
     rewards:Object.freeze({gold:85,exp:68}),
-    dropTable:Object.freeze([{itemId:'ch2_shield',weight:1},{itemId:'ch2_head',weight:1}]),
+    dropTable:Object.freeze([
+      {itemId:'ob_tree_symbiotic_shield',weight:1.5},
+      {itemId:'ob_tree_living_body',weight:1.5},
+      {itemId:'ob_tree_root_staff',weight:1},
+    ]),
   }),
   'observedbranch-tree-sovereign-boss':Object.freeze({
     name:'王樹領：生存した大樹霊',
@@ -44,11 +51,11 @@ const BRANCH_STAGE_DATA=Object.freeze({
       {type:'ch2_boss',count:1,interval:0},
     ]),
     rewards:Object.freeze({gold:220,exp:170}),
-    // Reuse Chapter 2's canonical epic weapon reward. `ch2_named_weapon`
-    // never existed in the equipment authority and would create an orphan
-    // inventory id when BattleEngine forwards firstClear.itemId to addItem().
-    firstClear:Object.freeze({itemId:'ch2_weapon_epic'}),
-    dropTable:Object.freeze([{itemId:'ch2_weapon',weight:1},{itemId:'ch2_body',weight:1}]),
+    firstClear:Object.freeze({itemId:'uq_observed_verdant'}),
+    dropTable:Object.freeze([
+      {itemId:'ob_tree_root_staff',weight:1},
+      {itemId:'ob_tree_crown_seed',weight:1},
+    ]),
   }),
   'observedbranch-deepgreen-absence-1':Object.freeze({
     name:'空白域の測線',
@@ -58,7 +65,10 @@ const BRANCH_STAGE_DATA=Object.freeze({
       {type:'ch2_normal',count:3,interval:1.2},
     ]),
     rewards:Object.freeze({gold:62,exp:50}),
-    dropTable:Object.freeze([{itemId:'ch2_accessory',weight:1}]),
+    dropTable:Object.freeze([
+      {itemId:'ob_absence_survey_head',weight:2},
+      {itemId:'ob_absence_echo_dagger',weight:1},
+    ]),
   }),
   'observedbranch-deepgreen-absence-2':Object.freeze({
     name:'根記憶の残響路',
@@ -69,7 +79,10 @@ const BRANCH_STAGE_DATA=Object.freeze({
       {type:'ch2_tank',count:2,interval:1.8},
     ]),
     rewards:Object.freeze({gold:88,exp:70}),
-    dropTable:Object.freeze([{itemId:'ch2_head',weight:1},{itemId:'ch2_body',weight:1}]),
+    dropTable:Object.freeze([
+      {itemId:'ob_absence_blank_body',weight:2},
+      {itemId:'ob_absence_survey_rod',weight:1},
+    ]),
   }),
   'observedbranch-deepgreen-absence-boss':Object.freeze({
     name:'根無き森核・NULL CANOPY',
@@ -81,7 +94,10 @@ const BRANCH_STAGE_DATA=Object.freeze({
     ]),
     rewards:Object.freeze({gold:225,exp:175}),
     firstClear:Object.freeze({itemId:'uq_observed_null_root'}),
-    dropTable:Object.freeze([{itemId:'ch2_weapon',weight:1},{itemId:'ch2_accessory',weight:1}]),
+    dropTable:Object.freeze([
+      {itemId:'ob_absence_echo_dagger',weight:1},
+      {itemId:'uq_observed_blank_compass',weight:.35},
+    ]),
   }),
 });
 
