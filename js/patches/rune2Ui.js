@@ -4,7 +4,7 @@
    ============================================================ */
 
 import { state } from '../state.js';
-import { RUNE2_DEFS, rune2EffectText } from '../data/runes2.js';
+import { RUNE2_DEFS, rune2EffectText, runeSourceLabel } from '../data/runes2.js';
 
 function renderRune2Dashboard() {
   const screen = document.getElementById('blacksmithScreen');
@@ -22,7 +22,7 @@ function renderRune2Dashboard() {
     const active = state.rune2ActiveMarks(r.id);
     const starred = state.rune2Starred(r.id);
     const discovered = !!state.data.rune2Discovered?.[r.id];
-    const stageText = r.stageIds.join(' / ');
+    const stageText = runeSourceLabel(r);
     const effect = rune2EffectText(r, active || 1);
     const star = r.starAt ? `　★ ${owned >= r.starAt ? '突破済み' : `${owned}/${r.starAt}`}` : '';
     return `
@@ -31,7 +31,7 @@ function renderRune2Dashboard() {
           <div class="forge-card-name">${discovered ? r.name : '？？？'} <span class="mastered-badge">${r.english}</span></div>
           <div>所持 ${owned} / 有効 ${active}${starred ? ' ★' : ''}</div>
         </div>
-        <div class="forge-card-sub">${discovered ? `${effect}<br>獲得場所：${stageText}　基本Drop ${(r.dropRate*100).toFixed(2)}%${star}` : `未発見　ヒント：Stage ${stageText}`}</div>
+        <div class="forge-card-sub">${discovered ? `${effect}<br>獲得場所：${stageText}　基本Drop ${(r.dropRate*100).toFixed(2)}%${star}` : `未発見　ヒント：${stageText}`}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
           <button class="forge-card-btn" data-add="1" ${owned <= active || remaining <= 0 ? 'disabled' : ''}>+1</button>
           <button class="forge-card-btn" data-add="10" ${owned <= active || remaining <= 0 ? 'disabled' : ''}>+10</button>

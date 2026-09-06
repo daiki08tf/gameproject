@@ -1,27 +1,35 @@
 /* ============================================================
    Progression 2.0 Phase 5/6 — Rune 2.0 definitions
    ============================================================ */
+import { WORLD3_REGIONS, world3RegionForChapter } from './world3Regions.js';
 
+// The 18 base runes drop from an assigned World 3.0 travel region (existing
+// authority — see world3Regions.js) rather than one specific stage id. Any
+// stage clear anywhere in that region's chapters is eligible, spread two
+// runes per region across all 9 regions (ch1-36) so late-game/endgame play
+// keeps producing new marks instead of only chapters 1-15.
 export const RUNE2_DEFS = [
-  { id:'force', name:'剛撃', english:'Force', kind:'statMult', stat:'atk', perMark:0.05, stageIds:['1-1'], dropRate:0.05 },
-  { id:'ironclad', name:'鉄壁', english:'Iron-clad', kind:'statMult', stat:'def', perMark:0.05, stageIds:['1-2'], dropRate:0.05 },
-  { id:'wise', name:'賢者', english:'Wise', kind:'statMult', stat:'mag', perMark:0.05, stageIds:['1-3'], dropRate:0.05 },
-  { id:'notfall', name:'不倒', english:'Not fall', kind:'statMult', stat:'hp', perMark:0.05, stageIds:['1-4'], dropRate:0.05 },
-  { id:'spirit', name:'精神', english:'Spirit', kind:'statMult', stat:'mp', perMark:0.05, stageIds:['4-3','13-3'], dropRate:0.03 },
-  { id:'hawkeye', name:'鷹目', english:'Hawk eye', kind:'special', stageIds:['2-2'], dropRate:0.03 },
-  { id:'illusion', name:'幻影', english:'Illusion', kind:'special', stageIds:['3-3','11-3'], dropRate:0.025 },
-  { id:'bless', name:'祝福', english:'Bless', kind:'special', stageIds:['5-3','14-3'], dropRate:0.025 },
-  { id:'swift', name:'俊足', english:'Swift', kind:'special', starAt:500, stageIds:['6-3'], dropRate:0.02 },
-  { id:'fists', name:'百烈', english:'Fists', kind:'special', starAt:500, stageIds:['7-3','12-3'], dropRate:0.02 },
-  { id:'greed', name:'強欲', english:'Greed', kind:'special', stageIds:['8-4','14-B'], dropRate:0.0125 },
-  { id:'gold', name:'黄金', english:'Gold', kind:'special', starAt:2000, stageIds:['6-4'], dropRate:0.02 },
-  { id:'challenge', name:'挑戦', english:'Challenge', kind:'special', starAt:2000, stageIds:['9-4'], dropRate:0.01 },
-  { id:'observe', name:'観察', english:'Observe', kind:'special', starAt:500, stageIds:['2-1'], dropRate:0.03 },
-  { id:'bastion', name:'絶壁', english:'Bastion', kind:'special', stageIds:['10-5','15-5'], dropRate:0.006 },
-  { id:'bond', name:'縁', english:'Bond', kind:'special', starAt:1000, stageIds:['7-B','12-B'], dropRate:0.01 },
-  { id:'craft', name:'匠', english:'Craft', kind:'special', starAt:1000, stageIds:['9-5','15-B'], dropRate:0.008 },
-  { id:'fate', name:'運命', english:'Fate', kind:'special', starAt:1000, stageIds:['10-5','15-5'], dropRate:0.0025 },
+  { id:'force', name:'剛撃', english:'Force', kind:'statMult', stat:'atk', perMark:0.05, regionId:'frontier', dropRate:0.05 },
+  { id:'ironclad', name:'鉄壁', english:'Iron-clad', kind:'statMult', stat:'def', perMark:0.05, regionId:'frontier', dropRate:0.05 },
+  { id:'wise', name:'賢者', english:'Wise', kind:'statMult', stat:'mag', perMark:0.05, regionId:'elemental', dropRate:0.05 },
+  { id:'notfall', name:'不倒', english:'Not fall', kind:'statMult', stat:'hp', perMark:0.05, regionId:'elemental', dropRate:0.05 },
+  { id:'spirit', name:'精神', english:'Spirit', kind:'statMult', stat:'mp', perMark:0.05, regionId:'fracture', dropRate:0.03 },
+  { id:'hawkeye', name:'鷹目', english:'Hawk eye', kind:'special', regionId:'fracture', dropRate:0.03 },
+  { id:'illusion', name:'幻影', english:'Illusion', kind:'special', regionId:'last-mortal', dropRate:0.025 },
+  { id:'bless', name:'祝福', english:'Bless', kind:'special', regionId:'last-mortal', dropRate:0.025 },
+  { id:'swift', name:'俊足', english:'Swift', kind:'special', starAt:500, regionId:'veil', dropRate:0.02 },
+  { id:'fists', name:'百烈', english:'Fists', kind:'special', starAt:500, regionId:'veil', dropRate:0.02 },
+  { id:'greed', name:'強欲', english:'Greed', kind:'special', regionId:'outer-world', dropRate:0.0125 },
+  { id:'gold', name:'黄金', english:'Gold', kind:'special', starAt:2000, regionId:'outer-world', dropRate:0.02 },
+  { id:'challenge', name:'挑戦', english:'Challenge', kind:'special', starAt:2000, regionId:'reverse-observation', dropRate:0.01 },
+  { id:'observe', name:'観察', english:'Observe', kind:'special', starAt:500, regionId:'reverse-observation', dropRate:0.03 },
+  { id:'bastion', name:'絶壁', english:'Bastion', kind:'special', regionId:'shared-observation', dropRate:0.006 },
+  { id:'bond', name:'縁', english:'Bond', kind:'special', starAt:1000, regionId:'shared-observation', dropRate:0.01 },
+  { id:'craft', name:'匠', english:'Craft', kind:'special', starAt:1000, regionId:'branch-record', dropRate:0.008 },
+  { id:'fate', name:'運命', english:'Fate', kind:'special', starAt:1000, regionId:'branch-record', dropRate:0.0025 },
   // Observed Branches M5 — existing Rune 2.0 statMult authority, Branch Stage routes only.
+  // These stay pinned to exact stage ids: Observed Branch stages sit outside the
+  // WORLD3_REGIONS chapter numbering, so region-based matching cannot reach them.
   { id:'ob_verdant', name:'生脈', english:'Verdant Vein', kind:'statMult', stat:'hp', perMark:0.03, stageIds:['observedbranch-tree-sovereign-1'], dropRate:0.025 },
   { id:'ob_rootsong', name:'根唱', english:'Root Song', kind:'statMult', stat:'mag', perMark:0.03, stageIds:['observedbranch-tree-sovereign-2'], dropRate:0.02 },
   { id:'ob_boundary', name:'測界', english:'Boundary Survey', kind:'statMult', stat:'def', perMark:0.03, stageIds:['observedbranch-deepgreen-absence-1'], dropRate:0.025 },
@@ -29,7 +37,30 @@ export const RUNE2_DEFS = [
 ];
 const MAP=new Map(RUNE2_DEFS.map(r=>[r.id,r]));
 export function getRune2(id){return MAP.get(id);}
-export function runesForStage(stageId){return RUNE2_DEFS.filter(r=>r.stageIds.includes(stageId));}
+export function runesForStage(stageId){
+  const sid=String(stageId||'');
+  const result=RUNE2_DEFS.filter(r=>Array.isArray(r.stageIds)&&r.stageIds.includes(sid));
+  const chapterNum=Number((/^(\d+)-/.exec(sid)||[])[1]);
+  if(Number.isFinite(chapterNum)){
+    const region=world3RegionForChapter(chapterNum);
+    if(region)result.push(...RUNE2_DEFS.filter(r=>r.regionId===region.id));
+  }
+  return result;
+}
+// UI-facing "where does this drop" label: a region name+chapter span for the
+// 18 region-based runes, or the explicit stage list for the M5 Branch runes.
+export function runeSourceLabel(rune){
+  if(rune?.regionId){
+    const region=WORLD3_REGIONS.find(r=>r.id===rune.regionId);
+    if(region){
+      const first=region.chapters[0],last=region.chapters[region.chapters.length-1];
+      const span=first===last?`第${first}章`:`第${first}〜${last}章`;
+      return `${region.name}（${span}）`;
+    }
+  }
+  if(Array.isArray(rune?.stageIds)&&rune.stageIds.length)return rune.stageIds.join(' / ');
+  return '不明';
+}
 export function rune2EffectText(rune,marks=1){
   if(!rune)return'';const n=Math.max(0,Math.floor(Number(marks)||0));
   if(rune.kind==='statMult')return`${rune.stat.toUpperCase()} +${Math.round(rune.perMark*n*100)}%`;
