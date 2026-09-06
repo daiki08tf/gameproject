@@ -216,8 +216,12 @@ function compareLine(candidate, current, candidateId = null, currentId = null) {
     if (!diff) continue;
     parts.push(`<span class="${diff > 0 ? 'stat-up' : 'stat-down'}">${STAT_LABEL_JA[k] || k.toUpperCase()}${diff > 0 ? '↑' : '↓'}${Math.abs(diff)}</span>`);
   }
-  const candidateEffects = (candidate.effects || []).map((e) => e.name);
-  const currentEffects = (current.effects || []).map((e) => e.name);
+  // Not every authored effect carries a display `name` (chapters.js's EFFECTS
+  // table does; most Unique/Bounty/Branch item effects only carry trigger/
+  // kind/power). Fall back to `kind` so the diff never renders the literal
+  // string "undefined" to the player.
+  const candidateEffects = (candidate.effects || []).map((e) => e.name || e.kind);
+  const currentEffects = (current.effects || []).map((e) => e.name || e.kind);
   const effectDiff = [];
   for (const n of candidateEffects) if (!currentEffects.includes(n)) effectDiff.push(`<span class="stat-up">+固有:${n}</span>`);
   for (const n of currentEffects) if (!candidateEffects.includes(n)) effectDiff.push(`<span class="stat-down">-固有:${n}</span>`);
@@ -243,7 +247,9 @@ function statLine(item, id) {
   if (item.element && ELEMENT_LABEL[item.element]) parts.push(ELEMENT_LABEL[item.element]);
   if (item.implicit?.desc) parts.push(`【特性】${item.implicit.desc}`);
   if (item.series && WEAPON_SERIES[item.series]) parts.push(`《${WEAPON_SERIES[item.series].name}》`);
-  if (item.effects) for (const eff of item.effects) parts.push(`◆${eff.name}: ${eff.desc}`);
+  // Mirrors compareLine()'s fallback below: most Unique/Bounty/Branch item
+  // effects only carry trigger/kind/power, not an authored name/desc pair.
+  if (item.effects) for (const eff of item.effects) { if (eff.name || eff.desc) parts.push(`◆${eff.name || eff.kind}${eff.desc ? `: ${eff.desc}` : ''}`); }
   return parts.join(' / ');
 }
 

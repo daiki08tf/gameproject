@@ -130,12 +130,12 @@ Those require a deliberate future story reveal.
 
 ## Current development direction
 
-Content Pack III (Observation Reflux) and Content Pack IV are both complete. Observed Branches M0–M4 are also complete — 王樹領・深緑の森 (Ch2) is a live, playable Branch. See `CONTENT_PACK_III_ROADMAP.md`, `CONTENT_PACK_IV_ROADMAP.md` and `CORE_LOOP_CLR21_IMPLEMENTATION.md`.
+Content Pack III (Observation Reflux) and Content Pack IV are both complete. Observed Branches M0–M8, M10 and M11 are also complete, M9 is partial, and Ch36 (Arc VI opening) has shipped. 王樹領・深緑の森 and 深緑消失域 (Ch2) and 炎帝領・灼熱の火山 (Ch5) are all live, playable Branches. See `CONTENT_PACK_III_ROADMAP.md`, `CONTENT_PACK_IV_ROADMAP.md`, `CORE_LOOP_CLR21_IMPLEMENTATION.md`, and `OBSERVED_BRANCHES_M12_AUDIT.md` for the full closeout.
 
-**Active direction: Observed Branches M6 → M9's first pick → M7 + a new Arc VI opening chapter (Ch36).**
+**The M6 → M9's first pick → M7 → Ch36 sequence below is complete.** Remaining open work is M9's continuation (Machine World / The Veil, order not yet decided) — see `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md`'s Decision log.
 
-1. M6 — 深緑消失域, the second, contrasting Branch of the same Ch2 forest (design already authored in `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md`).
-2. M9's first new Prime Region — 灼熱の火山.
-3. M7's comparative Codex/Chronicle record across Prime/王樹領/深緑消失域 becomes the direct lead-in to Ch36, opening Arc VI, using the two Branches' accumulated records to partially recover the "missing observation interval" (`WORLD_LORE_BIBLE.md` open mysteries #8/#9) without resolving the larger external-civilization mysteries (#1/#2).
+1. M6 — 深緑消失域, the second, contrasting Branch of the same Ch2 forest. **Shipped.**
+2. M9's first new Prime Region — 灼熱の火山・炎帝領. **Shipped.**
+3. M7's comparative Codex/Chronicle record across Prime/王樹領/深緑消失域 became the direct lead-in to Ch36, opening Arc VI, using the two Branches' accumulated records to partially recover the "missing observation interval" (`WORLD_LORE_BIBLE.md` open mysteries #8/#9) without resolving the larger external-civilization mysteries (#1/#2). **Shipped.**
 
-See `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md`'s "Decision log" for the full rationale. Do not invent a new parallel progression layer; this reuses the existing Observed Branch / Adventure / Codex / Chronicle authorities throughout.
+See `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md`'s "Decision log" for the full rationale. This reused the existing Observed Branch / Adventure / Codex / Chronicle authorities throughout — no new parallel progression layer was invented.
