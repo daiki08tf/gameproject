@@ -74,6 +74,12 @@ export const UNIQUE2_WEAPON_IDENTITIES = Object.freeze({
     U('u2_dagger_finish','dagger','終幕線','瀕死域に入った瞬間、暗殺の価値を跳ね上げる。',['dagger_execution'],[
       {trigger:'passive',kind:'executioner',power:.24,hpThreshold:.25},
     ],['execution','assassin']),
+    U('u2_dagger_verdant_fang','dagger','生脈の狩り','撃破のたびに使い手を癒す、生存し続けた史脈の狩猟ループ。',['dagger_venom'],[
+      {trigger:'onKill',kind:'healOnKill',power:.04},
+    ],['sustain','observed-branch']),
+    U('u2_dagger_null_fang','dagger','不在の刃','回復・再生と接続しない間だけ、欠落そのものを攻撃力へ変える。',['dagger_execution'],[
+      {trigger:'passive',kind:'noRecoveryDmgBonus',power:.20},
+    ],['absence','anti-recovery','observed-branch']),
   ]),
 
   knuckle:Object.freeze([
