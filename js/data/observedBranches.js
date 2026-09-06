@@ -136,6 +136,51 @@ export const OBSERVED_BRANCHES=Object.freeze([
     stageIds:freezeList(['observedbranch-flame-king-1','observedbranch-flame-king-2','observedbranch-flame-king-boss']),
     bossStageId:'observedbranch-flame-king-boss',
   }),
+  // M9 continuation — Branch Cluster 3 (Machine World). First Branch of the
+  // roadmap's Cluster 3, reusing the exact same shape as Clusters 1/2. Its
+  // Prime Region is Ch28 (機界監査層), the Chapter that already establishes
+  // MOTHER/ARCHITECT as administrators under external audit -- this Branch
+  // authors the alternate history where MOTHER accepted full internal
+  // authority instead. It remains a Chapter Branch like every other one here;
+  // it does not touch or extend the separate Phase 9 "Machine World" Secret
+  // Realm dungeon (js/data/phase9MachineWorld.js), which owns its own
+  // districts/stages and stays entirely outside Observed Branches ownership.
+  Object.freeze({
+    id:'mother-full-authority',
+    name:'全権域・機界監査層',
+    observedLabel:'観測分岐：全権域',
+    primeRegionRef:Object.freeze({
+      worldRegionId:'reverse-observation',
+      chapterId:'ch28',
+      chapterNum:28,
+      regionName:'機界監査層',
+    }),
+    divergencePoint:'MOTHERが監査要求を退けず、内部監査そのものを掌握する緊急全権を受理した。',
+    historicalSummary:'MOTHERの全権掌握によって機界監査層は個体の改修判断を排除し、統一された自動監査と修復だけを許容する管理体系として再編された歴史。',
+    technologyProfile:Object.freeze({
+      mechanical:'dominant',
+      arcane:'regressed',
+      bio:'regressedMajor',
+      boundary:'advanced',
+      information:'dominant',
+      material:'baseline',
+    }),
+    ecologyProfile:Object.freeze({
+      settlement:'個体判断を排した統一監査区画',
+      species:'生体反応は監査対象として抑制・規格化',
+      construction:'自動修復ユニットによる均一構築',
+      industry:'個々の設計思想は消え、単一のMOTHER規格へ統合',
+    }),
+    routeRefs:freezeList([]),
+    sceneRefs:freezeList([]),
+    discoveryConditions:Object.freeze({
+      allDiscoveries:freezeList(['cp4:branch-anchor:mother-full-authority']),
+      rngRequired:false,
+    }),
+    traversable:false,
+    stageIds:freezeList(['observedbranch-mother-authority-1','observedbranch-mother-authority-2','observedbranch-mother-authority-boss']),
+    bossStageId:'observedbranch-mother-authority-boss',
+  }),
 ]);
 
 export function observedBranchById(id){

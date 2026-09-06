@@ -6,9 +6,11 @@ import {
   CP4_FIRST_BRANCH_ANCHOR,
   CP4_SECOND_BRANCH_ANCHOR,
   CP4_THIRD_BRANCH_ANCHOR,
+  CP4_FOURTH_BRANCH_ANCHOR,
   cp4FirstBranchAnchorProgress,
   cp4SecondBranchAnchorProgress,
   cp4ThirdBranchAnchorProgress,
+  cp4FourthBranchAnchorProgress,
 } from '../data/contentPackIVD.js';
 
 function world(){state.data.world2??={};state.data.world2.discoveries??={};return state.data.world2;}
@@ -17,6 +19,7 @@ function put(id,patch){const d=world().discoveries,prev=d[id]||{};d[id]={...prev
 export function cp4FirstBranchAnchor(){const discoveries=world().discoveries;const progress=cp4FirstBranchAnchorProgress({discoveries});return{anchor:CP4_FIRST_BRANCH_ANCHOR,progress};}
 export function cp4SecondBranchAnchor(){const discoveries=world().discoveries;const progress=cp4SecondBranchAnchorProgress({discoveries});return{anchor:CP4_SECOND_BRANCH_ANCHOR,progress};}
 export function cp4ThirdBranchAnchor(){const discoveries=world().discoveries;const progress=cp4ThirdBranchAnchorProgress({discoveries});return{anchor:CP4_THIRD_BRANCH_ANCHOR,progress};}
+export function cp4FourthBranchAnchor(){const discoveries=world().discoveries;const progress=cp4FourthBranchAnchorProgress({discoveries});return{anchor:CP4_FOURTH_BRANCH_ANCHOR,progress};}
 
 function observeAnchor(anchor,progress,extra={}){
   if(!progress.visible)return null;
@@ -31,6 +34,7 @@ function observeAnchor(anchor,progress,extra={}){
 export function observeCP4FirstBranchAnchor(){const{anchor,progress}=cp4FirstBranchAnchor();return observeAnchor(anchor,progress,{deepGreenAbsentHidden:true});}
 export function observeCP4SecondBranchAnchor(){const{anchor,progress}=cp4SecondBranchAnchor();return observeAnchor(anchor,progress,{deepGreenAbsentObserved:true});}
 export function observeCP4ThirdBranchAnchor(){const{anchor,progress}=cp4ThirdBranchAnchor();return observeAnchor(anchor,progress,{flameKingObserved:true});}
+export function observeCP4FourthBranchAnchor(){const{anchor,progress}=cp4FourthBranchAnchor();return observeAnchor(anchor,progress,{motherFullAuthorityObserved:true});}
 
 state.cp4FirstBranchAnchor=()=>cp4FirstBranchAnchor();
 state.observeCP4FirstBranchAnchor=()=>observeCP4FirstBranchAnchor();
@@ -38,6 +42,8 @@ state.cp4SecondBranchAnchor=()=>cp4SecondBranchAnchor();
 state.observeCP4SecondBranchAnchor=()=>observeCP4SecondBranchAnchor();
 state.cp4ThirdBranchAnchor=()=>cp4ThirdBranchAnchor();
 state.observeCP4ThirdBranchAnchor=()=>observeCP4ThirdBranchAnchor();
+state.cp4FourthBranchAnchor=()=>cp4FourthBranchAnchor();
+state.observeCP4FourthBranchAnchor=()=>observeCP4FourthBranchAnchor();
 
 function renderOneAnchor(list,matchesChapter,key,anchor,progress,observe){
   const existing=list.querySelector(`[data-cp4-branch-anchor="${key}"]`);
@@ -80,9 +86,11 @@ function renderAnchorCards(){
   const first=cp4FirstBranchAnchor();
   const second=cp4SecondBranchAnchor();
   const third=cp4ThirdBranchAnchor();
+  const fourth=cp4FourthBranchAnchor();
   renderOneAnchor(list,first.anchor.chapterNum===currentChapterNum,'tree-sovereign',first.anchor,first.progress,observeCP4FirstBranchAnchor);
   renderOneAnchor(list,second.anchor.chapterNum===currentChapterNum,'deep-green-absence',second.anchor,second.progress,observeCP4SecondBranchAnchor);
   renderOneAnchor(list,third.anchor.chapterNum===currentChapterNum,'flame-king',third.anchor,third.progress,observeCP4ThirdBranchAnchor);
+  renderOneAnchor(list,fourth.anchor.chapterNum===currentChapterNum,'mother-full-authority',fourth.anchor,fourth.progress,observeCP4FourthBranchAnchor);
 }
 
 if(typeof MutationObserver!=='undefined'&&typeof document!=='undefined'){

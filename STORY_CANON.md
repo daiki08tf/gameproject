@@ -130,9 +130,9 @@ Those require a deliberate future story reveal.
 
 ## Current development direction
 
-Content Pack III (Observation Reflux) and Content Pack IV are both complete. Observed Branches M0–M8, M10 and M11 are also complete, M9 is partial, and Ch36 (Arc VI opening) has shipped. 王樹領・深緑の森 and 深緑消失域 (Ch2) and 炎帝領・灼熱の火山 (Ch5) are all live, playable Branches. See `CONTENT_PACK_III_ROADMAP.md`, `CONTENT_PACK_IV_ROADMAP.md`, `CORE_LOOP_CLR21_IMPLEMENTATION.md`, and `OBSERVED_BRANCHES_M12_AUDIT.md` for the full closeout.
+Content Pack III (Observation Reflux) and Content Pack IV are both complete. Observed Branches M0–M8, M10 and M11 are also complete, M9 is partial, and Ch36 (Arc VI opening) has shipped. 王樹領・深緑の森 and 深緑消失域 (Ch2), 炎帝領・灼熱の火山 (Ch5), and 全権域・機界監査層 (Ch28) are all live, playable Branches. See `CONTENT_PACK_III_ROADMAP.md`, `CONTENT_PACK_IV_ROADMAP.md`, `CORE_LOOP_CLR21_IMPLEMENTATION.md`, and `OBSERVED_BRANCHES_M12_AUDIT.md` for the full closeout.
 
-**The M6 → M9's first pick → M7 → Ch36 sequence below is complete.** Remaining open work is M9's continuation (Machine World / The Veil, order not yet decided) — see `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md`'s Decision log.
+**The M6 → M9's first pick → M7 → Ch36 sequence below is complete, and M9's Cluster 3 first pick (全権域・機界監査層) has since shipped as a continuation.** Remaining open work is The Veil (M9's last queued cluster) — see `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md`'s Decision log.
 
 1. M6 — 深緑消失域, the second, contrasting Branch of the same Ch2 forest. **Shipped.**
 2. M9's first new Prime Region — 灼熱の火山・炎帝領. **Shipped.**

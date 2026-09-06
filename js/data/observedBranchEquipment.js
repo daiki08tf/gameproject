@@ -25,6 +25,14 @@ const FLAME_ORIGIN=Object.freeze({
   divergence:'炎帝ドレイク即位',
 });
 
+// M9 continuation — Branch Cluster 3's first Branch (機界監査層 / Ch28).
+const AUDIT_ORIGIN=Object.freeze({
+  branchId:'mother-full-authority',
+  label:'全権域・機界監査層',
+  technology:'Mechanical / Information',
+  divergence:'MOTHER全権掌握',
+});
+
 // Exported so any Branch-native item authored outside this file (e.g. M6's
 // uq_observed_null_root and M9's uq_observed_ember_throne in uniqueEquipment.js)
 // can carry the same read-only Branch Origin presentation metadata instead of
@@ -33,6 +41,7 @@ export const OBSERVED_BRANCH_ORIGINS=Object.freeze({
   [TREE_ORIGIN.branchId]:TREE_ORIGIN,
   [ABSENCE_ORIGIN.branchId]:ABSENCE_ORIGIN,
   [FLAME_ORIGIN.branchId]:FLAME_ORIGIN,
+  [AUDIT_ORIGIN.branchId]:AUDIT_ORIGIN,
 });
 
 const item=(spec)=>Object.freeze({

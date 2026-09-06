@@ -74,11 +74,13 @@ const BRANCH_BOSS_NAMES=Object.freeze({
  'tree-sovereign-deep-green':'生存せし大樹霊',
  'deep-green-absence':'根無き森核・NULL CANOPY',
  'flame-king-volcano':'戴冠せし神王・EMBER THRONE',
+ 'mother-full-authority':'全権掌握せし監査体・SOLE AUDITOR',
 });
 const BRANCH_BOSS_STAT_MODS=Object.freeze({
  'tree-sovereign-deep-green':{hp:1.15,speed:.85}, // entrenched ruler: tankier, slower
  'deep-green-absence':{speed:1.20,def:.85}, // unstable absence-core: faster, fragile
  'flame-king-volcano':{atk:1.10,def:1.10,hp:.95}, // armored aggressor: glass-cannon trade
+ 'mother-full-authority':{hp:1.10,def:1.15,speed:.90}, // total-authority automation: disciplined, slower, harder to break
 });
 for(const branch of OBSERVED_BRANCHES){
  const num=branch.primeRegionRef?.chapterNum;

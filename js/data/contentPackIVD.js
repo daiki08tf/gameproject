@@ -73,3 +73,30 @@ export function cp4ThirdBranchAnchorProgress({discoveries={}}={}){
   if(observed)return Object.freeze({state:'observed',visible:true,observed:true});
   return Object.freeze({state:'recognizable',visible:true,observed:false});
 }
+
+// M9 continuation — Branch Cluster 3's first anchor (機界監査層 / Ch28).
+// Independent of the Ch2/Ch5 anchors: it only needs the already-earned
+// global branch-sight/parallax unlock plus its own Chapter-28 evidence
+// discovery (js/data/contentPackIVI.js).
+export const CP4_FOURTH_BRANCH_ANCHOR=Object.freeze({
+  id:'mother-full-authority-anchor',
+  branchSightDiscoveryId:'cp4:branch-sight:active',
+  sourceEvidenceDiscoveryId:'cp4:machineworld:audit-authority-record',
+  discoveryId:'cp4:branch-anchor:mother-full-authority',
+  chapterNum:28,
+  hiddenLabel:'歴史的重なり',
+  name:'観測分岐：全権域',
+  preview:'分岐視を通すと、既知の機界監査層と同じ座標に、MOTHERが全権を掌握した統一管理史が安定して重なっている。',
+  observed:'MOTHERが緊急全権を受理した履歴は、壊れた記録ではない。同じ座標に固定された別の整合した歴史として観測できる。',
+  next:'観測点は識別できるが、まだそこへ移動する方法はない。',
+});
+
+export function cp4FourthBranchAnchorProgress({discoveries={}}={}){
+  const anchor=CP4_FOURTH_BRANCH_ANCHOR;
+  const branchSight=Boolean(discoveries[anchor.branchSightDiscoveryId]);
+  const evidence=Boolean(discoveries[anchor.sourceEvidenceDiscoveryId]);
+  const observed=Boolean(discoveries[anchor.discoveryId]);
+  if(!branchSight||!evidence)return Object.freeze({state:'hidden',visible:false,observed:false});
+  if(observed)return Object.freeze({state:'observed',visible:true,observed:true});
+  return Object.freeze({state:'recognizable',visible:true,observed:false});
+}
