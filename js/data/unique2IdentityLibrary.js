@@ -83,6 +83,9 @@ export const UNIQUE2_WEAPON_IDENTITIES = Object.freeze({
     U('u2_dagger_null_fang','dagger','不在の刃','回復・再生と接続しない間だけ、欠落そのものを攻撃力へ変える。',['dagger_execution'],[
       {trigger:'passive',kind:'noRecoveryDmgBonus',power:.20},
     ],['absence','anti-recovery','observed-branch']),
+    U('u2_dagger_unbroken_sovereign','dagger','不断の鏡像','一度も破断しなかった史脈で育つ鏡像連撃。会心の軌跡を複製し、同じ一撃をもう一度重ねる。',['dagger_trigger'],[
+      {trigger:'onCrit',kind:'critExtraAttack',chance:.20,power:.55,perActionCap:1},
+    ],['mirror','observed-branch']),
   ]),
 
   knuckle:Object.freeze([

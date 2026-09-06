@@ -181,6 +181,48 @@ export const OBSERVED_BRANCHES=Object.freeze([
     stageIds:freezeList(['observedbranch-mother-authority-1','observedbranch-mother-authority-2','observedbranch-mother-authority-boss']),
     bossStageId:'observedbranch-mother-authority-boss',
   }),
+  // M9 continuation — Branch Cluster 4 (The Veil), the last queued cluster.
+  // Its Prime Region is Ch19 (月蝕の境界), the Chapter whose own lore is
+  // "The Veilという言葉が初めて明確に現れる" -- the place The Veil is first
+  // named in the Prime Story. This Branch is the roadmap's Potential Branch A
+  // for this Cluster: The Veil never fractures, so the internal worlds stay
+  // isolated and develop highly specialized, non-boundary-crossing technology.
+  Object.freeze({
+    id:'unbroken-veil',
+    name:'不断領・月蝕の境界',
+    observedLabel:'観測分岐：不断領',
+    primeRegionRef:Object.freeze({
+      worldRegionId:'veil',
+      chapterId:'ch19',
+      chapterNum:19,
+      regionName:'月蝕の境界',
+    }),
+    divergencePoint:'The Veilの破断が一度も起こらず、境界網は開通しないまま閉じ続けた。',
+    historicalSummary:'The Veilが破断しなかったことで、この歴史の月蝕の境界は外部との接続を一切持たないまま、時間と鏡像を操る固有の時空技術だけを純粋培養的に発達させた歴史。',
+    technologyProfile:Object.freeze({
+      mechanical:'regressed',
+      arcane:'dominant',
+      bio:'baseline',
+      boundary:'regressedMajor',
+      information:'regressed',
+      material:'advanced',
+    }),
+    ecologyProfile:Object.freeze({
+      settlement:'外部と接続しない閉鎖時空集落',
+      species:'外来種の混入がなく、固有種のみが純粋培養的に進化',
+      construction:'鏡面と凍結時間を利用した固有建築',
+      industry:'境界を渡る技術は失われ、内製の時空技術だけが極端に発達',
+    }),
+    routeRefs:freezeList([]),
+    sceneRefs:freezeList([]),
+    discoveryConditions:Object.freeze({
+      allDiscoveries:freezeList(['cp4:branch-anchor:unbroken-veil']),
+      rngRequired:false,
+    }),
+    traversable:false,
+    stageIds:freezeList(['observedbranch-unbroken-veil-1','observedbranch-unbroken-veil-2','observedbranch-unbroken-veil-boss']),
+    bossStageId:'observedbranch-unbroken-veil-boss',
+  }),
 ]);
 
 export function observedBranchById(id){

@@ -100,3 +100,30 @@ export function cp4FourthBranchAnchorProgress({discoveries={}}={}){
   if(observed)return Object.freeze({state:'observed',visible:true,observed:true});
   return Object.freeze({state:'recognizable',visible:true,observed:false});
 }
+
+// M9 continuation — Branch Cluster 4's anchor (月蝕の境界 / Ch19), the last
+// queued Cluster. Independent of every other anchor: it only needs the
+// already-earned global branch-sight/parallax unlock plus its own
+// Chapter-19 evidence discovery (js/data/contentPackIVJ.js).
+export const CP4_FIFTH_BRANCH_ANCHOR=Object.freeze({
+  id:'unbroken-veil-anchor',
+  branchSightDiscoveryId:'cp4:branch-sight:active',
+  sourceEvidenceDiscoveryId:'cp4:veil:unbroken-record',
+  discoveryId:'cp4:branch-anchor:unbroken-veil',
+  chapterNum:19,
+  hiddenLabel:'歴史的重なり',
+  name:'観測分岐：不断領',
+  preview:'分岐視を通すと、既知の月蝕の境界と同じ座標に、The Veilが一度も破断しなかった閉鎖史が安定して重なっている。',
+  observed:'The Veilが破断しなかった履歴は、壊れた記録ではない。同じ座標に固定された別の整合した歴史として観測できる。',
+  next:'観測点は識別できるが、まだそこへ移動する方法はない。',
+});
+
+export function cp4FifthBranchAnchorProgress({discoveries={}}={}){
+  const anchor=CP4_FIFTH_BRANCH_ANCHOR;
+  const branchSight=Boolean(discoveries[anchor.branchSightDiscoveryId]);
+  const evidence=Boolean(discoveries[anchor.sourceEvidenceDiscoveryId]);
+  const observed=Boolean(discoveries[anchor.discoveryId]);
+  if(!branchSight||!evidence)return Object.freeze({state:'hidden',visible:false,observed:false});
+  if(observed)return Object.freeze({state:'observed',visible:true,observed:true});
+  return Object.freeze({state:'recognizable',visible:true,observed:false});
+}
