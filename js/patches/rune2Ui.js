@@ -63,9 +63,6 @@ function renderRune2Dashboard() {
   });
 }
 
-// blacksmith.js owns the original tab listener. Run after its synchronous render.
-document.querySelectorAll('#blacksmithScreen .tab-btn[data-tab="rune"]').forEach((btn) => {
-  btn.addEventListener('click', () => setTimeout(renderRune2Dashboard, 0));
-});
-
+// blacksmith.js's renderBlacksmith() calls renderRune2Dashboard() directly for
+// the "rune" tab (no more setTimeout race against a legacy renderer here).
 export { renderRune2Dashboard };

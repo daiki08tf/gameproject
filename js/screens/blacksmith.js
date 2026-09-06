@@ -1,22 +1,20 @@
 import { state } from '../state.js';
 import { getItem, RARITY, WEAPON_TYPES, WEAPON_MASTERY_THRESHOLD } from '../data/equipment.js';
-import { getRune, craftableRunes } from '../data/runes.js';
 import { jobsByTier } from '../data/jobs.js';
 import { Audio_ } from '../audio.js';
 import { showToast } from '../patches/toastFeedback.js';
 import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER, WEAPON_CODEX_LAYER } from '../data/balance.js';
+import { renderRune2Dashboard } from '../patches/rune2Ui.js';
 
 const AFFIX_STAT_LABEL = { atk: 'ATK', def: 'DEF', hp: 'HP', mag: 'MAG', spd: 'SPD', crit: 'CRIT' };
 
 let activeTab = 'enhance';
-let selectedRuneSlot = null;
 
 export function initBlacksmithTabs() {
   document.querySelectorAll('#blacksmithScreen .tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       Audio_.tap();
       activeTab = btn.dataset.tab;
-      selectedRuneSlot = null;
       renderBlacksmith();
     });
   });
@@ -29,8 +27,11 @@ export function renderBlacksmith() {
   });
   const content = document.getElementById('blacksmithContent');
   content.innerHTML = '';
+  // "rune" タブは旧武器ソケット式Runeを完全に廃止し、Rune 2.0ダッシュボードへ
+  // 直接委譲する（以前はここでrenderRuneTab()が廃止済みソケットUI/craftRune()
+  // を描画し、rune2Ui.jsのsetTimeout(...,0)が後追いで上書きする競合構造だった）。
   if (activeTab === 'enhance') renderEnhanceTab(content);
-  else if (activeTab === 'rune') renderRuneTab(content);
+  else if (activeTab === 'rune') renderRune2Dashboard();
   else if (activeTab === 'awakenitem') renderAwakenedItemTab(content);
   else if (activeTab === 'dispose') renderDisposeTab(content);
   else renderMasteryTab(content);
@@ -152,106 +153,9 @@ function renderAffixCard(id, item) {
 }
 
 // ---------------------------------------------------------
-// ルーンタブ
+// ルーンタブ（旧武器ソケット式Runeは廃止済み。Rune 2.0ダッシュボードは
+// renderBlacksmith()からrenderRune2Dashboard()へ直接委譲する）
 // ---------------------------------------------------------
-function renderRuneTab(content) {
-  const weaponId = state.data.equipped.weapon;
-  if (!weaponId) {
-    content.innerHTML = '<p class="hint">武器を装備するとルーンをセットできます</p>';
-    renderCraftSection(content);
-    return;
-  }
-  const item = getItem(weaponId);
-  const sockets = state.getRuneSockets(weaponId);
-
-  const head = document.createElement('div');
-  head.className = 'forge-card';
-  head.innerHTML = `
-    <div class="forge-card-top">
-      <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name}</div>
-      <div>強化Lv.${state.weaponEnhanceLevel(weaponId)}</div>
-    </div>
-    <div class="forge-card-sub">ルーンスロット ${sockets.length}個</div>
-    <div class="rune-slots" id="runeSlotsRow"></div>
-  `;
-  content.appendChild(head);
-
-  const row = head.querySelector('#runeSlotsRow');
-  sockets.forEach((runeId, idx) => {
-    const rune = runeId ? getRune(runeId) : null;
-    const slot = document.createElement('div');
-    slot.className = 'rune-slot' + (rune ? ' filled' : '');
-    slot.textContent = rune ? '●' : '+';
-    slot.title = rune ? rune.name : '空きスロット';
-    slot.addEventListener('click', () => {
-      Audio_.tap();
-      selectedRuneSlot = selectedRuneSlot === idx ? null : idx;
-      renderBlacksmith();
-    });
-    row.appendChild(slot);
-  });
-
-  if (selectedRuneSlot !== null && selectedRuneSlot < sockets.length) {
-    const picker = document.createElement('div');
-    picker.className = 'forge-card';
-    const currentRuneId = sockets[selectedRuneSlot];
-    let rows = '';
-    if (currentRuneId) {
-      const r = getRune(currentRuneId);
-      rows += `<div class="pick-row equipped"><div><div class="item-name">${r.name}</div><div class="item-stats">${r.desc || (r.stat ? `${r.stat.toUpperCase()}+${r.value}` : '')}</div></div><button data-act="unset">外す</button></div>`;
-    }
-    const owned = Object.keys(state.data.inventory).filter((id) => getRune(id));
-    if (owned.length === 0 && !currentRuneId) rows += '<p class="hint">所持しているルーンがありません</p>';
-    for (const id of owned) {
-      const r = getRune(id);
-      const qty = state.data.inventory[id];
-      rows += `<div class="pick-row" data-set="${id}"><div><div class="item-name">${r.name} ×${qty}</div><div class="item-stats">${r.desc || (r.stat ? `${r.stat.toUpperCase()}+${r.value}` : '')}</div></div><button>セット</button></div>`;
-    }
-    picker.innerHTML = `<div class="forge-card-sub">スロット${selectedRuneSlot + 1}にセットするルーンを選択</div>${rows}`;
-    const unsetBtn = picker.querySelector('[data-act="unset"]');
-    if (unsetBtn) unsetBtn.addEventListener('click', () => {
-      state.unsocketRune(weaponId, selectedRuneSlot);
-      Audio_.tap();
-      renderBlacksmith();
-    });
-    picker.querySelectorAll('[data-set]').forEach((row2) => {
-      row2.querySelector('button').addEventListener('click', () => {
-        state.socketRune(weaponId, selectedRuneSlot, row2.dataset.set);
-        Audio_.pickup();
-        selectedRuneSlot = null;
-        renderBlacksmith();
-      });
-    });
-    content.appendChild(picker);
-  }
-
-  renderCraftSection(content);
-}
-
-function renderCraftSection(content) {
-  const heading = document.createElement('div');
-  heading.className = 'section-heading';
-  heading.textContent = 'ルーン作成（魔石で作成）';
-  content.appendChild(heading);
-
-  for (const rune of craftableRunes()) {
-    const canCraft = state.data.manastone >= rune.craftCost.manastone && state.data.gold >= rune.craftCost.gold;
-    const card = document.createElement('div');
-    card.className = 'forge-card';
-    card.innerHTML = `
-      <div class="forge-card-top">
-        <div class="forge-card-name">${rune.name}</div>
-        <div>${rune.stat.toUpperCase()}+${rune.value}</div>
-      </div>
-      <div class="forge-card-sub">所持: ${state.data.inventory[rune.id] || 0}個</div>
-      <button class="forge-card-btn" ${canCraft ? '' : 'disabled'}>作成する（魔石${rune.craftCost.manastone} + Gold${rune.craftCost.gold}）</button>
-    `;
-    card.querySelector('button').addEventListener('click', () => {
-      if (state.craftRune(rune.id)) { Audio_.pickup(); renderBlacksmith(); }
-    });
-    content.appendChild(card);
-  }
-}
 
 // ---------------------------------------------------------
 // 武器熟練タブ
