@@ -11,16 +11,16 @@
 
 | C1 ID | Tactical identity | Primary legacy sources |
 | --- | --- | --- |
-| `vanguard` | Build Pressure with consecutive attacks, then spend it on a heavy strike. | fighter |
-| `bastion` | Turn guarding and taking hits into counterattack windows. | warrior, craftsman, farmer |
-| `elementalist` | Rotate elements while managing an MP cycle. | mage, scholar |
-| `chaplain` | Choose recovery or protection to rescue dangerous turns. | priest |
-| `shadow` | Apply afflictions, then execute once their condition is met. | thief, ninja |
-| `ranger` | Mark a target and collect follow-up attacks. | hunter |
-| `maestro` | Build Tempo through song and dance to manipulate initiative and support. | bard, dancer |
-| `alchemist` | Apply reagents, trigger reactions, then detonate. | alchemist |
-| `quartermaster` | Convert money and supplies into an in-combat resource decision. | merchant |
-| `oracle` | Read omens, accept risk and reverse an outcome at the right moment. | fortune |
+| `c1_vanguard` | Build Pressure with consecutive attacks, then spend it on a heavy strike. | fighter |
+| `c1_bastion` | Turn guarding and taking hits into counterattack windows. | warrior, craftsman, farmer |
+| `c1_elementalist` | Rotate elements while managing an MP cycle. | mage, scholar |
+| `c1_chaplain` | Choose recovery or protection to rescue dangerous turns. | priest |
+| `c1_shadow` | Apply afflictions, then execute once their condition is met. | thief, ninja |
+| `c1_ranger` | Mark a target and collect follow-up attacks. | hunter |
+| `c1_maestro` | Build Tempo through song and dance to manipulate initiative and support. | bard, dancer |
+| `c1_alchemist` | Apply reagents, trigger reactions, then detonate. | alchemist |
+| `c1_quartermaster` | Convert money and supplies into an in-combat resource decision. | merchant |
+| `c1_oracle` | Read omens, accept risk and reverse an outcome at the right moment. | fortune |
 
 No roster entry is retained for a stat profile or an EXP/drop/gold multiplier alone. Those values move to mastery credit, gear, runes or ordinary skill rewards during the runtime migration.
 
