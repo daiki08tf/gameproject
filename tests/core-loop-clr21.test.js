@@ -142,7 +142,7 @@ test('CLR-21/M6/M9 playable Branch set expands only through the authored Branch 
     .filter(branch => Array.isArray(branch.stageIds) && branch.stageIds.length)
     .map(branch => branch.id)
     .sort();
-  assert.deepEqual(playable, ['deep-green-absence', 'flame-king-volcano', 'mother-full-authority', 'tree-sovereign-deep-green'].sort());
+  assert.deepEqual(playable, ['deep-green-absence', 'flame-king-volcano', 'mother-full-authority', 'tree-sovereign-deep-green', 'unbroken-veil'].sort());
   for (const branch of OBSERVED_BRANCHES.filter(candidate => playable.includes(candidate.id))) {
     for (const stageId of branch.stageIds) assert.ok(findStage(stageId), `${stageId} must resolve via findStage()`);
   }

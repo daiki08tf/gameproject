@@ -5,7 +5,7 @@
    definition resolved into a full stage object on demand. They reuse their
    own Prime Chapter's enemy archetypes and Encounter 2.0 pool (Ch2 for
    Branch Cluster 1, Ch5 for M9's Branch Cluster 2, Ch28 for M9's Branch
-   Cluster 3), plus the existing
+   Cluster 3, Ch19 for M9's Branch Cluster 4), plus the existing
    state.data.stageProgress / state.isStageCleared authority.
    No new combat, save, clear, encounter, or loot authority is introduced here. */
 import { OBSERVED_BRANCHES, observedBranchById, OBSERVED_BRANCH_PROFILE_LEVELS } from './observedBranches.js';
@@ -184,6 +184,45 @@ const BRANCH_STAGE_DATA=Object.freeze({
     dropTable:Object.freeze([
       {itemId:'ch28_weapon',weight:1},
       {itemId:'ch28_body',weight:1},
+    ]),
+  }),
+  // M9 continuation — Branch Cluster 4's first (and, per the roadmap, last
+  // queued) vertical slice (月蝕の境界 / Ch19). Same minimal-footprint
+  // precedent as Clusters 2/3's first slices.
+  'observedbranch-unbroken-veil-1':Object.freeze({
+    name:'歪まぬ街道の外郭',
+    recLevel:515,
+    waves:Object.freeze([{type:'ch19_normal',count:5,interval:1.3}]),
+    rewards:Object.freeze({gold:850,exp:700}),
+    dropTable:Object.freeze([{itemId:'ch19_accessory',weight:1}]),
+  }),
+  'observedbranch-unbroken-veil-2':Object.freeze({
+    name:'凍った鏡界の回廊',
+    recLevel:545,
+    waves:Object.freeze([
+      {type:'ch19_normal',count:4,interval:1.1},
+      {type:'ch19_fast',count:3,interval:0.9},
+      {type:'ch19_tank',count:2,interval:1.8},
+    ]),
+    rewards:Object.freeze({gold:1100,exp:950}),
+    dropTable:Object.freeze([
+      {itemId:'ch19_shield',weight:1},
+      {itemId:'ch19_head',weight:1},
+    ]),
+  }),
+  'observedbranch-unbroken-veil-boss':Object.freeze({
+    name:'不断領：閉ざされ続けた鏡界王・UNBROKEN SOVEREIGN',
+    boss:true,
+    recLevel:590,
+    waves:Object.freeze([
+      {type:'ch19_tank',count:2,interval:1.6},
+      {type:'unbroken-veil_boss',count:1,interval:0},
+    ]),
+    rewards:Object.freeze({gold:1950,exp:1650}),
+    firstClear:Object.freeze({itemId:'uq_observed_unbroken_sovereign'}),
+    dropTable:Object.freeze([
+      {itemId:'ch19_weapon',weight:1},
+      {itemId:'ch19_body',weight:1},
     ]),
   }),
 });

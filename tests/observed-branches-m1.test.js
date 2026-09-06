@@ -49,7 +49,8 @@ test('M1 can resolve Branches by the existing Prime Region reference',()=>{
   assert.equal(matches.length,2);
   assert.deepEqual(matches.map(branch=>branch.id),['tree-sovereign-deep-green','deep-green-absence']);
   assert.deepEqual(observedBranchesForPrimeRegion({worldRegionId:'elemental'}).map(branch=>branch.id),['flame-king-volcano']);
-  assert.deepEqual(observedBranchesForPrimeRegion({worldRegionId:'veil'}),[]);
+  assert.deepEqual(observedBranchesForPrimeRegion({worldRegionId:'veil'}).map(branch=>branch.id),['unbroken-veil']);
+  assert.deepEqual(observedBranchesForPrimeRegion({worldRegionId:'no-such-region'}),[]);
 });
 
 test('M1 Branch definitions contain no combat or reward authority',()=>{

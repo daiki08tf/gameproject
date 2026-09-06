@@ -47,6 +47,9 @@ export const BOUNTY_UNIQUES = [
 
   // Observed Branches M9 continuation (Branch Cluster 3) — 全権域・機界監査層 initial Fixed Unique reward.
   {id:'uq_observed_sole_auditor',bountyId:null,sourceStageId:'observedbranch-mother-authority-boss',name:'全権監査杖・SOLE AUDITOR',slot:'weapon',weaponType:'staff',rarity:'legendary',stats:{mag:19.5,mp:20,crit:2.5},unique:true,observedBranch:true,branchOrigin:OBSERVED_BRANCH_ORIGINS['mother-full-authority'],unique2IdentityId:'u2_staff_sole_auditor',effects:[{trigger:'onSkill',kind:'spellEcho',chance:.15,spellOnly:true}],lore:'全権を掌握した監査史から持ち出された杖。詠唱するたびに行動そのものが監査記録として複製され、稀にもう一度発動する。個の判断は排されても、記録だけは律儀に繰り返される。'},
+
+  // Observed Branches M9 continuation (Branch Cluster 4) — 不断領・月蝕の境界 initial Fixed Unique reward.
+  {id:'uq_observed_unbroken_sovereign',bountyId:null,sourceStageId:'observedbranch-unbroken-veil-boss',name:'不断の鏡刃・UNBROKEN SOVEREIGN',slot:'weapon',weaponType:'dagger',rarity:'legendary',stats:{atk:14.5,spd:5.5,crit:4},unique:true,observedBranch:true,branchOrigin:OBSERVED_BRANCH_ORIGINS['unbroken-veil'],unique2IdentityId:'u2_dagger_unbroken_sovereign',effects:[{trigger:'onCrit',kind:'critExtraAttack',chance:.20,power:.55,perActionCap:1}],lore:'一度も破断しなかったThe Veilの歴史から持ち出された鏡刃。会心の一撃は鏡像として複製され、同じ軌跡をもう一度なぞる。'},
 ];
 export function uniqueForBounty(bountyId){ return BOUNTY_UNIQUES.find(x=>x.bountyId===bountyId)||null; }
 export function bountyUniqueById(id){ return BOUNTY_UNIQUES.find(x=>x.id===id)||null; }

@@ -83,8 +83,8 @@ test('M11 introduces no branch tokens, portal-key currency, weekly resets, or pa
   const files = [
     'js/data/observedBranches.js', 'js/data/observedBranchStages.js', 'js/data/observedBranchDiscovery.js',
     'js/data/observedBranchEquipment.js', 'js/data/observedBranchEquipmentII.js', 'js/data/observedBranchEcology.js',
-    'js/data/contentPackIVD.js', 'js/data/contentPackIVG.js', 'js/data/contentPackIVH.js', 'js/data/contentPackIVI.js',
-    'js/patches/contentPackIVD.js', 'js/patches/contentPackIVG.js', 'js/patches/contentPackIVH.js', 'js/patches/contentPackIVI.js',
+    'js/data/contentPackIVD.js', 'js/data/contentPackIVG.js', 'js/data/contentPackIVH.js', 'js/data/contentPackIVI.js', 'js/data/contentPackIVJ.js',
+    'js/patches/contentPackIVD.js', 'js/patches/contentPackIVG.js', 'js/patches/contentPackIVH.js', 'js/patches/contentPackIVI.js', 'js/patches/contentPackIVJ.js',
   ];
   const forbidden = /branchToken|portalKey|weeklyReset|parallelItemPower|branchCurrency|dailyReset|pityMeter/i;
   for (const path of files) {

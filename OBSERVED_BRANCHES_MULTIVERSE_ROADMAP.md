@@ -1,6 +1,6 @@
 # Blade Vale — Observed Branches / Multiverse Roadmap
 
-> Status: **M0–M8 + M10 + M11 COMPLETE. M9 PARTIAL (Cluster 1 王樹領/深緑消失域 + Cluster 2 first pick 炎帝領・灼熱の火山 + Cluster 3 first pick 全権域・機界監査層 shipped; The Veil remains queued). Ch36 (Arc VI opening) shipped once M7's comparative record existed. See `OBSERVED_BRANCHES_M12_AUDIT.md` for the M0–M12 closeout cross-check, and this doc's Decision log for the Cluster 3 follow-up.**
+> Status: **M0–M12 all COMPLETE, including M9's continuation.** M9 shipped all four confirmed Branch Clusters: Cluster 1 (王樹領/深緑消失域), Cluster 2 first pick (炎帝領・灼熱の火山), Cluster 3 first pick (全権域・機界監査層), and Cluster 4 (不断領・月蝕の境界, The Veil — the last queued cluster from the Decision log). Ch36 (Arc VI opening) shipped once M7's comparative record existed. See `OBSERVED_BRANCHES_M12_AUDIT.md` for the M0–M12 closeout cross-check, and this doc's Decision log for the Cluster 3/4 follow-ups.
 >
 > Working system name: **Observed Branches / 観測分岐世界**
 >
@@ -15,6 +15,7 @@
 - **Arc VI tie-in (new, not in the original doc)**: M7's comparative Codex/Chronicle record (Prime / 王樹領 / 深緑消失域, once both exist) becomes the direct narrative lead-in to a new Ch36 — the Arc VI opening chapter. The two branches' accumulated records (深緑消失域's Boundary/Information-heavy archive plus 王樹領's Bio/Arcane one) are the concrete "evidence" that lets Ch36 partially recover the "missing observation interval" named in `WORLD_LORE_BIBLE.md`'s open mysteries #8/#9, without answering the larger external-civilization mysteries (#1/#2) outright. This keeps the horizontal Observed Branches system feeding the vertical Story spine exactly as `WORLD_LORE_BIBLE.md`'s writing rules require ("give existing mechanics narrative meaning before inventing lore-only systems").
 - **M12 closeout (M5–M12 shipped in sequence M6→M5→M9→M7→Ch36→M8→M10→M11→M12)**: M9 is closed as **partial** rather than blocking M10–M12 — the roadmap's own preferred-cluster list frames Machine World and The Veil as still-undecided-order queued work, not a hard prerequisite for the rest of the program. M10's ecology/boss-identity system and M11's endgame-chase verification were both built generically (keyed off `primeRegionRef`/Branch id, with graceful fallback for any Branch without bespoke ecology yet) specifically so a future M9 continuation needs no further architecture work. See `OBSERVED_BRANCHES_M12_AUDIT.md` for the full closeout cross-check.
 - **M9 continuation — Cluster 3 (Machine World)**: 全権域・機界監査層 shipped as Cluster 3's confirmed first pick, ahead of The Veil (still queued, order not yet decided). Its Prime Region is **Ch28 (機界監査層)** — the existing Story chapter that already establishes MOTHER/ARCHITECT as administrators under external audit — not the separate Phase 9 "Machine World" Secret Realm dungeon (`js/data/phase9MachineWorld.js`, its own districts/ARCHITECT-1/Observer superboss chain). Reusing Ch28 keeps this Branch inside the existing Chapter/Region `primeRegionRef` shape every other Branch uses and avoids creating a second, competing "Machine World" identity; it also leaves the Phase 9 dungeon completely untouched, preserving Secret Realm's distinct role from Observed Branches per the M12 non-goals. This confirms M10/M11's generic-by-construction design actually paid off: no change was needed to `observedBranchStages.js`'s encounter-pool routing, `enemies.js`'s Branch-boss registration loop, or any UI/screen file — only new Branch/Ecology/Equipment/CP4-evidence data, exactly like Cluster 2's first pick.
+- **M9 continuation — Cluster 4 (The Veil), M9 now fully COMPLETE**: 不断領・月蝕の境界 shipped as Cluster 4's Branch — the last queued cluster in this doc's preferred-cluster list, closing M9's own stated goal ("Add 2–3 more Prime Regions with at least one Branch each": Clusters 2/3/4 are exactly those three, on top of Cluster 1's original vertical slice). Its Prime Region is **Ch19 (月蝕の境界)** — the Chapter whose own lore is "The Veilという言葉が初めて明確に現れる" (the place The Veil is first named in the Prime Story), making it the natural anchor for a Veil-themed Branch, distinct from Ch16-20's four other Chapters. This Branch authors the roadmap's Potential Branch A for Cluster 4 ("The Veil never fractures... internal worlds remain isolated, resulting in highly specialized local technologies"): boundary technology stays regressed (they never developed any boundary-crossing capability at all) while arcane technology (time/mirror mastery, matching Ch19's own frozen-time/mirror-world stage flavor) becomes dominant. Same minimal-footprint shape as Clusters 2/3, and again zero code changes beyond new data (Branch/Ecology/Equipment/CP4-evidence) were needed — confirming M10/M11's generic design a third time.
 
 ## Vision
 
@@ -569,14 +570,14 @@ Requirements:
 - distinct combat loops,
 - existing Unique2 balance envelopes respected.
 
-### [~] M9 — Branch Cluster expansion — **PARTIAL** (PR #414: Cluster 2 first pick shipped; Cluster 3 first pick shipped)
+### [x] M9 — Branch Cluster expansion — **COMPLETE** (PR #414 Cluster 2, follow-up PRs Cluster 3 and Cluster 4)
 
 Add 2–3 more Prime Regions with at least one Branch each.
 
-Preferred early clusters:
+Preferred early clusters, all shipped:
 - **灼熱の火山 — Cluster 2's confirmed first pick (see Decision log above). Shipped.**
 - **全権域・機界監査層 — Cluster 3's confirmed first pick, Ch28-rooted (see Decision log above). Shipped.**
-- The Veil — still queued.
+- **不断領・月蝕の境界 — Cluster 4, Ch19-rooted (see Decision log above). Shipped.**
 
 Content must remain data-driven.
 

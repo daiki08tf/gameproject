@@ -33,6 +33,14 @@ const AUDIT_ORIGIN=Object.freeze({
   divergence:'MOTHER全権掌握',
 });
 
+// M9 continuation — Branch Cluster 4's Branch (月蝕の境界 / Ch19).
+const VEIL_ORIGIN=Object.freeze({
+  branchId:'unbroken-veil',
+  label:'不断領・月蝕の境界',
+  technology:'Arcane / Material',
+  divergence:'The Veil不断',
+});
+
 // Exported so any Branch-native item authored outside this file (e.g. M6's
 // uq_observed_null_root and M9's uq_observed_ember_throne in uniqueEquipment.js)
 // can carry the same read-only Branch Origin presentation metadata instead of
@@ -42,6 +50,7 @@ export const OBSERVED_BRANCH_ORIGINS=Object.freeze({
   [ABSENCE_ORIGIN.branchId]:ABSENCE_ORIGIN,
   [FLAME_ORIGIN.branchId]:FLAME_ORIGIN,
   [AUDIT_ORIGIN.branchId]:AUDIT_ORIGIN,
+  [VEIL_ORIGIN.branchId]:VEIL_ORIGIN,
 });
 
 const item=(spec)=>Object.freeze({
