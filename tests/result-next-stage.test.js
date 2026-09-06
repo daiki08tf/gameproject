@@ -27,7 +27,7 @@ test('Abyss clear advances exactly one floor',()=>{
 });
 
 test('final main-story boss has no phantom next stage when optional pseudo chapters are appended',()=>{
-  const storyLast=CHAPTERS.find(ch=>ch.id==='ch35');
+  const storyLast=CHAPTERS.find(ch=>ch.id==='ch36');
   const boss=storyLast.stages.find(s=>s.boss);
   const pseudo={id:'machine_world',num:26,stages:[{id:'machine-world-debug',name:'debug',secretRealm:true}]};
   CHAPTERS.push(pseudo);

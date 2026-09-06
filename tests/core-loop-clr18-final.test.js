@@ -7,10 +7,10 @@ import { clr18StoryAftermath,clr18ShouldShowAftermath,clr18CoveredMainStageIds }
 function mainStages(){return CHAPTERS.flatMap(chapter=>(chapter.stages||[]).filter(stage=>!stage.branch&&!stage.bounty).map(stage=>({chapter,stage})));}
 function branchStages(){return CHAPTERS.flatMap(chapter=>(chapter.stages||[]).filter(stage=>stage.branch));}
 
-test('CLR-18 final bulk covers every canonical Chapter 1-35 main Story Stage',()=>{
+test('CLR-18 final bulk covers every canonical Chapter 1-36 main Story Stage',()=>{
   const stages=mainStages();
   const covered=new Set(clr18CoveredMainStageIds());
-  assert.equal(CHAPTERS.length,35);
+  assert.equal(CHAPTERS.length,36);
   assert.equal(covered.size,stages.length);
   for(const {stage} of stages){
     assert.ok(covered.has(String(stage.id)),`missing coverage for ${stage.id}`);

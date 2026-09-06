@@ -92,7 +92,7 @@ export function isE8MigratableStage(chapter,stage){
 export function migrateStoryEncounterPools(chapters,enemyTypes){
   const migrated=[];
   for(const chapter of chapters||[]){
-    if(!chapter||chapter.num<1||chapter.num>35)continue;
+    if(!chapter||chapter.num<1||chapter.num>36)continue;
     const basePool=buildChapterEncounterPool(chapter,enemyTypes);
     for(const stage of chapter.stages||[]){
       if(!isE8MigratableStage(chapter,stage))continue;
