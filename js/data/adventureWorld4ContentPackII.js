@@ -1,5 +1,5 @@
 /* Adventure / World 4.0 — W31 Event Content Pack II.
-   Eight Region-authored scenes. Data-only content: no reward/scaling authority. */
+   Nine Region-authored scenes. Data-only content: no reward/scaling authority. */
 import { normalizeAdventure4Scene } from './adventureWorld4Scenes.js';
 import { normalizeAdventure4EventCatalog } from './adventureWorld4Events.js';
 
@@ -40,6 +40,11 @@ const RAW_SCENES=[
   {id:'shared-observation-second-answer',name:'二つ目の返答',tags:['mystery','investigation','shared-observation'],entryStepId:'observe',steps:[
     {id:'observe',phase:'observation',title:'二つ目の返答',text:'観測記録に同じ応答が二つ並んでいる。片方には送信元の座標があるが、もう片方には何も記されていない。',choices:[{id:'compare',label:'二つの記録を見比べる',nextStepId:'compare'},{id:'ignore',label:'片方だけを記録して進む'}]},
     {id:'compare',phase:'resolution',title:'空欄の座標',text:'内容は一致しているのに、座標欄だけが最初から空白のまま保存されている。誰かが消したのではなく、最初から書かれていない。',choices:[{id:'finish',label:'違和感だけを持ち帰る'}]},
+  ]},
+  {id:'branch-record-overlapping-market',name:'重なる市場',tags:['ambient','mystery','branch-record'],entryStepId:'observe',steps:[
+    {id:'observe',phase:'observation',title:'重なる市場',text:'同じ広場に、賑わう市場の気配と、誰もいない廃墟の静けさが同時に感じられる。目を凝らすとどちらか一方しか見えない。',choices:[{id:'listen',label:'物音の方へ意識を向ける',nextStepId:'listen'},{id:'silence',label:'静寂の方へ意識を向ける',nextStepId:'silence'}]},
+    {id:'listen',phase:'resolution',title:'途切れない喧騒',text:'賑わいへ集中すると、市場は最後まで途切れず存在し続けた。廃墟の気配だけが遠ざかる。',choices:[{id:'finish',label:'広場を離れる'}]},
+    {id:'silence',phase:'resolution',title:'途切れない静寂',text:'静けさへ集中すると、廃墟は最後まで揺るがなかった。喧騒の気配だけが遠ざかる。',choices:[{id:'finish',label:'広場を離れる'}]},
   ]},
 ];
 

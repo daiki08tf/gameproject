@@ -81,8 +81,8 @@ test('live progression extends Ch34 10000 into Ch35 10000-10600 without moving t
   assert.equal(finalStageOf(ch34).recLevel,10000);
   assert.equal(chapter.stages.find(s=>s.id==='35-1').recLevel,10000);
   assert.equal(finalStageOf(chapter).recLevel,10600);
-  assert.deepEqual(OUTER_STORY_LEVEL_ROADMAP.at(-1),{chapter:35,min:10000,max:10600,oldMin:10000,oldMax:10600});
-  assert.equal(state.progression3OuterStory?.max,10600);
+  assert.deepEqual(OUTER_STORY_LEVEL_ROADMAP.find(e=>e.chapter===35),{chapter:35,min:10000,max:10600,oldMin:10000,oldMax:10600});
+  assert.equal(state.progression3OuterStory?.max,OUTER_STORY_LEVEL_ROADMAP.at(-1).max);
   const original=state.isStageCleared;
   try{
     state.isStageCleared=id=>id!=='20-8';
