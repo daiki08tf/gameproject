@@ -54,6 +54,15 @@ Visual direction is **Dark Chronicle**: black iron, soot navy, ash white, restra
 
 Do not blindly rewrite authored Story/canon text. Distinguish decorative UI glyphs from content before editing.
 
+### Rune 2.1 is locked
+
+Read `RUNE_2_1_SPEC.md` before touching Rune code. Chapters 1–36 each own one
+Rune, but chapter completion never grants it: the first real post-battle drop
+unlocks Lv1, and later levels use existing Gold + Manastone at the Blacksmith.
+The six base stat Runes use +1% per mark with explicit caps. Do not restore the
+discarded region-wide two-Rune distribution, repeated mark drops, +5% base
+scaling, or the four Observed Branch M5 stat-mult Runes.
+
 Do not replace emoji with a large generic icon library. Prefer text and hierarchy. If an icon is necessary, use a restrained monochrome SVG/CSS icon with a visible label.
 
 ## Hard architecture constraints

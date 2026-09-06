@@ -28,6 +28,7 @@ Preferred rhythm:
 14. Gear Overhaul keeps seven Option rarities and adds **Option Lv1–100** with deterministic duplicate-fusion progress.
 15. High difficulty must preserve **No Single Correct Build**: intended builds can clear efficiently, while extreme raw investment may brute-force most soft checks.
 16. Rendered application UI uses no platform emoji; meaning comes from language, hierarchy and restrained labeled monochrome icons.
+17. Rune 2.1 uses one Rune per Story Chapter, unlocked only by a real battle drop in that chapter; growth then uses existing Gold and Manastone. See `RUNE_2_1_SPEC.md`.
 
 ### System-sprawl guardrails
 
@@ -148,6 +149,7 @@ Completed:
 - `GEAR_OVERHAUL_AUDIT.md` — live equipment/Affix/weapon-job audit and migration decisions
 - `UI_OVERHAUL_ROADMAP.md` — active UIX visual direction, phases, architecture guardrails and acceptance gates
 - `CLAUDE.md` — current AI/Claude Code execution handoff
+- `RUNE_2_1_SPEC.md` — chapter-by-chapter Rune acquisition, growth, caps and effect authority
 
 Exact numeric stats remain in code.
 

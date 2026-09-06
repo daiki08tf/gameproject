@@ -5,7 +5,7 @@
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { getItem, rarityIndex } from '../data/equipment.js';
-import { runesForStage } from '../data/runes2.js';
+import { runesForStage, rune2Power } from '../data/runes2.js';
 import { CAPS_LAYER } from '../data/balance.js';
 import {
   challengeLevelForMarks,
@@ -14,11 +14,13 @@ import {
   challengeExpMult,
   challengeGoldMult,
   challengeRuneChanceMult,
-  rollChallengeRuneAmount,
   greedRemovedRarityTiers,
   swiftInitiativeMult,
   fistsAttackIntervalMult,
 } from '../data/rune2SpecialRules.js';
+
+const activePower = (id) => rune2Power(id, state.rune2ActiveMarks?.(id) || 0);
+const sumActivePower = (...ids) => ids.reduce((sum, id) => sum + activePower(id), 0);
 
 state.rune2ChallengeLevel = function rune2ChallengeLevel() {
   return challengeLevelForMarks(this.rune2ActiveMarks?.('challenge') || 0);
@@ -37,8 +39,11 @@ state.rollRune2DropForStage = function rollRune2DropForStagePhase6(stageId, rand
   const challenge = this.rune2ChallengeLevel();
   const chanceMult = challengeRuneChanceMult(challenge);
   for (const rune of runesForStage(stageId)) {
+    // The first real drop unlocks the Rune. Once discovered, its levels come
+    // from the Blacksmith rather than repeated random drops.
+    if (this.data.rune2Discovered?.[rune.id]) continue;
     if (random() < Math.min(1, rune.dropRate * chanceMult)) {
-      const amount = rollChallengeRuneAmount(challenge, random);
+      const amount = 1;
       this.addRune2Marks(rune.id, amount);
       results.push({ id: rune.id, amount, owned: this.rune2OwnedMarks(rune.id), challenge });
     }
@@ -60,12 +65,98 @@ BattleEngine.prototype._spawnEnemy = function rune2ChallengeSpawn(type) {
 
 const legacyExpMult = BattleEngine.prototype._expMult;
 BattleEngine.prototype._expMult = function rune2ChallengeExpMult() {
-  return legacyExpMult.call(this) * challengeExpMult(state.rune2ChallengeLevel());
+  const runeBonus = sumActivePower('insight', 'purge', 'branch_point');
+  return legacyExpMult.call(this) * challengeExpMult(state.rune2ChallengeLevel()) * (1 + runeBonus);
 };
 
 const legacyGoldMult = BattleEngine.prototype._goldMult;
 BattleEngine.prototype._goldMult = function rune2ChallengeGoldMult() {
-  return legacyGoldMult.call(this) * challengeGoldMult(state.rune2ChallengeLevel());
+  const runeBonus = sumActivePower('gold', 'prosperity', 'purge', 'branch_point');
+  return legacyGoldMult.call(this) * challengeGoldMult(state.rune2ChallengeLevel()) * (1 + runeBonus);
+};
+
+const legacyEffectiveCritPct = BattleEngine.prototype._effectiveCritPct;
+BattleEngine.prototype._effectiveCritPct = function rune2EffectiveCritPct() {
+  const bonusPoints = sumActivePower('hawkeye', 'critical_eye') * 100;
+  return Math.min(CAPS_LAYER.CRIT_PCT_MAX, legacyEffectiveCritPct.call(this) + bonusPoints);
+};
+
+const legacyEffectiveEvasion = BattleEngine.prototype._effectiveEvasion;
+BattleEngine.prototype._effectiveEvasion = function rune2EffectiveEvasion() {
+  return Math.min(CAPS_LAYER.EVASION_MAX, legacyEffectiveEvasion.call(this) + activePower('windfoot'));
+};
+
+const legacyEffectiveArmorPen = BattleEngine.prototype._effectiveArmorPen;
+BattleEngine.prototype._effectiveArmorPen = function rune2EffectiveArmorPen() {
+  return Math.min(CAPS_LAYER.ARMOR_PEN_MAX, legacyEffectiveArmorPen.call(this) + activePower('piercing'));
+};
+
+const legacyMainDmgMult = BattleEngine.prototype._mainDmgMult;
+BattleEngine.prototype._mainDmgMult = function rune2MainDmgMult(sourceKind) {
+  return legacyMainDmgMult.call(this, sourceKind) + sumActivePower('fierce_strike', 'purge', 'branch_point');
+};
+
+const legacyCritDamageBoostMult = BattleEngine.prototype._critDamageBoostMult;
+BattleEngine.prototype._critDamageBoostMult = function rune2CritDamageBoostMult() {
+  return legacyCritDamageBoostMult.call(this) + activePower('critical_edge');
+};
+
+const legacyBossDmgMult = BattleEngine.prototype._bossDmgMult;
+BattleEngine.prototype._bossDmgMult = function rune2BossDmgMult(target) {
+  return legacyBossDmgMult.call(this, target) + activePower('slayer');
+};
+
+const legacyDropChanceBonusMult = BattleEngine.prototype._dropChanceBonusMult;
+BattleEngine.prototype._dropChanceBonusMult = function rune2DropChanceBonusMult() {
+  return legacyDropChanceBonusMult.call(this) * (1 + sumActivePower('fate', 'fortune_find', 'branch_point'));
+};
+
+const legacyEnemyStat = BattleEngine.prototype._effectiveEnemyStat;
+BattleEngine.prototype._effectiveEnemyStat = function rune2EnemyStat(enemy, stat) {
+  const value = legacyEnemyStat.call(this, enemy, stat);
+  return stat === 'spd' ? value * (1 - activePower('gale')) : value;
+};
+
+const legacyDebuffPowerMult = BattleEngine.prototype._debuffPowerMult;
+BattleEngine.prototype._debuffPowerMult = function rune2DebuffPowerMult() {
+  return legacyDebuffPowerMult.call(this) * (1 + activePower('break_ward'));
+};
+
+const legacyEnemyAttackDamage = BattleEngine.prototype._enemyAttackDamage;
+BattleEngine.prototype._enemyAttackDamage = function rune2EnemyAttackDamage(atk, opts = {}) {
+  let mult = 1 - activePower('guardian');
+  if (this.player.guarding) mult *= 1 - activePower('bastion');
+  if (opts.mult != null) mult *= 1 - activePower('illusion');
+  return Math.max(1, Math.round(legacyEnemyAttackDamage.call(this, atk, opts) * mult));
+};
+
+const legacyAfterRoundChecks = BattleEngine.prototype._afterRoundChecks;
+BattleEngine.prototype._afterRoundChecks = function rune2AfterRoundChecks() {
+  const result = legacyAfterRoundChecks.call(this);
+  const regen = sumActivePower('bless', 'regeneration');
+  if (!result.over && regen > 0 && this.player.hp > 0 && this.player.hp < this.player.maxHp) {
+    const before = this.player.hp;
+    this.player.hp = Math.min(this.player.maxHp, this.player.hp + Math.max(1, Math.round(this.player.maxHp * regen)));
+    const amount = Math.round(this.player.hp - before);
+    if (amount > 0) result.events.push({ type:'runeRegen', amount });
+  }
+  return result;
+};
+
+const legacyRollWeaponDrop = BattleEngine.prototype._rollWeaponDrop;
+BattleEngine.prototype._rollWeaponDrop = function rune2WeaponReroll(dropCtx) {
+  const first = legacyRollWeaponDrop.call(this, dropCtx);
+  if (first || Math.random() >= activePower('collector')) return first;
+  return legacyRollWeaponDrop.call(this, dropCtx);
+};
+
+const legacyRollManastone = BattleEngine.prototype._rollManastone;
+BattleEngine.prototype._rollManastone = function rune2RollManastone(enemy) {
+  const base = legacyRollManastone.call(this, enemy);
+  if (!base) return 0;
+  const bonus = Math.round(base * sumActivePower('craft', 'alchemy'));
+  if (bonus > 0) state.addManastone(bonus);
+  return base + bonus;
 };
 
 const legacyRollDrop = BattleEngine.prototype._rollDrop;
