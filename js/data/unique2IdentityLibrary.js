@@ -55,6 +55,9 @@ export const UNIQUE2_WEAPON_IDENTITIES = Object.freeze({
     U('u2_staff_stararm','staff','星装詠唱','詠唱を次の打撃へ残し、魔法と攻撃を往復する。',['staff_spellpower'],[
       {trigger:'passive',kind:'spellArmsStarStrike',magRatio:.72},
     ],['spell','hybrid']),
+    U('u2_staff_sole_auditor','staff','全権監査の反響','MOTHERが全権を掌握した史脈で育つ監査反響。詠唱のたびに行動が記録として複製され、稀にもう一度発動する。',['staff_spellpower'],[
+      {trigger:'onSkill',kind:'spellEcho',chance:.15,spellOnly:true},
+    ],['analysis','observed-branch']),
   ]),
 
   bow:Object.freeze([

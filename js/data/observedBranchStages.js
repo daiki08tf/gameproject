@@ -4,7 +4,8 @@
    prefix dispatch and raidBosses.js's buildRaidStage()) — a static authored
    definition resolved into a full stage object on demand. They reuse their
    own Prime Chapter's enemy archetypes and Encounter 2.0 pool (Ch2 for
-   Branch Cluster 1, Ch5 for M9's Branch Cluster 2), plus the existing
+   Branch Cluster 1, Ch5 for M9's Branch Cluster 2, Ch28 for M9's Branch
+   Cluster 3), plus the existing
    state.data.stageProgress / state.isStageCleared authority.
    No new combat, save, clear, encounter, or loot authority is introduced here. */
 import { OBSERVED_BRANCHES, observedBranchById, OBSERVED_BRANCH_PROFILE_LEVELS } from './observedBranches.js';
@@ -143,6 +144,46 @@ const BRANCH_STAGE_DATA=Object.freeze({
     dropTable:Object.freeze([
       {itemId:'ch5_weapon',weight:1},
       {itemId:'ch5_body',weight:1},
+    ]),
+  }),
+  // M9 continuation — Branch Cluster 3's first vertical slice (機界監査層 /
+  // Ch28). Same minimal-footprint precedent as Cluster 2's first slice:
+  // regular dropTables reuse the existing generic ch28_* equipment
+  // placeholders; only the boss firstClear is a new Branch-native Unique.
+  'observedbranch-mother-authority-1':Object.freeze({
+    name:'統一監査区の前哨',
+    recLevel:4050,
+    waves:Object.freeze([{type:'ch28_normal',count:5,interval:1.3}]),
+    rewards:Object.freeze({gold:1200,exp:980}),
+    dropTable:Object.freeze([{itemId:'ch28_accessory',weight:1}]),
+  }),
+  'observedbranch-mother-authority-2':Object.freeze({
+    name:'自動修復ユニット回廊',
+    recLevel:4300,
+    waves:Object.freeze([
+      {type:'ch28_normal',count:4,interval:1.1},
+      {type:'ch28_fast',count:3,interval:0.9},
+      {type:'ch28_tank',count:2,interval:1.8},
+    ]),
+    rewards:Object.freeze({gold:1500,exp:1300}),
+    dropTable:Object.freeze([
+      {itemId:'ch28_shield',weight:1},
+      {itemId:'ch28_head',weight:1},
+    ]),
+  }),
+  'observedbranch-mother-authority-boss':Object.freeze({
+    name:'全権域：全権掌握せし監査体・SOLE AUDITOR',
+    boss:true,
+    recLevel:4700,
+    waves:Object.freeze([
+      {type:'ch28_tank',count:2,interval:1.6},
+      {type:'mother-full-authority_boss',count:1,interval:0},
+    ]),
+    rewards:Object.freeze({gold:2800,exp:2400}),
+    firstClear:Object.freeze({itemId:'uq_observed_sole_auditor'}),
+    dropTable:Object.freeze([
+      {itemId:'ch28_weapon',weight:1},
+      {itemId:'ch28_body',weight:1},
     ]),
   }),
 });

@@ -21,6 +21,7 @@ export const OBSERVED_BRANCH_ECOLOGY = Object.freeze({
   'tree-sovereign-deep-green':entry('樹冠の猛襲者','根脈詠唱師','蔦絡みの惑わし','共生樹の祈祷師','王樹脈幼体'),
   'deep-green-absence':entry('空白牙の残響体','測界演算師','輪郭撹乱体','観測杭の補助端末','未記録の残響獣'),
   'flame-king-volcano':entry('熔鉱兵','火術演算師','飛び火の撹乱体','製鉄補助端末','王家鋳造獣'),
+  'mother-full-authority':entry('監査執行体','演算照合師','模倣撹乱体','自動修復端末','規格外設計体'),
 });
 
 export function observedBranchEcologySet(branchId){return OBSERVED_BRANCH_ECOLOGY[branchId]||null;}
