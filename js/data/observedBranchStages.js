@@ -42,6 +42,7 @@ const BRANCH_STAGE_DATA=Object.freeze({
       {itemId:'ob_tree_symbiotic_shield',weight:1.5},
       {itemId:'ob_tree_living_body',weight:1.5},
       {itemId:'ob_tree_root_staff',weight:1},
+      {itemId:'uq_observed_verdant_fang',weight:.35},
     ]),
   }),
   'observedbranch-tree-sovereign-boss':Object.freeze({
@@ -84,6 +85,7 @@ const BRANCH_STAGE_DATA=Object.freeze({
     dropTable:Object.freeze([
       {itemId:'ob_absence_blank_body',weight:2},
       {itemId:'ob_absence_survey_rod',weight:1},
+      {itemId:'uq_observed_null_fang',weight:.35},
     ]),
   }),
   'observedbranch-deepgreen-absence-boss':Object.freeze({
@@ -125,6 +127,7 @@ const BRANCH_STAGE_DATA=Object.freeze({
     dropTable:Object.freeze([
       {itemId:'ch5_shield',weight:1},
       {itemId:'ch5_head',weight:1},
+      {itemId:'uq_observed_royal_scale',weight:.35},
     ]),
   }),
   'observedbranch-flame-king-boss':Object.freeze({
