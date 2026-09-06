@@ -1,20 +1,22 @@
 /* Phase 8 unified job view: basic + 105 fusion/advanced + special + hero. */
 import { allJobs as legacyAllJobs, getJob as legacyGetJob, computeStats as legacyComputeStats, TIER_INFO } from './jobs.js';
 import { fusionRuntimeJobs, fusionUnlockState, fusionRequirementText } from './fusionRuntime.js';
+import { C1_RUNTIME_JOBS, computeC1JobStats, getC1RuntimeJob } from './jobIdentityMigration.js';
 
 const LEGACY = legacyAllJobs();
 const BASIC = LEGACY.filter(j => j.tier === 'basic');
 const SPECIAL = LEGACY.filter(j => j.tier === 'special');
 const HERO = LEGACY.filter(j => j.tier === 'hero');
 const FUSIONS = fusionRuntimeJobs(LEGACY);
-const ALL = Object.freeze([...BASIC, ...FUSIONS, ...SPECIAL, ...HERO]);
+const ALL = C1_RUNTIME_JOBS;
 const BY_ID = new Map(ALL.map(j => [j.id, j]));
 
-export function getJob(id) { return BY_ID.get(id) || legacyGetJob(id); }
+export function getJob(id) { return BY_ID.get(id) || FUSIONS.find((job) => job.id === id) || legacyGetJob(id); }
 export function allJobs() { return [...ALL]; }
 export function jobsByTier(tier) { return ALL.filter(j => j.tier === tier); }
 export function fusionJobs() { return [...FUSIONS]; }
 export function computeStats(jobId, level) {
+  const c1 = computeC1JobStats(jobId, level); if (c1) return c1;
   const legacy = legacyGetJob(jobId);
   if (legacy) return legacyComputeStats(jobId, level);
   const job = getJob(jobId), tier = TIER_INFO.advanced, L = Math.max(1, level), base = {hp:40,mp:15,atk:8,def:7,mag:7,spd:5,crit:1};
@@ -25,6 +27,7 @@ export function computeStats(jobId, level) {
   out.spd = Math.round(out.spd * 10) / 10; out.critPct = Math.min(100, Math.round((5 + out.crit * .8) * 10) / 10); return out;
 }
 export function isUnlocked(jobId, masteredSet) {
+  if (getC1RuntimeJob(jobId)) return true;
   const f = fusionUnlockState(jobId, masteredSet); if (f) return f.unlocked;
   const job = getJob(jobId); if (!job) return false; if (job.tier === 'basic') return true;
   if (job.requiresCount) { const pool=jobsByTier(job.requiresCount.tier).map(j=>j.id); return pool.filter(id=>masteredSet.has(id)).length>=job.requiresCount.count; }

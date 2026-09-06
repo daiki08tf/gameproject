@@ -5,37 +5,37 @@
    the only destinations C1 is allowed to expose, and makes every current
    job id resolve before the Phase 8 catalogue is retired from the UI.
    ============================================================ */
-import { allJobs as legacyAllJobs } from './jobs.js';
+import { allJobs as legacyAllJobs, computeStats as legacyComputeStats } from './jobs.js';
 import { ALL_FUSION_JOBS } from './jobFusion.js';
 
 export const C1_JOB_IDENTITIES = Object.freeze([
-  Object.freeze({ id:'vanguard', name:'先陣', loop:'連撃でPressureを上げ、強打で使い切る。', sources:['fighter'] }),
-  Object.freeze({ id:'bastion', name:'城塞', loop:'防御・被弾を反撃の機会へ変える。', sources:['warrior','craftsman','farmer'] }),
-  Object.freeze({ id:'elementalist', name:'元素術師', loop:'属性を切り替え、MP循環で詠唱を続ける。', sources:['mage','scholar'] }),
-  Object.freeze({ id:'chaplain', name:'聖護官', loop:'回復と加護を使い分け、危機を立て直す。', sources:['priest'] }),
-  Object.freeze({ id:'shadow', name:'影刃', loop:'弱体・状態異常を付け、条件成立時に処刑する。', sources:['thief','ninja'] }),
-  Object.freeze({ id:'ranger', name:'追跡者', loop:'標的をMarkし、追撃で狩り切る。', sources:['hunter'] }),
-  Object.freeze({ id:'maestro', name:'楽匠', loop:'歌と舞でTempoを作り、行動順と支援を操作する。', sources:['bard','dancer'] }),
-  Object.freeze({ id:'alchemist', name:'錬成士', loop:'試薬を付与し、反応・起爆で回収する。', sources:['alchemist'] }),
-  Object.freeze({ id:'quartermaster', name:'補給官', loop:'資金・物資を戦闘内の供給判断に変える。', sources:['merchant'] }),
-  Object.freeze({ id:'oracle', name:'星見', loop:'予兆を読み、危険を受け入れて結果を反転する。', sources:['fortune'] }),
+  Object.freeze({ id:'c1_vanguard', name:'先陣', loop:'連撃でPressureを上げ、強打で使い切る。', sources:['fighter','battlemaster'] }),
+  Object.freeze({ id:'c1_bastion', name:'城塞', loop:'防御・被弾を反撃の機会へ変える。', sources:['craftsman','warrior','farmer'] }),
+  Object.freeze({ id:'c1_elementalist', name:'元素術師', loop:'属性を切り替え、MP循環で詠唱を続ける。', sources:['mage','archmage','scholar'] }),
+  Object.freeze({ id:'c1_chaplain', name:'聖護官', loop:'回復と加護を使い分け、危機を立て直す。', sources:['priest','paladin'] }),
+  Object.freeze({ id:'c1_shadow', name:'影刃', loop:'弱体・状態異常を付け、条件成立時に処刑する。', sources:['ninja','phantomthief','thief'] }),
+  Object.freeze({ id:'c1_ranger', name:'追跡者', loop:'標的をMarkし、追撃で狩り切る。', sources:['hunter','huntking'] }),
+  Object.freeze({ id:'c1_maestro', name:'楽匠', loop:'歌と舞でTempoを作り、行動順と支援を操作する。', sources:['bard','primadiva','dancer'] }),
+  Object.freeze({ id:'c1_alchemist', name:'錬成士', loop:'試薬を付与し、反応・起爆で回収する。', sources:['alchemist','arcanist'] }),
+  Object.freeze({ id:'c1_quartermaster', name:'補給官', loop:'資金・物資を戦闘内の供給判断に変える。', sources:['merchant','guildmaster'] }),
+  Object.freeze({ id:'c1_oracle', name:'星見', loop:'予兆を読み、危険を受け入れて結果を反転する。', sources:['fortune','astromancer'] }),
 ]);
 
 export const C1_JOB_BY_ID = new Map(C1_JOB_IDENTITIES.map((job) => [job.id, job]));
 
 const BASIC_TARGET = Object.freeze({
-  warrior:'bastion', fighter:'vanguard', mage:'elementalist', priest:'chaplain',
-  thief:'shadow', merchant:'quartermaster', hunter:'ranger', ninja:'shadow',
-  bard:'maestro', dancer:'maestro', alchemist:'alchemist', scholar:'elementalist',
-  farmer:'bastion', craftsman:'bastion', fortune:'oracle',
+  warrior:'c1_bastion', fighter:'c1_vanguard', mage:'c1_elementalist', priest:'c1_chaplain',
+  thief:'c1_shadow', merchant:'c1_quartermaster', hunter:'c1_ranger', ninja:'c1_shadow',
+  bard:'c1_maestro', dancer:'c1_maestro', alchemist:'c1_alchemist', scholar:'c1_elementalist',
+  farmer:'c1_bastion', craftsman:'c1_bastion', fortune:'c1_oracle',
 });
 
 // Priority is deliberate: a fusion's first surviving tactical loop wins.
 // This is a migration destination, not a claim that the retired kit is equal
 // to the destination kit; progress is converted to C1 migration credit later.
 const TARGET_PRIORITY = Object.freeze([
-  'alchemist', 'ranger', 'shadow', 'maestro', 'chaplain', 'elementalist',
-  'vanguard', 'bastion', 'quartermaster', 'oracle',
+  'c1_alchemist', 'c1_ranger', 'c1_shadow', 'c1_maestro', 'c1_chaplain', 'c1_elementalist',
+  'c1_vanguard', 'c1_bastion', 'c1_quartermaster', 'c1_oracle',
 ]);
 
 function targetForParents(parents) {
@@ -44,9 +44,9 @@ function targetForParents(parents) {
 }
 
 const SPECIAL_TARGET = Object.freeze({
-  greatsage:'elementalist', swordsaint:'vanguard', fistemperor:'vanguard', pope:'chaplain',
-  thiefking:'shadow', divaqueen:'maestro', grandalchemist:'alchemist', merchantking:'quartermaster',
-  spiritking:'ranger', oracle:'oracle', hero:'vanguard',
+  greatsage:'c1_elementalist', swordsaint:'c1_vanguard', fistemperor:'c1_vanguard', pope:'c1_chaplain',
+  thiefking:'c1_shadow', divaqueen:'c1_maestro', grandalchemist:'c1_alchemist', merchantking:'c1_quartermaster',
+  spiritking:'c1_ranger', oracle:'c1_oracle', hero:'c1_vanguard',
 });
 
 const legacy = legacyAllJobs();
@@ -80,4 +80,54 @@ export function c1MigrationAudit() {
 
 export function legacyJobRecord(jobId) {
   return legacyById.get(jobId) || null;
+}
+
+export const C1_RUNTIME_JOBS = Object.freeze(C1_JOB_IDENTITIES.map((identity) => {
+  const kits = identity.sources.map((id) => legacyById.get(id)).filter(Boolean);
+  const primary = kits[0];
+  return Object.freeze({
+    id: identity.id, name: identity.name, desc: identity.loop, tier:'basic', requires:[],
+    weapon: primary.weapon, profile:{ ...primary.profile }, passive: primary.passive,
+    skills: kits.flatMap((job) => job.skills || []), spells: kits.flatMap((job) => job.spells || []),
+    c1:true, c1Identity:identity,
+  });
+}));
+const C1_RUNTIME_BY_ID = new Map(C1_RUNTIME_JOBS.map((job) => [job.id, job]));
+
+export function getC1RuntimeJob(jobId) { return C1_RUNTIME_BY_ID.get(jobId) || null; }
+export function computeC1JobStats(jobId, level) {
+  const job = getC1RuntimeJob(jobId);
+  return job ? legacyComputeStats(job.c1Identity.sources[0], level) : null;
+}
+
+function betterProgress(a, b) {
+  if (!a) return b;
+  if ((b.level || 1) !== (a.level || 1)) return (b.level || 1) > (a.level || 1) ? b : a;
+  return (b.exp || 0) > (a.exp || 0) ? b : a;
+}
+
+export function migrateC1JobSave(data = {}) {
+  const jobs = { ...(data.jobs || {}) };
+  const mastered = Array.isArray(data.mastered) ? [...data.mastered] : [];
+  const bestByTarget = new Map();
+  for (const [sourceId, progress] of Object.entries(jobs)) {
+    const target = c1MigrationTargetForLegacyJob(sourceId);
+    if (target) bestByTarget.set(target, betterProgress(bestByTarget.get(target), progress || {}));
+  }
+  for (const [target, progress] of bestByTarget) jobs[target] = { level:Math.max(1, progress.level || 1), exp:Math.max(0, progress.exp || 0) };
+  const migratedMastered = new Set(mastered);
+  for (const sourceId of mastered) {
+    const target = c1MigrationTargetForLegacyJob(sourceId);
+    if (target) migratedMastered.add(target);
+  }
+  const selected = { ...(data.job3Specializations || {}) };
+  for (const [sourceId, routeId] of Object.entries(data.job3Specializations || {})) {
+    const target = c1MigrationTargetForLegacyJob(sourceId);
+    if (target && selected[target] == null) selected[target] = routeId;
+  }
+  const slots = [...new Set((data.job3LegacySlots || []).map((id) => c1MigrationTargetForLegacyJob(id) || id))];
+  return {
+    ...data, jobs, mastered:[...migratedMastered], job3Specializations:selected, job3LegacySlots:slots,
+    currentJobId:c1MigrationTargetForLegacyJob(data.currentJobId) || data.currentJobId,
+  };
 }

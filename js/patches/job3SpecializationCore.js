@@ -2,7 +2,7 @@
    Job 3.0 — Specialization runtime
    ============================================================ */
 import { state } from '../state.js';
-import { getJob } from '../data/jobs.js';
+import { getJob } from '../data/jobsPhase8.js';
 import { specializationRoutesForJob, activeSpecializationNodes } from '../data/job3Specializations.js';
 import { CAPS_LAYER } from '../data/balance.js';
 import { chainMethod } from './patchUtils.js';
