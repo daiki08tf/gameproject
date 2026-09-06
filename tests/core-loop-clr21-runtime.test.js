@@ -45,9 +45,9 @@ test('CLR-21 Branch Rare can be planned through the canonical runtime helper whi
   const overrides=planRareOverrideTypes(fieldStage,fieldSpec,ENEMY_TYPES,{rank:0},()=>fieldRolls.shift()??0);
   assert.ok(overrides,'Branch field encounter should be Rare-capable');
   assert.equal(overrides.filter(Boolean).length,1);
-  assert.equal(overrides.find(Boolean),'ch2_rare');
+  assert.equal(overrides.find(Boolean),'tree-sovereign-deep-green_rare');
 
-  const bossSpec={type:'ch2_boss',count:1};
+  const bossSpec={type:'tree-sovereign-deep-green_boss',count:1};
   assert.equal(planRareOverrideTypes(bossStage,bossSpec,ENEMY_TYPES,{rank:5},()=>0),null);
 });
 

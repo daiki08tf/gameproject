@@ -40,23 +40,23 @@ test('CLR-21 Branch Hunt reuses every authored Branch Stage after clear', () => 
   }
 });
 
-test('CLR-21 Branch stages project the existing Chapter 2 Enemy 2.0 encounter contract', () => {
+test('CLR-21/M10 Branch stages project the existing Enemy 2.0 encounter contract, now through the Branch\'s own M10 ecology', () => {
   const branch = observedBranchById(BRANCH_ID);
   for (const stageId of branch.stageIds) {
     const stage = buildObservedBranchStage(stageId);
     assert.ok(stage.encounterPool, `${stageId} must expose the existing Encounter 2.0 pool`);
-    assert.equal(stage.encounterPool.id, 'ch2-e8-field');
+    assert.equal(stage.encounterPool.id, 'tree-sovereign-deep-green-e8-field');
     assert.equal(stage.encounterPool.rareChance, .04);
-    assert.deepEqual(stage.encounterPool.rareTypes, [{ type: 'ch2_rare', weight: 1 }]);
+    assert.deepEqual(stage.encounterPool.rareTypes, [{ type: 'tree-sovereign-deep-green_rare', weight: 1 }]);
     assert.deepEqual(stage.encounterPool.regionTags, CHAPTER_REGION_TAGS.ch2);
-    assert.equal(ENEMY_TYPES.ch2_rare.rareIdentity, true);
+    assert.equal(ENEMY_TYPES['tree-sovereign-deep-green_rare'].rareIdentity, true);
     assert.equal(stage.encounterPool.types.some(entry => ENEMY_TYPES[entry.type]?.boss), false);
   }
 
   const fieldStage = buildObservedBranchStage(branch.stageIds[1]);
   const rarePlan = planRareOverrideTypes(fieldStage, fieldStage.waves[0], ENEMY_TYPES, { rank: 0 }, () => 0);
   assert.equal(rarePlan.filter(Boolean).length, 1);
-  assert.equal(rarePlan.find(Boolean), 'ch2_rare');
+  assert.equal(rarePlan.find(Boolean), 'tree-sovereign-deep-green_rare');
 
   const elite = { ...ENEMY_TYPES.ch2_normal, elite: false };
   markGenericElite(elite);

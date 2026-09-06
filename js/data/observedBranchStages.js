@@ -51,7 +51,7 @@ const BRANCH_STAGE_DATA=Object.freeze({
     recLevel:14,
     waves:Object.freeze([
       {type:'ch2_tank',count:2,interval:1.6},
-      {type:'ch2_boss',count:1,interval:0},
+      {type:'tree-sovereign-deep-green_boss',count:1,interval:0},
     ]),
     rewards:Object.freeze({gold:220,exp:170}),
     firstClear:Object.freeze({itemId:'uq_observed_verdant'}),
@@ -94,7 +94,7 @@ const BRANCH_STAGE_DATA=Object.freeze({
     recLevel:14,
     waves:Object.freeze([
       {type:'ch2_fast',count:2,interval:1.0},
-      {type:'ch2_boss',count:1,interval:0},
+      {type:'deep-green-absence_boss',count:1,interval:0},
     ]),
     rewards:Object.freeze({gold:225,exp:175}),
     firstClear:Object.freeze({itemId:'uq_observed_null_root'}),
@@ -136,7 +136,7 @@ const BRANCH_STAGE_DATA=Object.freeze({
     recLevel:34,
     waves:Object.freeze([
       {type:'ch5_tank',count:2,interval:1.6},
-      {type:'ch5_boss',count:1,interval:0},
+      {type:'flame-king-volcano_boss',count:1,interval:0},
     ]),
     rewards:Object.freeze({gold:390,exp:300}),
     firstClear:Object.freeze({itemId:'uq_observed_ember_throne'}),
@@ -147,22 +147,26 @@ const BRANCH_STAGE_DATA=Object.freeze({
   }),
 });
 
-// Every authored Branch is the divergent form of its own Prime Chapter, so it
-// projects that Chapter's own E8 Encounter Pool contract instead of inventing
-// a Branch-only enemy table. Fixed authored waves remain the fallback/headcount
-// authority; the pool only enables the already-live Chapter Rare, generic
-// World Tier Elite, regional roles and environmental Variant behavior. This is
-// keyed by the Branch's own primeRegionRef.chapterId (M9 added a second Prime
-// Chapter, Ch5, alongside Ch2 — this must not stay hardcoded to one Chapter).
-function encounterSourceForChapterId(chapterId){
+// Every authored Branch is the divergent form of its own Prime Chapter, so
+// environmental region tags (fire/wind/dark/light/poison/ice — cosmetic
+// Variant flavor, not ecology identity) still come from that Chapter. The
+// regional/rare *identity* itself prefers the Branch's own Observed Branch
+// M10 ecology (js/data/observedBranchEcology.js) when authored, keyed by the
+// Branch's own id instead of the Prime Chapter's, so Branch encounters stop
+// silently inheriting the Prime Chapter's rare/regional roster; it falls
+// back to the Prime Chapter's own identity for any Branch that hasn't been
+// given bespoke ecology yet (M9 Cluster expansion is not required to author
+// this on day one).
+function encounterSourceForBranch(branchId,chapterId){
+  const usesBranchEcology=Boolean(ENEMY_TYPES[`${branchId}_rare`]);
   return Object.freeze({
-    id:chapterId,
+    id:usesBranchEcology?branchId:chapterId,
     stages:Object.freeze([Object.freeze({dropRegionTags:Object.freeze([...(CHAPTER_REGION_TAGS[chapterId]||[])])})]),
   });
 }
 
-function buildObservedBranchEncounterPool(chapterId){
-  const pool=buildChapterEncounterPool(encounterSourceForChapterId(chapterId),ENEMY_TYPES);
+function buildObservedBranchEncounterPool(branchId,chapterId){
+  const pool=buildChapterEncounterPool(encounterSourceForBranch(branchId,chapterId),ENEMY_TYPES);
   return{
     ...pool,
     types:(pool.types||[]).map(entry=>({...entry})),
@@ -209,7 +213,7 @@ export function buildObservedBranchStage(stageId){
     rewards:{...data.rewards},
     dropTable:data.dropTable.map(drop=>({...drop})),
     firstClear:data.firstClear?{...data.firstClear}:undefined,
-    encounterPool:buildObservedBranchEncounterPool(primeChapterId),
+    encounterPool:buildObservedBranchEncounterPool(branchId,primeChapterId),
     dropRegionTags:[...(CHAPTER_REGION_TAGS[primeChapterId]||[])],
     observedBranch:true,
     observedBranchId:branchId,

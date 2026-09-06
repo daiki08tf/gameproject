@@ -63,7 +63,9 @@ test('M9 stages resolve through findStage, use Ch5\'s own enemy/encounter pool, 
     assert.ok(stage, `${stageId} must resolve through findStage()`);
     assert.equal(stage.observedBranchId, BRANCH_ID);
     assert.deepEqual(stage.dropRegionTags, ['fire']);
-    for (const wave of stage.waves) assert.match(wave.type, /^ch5_/, `${stageId} must use Ch5's own enemy archetypes`);
+    // Non-boss waves reuse Ch5's own enemy archetypes; the boss wave (M10)
+    // uses the Branch's own distinct boss enemy identity instead of Ch5's.
+    for (const wave of stage.waves) assert.match(wave.type, /^ch5_|^flame-king-volcano_boss$/, `${stageId} must use Ch5's own enemy archetypes or the Branch's own boss`);
     for (const drop of stage.dropTable) assert.ok(getItem(drop.itemId), `${drop.itemId} must resolve through getItem()`);
   }
   const boss = buildObservedBranchStage(branch.bossStageId);

@@ -17,6 +17,8 @@ import { CHAPTER_EXPANSION_34 } from './chapters34.js';
 import { CHAPTER_EXPANSION_35 } from './chapters35.js';
 import { CHAPTER_EXPANSION_36 } from './chapters36.js';
 import { REGIONAL_ENEMY_EXPANSION, REGIONAL_ENEMY_ROLES } from './regionalEnemies2.js';
+import { OBSERVED_BRANCH_ECOLOGY, OBSERVED_BRANCH_ECOLOGY_ROLES } from './observedBranchEcology.js';
+import { OBSERVED_BRANCHES } from './observedBranches.js';
 import { materializeGlobalSpecies } from './globalEnemySpecies.js';
 import { ENEMY_SCALING, chapterScaleMult } from './balance.js';
 
@@ -60,6 +62,42 @@ for(const [chapterId,set] of Object.entries(REGIONAL_ENEMY_EXPANSION)){
    behaviorTags:[...(def.behaviorTags||[])],rareIdentity:role==='rare',
   });
  }
+}
+
+// Observed Branches M10 — each Branch gets its own regional Enemy 2.0
+// identity (attacker/caster/trickster/support/rare) instead of silently
+// inheriting its Prime Chapter's, plus a Branch-flavored Boss with a
+// distinct stat silhouette (not a stat-identical reskin of the Prime boss).
+// Stat scaling still reuses the Prime Chapter's own num via chapterMult/
+// hpMult/atkMult/defMult/bossHpMult -- no new scaling authority.
+const BRANCH_BOSS_NAMES=Object.freeze({
+ 'tree-sovereign-deep-green':'生存せし大樹霊',
+ 'deep-green-absence':'根無き森核・NULL CANOPY',
+ 'flame-king-volcano':'戴冠せし神王・EMBER THRONE',
+});
+const BRANCH_BOSS_STAT_MODS=Object.freeze({
+ 'tree-sovereign-deep-green':{hp:1.15,speed:.85}, // entrenched ruler: tankier, slower
+ 'deep-green-absence':{speed:1.20,def:.85}, // unstable absence-core: faster, fragile
+ 'flame-king-volcano':{atk:1.10,def:1.10,hp:.95}, // armored aggressor: glass-cannon trade
+});
+for(const branch of OBSERVED_BRANCHES){
+ const num=branch.primeRegionRef?.chapterNum;
+ if(!num)continue;
+ const set=OBSERVED_BRANCH_ECOLOGY[branch.id];
+ if(set){
+  for(const role of OBSERVED_BRANCH_ECOLOGY_ROLES){
+   const def=set[role],base=E4_ROLE_BASES[role];
+   if(!def||!base)continue;
+   ENEMY_TYPES[`${branch.id}_${role}`]=scale(base,def.name,num,{
+    role,branchId:branch.id,speciesId:`observedBranch:${branch.id}:${role}`,regional:true,observedBranch:true,
+    behaviorTags:[...(def.behaviorTags||[])],rareIdentity:role==='rare',
+   });
+  }
+ }
+ const boss=scale(BOSS_BASE,BRANCH_BOSS_NAMES[branch.id]||branch.name,num,{role:'boss',branchId:branch.id,observedBranch:true});
+ const mods=BRANCH_BOSS_STAT_MODS[branch.id];
+ if(mods)for(const[stat,mult]of Object.entries(mods))if(boss[stat]!=null)boss[stat]=Math.round(boss[stat]*mult);
+ ENEMY_TYPES[`${branch.id}_boss`]=boss;
 }
 
 Object.assign(ENEMY_TYPES.grunt,{role:'normal',chapterId:'ch1',speciesId:'regional:ch1:normal'});
