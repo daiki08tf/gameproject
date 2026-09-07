@@ -66,3 +66,8 @@ test('C1 Vanguard defines a bounded combat-only Pressure loop', () => {
     spendSkillIds:['fighter_straight_punch','battlemaster_armor_breaker','battlemaster_peerless'],
   });
 });
+
+test('C1 Elementalist defines a combat-only alternate-element MP cycle', () => {
+  const elementalist = C1_RUNTIME_JOBS.find((job) => job.id === 'c1_elementalist');
+  assert.deepEqual(elementalist.c1Combat, { kind:'elementCycle', mpRefundPct:0.25 });
+});
