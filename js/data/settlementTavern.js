@@ -13,6 +13,8 @@ export function tavernRequestComplete(request,context){return tavernContextValue
 
 export function buildTavernRumors(context={}){
  const rumors=[];
+ const notebook=Array.isArray(context.rumorNotebook)?context.rumorNotebook:[];
+ for(const entry of notebook.filter(r=>r?.rumorState==='tracking').slice(0,3))rumors.push({id:`notebook:${entry.rumorId||entry.id}`,kind:'notebook',title:String(entry.name||'追跡中の噂').replace(/^噂：|^秘密連鎖：/,''),text:entry.hint||'酒場で記録を照合している。',source:entry.source||'記録官'});
  const nemesis=context.activeNemesis;
  if(context.frontierBossSafeReturn)rumors.push({id:'clr11_frontier_boss_return',kind:'victory',icon:'⚔️',title:'辺境深部からの帰還',text:'開拓辺境の深部を塞いでいた主を討ち、冒険者が自力で帰還したという。酒場では次に深部へ向かう者たちが、その戦い方を聞き出そうとしている。',source:'帰還者の証言'});
  if(context.frontierEliteSafeReturn)rumors.push({id:'clr11_frontier_elite_return',kind:'victory',icon:'🛡️',title:'強敵を越えた者の話',text:'開拓辺境で通常の群れとは違う強敵を倒し、そのまま帰還した者がいるらしい。危険路にも突破できる道筋があると噂されている。',source:'冒険者の噂'});
