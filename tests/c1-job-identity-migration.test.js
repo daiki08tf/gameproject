@@ -92,3 +92,16 @@ test('C1 Shadow execution reads the canonical weaken and DoT state without affec
   engine.job = { id:'phantomthief', c1Combat:null };
   assert.equal(engine._c1ShadowExecutionPower(execution, { dotStacks:1 }), 0);
 });
+
+test('C1 Maestro turns an existing active buff into a dance finale without new state', () => {
+  const maestro = C1_RUNTIME_JOBS.find((job) => job.id === 'c1_maestro');
+  assert.deepEqual(maestro.c1Combat, { kind:'chorus', bonusPower:2, finaleSkillIds:['dancer_blade_dance','primadiva_sword_aria'] });
+  const engine = Object.create(BattleEngine.prototype);
+  engine.job = maestro;
+  engine.player = { buffs:{ atk:{ turnsLeft:2 } } };
+  assert.equal(engine._c1MaestroChorusPower({ id:'dancer_blade_dance' }), 2);
+  engine.player.buffs.atk.turnsLeft = 0;
+  assert.equal(engine._c1MaestroChorusPower({ id:'dancer_blade_dance' }), 0);
+  engine.job = { c1Combat:null };
+  assert.equal(engine._c1MaestroChorusPower({ id:'dancer_blade_dance' }), 0);
+});

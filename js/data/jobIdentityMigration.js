@@ -99,6 +99,9 @@ export const C1_RUNTIME_JOBS = Object.freeze(C1_JOB_IDENTITIES.map((identity) =>
         kind:'execution', bonusPower:3,
         setupSkillIds:Object.freeze(['thief_dark_slash','thief_poison_blade','ninja_poison_star','ninja_pin']),
         executionSkillIds:Object.freeze(['phantomthief_backstab']),
+      }) : identity.id === 'c1_maestro' ? Object.freeze({
+        kind:'chorus', bonusPower:2,
+        finaleSkillIds:Object.freeze(['dancer_blade_dance','primadiva_sword_aria']),
       }) : null,
   });
 }));

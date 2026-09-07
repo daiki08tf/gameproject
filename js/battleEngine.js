@@ -391,6 +391,13 @@ export class BattleEngine {
     return this._targetBonusPower({ when:'debuffed', power:rule.bonusPower }, target);
   }
 
+  // C1楽匠：既存buffが続く間だけ、舞踏攻撃を終演として強化する。
+  _c1MaestroChorusPower(tech) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'chorus' || !rule.finaleSkillIds.includes(tech.id)) return 0;
+    return Object.values(this.player.buffs || {}).some((buff) => buff?.turnsLeft > 0) ? rule.bonusPower : 0;
+  }
+
   // ---------------------------------------------------------
   // ダメージ計算（PR#2のDamage Bucketをそのまま流用。新式は作らない）
   // ---------------------------------------------------------
@@ -874,11 +881,12 @@ export class BattleEngine {
       }
       const targetBonusPower = this._targetBonusPower(tech.targetBonus, target);
       const executionBonusPower = this._c1ShadowExecutionPower(tech, target);
+      const chorusBonusPower = this._c1MaestroChorusPower(tech);
       let totalDamage = 0, criticalCount = 0, hitsLanded = 0;
       const effects = []; let kill = null;
       for (let i = 0; i < hits; i++) {
         if (target.dead) break;
-        const power = tech.power + conditionBonusPower + targetBonusPower + executionBonusPower;
+        const power = tech.power + conditionBonusPower + targetBonusPower + executionBonusPower + chorusBonusPower;
         const atkValue = statValue * power * pressureMult * this._mainDmgMult(kind);
         const { damage, critical } = this.calculateDamage(atkValue, target, opts);
         if (critical) criticalCount++;
@@ -909,6 +917,7 @@ export class BattleEngine {
         critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, effects, kill,
       });
       if (executionBonusPower > 0) result.execution = { targetId:target.id, bonusPower:executionBonusPower };
+      if (chorusBonusPower > 0) result.chorus = { targetId:target.id, bonusPower:chorusBonusPower };
     }
     // プリマ・ディーヴァ「剣の舞曲」等：攻撃と同時に自分へバフをかける
     if (tech.selfBuff) this._applyBuffPayload(tech.selfBuff, result);
