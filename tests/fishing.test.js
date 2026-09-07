@@ -13,7 +13,17 @@ test('C3 Fishing: several regions ship in this first slice, each with a spot and
     assert.ok(WORLD3_REGIONS.some((r) => r.id === spot.regionId), `${spot.id} must reference a real World 3.0 region`);
     const pool = FISH_SPECIES.filter((f) => f.regionId === spot.regionId);
     assert.ok(pool.length >= 3, `${spot.regionId} must have a real regional fish roster`);
-    assert.ok(pool.some((f) => f.master), `${spot.regionId} must have a named ヌシ/master fish`);
+    assert.ok(pool.filter((f) => f.master).length === 1, `${spot.regionId} must have exactly one named ヌシ/master fish`);
+  }
+});
+
+test('Roster expansion: 29 fish across the 4 regions, at least 6 regular fish per region, all ids unique', () => {
+  assert.equal(FISH_SPECIES.length, 29);
+  const ids = FISH_SPECIES.map((f) => f.id);
+  assert.equal(new Set(ids).size, ids.length, 'no duplicate fish ids');
+  for (const spot of FISHING_SPOTS) {
+    const pool = FISH_SPECIES.filter((f) => f.regionId === spot.regionId);
+    assert.ok(pool.filter((f) => !f.master).length >= 6, `${spot.regionId} should have real roster depth beyond the original 3`);
   }
 });
 
