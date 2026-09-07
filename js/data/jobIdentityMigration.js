@@ -102,6 +102,9 @@ export const C1_RUNTIME_JOBS = Object.freeze(C1_JOB_IDENTITIES.map((identity) =>
       }) : identity.id === 'c1_maestro' ? Object.freeze({
         kind:'chorus', bonusPower:2,
         finaleSkillIds:Object.freeze(['dancer_blade_dance','primadiva_sword_aria']),
+      }) : identity.id === 'c1_chaplain' ? Object.freeze({
+        kind:'sanctuary', regenAdd:0.02, regenTurns:2,
+        healSpellIds:Object.freeze(['priest_heal','priest_full_heal']),
       }) : null,
   });
 }));
