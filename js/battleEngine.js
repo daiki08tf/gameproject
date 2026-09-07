@@ -383,6 +383,14 @@ export class BattleEngine {
     }
   }
 
+  // C1影刃：既存のweaken/DoTが残る相手だけ、背後の一撃を処刑へ強化する。
+  // 新しい状態は持たず、既存の対象条件判定をそのまま使う。
+  _c1ShadowExecutionPower(tech, target) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'execution' || !rule.executionSkillIds.includes(tech.id)) return 0;
+    return this._targetBonusPower({ when:'debuffed', power:rule.bonusPower }, target);
+  }
+
   // ---------------------------------------------------------
   // ダメージ計算（PR#2のDamage Bucketをそのまま流用。新式は作らない）
   // ---------------------------------------------------------
@@ -865,11 +873,12 @@ export class BattleEngine {
         continue;
       }
       const targetBonusPower = this._targetBonusPower(tech.targetBonus, target);
+      const executionBonusPower = this._c1ShadowExecutionPower(tech, target);
       let totalDamage = 0, criticalCount = 0, hitsLanded = 0;
       const effects = []; let kill = null;
       for (let i = 0; i < hits; i++) {
         if (target.dead) break;
-        const power = tech.power + conditionBonusPower + targetBonusPower;
+        const power = tech.power + conditionBonusPower + targetBonusPower + executionBonusPower;
         const atkValue = statValue * power * pressureMult * this._mainDmgMult(kind);
         const { damage, critical } = this.calculateDamage(atkValue, target, opts);
         if (critical) criticalCount++;
@@ -899,6 +908,7 @@ export class BattleEngine {
         targetId: target.id, targetName: target.name, damage: totalDamage, defeated: target.dead,
         critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, effects, kill,
       });
+      if (executionBonusPower > 0) result.execution = { targetId:target.id, bonusPower:executionBonusPower };
     }
     // プリマ・ディーヴァ「剣の舞曲」等：攻撃と同時に自分へバフをかける
     if (tech.selfBuff) this._applyBuffPayload(tech.selfBuff, result);

@@ -94,7 +94,12 @@ export const C1_RUNTIME_JOBS = Object.freeze(C1_JOB_IDENTITIES.map((identity) =>
       kind:'pressure', maxStacks:3, damagePerStack:0.12,
       gainSkillIds:Object.freeze(['fighter_flurry','battlemaster_rapid_break']),
       spendSkillIds:Object.freeze(['fighter_straight_punch','battlemaster_armor_breaker','battlemaster_peerless']),
-    }) : identity.id === 'c1_elementalist' ? Object.freeze({ kind:'elementCycle', mpRefundPct:0.25 }) : null,
+    }) : identity.id === 'c1_elementalist' ? Object.freeze({ kind:'elementCycle', mpRefundPct:0.25 })
+      : identity.id === 'c1_shadow' ? Object.freeze({
+        kind:'execution', bonusPower:3,
+        setupSkillIds:Object.freeze(['thief_dark_slash','thief_poison_blade','ninja_poison_star','ninja_pin']),
+        executionSkillIds:Object.freeze(['phantomthief_backstab']),
+      }) : null,
   });
 }));
 const C1_RUNTIME_BY_ID = new Map(C1_RUNTIME_JOBS.map((job) => [job.id, job]));
