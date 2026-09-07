@@ -134,3 +134,14 @@ test('C1 Quartermaster refunds MP only after an existing Gold payment', () => {
   engine._c1QuartermasterSupply({ goldSpent:0 }, { id:'merchant_coin_toss' });
   assert.equal(engine.player.mp, 10);
 });
+
+test('C1 Oracle reads the existing crit buff to strengthen star spells', () => {
+  const oracle = C1_RUNTIME_JOBS.find((job) => job.id === 'c1_oracle');
+  assert.deepEqual(oracle.c1Combat, { kind:'omen', critBonus:15, attackSpellIds:['astromancer_star_bullet'] });
+  const engine = Object.create(BattleEngine.prototype);
+  engine.job = oracle;
+  engine.player = { buffs:{ critAdd:{ turnsLeft:2 } } };
+  assert.equal(engine._c1OracleOmenCritBonus({ id:'astromancer_star_bullet' }), 15);
+  engine.player.buffs.critAdd.turnsLeft = 0;
+  assert.equal(engine._c1OracleOmenCritBonus({ id:'astromancer_star_bullet' }), 0);
+});
