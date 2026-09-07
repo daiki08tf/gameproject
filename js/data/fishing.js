@@ -163,28 +163,44 @@ export function computeFishingReward(fish, first) {
   return { materials, gold };
 }
 
-// Small, permanent Fish Codex completion bonus -- same design philosophy as
-// js/data/codex.js's codexBonuses(): a modest permanent-growth/collection
-// reward, deliberately NOT a large multiplier source like Rune 2.0. Two
-// independent tracks so partial progress is never all-or-nothing:
-//   - species discovered (any of the 29): +0.5% all stats per 25% bucket,
-//     capped at +2% for full discovery;
-//   - master fish (ヌシ) actually landed: +0.25% all stats each, capped at
-//     +1% once all 4 are caught.
-// Combined (multiplicatively, matching how Codex/Rune stack) that is at
-// most ~+3.02% all stats at full completion -- comparable in scale to
-// Monster Codex's own +2% cap, not a new power ladder.
-export function fishCodexBonuses(summary = {}) {
-  const total = Math.max(0, Number(summary.total) || 0);
-  const seen = Math.max(0, Math.min(total, Number(summary.seen) || 0));
-  const pct = total ? (seen / total) * 100 : 0;
-  const speciesMult = 1 + (pct >= 25 ? 0.005 : 0) + (pct >= 50 ? 0.005 : 0) + (pct >= 75 ? 0.005 : 0) + (pct >= 100 ? 0.005 : 0);
-  const mastersTotal = Math.max(0, Number(summary.mastersTotal) || 0);
-  const mastersSeen = Math.max(0, Math.min(mastersTotal, Number(summary.mastersSeen) || 0));
-  const masterMult = 1 + mastersSeen * 0.0025;
+// Permanent stat bonus that grows with how many of each fish you've actually
+// landed -- catching the same fish over and over is the point, not just
+// first discovery (user direction: repeat fishing should keep paying off,
+// and the ceiling should be meaningfully higher than a Monster-Codex-style
+// discovery checklist). Rarer fish are worth more per catch but cap sooner
+// (they are also drawn far less often), similar in spirit to how Rune 2.0's
+// rarer runes have a lower dropRate but a stronger per-mark effect.
+export const FISH_STAT_BONUS_BY_RARITY = Object.freeze({
+  common: { perCatch: 0.0006, cap: 100 },   // +0.06%/catch, max +6% per fish
+  uncommon: { perCatch: 0.0012, cap: 80 },  // +0.12%/catch, max +9.6% per fish
+  rare: { perCatch: 0.0025, cap: 50 },      // +0.25%/catch, max +12.5% per fish
+  master: { perCatch: 0.005, cap: 20 },     // +0.5%/catch, max +10% per fish (ヌシ are drawn far less often, so the cap is much lower)
+});
+
+// One fish's own contribution, and how close it is to its own cap (for UI).
+export function fishStatBonus(fish, caught) {
+  const tier = FISH_STAT_BONUS_BY_RARITY[fish.rarity] || FISH_STAT_BONUS_BY_RARITY.common;
+  const effective = Math.max(0, Math.min(tier.cap, Math.floor(Number(caught) || 0)));
+  return { bonusPct: tier.perCatch * effective * 100, effective, cap: tier.cap, capped: effective >= tier.cap };
+}
+
+// fishList: the array state.fishCodex() already returns (each entry carries
+// its own rarity + caught count) -- summed across all 29 species into one
+// multiplier. No per-region/global cap beyond each individual fish's own;
+// the realistic mid-game bonus comes from investing in a handful of
+// favorites, not maxing all 29 species at once.
+export function fishCodexBonuses(fishList = []) {
+  let bonusPct = 0;
+  let cappedCount = 0;
+  for (const fish of fishList) {
+    const { bonusPct: p, capped } = fishStatBonus(fish, fish.caught);
+    bonusPct += p;
+    if (capped) cappedCount++;
+  }
   return {
-    allStatMult: speciesMult * masterMult,
-    pct: Math.round(pct * 10) / 10,
-    complete: total > 0 && seen >= total && mastersSeen >= mastersTotal,
+    allStatMult: 1 + bonusPct / 100,
+    bonusPct: Math.round(bonusPct * 100) / 100,
+    cappedCount,
+    complete: fishList.length > 0 && cappedCount >= fishList.length,
   };
 }

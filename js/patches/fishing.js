@@ -93,7 +93,7 @@ state.fishCodexSummary = function fishCodexSummary() {
   const list = this.fishCodex();
   return { seen: list.filter((f) => f.seen).length, total: list.length, mastersSeen: list.filter((f) => f.master && f.seen).length, mastersTotal: list.filter((f) => f.master).length };
 };
-state.fishCodexBonuses = function () { return fishCodexBonuses(this.fishCodexSummary()); };
+state.fishCodexBonuses = function () { return fishCodexBonuses(this.fishCodex()); };
 state.fishCodexStatMult = function () { return this.fishCodexBonuses().allStatMult; };
 
 // Small permanent all-stat bonus from Fish Codex completion, chained onto

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {
   FISHING_SPOTS, FISH_SPECIES, isFishingSpotUnlocked, pickFishForSpot,
   resolveFishingRound, fishingDifficultyProfile, FISHING_ACTIONS, FISHING_ACTION_LABELS,
-  computeFishingReward, fishCodexBonuses,
+  computeFishingReward, fishCodexBonuses, fishStatBonus,
 } from '../js/data/fishing.js';
 import { WORLD3_REGIONS } from '../js/data/world3Regions.js';
 import { state } from '../js/state.js';
@@ -126,28 +126,44 @@ test('Fishing UI lives inside the existing Settlement/Monster-Codex screens (no 
   assert.match(codexUi, /querySelector\(['"]\[data-fish-codex\]['"]\)/);
 });
 
-test('fishCodexBonuses: modest, capped, two independent tracks (species % and masters caught)', () => {
-  const none = fishCodexBonuses({ seen: 0, total: 29, mastersSeen: 0, mastersTotal: 4 });
-  assert.equal(none.allStatMult, 1);
-  const quarter = fishCodexBonuses({ seen: 8, total: 29, mastersSeen: 0, mastersTotal: 4 }); // 27.6% -> crosses the 25% bucket
-  assert.ok(quarter.allStatMult > 1 && quarter.allStatMult < 1.01, 'crossing the 25% bucket should be a small bump, not a big one');
-  const allMasters = fishCodexBonuses({ seen: 0, total: 29, mastersSeen: 4, mastersTotal: 4 });
-  assert.equal(Math.round((allMasters.allStatMult - 1) * 10000) / 10000, 0.01, 'all 4 masters caught alone should be exactly +1%');
-  const full = fishCodexBonuses({ seen: 29, total: 29, mastersSeen: 4, mastersTotal: 4 });
-  assert.ok(full.complete);
-  assert.ok(full.allStatMult < 1.04, 'full completion must stay a modest bonus, not a big power source (Monster Codex caps at +2%; this should be comparable, not larger)');
+test('fishStatBonus: grows with repeat catches of the SAME fish and caps per fish (user direction: farming one favorite should keep paying off)', () => {
+  const master = FISH_SPECIES.find((f) => f.id === 'frontier_nushi');
+  const zero = fishStatBonus(master, 0);
+  assert.equal(zero.bonusPct, 0);
+  const five = fishStatBonus(master, 5);
+  const ten = fishStatBonus(master, 10);
+  assert.ok(ten.bonusPct > five.bonusPct, 'more catches of the same fish must keep increasing its bonus');
+  const atCap = fishStatBonus(master, master.rarity === 'master' ? 20 : 999);
+  assert.ok(atCap.capped);
+  const overCap = fishStatBonus(master, 999);
+  assert.equal(overCap.bonusPct, atCap.bonusPct, 'going past the cap must not keep growing (each fish caps on its own)');
+  // Rarer fish are worth more per catch.
+  const common = FISH_SPECIES.find((f) => f.id === 'silver_carp');
+  assert.ok(fishStatBonus(master, 1).bonusPct > fishStatBonus(common, 1).bonusPct);
 });
 
-test('Fish Codex completion is chained onto getStats()/getStatBreakdown() the same way Rune 2.0 chains onto Codex', () => {
+test('fishCodexBonuses: sums every fish\'s own contribution; a realistic mid-game investment (one maxed ヌシ + two maxed common fish) is a meaningfully large, noticeable bonus', () => {
+  const zeroList = FISH_SPECIES.map((f) => ({ ...f, caught: 0 }));
+  assert.equal(fishCodexBonuses(zeroList).allStatMult, 1);
+  const midList = FISH_SPECIES.map((f) => {
+    if (f.id === 'frontier_nushi') return { ...f, caught: 20 }; // capped
+    if (f.id === 'silver_carp' || f.id === 'mud_loach') return { ...f, caught: 100 }; // capped
+    return { ...f, caught: 0 };
+  });
+  const mid = fishCodexBonuses(midList);
+  assert.ok(mid.bonusPct >= 20, 'a realistic focused investment should read as a real, noticeable bonus, not a token +1-3%');
+  assert.equal(mid.cappedCount, 3);
+});
+
+test('Fish Codex bonus is chained onto getStats()/getStatBreakdown() the same way Rune 2.0 chains onto Codex', () => {
   // Fresh state: no bonus yet.
   assert.equal(state.fishCodexStatMult(), 1);
   const baselineHp = state.getStats().hp;
-  // Grant full completion directly through the same __settlement3 meta the runtime itself owns.
+  // Grant a focused investment (one maxed master) directly through the same __settlement3 meta the runtime itself owns.
   const meta = (state.data.settlementBuildings ??= {})['__settlement3'] ??= {};
-  meta.fishing = { codex: Object.fromEntries(FISH_SPECIES.map((f) => [f.id, { seen: true, caught: 1 }])) };
-  assert.equal(state.fishCodexSummary().seen, FISH_SPECIES.length);
-  assert.ok(state.fishCodexStatMult() > 1.03 && state.fishCodexStatMult() < 1.031);
-  assert.ok(state.getStats().hp >= baselineHp, 'full Fish Codex completion must never lower a stat');
+  meta.fishing = { codex: { frontier_nushi: { seen: true, caught: 20 } } };
+  assert.ok(state.fishCodexStatMult() > 1.09 && state.fishCodexStatMult() < 1.11, 'one maxed master fish alone should be a clearly noticeable ~+10% bonus');
+  assert.ok(state.getStats().hp > baselineHp, 'the bonus must actually raise stats through the real getStats() pipeline');
   const breakdown = state.getStatBreakdown('hp');
   assert.ok('fish' in breakdown, 'getStatBreakdown must report a separate fish component, like it already does for codex/rune');
   // clean up so this test does not leak state into other tests in the same process
