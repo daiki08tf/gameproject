@@ -1,2173 +1,38 @@
-/* ============================================================
-   BattleEngineï¼ˆãƒ†ã‚­ã‚¹ãƒˆæˆ¦é—˜ã¸ã®ç§»è¡Œï¼šæˆ¦é—˜ãƒ«ãƒ¼ãƒ«ãƒ»è¨ˆç®—ã®ã¿ã‚’æ‹…å½“ï¼‰
-   ------------------------------------------------------------
-   æ—§ battle.jsï¼ˆBattleScreenï¼‰ã¯ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ Canvasæˆ¦é—˜ã®ãƒ­ã‚¸ãƒƒã‚¯ã¨
-   æç”»ãƒ»å…¥åŠ›ï¼ˆCanvas/Joystick/requestAnimationFrameï¼‰ã‚’1ã‚¯ãƒ©ã‚¹ã«
-   ã¾ã¨ã‚ã¦ã„ãŸã€‚ä»Šå›ã®ãƒ†ã‚­ã‚¹ãƒˆæˆ¦é—˜ç§»è¡Œã§ã¯ã€è²¬å‹™ã‚’
-     BattleEngine   â€¦ æˆ¦é—˜ãƒ«ãƒ¼ãƒ«ãƒ»ãƒ€ãƒ¡ãƒ¼ã‚¸è¨ˆç®—ãƒ»çŠ¶æ…‹ç®¡ç†ï¼ˆDOMéä¾å­˜ï¼‰
-     BattleLog      â€¦ EngineãŒè¿”ã™event[]ã‚’æ—¥æœ¬èªã®æ–‡ç« ã¸å¤‰æ›
-     TextBattleScreen â€¦ ç”»é¢è¡¨ç¤ºãƒ»ã‚³ãƒãƒ³ãƒ‰å…¥åŠ›ï¼ˆjs/screens/textBattle.jsï¼‰
-   ã«åˆ†é›¢ã™ã‚‹ã€‚PR#2ã§å†è¨­è¨ˆã—ãŸDamage Bucketãƒ»æ¯”ç‡å‹DEFè»½æ¸›ãƒ»
-   CAPS_LAYERãƒ»æœ¬ç·¨Enemy Scalingãƒ»æ·±æ·µPiecewise Scalingãƒ»Boss AI Profile
-   ã¯ä¸€åˆ‡å¤‰æ›´ã›ãšã€ãã®ã¾ã¾å‘¼ã³å‡ºã™ï¼ˆã“ã®ãƒ•ã‚¡ã‚¤ãƒ«ã¯æ–°ã—ã„è¨ˆç®—å¼ã‚’
-   ä¸€åˆ‡å°å…¥ã—ãªã„ï¼‰ã€‚
-
-   ã‚¿ãƒ¼ãƒ³åˆ¶ã¸ã®å¤‰æ›æ–¹é‡ï¼ˆå…ƒæŒ‡ç¤º5ãƒ»6ãƒ»7ç•ªï¼‰ï¼š
-   - SPDï¼šæ—§æ¥ã¯Attack Intervalï¼ˆå®Ÿæ™‚é–“ã®æ”»æ’ƒé–“éš”ï¼‰ã«ä½¿ã‚ã‚Œã¦ã„ãŸãŒã€
-     ãƒ†ã‚­ã‚¹ãƒˆæˆ¦é—˜ã§ã¯ã€Œinitiative = spd + å°ã•ãªä¹±æ•°ã€ã§1ãƒ©ã‚¦ãƒ³ãƒ‰ã”ã¨ã®
-     å…ˆæ”»/å¾Œæ”»ã‚’æ±ºã‚ã‚‹ï¼ˆãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ vs æ•µã‚°ãƒ«ãƒ¼ãƒ—ã®ä»£è¡¨SPDï¼‰ã€‚
-   - Bossäºˆå…†ï¼ˆå®Ÿæ™‚é–“0.9ç§’ï¼‰â†’ã€Œäºˆå…†ã‚¿ãƒ¼ãƒ³ã€ï¼šãã®ã‚¿ãƒ¼ãƒ³ã¯æ”»æ’ƒã›ãš
-     å®£è¨€ã ã‘è¡Œã„ã€æ¬¡ã®Bossã®æ‰‹ç•ªã§å®Ÿéš›ã«ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ä¸ãˆã‚‹ã€‚
-   - å„ç¨®ç§’æ•°ï¼ˆSLAM_INTERVAL_SECç­‰ï¼‰ã¯ helper `roundsFromSeconds()` ã§
-     ã€ŒãŠãŠã‚ˆã3ç§’=1ã‚¿ãƒ¼ãƒ³ã€ã¨ã—ã¦ã‚¿ãƒ¼ãƒ³æ•°ã«å¤‰æ›ã™ã‚‹ï¼ˆBOSS_AI_LAYERè‡ªä½“ã¯
-     å¤‰æ›´ã—ãªã„ã€‚æ¶ˆè²»ã™ã‚‹å´ã§ã‚¿ãƒ¼ãƒ³æ›ç®—ã™ã‚‹ã ã‘ï¼‰ã€‚
-   - è¢«å¼¾æ™‚ã®ç„¡æ•µæ™‚é–“ï¼ˆinvulnï¼‰ãƒ»æ¥è§¦ã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³ï¼ˆcontactCooldownï¼‰ã¯ã€
-     1ãƒ©ã‚¦ãƒ³ãƒ‰ã«ã¤ãã€Œæ•µ1ä½“ï¼1å›ã ã‘æ”»æ’ƒã€ã¨ã„ã†ã‚¿ãƒ¼ãƒ³åˆ¶ã®æ§‹é€ ä¸Š
-     è‡ªç„¶ã«ä¸è¦ã«ãªã‚‹ãŸã‚å®Ÿè£…ã—ãªã„ï¼ˆåŒã˜ç†ç”±ã§x/yåº§æ¨™ãƒ»ç§»å‹•ãƒ»Projectile
-     ã®å®Ÿå¼¾é£›ç¿”ãªã©ã‚‚ä¸è¦ã€‚äºˆå…†â†’æ¬¡ã‚¿ãƒ¼ãƒ³ã§ç€å¼¾ã€ã¨ã„ã†æ™‚é–“æ§‹é€ ã ã‘ã‚’æµç”¨ï¼‰ã€‚
-   ============================================================ */
-import { state } from './state.js';
-import { findStage } from './data/stages.js';
-import { ENEMY_TYPES } from './data/enemies.js';
-import { getItem, RARITY, rarityIndex } from './data/equipment.js';
-import { getRune } from './data/runes.js';
-import { DAMAGE_BUCKET, ECONOMY, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER, CAPS_LAYER, BOSS_AI_LAYER, resolveBossAIProfile, TEXT_BATTLE_LAYER } from './data/balance.js';
-import { getBlessing } from './data/blessings.js';
-import { weaponDropPoolForStage, bossWeaponForChapter } from './data/weapons.js';
-import { sumPassivePower } from './data/combatStats.js';
-import { hasRareAffix, highestAffixRarity } from './data/affixes.js';
-
-const rand = (a, b) => a + Math.random() * (b - a);
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-
-// 1ãƒ©ã‚¦ãƒ³ãƒ‰ â‰’ 3ç§’ã€ã¨ã„ã†ç·©ã„æ›ç®—ã§BOSS_AI_LAYERã®ç§’æ•°ã‚’ã‚¿ãƒ¼ãƒ³æ•°ã¸å¤‰æ›ã™ã‚‹ã€‚
-// balance.jsè‡ªä½“ï¼ˆPR#2ã®åˆ°é”ç‰©ï¼‰ã¯ä¸€åˆ‡å¤‰æ›´ã—ãªã„ã€‚
-function roundsFromSeconds(sec) {
-  return Math.max(1, Math.round(sec / TEXT_BATTLE_LAYER.SECONDS_PER_ROUND));
-}
-
-// ãƒ†ã‚­ã‚¹ãƒˆæˆ¦é—˜ã§ä¸€åº¦ã«è¡¨ç¤ºãƒ»é¸æŠã™ã‚‹æ•µã®æ•°ã®ä¸Šé™ï¼ˆå…ƒæŒ‡ç¤º10ç•ªï¼šWaveæ§‹æˆã¯
-// ç¶­æŒã—ã¤ã¤ã€ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ã®æ™‚é–“å·®Spawnã¯ä¸è¦ã¨ã„ã†æŒ‡ç¤ºã‚’åæ˜ ï¼‰ã€‚
-// æ·±æ·µæ·±éƒ¨ã§ã¯waveå†…ã®é ­æ•°ãŒæ•°åä½“ã«é”ã™ã‚‹ã“ã¨ãŒã‚ã‚‹ãŸã‚ï¼ˆPR#2ãƒ¬ãƒ“ãƒ¥ãƒ¼ã§
-// å‡ºç¾æ•°ä¸Šé™ã‚’å¼•ãä¸Šã’ãŸå½±éŸ¿ï¼‰ã€1ã¤ã®é­é‡ï¼ˆencounterï¼‰ã‚ãŸã‚Šã®è¡¨ç¤ºæ•°ã‚’
-// ã“ã‚Œã§åŒºåˆ‡ã‚Šã€åŒã˜ç¨®é¡ã®æ•µã‚’è¤‡æ•°ã®é­é‡ã«åˆ†å‰²ã™ã‚‹ã€‚ç·æ•°ãƒ»çµ„æˆãƒ‡ãƒ¼ã‚¿
-// è‡ªä½“ã¯å¤‰ãˆãªã„ã€‚
-const ENCOUNTER_GROUP_SIZE = TEXT_BATTLE_LAYER.ENCOUNTER_GROUP_SIZE;
-
-// è¾²æ°‘MASTERã€Œç™¾å§“é­‚ã€ï¼š1æˆ¦1å›ã ã‘ã€è‡´æ­»ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ä½ç¢ºç‡ã§è€ãˆã‚‹ï¼ˆHP1ã§ç”Ÿå­˜ï¼‰ã€‚
-// ç¢ºå®šå›é¿ã‚„ç„¡é™å¾©æ´»ã«ã¯ã—ãªã„ï¼ˆå…ƒæŒ‡ç¤ºï¼šå£Šã‚ŒãŸæŠ€ã‚’é¿ã‘ã‚‹ï¼‰ã€‚
-const FARMER_SURVIVE_CHANCE = 0.3;
-
-export class BattleEngine {
-  constructor(stageId, blessingId) {
-    const found = findStage(stageId, state.data.riftKeys || []);
-    if (!found && stageId.startsWith('rift-')) throw Object.assign(new Error('è£‚ç•ŒéµãŒè¦‹ã¤ã‹ã‚‰ãªã„ã‹ã€ä½¿ç”¨ã§ãã¾ã›ã‚“ã€‚'), { code: 'RIFT_KEY_UNAVAILABLE' });
-    if (!found) throw new Error(`unknown stage: ${stageId}`);
-    this.stage = found.stage;
-    this.chapter = found.chapter;
-    this.blessing = this.stage.isAbyss ? getBlessing(blessingId) : null;
-    this._abyssReviveUsed = false;
-
-    const stats = state.getStats();
-    this.player = {
-      hp: stats.hp, maxHp: stats.hp,
-      mp: stats.mp, maxMp: stats.mp,
-      atk: stats.atk, def: stats.def, mag: stats.mag, spd: stats.spd, critPct: stats.critPct,
-      armorPen: stats.armorPen || 0, evasion: stats.evasion || 0,
-      guarding: false,
-      // è·æ¥­ã¨ãããƒ»ã˜ã‚…ã‚‚ã‚“å®Ÿè£…ï¼šæ±ç”¨ãƒãƒ•æ§‹é€ ï¼ˆå…ƒæŒ‡ç¤ºã€Œã©ã†ã—ã¦ã‚‚å¿…è¦ãª
-      // ã‚‚ã®ã ã‘BattleEngineå´ã«æ±ç”¨statusæ§‹é€ ã‚’è¿½åŠ ã€ï¼‰ã€‚æ—§buffAtkMult/
-      // buffDefMult/buffTurnsï¼ˆATKãƒ»DEFãŒå¸¸ã«åŒã˜1æœ¬ã®ã‚¿ã‚¤ãƒãƒ¼ã§é€£å‹•ã™ã‚‹
-      // è¨­è¨ˆï¼‰ã‚’ã€ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã”ã¨ã«ç‹¬ç«‹ã—ãŸã‚¿ãƒ¼ãƒ³ä»˜ããƒãƒ•ã¸ä¸€èˆ¬åŒ–ã—ãŸã€‚
-      // atk/def/spd/magã¯multï¼ˆ1.0åŸºæº–ã®å€ç‡ï¼‰ã€critAdd/evasionAdd/regenAddã¯
-      // åŠ ç®—å€¤ï¼ˆCAPS_LAYERå´ã®ä¸Šé™ã¯é©ç”¨å´ã®_effectiveXxx()ã§å¿…ãšé ­æ‰“ã¡ã™ã‚‹ï¼‰ã€‚
-      buffs: {
-        atk: { mult: 1, turnsLeft: 0 }, def: { mult: 1, turnsLeft: 0 },
-        spd: { mult: 1, turnsLeft: 0 }, mag: { mult: 1, turnsLeft: 0 },
-        critAdd: { value: 0, turnsLeft: 0 }, evasionAdd: { value: 0, turnsLeft: 0 },
-        regenAdd: { value: 0, turnsLeft: 0 },
-      },
-      // ã‚¬ãƒ¼ãƒ‰è»½æ¸›ç‡ã®ä¸€æ™‚çš„ãªä¸Šæ›¸ãï¼ˆå¤§å·¥ã€Œå—ã‘æµã—ã€ã€Œè¦å¡åŒ–ã€ç”¨ï¼‰ã€‚
-      // nullï¼é€šå¸¸ã®TEXT_BATTLE_LAYER.GUARD_DAMAGE_MULTã‚’ä½¿ã†ã€‚
-      guardOverrideMult: null, guardOverrideTurns: 0,
-      // ç¾çŠ¶ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸weaken/DoTç›¸å½“ã‚’ä¸ãˆã‚‹æ•µå´ã®æ‰‹æ®µã¯å­˜åœ¨ã—ãªã„ãŸã‚ã€
-      // åƒ§ä¾¶ã€Œæµ„åŒ–ã€ç”¨ã®ç©ºã®ã‚¹ã‚­ãƒ£ãƒ•ã‚©ãƒ¼ãƒ«ãƒ‰ã¨ã—ã¦ã®ã¿ä¿æŒã™ã‚‹ï¼ˆå°†æ¥Bossç­‰ãŒ
-      // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å¼±ä½“åŒ–ã•ã›ã‚‹æ‰‹æ®µã‚’æŒã£ãŸéš›ã«ã“ã“ã¸æ›¸ãè¾¼ã‚€æƒ³å®šï¼‰ã€‚
-      negativeStatus: { weaken: {}, dotStacks: 0, dotTurnsLeft: 0 },
-      // é­”å°æŠ€å¸«ã€Œè‡ªå‹•ç ²å°ã€ï¼šè¨­ç½®ä¸­ã¯_afterRoundChecks()ã§ãƒ©ã‚¦ãƒ³ãƒ‰çµ‚äº†æ™‚ã«
-      // 1å›ã ã‘è‡ªå‹•ã§è¿½æ’ƒã™ã‚‹ï¼ˆæ–°è¦summonãƒ»å®Ÿå¼¾ã¯ä½œã‚‰ãšã€æ—¢å­˜ã®
-      // calculateDamage/_applyRawDamageAndRewardã‚’ãã®ã¾ã¾å‘¼ã¶ã ã‘ã®è»½é‡tickï¼‰
-      autoTurret: null,
-    };
-    if (this.blessing) {
-      const b = this.blessing;
-      if (b.kind === 'atkMult') this.player.atk = Math.round(this.player.atk * (1 + b.power));
-      else if (b.kind === 'defMult') this.player.def = Math.round(this.player.def * (1 + b.power));
-      else if (b.kind === 'spdMult') this.player.spd = Math.round(this.player.spd * (1 + b.power));
-      else if (b.kind === 'critAdd') this.player.critPct += b.power;
-      else if (b.kind === 'hpMult') {
-        this.player.maxHp = Math.round(this.player.maxHp * (1 + b.power));
-        this.player.hp = this.player.maxHp;
-      }
-    }
-
-    this.job = state.currentJob;
-    // C1 å…ˆé™£: æˆ¦é—˜ä¸­ã ã‘ä¿æŒã™ã‚‹Pressureã€‚ä¿å­˜ãƒ»è‚²æˆauthorityã«ã¯è§¦ã‚Œãªã„ã€‚
-    this._c1Pressure = 0;
-    this._c1LastElement = null;
-    this.effects = state.getEquippedEffects();
-    for (const eff of this.effects) {
-      if (eff.kind === 'glassCannon' && eff.hpMult) {
-        this.player.maxHp = Math.max(1, Math.round(this.player.maxHp * (1 + eff.hpMult)));
-        this.player.hp = Math.min(this.player.hp, this.player.maxHp);
-      }
-    }
-    const equippedWeapon = getItem(state.data.equipped.weapon);
-    this.weaponType = equippedWeapon ? equippedWeapon.weaponType : null;
-
-    this.awakenMult = 1;
-    this._regenPower = 0;
-    this._hitCounters = {};
-    this._actionProcCounts = {}; // æ­¦å™¨Affixï¼ˆPart Aï¼‰procæš´èµ°é˜²æ­¢ï¼š1ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã”ã¨ã«ãƒªã‚»ãƒƒãƒˆ
-    this._tempAtkBonus = 0;
-    this._tempAtkTurns = 0;
-    this._bloodChaliceBonus = 0;
-    this._bloodChaliceTurns = 0;
-    this._hasteInitiativeBonus = 0; // å…ƒã€Œhasteã€ï¼ˆonHurtï¼‰ï¼šSPD/å…ˆæ”»ãƒœãƒ¼ãƒŠã‚¹ã¸è»¢ç”¨ï¼ˆå…ƒæŒ‡ç¤º5ç•ªï¼‰
-    this._hasteInitiativeTurns = 0;
-    this._actionTypesUsed = new Set(); // actionDiversityBurstç”¨ï¼ˆé€šå¸¸/ã¨ãã/ã˜ã‚…ã‚‚ã‚“ï¼‰
-    this._bossWeaponDropped = false;
-    // ã¨ãããƒ»ã˜ã‚…ã‚‚ã‚“ã®ã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³ã€‚1æŠ€=1ã‚¹ãƒ­ãƒƒãƒˆå‰æã ã£ãŸæ—§_skillCdTurns
-    // ï¼ˆå˜ä¸€ã®æ•°å€¤ï¼‰ã‹ã‚‰ã€æŠ€IDã”ã¨ã«å€‹åˆ¥ã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³ã‚’æŒã¦ã‚‹Mapã¸å¤‰æ›´ã—ãŸ
-    // ï¼ˆå…ƒæŒ‡ç¤ºï¼šMap/objectã¸ã®å¤‰æ›´ï¼‰ã€‚
-    this.skillCooldowns = {};
-    this._skillCooldownsSetThisRound = new Set();
-    // å•†äººãƒ»è¾²æ°‘ã®ä¸€æ™‚çš„ãªGoldç²å¾—ãƒœãƒ¼ãƒŠã‚¹ï¼ˆå•†é­‚ï¼å¤§åç©«ï¼‰
-    this._tempGoldBonus = 0; this._tempGoldBonusTurns = 0;
-    // ç‹©äººã€Œç£ç‹©ã‚Šã€ï¼šBoss/Eliteé™å®šã®ä¸€æ™‚çš„ãªä¸ãƒ€ãƒ¡ãƒ¼ã‚¸åŠ ç®—
-    this._tempBossDmgBonus = 0; this._tempBossDmgTurns = 0;
-    // å­¦è€…MASTERã€Œå®Œå…¨è§£æã€ï¼šä¸ãƒ€ãƒ¡ãƒ¼ã‚¸å…¨èˆ¬ã¸ã®ä¸€æ™‚åŠ ç®—
-    this._tempDmgBonus = 0; this._tempDmgBonusTurns = 0;
-    // è¾²æ°‘MASTERã€Œç™¾å§“é­‚ã€ï¼š1æˆ¦1å›ã€ä½ç¢ºç‡ã§è‡´æ­»ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’è€ãˆã‚‹
-    this._farmerSurviveUsed = false;
-    // ç›—è³Šã€Œç›—ã‚€ã€ï¼šå¯¾è±¡ã”ã¨ã«1æˆ¦1å›ã ã‘æˆç«‹ã•ã›ã‚‹ãŸã‚ã€ç›—ã‚“ã æ•µã®idã‚’è¨˜éŒ²ã™ã‚‹
-    this._stolenEnemyIds = new Set();
-
-    /* --------------------------------------------------------
-       ã“ã“ã‹ã‚‰ä¸Šç´šè·30ç¨®ï¼ˆç¬¬2ãƒ•ã‚§ãƒ¼ã‚ºï¼‰å‘ã‘ã«è¿½åŠ ã—ãŸçŠ¶æ…‹ã€‚
-       ã„ãšã‚Œã‚‚ã€Œæ—¢å­˜ã®ä¸€æ™‚ãƒãƒ•ï¼ä¸€æ™‚ãƒœãƒ¼ãƒŠã‚¹ã¨åŒã˜turnsç®¡ç†ã®è–„ã„ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã€
-       ã§ã‚ã‚Šã€æ–°ã—ã„çŠ¶æ…‹ç•°å¸¸ã‚·ã‚¹ãƒ†ãƒ ã§ã¯ãªã„ï¼ˆå…ƒæŒ‡ç¤ºï¼šã©ã†ã—ã¦ã‚‚å¿…è¦ãª
-       ã‚‚ã®ã ã‘æ±ç”¨status/buffæ§‹é€ ã¸è¿½åŠ ã™ã‚‹ï¼‰ã€‚
-       -------------------------------------------------------- */
-    // é­”æ³•å‰£å£«MASTERã€Œé­”åŠ›å‰£ã€ï¼šæ•°ã‚¿ãƒ¼ãƒ³ã€é€šå¸¸æ”»æ’ƒã«ã‚‚MAGè£œæ­£ã‚’è¿½åŠ ã™ã‚‹
-    this._tempHybridMagRatio = 0; this._tempHybridMagTurns = 0;
-    // å¤§å•†äºº/å¤§å·¥ç³»ã€Œå€¤åˆ‡ã‚Šã€ï¼šGoldæ¶ˆè²»æŠ€ã®ã‚³ã‚¹ãƒˆã‚’ä¸€æ™‚çš„ã«å‰²ã‚Šå¼•ã
-    this._tempGoldCostReduce = 0; this._tempGoldCostReduceTurns = 0;
-    // ãƒˆãƒ¬ã‚¸ãƒ£ãƒ¼ãƒãƒ³ã‚¿ãƒ¼ã€Œç›®åˆ©ãã€ãƒ»å¤§å•†äººã€Œé‘‘å®šçœ¼ã€ï¼šæˆ¦é—˜ä¸­ã ã‘ãƒ‰ãƒ­ãƒƒãƒ—ç‡ã‚’åº•ä¸Šã’
-    this._tempDropRateBonus = 0; this._tempDropRateBonusTurns = 0;
-    // ã‚¢ãƒ«ã‚«ãƒ‹ã‚¹ãƒˆã€ŒéŒ¬æˆé™£ã€ç­‰ï¼šè‡ªåˆ†ãŒã‹ã‘ã‚‹weaken/dotã®åŠ¹æœé‡ã‚’ä¸€æ™‚çš„ã«åº•ä¸Šã’
-    this._tempDebuffPowerBonus = 0; this._tempDebuffPowerBonusTurns = 0;
-    // èªã‚Šéƒ¨ã€Œä¼èª¬ã®ä¸€ç¯€ã€ï¼šæ•°ã‚¿ãƒ¼ãƒ³çµŒé¨“å€¤å–å¾—ã‚’åº•ä¸Šã’
-    this._tempExpBonus = 0; this._tempExpBonusTurns = 0;
-    // ã‚¢ãƒ¼ãƒ ã‚ºãƒŠã‚¤ãƒˆMASTERã€Œå®Œå…¨æ­¦è£…ã€ï¼šArmor Penã¸ã®ä¸€æ™‚åŠ ç®—
-    this._tempArmorPenBonus = 0; this._tempArmorPenTurns = 0;
-    // è³¢è€…MASTERã€Œé€£ç¶šè© å”±ã€ï¼šæ¬¡ã«å”±ãˆã‚‹spell1å›ã ã‘2å›ç™ºå‹•ã•ã›ã‚‹äºˆç´„ãƒ•ãƒ©ã‚°
-    this._doubleCastArmed = false;
-    // å‰£è±ªã€Œå±…åˆã€ãƒ»å¯†åµã€Œå¥‡è¥²ã€ç­‰ï¼šã“ã®ãƒ©ã‚¦ãƒ³ãƒ‰å…ˆæ”»ã—ãŸã‹ï¼ˆadvanceTurnå´ã§è¨­å®šï¼‰
-    this._lastPlayerFirst = false;
-    // æ€ªç›—MASTERã€ŒèƒŒå¾Œã®ä¸€æ’ƒã€ï¼šç›´å‰ã«æ•µã®æ”»æ’ƒã‚’å›é¿ã—ã¦ã„ãŸã‹
-    this._playerEvadedLastRound = false;
-    // å¹»æƒ‘ã®èˆå§«MASTERã€Œå¤¢å¹»ä¹±èˆã€ï¼šæˆ¦é—˜ä¸­ã«å›é¿ã¸æˆåŠŸã—ãŸç´¯è¨ˆå›æ•°
-    this._playerEvasionCount = 0;
-    // æ‹³è–ã€Œé€£ç’°æ‹³ã€ï¼šç›´å‰ã®è‡ªåˆ†ã®è¡Œå‹•ãŒæ”»æ’ƒç³»ï¼ˆé€šå¸¸æ”»æ’ƒ or damageæŠ€ï¼‰ã ã£ãŸã‹
-    this._lastActionWasAttack = false;
-    // ãƒˆãƒ¬ã‚¸ãƒ£ãƒ¼ãƒãƒ³ã‚¿ãƒ¼ã€Œç™ºæ˜ã€ãƒ»å¤§å•†äººã€Œå¸‚å ´æ”¯é…ã€ï¼šæˆ¦é—˜ã‚¯ãƒªã‚¢æ™‚ã«1å›ã ã‘
-    // è¿½åŠ å ±é…¬ã‚’åˆ¤å®šã™ã‚‹äºˆç´„ï¼ˆ{goldPct, dropChance}ï¼‰ã€‚æ—¢å­˜_rollDrop()ã®ã¿ã‚’
-    // ä½¿ã†ãŸã‚Bosså›ºæœ‰æ­¦å™¨ãƒ»åˆå›ã‚¯ãƒªã‚¢å ±é…¬ï¼ˆåˆ¥çµŒè·¯ï¼‰ã¯å¯¾è±¡å¤–ï¼ç„¡é™å¢—æ®–ã—ãªã„
-    this._battleEndBonusReward = null;
-    // ãƒˆãƒ¬ã‚¸ãƒ£ãƒ¼ãƒãƒ³ã‚¿ãƒ¼MASTERã€Œå¤§ç™ºè¦‹ã€ãƒ»æ‘ã®ç™’ã—æ‰‹MASTERã€Œæ‘äººã®å¥‡è·¡ã€ç­‰ã€
-    // æŠ€IDå˜ä½ã§ã€Œ1æˆ¦1å›ã€ã‚’å³å¯†ã«ä¿è¨¼ã™ã‚‹æ±ç”¨ã‚»ãƒƒãƒˆï¼ˆ_probeTechnique/
-    // _playerTechniqueå´ã§å…±é€šã«å‚ç…§ã™ã‚‹ï¼‰
-    this._oncePerBattleUsed = new Set();
-    // ãƒ‘ãƒ©ãƒ‡ã‚£ãƒ³MASTERã€Œä¸è½ã®èª“ã„ã€ï¼šè‡´æ­»ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’1æˆ¦1å›ã ã‘è€ãˆã‚‹æ¨©åˆ©ã‚’
-    // æŠ€ã®ä½¿ç”¨æ™‚ã«ã€Œèµ·å‹•ã€ã™ã‚‹ï¼ˆè¾²æ°‘ã®ç™¾å§“é­‚ï¼å¸¸æ™‚ãƒ‘ãƒƒã‚·ãƒ–ã¨ã¯ç•°ãªã‚Šã€
-    // ä½¿ã£ãŸæ™‚ã ã‘æœ‰åŠ¹ã«ãªã‚‹ï¼‰ã€‚checkBattleEnd()ã§ã¯æ·±æ·µè˜‡ç”Ÿâ†’ç™¾å§“é­‚â†’
-    // ã“ã®é †ã§åˆ¤å®šã—ã€é‡è¤‡ç™ºå‹•ã—ãªã„ã‚ˆã†ã«ã™ã‚‹
-    this._paladinDeathGuardArmed = false;
-    this._paladinSurviveUsed = false;
-
-    this.runExp = 0;
-    this.runGold = 0;
-    this.runItems = [];
-    this.boss = null;
-
-    // Waveæ§‹æˆï¼ˆå…ƒæŒ‡ç¤º10ç•ªï¼‰ï¼šæ—¢å­˜ã®stage.wavesã¯ãã®ã¾ã¾ä½¿ã„ã€ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ã®
-    // æ™‚é–“å·®Spawnã ã‘ã‚’å»ƒæ­¢ã—ã¦ã€Œ1ã¤ã®é­é‡ï¼ˆencounterï¼‰ã‚°ãƒ«ãƒ¼ãƒ—ã€ã®åˆ—ã¸
-    // å¤‰æ›ã™ã‚‹ã€‚1ã‚°ãƒ«ãƒ¼ãƒ—ã®é ­æ•°ã¯ENCOUNTER_GROUP_SIZEã§åŒºåˆ‡ã‚‹ãŒã€ç·æ•°ãƒ»
-    // çµ„æˆãƒ‡ãƒ¼ã‚¿è‡ªä½“ã¯å¤‰ãˆãªã„ã€‚
-    this.encounterQueue = [];
-    for (const wave of this.stage.waves) {
-      let remaining = wave.count;
-      while (remaining > 0) {
-        const n = Math.min(ENCOUNTER_GROUP_SIZE, remaining);
-        this.encounterQueue.push({ type: wave.type, count: n });
-        remaining -= n;
-      }
-    }
-    this.totalToDefeat = this.stage.waves.reduce((s, w) => s + w.count, 0);
-    this.defeated = 0;
-    this.enemies = []; // ç¾åœ¨ã®é­é‡ã‚°ãƒ«ãƒ¼ãƒ—ï¼ˆç”Ÿå­˜è€…ã®ã¿æ®‹ã™ï¼‰
-    this.round = 0;
-    this.over = false;
-    this.finalResult = null;
-    // Resolve and initialize first; previews and failed initialization never spend a key.
-    if (this.stage.isRift && !state.consumeRiftKey?.(this.stage.riftKey.id)) {
-      throw Object.assign(new Error('è£‚ç•ŒéµãŒè¦‹ã¤ã‹ã‚‰ãªã„ã‹ã€ä½¿ç”¨ã§ãã¾ã›ã‚“ã€‚'), { code: 'RIFT_KEY_UNAVAILABLE' });
-    }
-  }
-
-  // ---------------------------------------------------------
-  // é­é‡ï¼ˆencounterï¼‰ã‚°ãƒ«ãƒ¼ãƒ—ã®é–‹å§‹
-  // ---------------------------------------------------------
-  hasMoreEncounters() {
-    return this.encounterQueue.length > 0 || this.enemies.some((e) => !e.dead);
-  }
-
-  // ç¾åœ¨ã®ã‚°ãƒ«ãƒ¼ãƒ—ã‚’å…¨æ»…ã•ã›ã€ã‹ã¤æ¬¡ã®ã‚°ãƒ«ãƒ¼ãƒ—ãŒæ§ãˆã¦ã„ã‚‹å ´åˆã«å‘¼ã¶ã€‚
-  // ã€Œã€œãŒ2ä½“ ã€œãŒ1ä½“ ã‚ã‚‰ã‚ã‚ŒãŸï¼ã€ã®å®£è¨€ã‚¤ãƒ™ãƒ³ãƒˆã‚’è¿”ã™ï¼ˆå…ƒæŒ‡ç¤º10ç•ªï¼‰ã€‚
-  beginNextEncounter() {
-    const spec = this.encounterQueue.shift();
-    if (!spec) return null;
-    const group = [];
-    for (let i = 0; i < spec.count; i++) group.push(this._spawnEnemy(spec.type));
-    this.enemies = group;
-    // TextBattleScreenå´ãŒã€Œã‚³ãƒãƒ³ãƒ‰ã‚’é¸ã¶å‰ã«æ•µã®å§¿ã‚’è¦‹ã›ã‚‹ã€ãŸã‚ã«ã“ã®ãƒ¡ã‚½ãƒƒãƒ‰ã‚’
-    // advanceTurn()ã‚ˆã‚Šå‰ã«å‘¼ã‚“ã§ãŠã‘ã‚‹ï¼ˆè¡¨ç¤ºå°‚ç”¨ã®å‘¼ã³å‡ºã—ï¼‰ã‚ˆã†ã«ã€ã“ã®
-    // ã‚°ãƒ«ãƒ¼ãƒ—ãŒã€Œå‡ºç¾ç›´å¾Œã§çŒ¶äºˆãƒ©ã‚¦ãƒ³ãƒ‰ãŒå¿…è¦ã€ã§ã‚ã‚‹ã“ã¨ã‚’ã“ã“ã«è¨˜éŒ²ã—ã¦ãŠãã€
-    // advanceTurn()å´ã¯ã€Œã“ã®ãƒ©ã‚¦ãƒ³ãƒ‰ä¸­ã«beginNextEncounterã‚’å‘¼ã‚“ã ã‹ã€ã§ã¯ãªã
-    // ã“ã®ãƒ•ãƒ©ã‚°ã§åˆ¤å®šã™ã‚‹ã€‚ã“ã†ã™ã‚‹ã“ã¨ã§ã€UIãŒå…ˆã«è¡¨ç¤ºã ã‘ã—ã¦ãŠã„ã¦ã‚‚ã€
-        // ç¶šããƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æœ€åˆã®ã‚³ãƒãƒ³ãƒ‰ã®1ãƒ©ã‚¦ãƒ³ãƒ‰ç›®ã¯ã“ã‚Œã¾ã§é€šã‚Šæ•µãŒ
-    // ã¾ã å‹•ã‹ãªã„çŒ¶äºˆãƒ©ã‚¦ãƒ³ãƒ‰ã®ã¾ã¾ä¿ãŸã‚Œã€æ—¢å­˜ã®è¼ƒæ­£æ¸ˆã¿ãƒãƒ©ãƒ³ã‚¹ã¯å¤‰ã‚ã‚‰ãªã„ã€‚
-    this._freshGroupPending = true;
-    return { type: 'encounterStart', enemies: group.map((e) => ({ id: e.id, name: e.name, boss: e.boss, elite: e.elite })) };
-  }
-
-  _spawnEnemy(type) {
-    const t = ENEMY_TYPES[type];
-    let hp = t.hp, atk = t.atk, def = t.def, spd = t.speed;
-    let xp = t.xp, gold = t.gold;
-    let elite = false;
-
-    // æ·±æ·µæ‹¡å¼µï¼šãƒ¢ãƒ‡ã‚£ãƒ•ã‚¡ã‚¤ã‚¢ç”±æ¥ã®æ•µå¼·åŒ–ï¼‹ã‚¨ãƒªãƒ¼ãƒˆåŒ–æŠ½é¸ï¼ˆå…ƒã®battle.jsã¨åŒä¸€ãƒ­ã‚¸ãƒƒã‚¯ï¼‰
-    if (this.stage.isAbyss && !t.boss) {
-      hp = Math.round(hp * (this.stage.enemyHpMult || 1));
-      atk = Math.round(atk * this._riskMult(this.stage.enemyAtkMult || 1));
-      def = Math.round(def * this._riskMult(this.stage.enemyDefMult || 1));
-      spd = Math.round(spd * this._riskMult(this.stage.enemySpeedMult || 1));
-
-      if (Math.random() < state.abyssEliteChance(this.stage.abyssDepth)) {
-        elite = true;
-        hp = Math.round(hp * ABYSS_EXPANSION_LAYER.ELITE_HP_MULT);
-        atk = Math.round(atk * ABYSS_EXPANSION_LAYER.ELITE_ATK_MULT);
-        def = Math.round(def * ABYSS_EXPANSION_LAYER.ELITE_DEF_MULT);
-        const rewardMult = ABYSS_EXPANSION_LAYER.ELITE_REWARD_MULT * state.abyssEliteRewardMult();
-        xp = Math.round(xp * rewardMult);
-        gold = Math.round(gold * rewardMult);
-      }
-    }
-
-    const enemy = {
-      id: `${type}_${this._nextEnemyId = (this._nextEnemyId || 0) + 1}`,
-      type, name: t.name, boss: !!t.boss, elite,
-      hp, maxHp: hp, atk, def, spd,
-      xp, gold, dead: false,
-      weaken: null, dotStacks: 0, dotTurnsLeft: 0, dotPower: 0, frozenTurns: 0,
-    };
-    if (enemy.boss) {
-      // Boss AI Profileï¼ˆå…ƒæŒ‡ç¤º8ç•ªï¼‰ï¼šã“ã®è§£æ±ºãƒ­ã‚¸ãƒƒã‚¯è‡ªä½“ã¯battle.jsã¨å®Œå…¨ã«
-      // åŒä¸€ï¼ˆresolveBossAIProfileã¯ä¸€åˆ‡å¤‰æ›´ã—ãªã„ï¼‰ã€‚ã‚¿ã‚¤ãƒãƒ¼ã ã‘ç§’æ•°ã‹ã‚‰
-      // ã‚¿ãƒ¼ãƒ³æ•°ã¸å¤‰æ›ã™ã‚‹ã€‚
-      const profile = resolveBossAIProfile(type, this.chapter ? this.chapter.num : null, !!this.stage.isAbyss);
-      enemy.aiPhase = 1;
-      enemy.aiProfile = profile;
-      if (profile.slam) enemy.slamTurns = roundsFromSeconds(BOSS_AI_LAYER.SLAM_INTERVAL_SEC);
-      if (profile.charge) enemy.chargeTurns = roundsFromSeconds(BOSS_AI_LAYER.CHARGE_INTERVAL_SEC);
-      if (profile.projectile) enemy.projectileTurns = roundsFromSeconds(BOSS_AI_LAYER.PROJECTILE_INTERVAL_SEC);
-      if (profile.summon) enemy.summonTurns = roundsFromSeconds(BOSS_AI_LAYER.SUMMON_INTERVAL_SEC);
-      enemy.pendingSpecial = null; // äºˆå…†ã‚¿ãƒ¼ãƒ³ä¸­ã®æ”»æ’ƒç¨®åˆ¥ï¼ˆå…ƒæŒ‡ç¤º7ç•ªï¼‰
-      this.boss = enemy;
-    }
-    return enemy;
-  }
-
-  _riskMult(mult) {
-    if (mult <= 1 || !this.stage.isAbyss) return mult;
-    const resistPct = state.abyssModifierResistPct();
-    return 1 + (mult - 1) * (1 - resistPct);
-  }
-
-  get aliveEnemies() { return this.enemies.filter((e) => !e.dead); }
-
-  // ---------------------------------------------------------
-  // æœ‰åŠ¹ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ï¼ˆplayer.buffsã®ä¸€æ™‚ãƒãƒ•ã‚’åæ˜ ã—ãŸå€¤ï¼‰ã€‚é€šå¸¸æ”»æ’ƒãƒ»ã¨ãããƒ»
-  // ã˜ã‚…ã‚‚ã‚“ãƒ»initiativeåˆ¤å®šãƒ»å›é¿åˆ¤å®šãªã©ã€ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’èª­ã‚€
-  // ç®‡æ‰€ã¯å…¨ã¦ã“ã“ã‚’çµŒç”±ã™ã‚‹ï¼ˆå…ƒæŒ‡ç¤ºï¼šCAPS_LAYERã®ä¸Šé™ã‚’å¿…ãšå³å®ˆã™ã‚‹ï¼‰ã€‚
-  // ---------------------------------------------------------
-  _effectiveAtk() { const b = this.player.buffs.atk; return this.player.atk * (b.turnsLeft > 0 ? b.mult : 1); }
-  _effectiveMag() { const b = this.player.buffs.mag; return this.player.mag * (b.turnsLeft > 0 ? b.mult : 1); }
-  _effectiveDef() { const b = this.player.buffs.def; return this.player.def * (b.turnsLeft > 0 ? b.mult : 1); }
-  // Build Affixã€Œæ­»ç·šã€ï¼šHPãŒé–¾å€¤ä»¥ä¸‹ã®é–“ã ã‘SPDã‚‚åº•ä¸Šã’ã™ã‚‹
-  _effectiveSpd() {
-    const b = this.player.buffs.spd;
-    let spd = this.player.spd * (b.turnsLeft > 0 ? b.mult : 1);
-    spd *= 1 + this._deathlineBonus('spd');
-    return spd;
-  }
-  _hpRatio() { return this.player.maxHp > 0 ? this.player.hp / this.player.maxHp : 1; }
-  _deathlineBonus(which) {
-    let bonus = 0;
-    const hpRatio = this._hpRatio();
-    for (const eff of this._effectsOf('passive')) {
-      if (eff.kind === 'deathlineBoost' && hpRatio <= eff.threshold) bonus += eff.power;
-    }
-    return bonus;
-  }
-  _effectiveCritPct() {
-    const b = this.player.buffs.critAdd;
-    // Build Affixã€Œæ­»ç·šã€ï¼šHPé–¾å€¤ä»¥ä¸‹ã§Critã‚‚åº•ä¸Šã’ï¼ˆpercentage pointæ›ç®—ï¼‰
-    const deathline = this._deathlineBonus('crit') * 100;
-    return Math.min(CAPS_LAYER.CRIT_PCT_MAX, this.player.critPct + (b.turnsLeft > 0 ? b.value : 0) + deathline);
-  }
-  _effectiveEvasion() {
-    const b = this.player.buffs.evasionAdd;
-    return Math.min(CAPS_LAYER.EVASION_MAX, (this.player.evasion || 0) + (b.turnsLeft > 0 ? b.value : 0));
-  }
-  // ã‚¢ãƒ¼ãƒ ã‚ºãƒŠã‚¤ãƒˆMASTERã€Œå®Œå…¨æ­¦è£…ã€ç”¨ï¼šæ—¢å­˜player.armorPenã¸ã®ä¸€æ™‚åŠ ç®—ã‚’
-  // ä¸€ç®‡æ‰€ã§åæ˜ ã™ã‚‹ï¼ˆé€šå¸¸æ”»æ’ƒãƒ»ã¨ãããƒ»ã˜ã‚…ã‚‚ã‚“ã®å…¨çµŒè·¯ãŒã“ã“ã‚’çµŒç”±ã™ã‚‹ï¼‰
-  _effectiveArmorPen() {
-    return Math.min(CAPS_LAYER.ARMOR_PEN_MAX, (this.player.armorPen || 0) + (this._tempArmorPenTurns > 0 ? this._tempArmorPenBonus : 0));
-  }
-
-  // ãƒ‘ãƒ©ãƒ‡ã‚£ãƒ³ã€Œè–ç›¾ã€ãƒ»å‰£è±ªMASTERã€Œç„¡å¿ƒæ–¬ã€ãƒ»å·«å¥³MASTERã€Œç¥è¨—ã€ç­‰ï¼šBossäºˆå…†
-  // ï¼ˆæ—¢å­˜pendingSpecialï¼‰ãŒå‡ºã¦ã„ã‚‹é–“ã ã‘å¼·åŒ–ã•ã‚Œã‚‹æŠ€ã§å…±é€šã—ã¦ä½¿ã†åˆ¤å®š
-  _hasActiveTelegraph() { return this.aliveEnemies.some((e) => e.pendingSpecial); }
-
-  // è‡ªå·±å‚ç…§ï¼ˆãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ»æˆ¦æ³å´ï¼‰ã®æ¡ä»¶ã§å¨åŠ›ã‚’ä¸Šä¹—ã›ã™ã‚‹æŠ€ï¼ˆå±…åˆãƒ»å¥‡è¥²ãƒ»
-  // èƒŒå¾Œã®ä¸€æ’ƒãƒ»ç„¡å¿ƒæ–¬ãƒ»é€£ç’°æ‹³ãƒ»èƒŒæ°´æ‹³ç­‰ï¼‰ãŒå…±é€šã§ä½¿ã†åˆ¤å®šã€‚targetå´ã®æ¡ä»¶ã¯
-  // åˆ¥é€”_targetBonusPower()ã§æ‰±ã†ï¼ˆæ–°ã—ã„çŠ¶æ…‹ç•°å¸¸ã‚·ã‚¹ãƒ†ãƒ ã§ã¯ãªãã€æ—¢å­˜ã®
-  // ãƒ•ãƒ©ã‚°ãƒ»ã‚«ã‚¦ãƒ³ã‚¿ã‚’èª­ã‚€ã ã‘ã®è–„ã„ãƒ˜ãƒ«ãƒ‘ãƒ¼ï¼‰
-  _conditionMet(cb) {
-    if (!cb) return false;
-    switch (cb.condition) {
-      case 'playerFirst': return !!this._lastPlayerFirst;
-      case 'evadedLastRound': return !!this._playerEvadedLastRound;
-      case 'firstOrEvaded': return !!this._lastPlayerFirst || !!this._playerEvadedLastRound;
-      case 'telegraphActive': return this._hasActiveTelegraph();
-      case 'prevActionAttack': return !!this._lastActionWasAttack;
-      case 'highEvasion': return this._effectiveEvasion() >= (cb.evasionThreshold != null ? cb.evasionThreshold : 0.15);
-      default: return false;
-    }
-  }
-
-  // å¯¾è±¡ï¼ˆæ•µï¼‰å´ã®çŠ¶æ…‹ã§å¨åŠ›ã‚’ä¸Šä¹—ã›ã™ã‚‹æŠ€ï¼ˆçŒ›ç£ä½¿ã„ãƒ»æš—æ®ºæ‹³ãƒ»å¯†åµãƒ»
-  // ç‹©çŒŸç‹ç­‰ï¼‰ãŒå…±é€šã§ä½¿ã†åˆ¤å®šã€‚'marked'ã¯ç‹©çŒŸç‹ã€Œç‹©äººã®å°ã€ãŒåˆ»ã‚€
-  // enemy.vulnerableï¼ˆæ—¢å­˜weakenã¨åŒã˜å½¢ã®è¿½åŠ ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ï¼‰ã‚’è¦‹ã‚‹
-  _targetBonusPower(tb, target) {
-    if (!tb || !target) return 0;
-    switch (tb.when) {
-      case 'bossOrElite': return (target.boss || target.elite) ? tb.power : 0;
-      case 'lowHp': return (target.maxHp > 0 && target.hp / target.maxHp <= (tb.hpThreshold != null ? tb.hpThreshold : 0.5)) ? tb.power : 0;
-      case 'debuffed': return ((target.weaken && Object.keys(target.weaken).length > 0) || (target.dotStacks || 0) > 0) ? tb.power : 0;
-      case 'marked': return (target.vulnerable && target.vulnerable.turnsLeft > 0) ? tb.power : 0;
-      default: return 0;
-    }
-  }
-
-  // ---------------------------------------------------------
-  // ãƒ€ãƒ¡ãƒ¼ã‚¸è¨ˆç®—ï¼ˆPR#2ã®Damage Bucketã‚’ãã®ã¾ã¾æµç”¨ã€‚æ–°å¼ã¯ä½œã‚‰ãªã„ï¼‰
-  // ---------------------------------------------------------
-  _effectsOf(trigger) { return this.effects.filter((e) => e.trigger === trigger); }
-
-  // sourceKind: 'normal'|'skill'|'spell' ã‚’æ¸¡ã™ã¨ã€æ­¦å™¨Affixï¼ˆPart Aï¼‰ã®
-  // ã€Œé€šå¸¸æ”»æ’ƒ/ã¨ãã/ã˜ã‚…ã‚‚ã‚“Damage+ã€ï¼ˆnormalDmgAdd/skillDmgAdd/
-  // spellDmgAddï¼‰ã®ã†ã¡è©²å½“ã™ã‚‹ã‚‚ã®ã ã‘ã‚’è¿½åŠ ã§ä¹—ã›ã‚‹ï¼ˆçœç•¥æ™‚ã¯ç„¡è¦–ï¼
-  // AoEåæ’ƒãƒ»è‡ªå‹•ç ²å°ç­‰ã®æ—¢å­˜å‘¼ã³å‡ºã—ã¯ä»Šã¾ã§é€šã‚Šï¼‰
-  _mainDmgMult(sourceKind) {
-    const bloodChaliceMult = this._bloodChaliceTurns > 0 ? 1 + this._bloodChaliceBonus : 1;
-    const tempAtkMult = this._tempAtkTurns > 0 ? 1 + this._tempAtkBonus : 1;
-    // ATKãƒãƒ•ã¯player.buffs.atkï¼ˆ_effectiveAtk()ï¼‰å´ã¸ç§»å‹•ã—ãŸãŸã‚ã€ã“ã“ã§ã¯
-    // åŠ ç®—ã—ãªã„ï¼ˆæ—§buffAtkMultã®é …ã‚’ã“ã“ã‹ã‚‰é™¤å»ï¼‰ã€‚å­¦è€…MASTERã€Œå®Œå…¨è§£æã€ã®
-    // ä¸€æ™‚çš„ãªä¸ãƒ€ãƒ¡ãƒ¼ã‚¸åŠ ç®—ã ã‘ã€æ—¢å­˜ã®åŠ ç®—ãƒã‚±ãƒƒãƒˆæ–¹å¼ã«ãªã‚‰ã£ã¦è¿½åŠ ã™ã‚‹ã€‚
-    let mult = 1
-      + (this.awakenMult - 1)
-      + (bloodChaliceMult - 1)
-      + (tempAtkMult - 1)
-      + (this._tempDmgBonusTurns > 0 ? this._tempDmgBonus : 0);
-    // Observed Branches M6 / NULL ROOT: the fixed identity turns the absence
-    // of recovery gear into offense. This stays inside the existing passive
-    // Damage bucket; it does not add a second proc/Option pipeline.
-    const regenBuff = this.player?.buffs?.regenAdd;
-    const recoveryActive = this._regenPower > 0
-      || (regenBuff?.turnsLeft > 0 && regenBuff.value > 0)
-      || this.effects.some((eff) => ['regen','lifesteal','lifestealLowHp','healOnCrit','guardianHeal','healOnKill','healOnGuard'].includes(eff.kind));
-    for (const eff of this._effectsOf('passive')) {
-      if (eff.kind === 'noRecoveryDmgBonus' && !recoveryActive) mult += eff.power;
-      else if (eff.kind === 'dmgBonusAdd') mult += eff.power;
-      else if (sourceKind === 'normal' && eff.kind === 'normalDmgAdd') mult += eff.power;
-      else if (sourceKind === 'skill' && eff.kind === 'skillDmgAdd') mult += eff.power;
-      else if (sourceKind === 'spell' && eff.kind === 'spellDmgAdd') mult += eff.power;
-      // Build Affixã€Œæ—©æ’ƒã¡ã€ï¼šã“ã®ãƒ©ã‚¦ãƒ³ãƒ‰è‡ªåˆ†ãŒå…ˆæ”»ã—ã¦ã„ã‚Œã°Damageã‚‚ä¸Šä¹—ã›
-      else if (eff.kind === 'firstStrikeBonus' && this._lastPlayerFirst) mult += eff.power;
-    }
-    return mult;
-  }
-
-  _critDamageBoostMult() {
-    let mult = 1;
-    for (const eff of this._effectsOf('passive')) if (eff.kind === 'critDamageBoost') mult += eff.power;
-    return mult;
-  }
-
-  _bossDmgMult(target) {
-    let bonus = state.awakeningBossDmgMult() - 1;
-    const debuffed = target && ((target.weaken && Object.keys(target.weaken).length > 0) || (target.dotStacks || 0) > 0);
-    for (const eff of this._effectsOf('passive')) {
-      // bossDmgã¯æ—¢å­˜æŒ™å‹•ã©ãŠã‚ŠBoss/Eliteä¸¡æ–¹ã«é©ç”¨ã™ã‚‹ï¼ˆå…ƒæŒ‡ç¤ºï¼šæ—¢å­˜ã®
-      // åˆ¤å®šæ¡ä»¶ã‚’å¤‰æ›´ã—ãªã„ï¼‰ã€‚eliteDmgã¯Affixè¿½åŠ åˆ†ã§Eliteé™å®šã«ä¸Šä¹—ã›ã™ã‚‹
-      if (eff.kind === 'bossDmg') bonus += eff.power;
-      if (eff.kind === 'eliteDmg' && target && target.elite) bonus += eff.power;
-      if (eff.kind === 'executioner' && target && target.maxHp > 0 && target.hp / target.maxHp <= eff.hpThreshold) bonus += eff.power;
-      // æ­¦å™¨Affixã€Œå¼±æ¯’æ’ƒã€ï¼šweaken/DoTãŒä¹—ã£ã¦ã„ã‚‹ç›¸æ‰‹ã¸ã®Damage+
-      if (eff.kind === 'debuffedDmg' && debuffed) bonus += eff.power;
-      // Build Affixã€Œæ¯’å¿ƒã€ï¼šDoTã‚¹ã‚¿ãƒƒã‚¯æ•°ã«æ¯”ä¾‹ã—ã¦Damage+
-      if (eff.kind === 'dotStackDmg' && target) bonus += eff.power * (target.dotStacks || 0);
-    }
-    // ç‹©äººã€Œç£ç‹©ã‚Šã€ï¼šBoss/Eliteé™å®šã®ä¸€æ™‚çš„ãªä¸ãƒ€ãƒ¡ãƒ¼ã‚¸åŠ ç®—
-    if (this._tempBossDmgTurns > 0 && target && (target.boss || target.elite)) bonus += this._tempBossDmgBonus;
-    return 1 + bonus;
-  }
-
-  _effectiveEnemyStat(enemy, stat) {
-    const base = enemy[stat];
-    const w = enemy.weaken && enemy.weaken[stat];
-    if (w && w.turnsLeft > 0) return base * (1 - w.power);
-    return base;
-  }
-
-  // weaken/burnStackã®é©ç”¨å‡¦ç†ã‚’1ç®‡æ‰€ã«é›†ç´„ã™ã‚‹ã€‚è£…å‚™å›ºæœ‰åŠ¹æœï¼ˆ_applyOneEffectï¼‰
-  // ã¨è·æ¥­ã¨ãããƒ»ã˜ã‚…ã‚‚ã‚“ï¼ˆskills.js/spells.jsã®weaken/dotãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ï¼‰ã®
-  // ã©ã¡ã‚‰ã‹ã‚‰å‘¼ã°ã‚Œã¦ã‚‚ã€åŒã˜enemy.weaken/dotStacksæ§‹é€ ã¸æ›¸ãè¾¼ã‚€
-  // ï¼ˆæ–°ã—ã„çŠ¶æ…‹ç•°å¸¸ã‚·ã‚¹ãƒ†ãƒ ã‚’å¢—ã‚„ã•ãšã€æ—¢å­˜ã®ä»•çµ„ã¿ã¸åˆæµã•ã›ã‚‹ï¼‰ã€‚
-  // ã‚¢ãƒ«ã‚«ãƒ‹ã‚¹ãƒˆã€ŒéŒ¬æˆé™£ã€ãƒ»MASTERã€Œè³¢è€…ã®è§¦åª’ã€ï¼šè‡ªåˆ†ãŒã‹ã‘ã‚‹weaken/dotã®
-  // åŠ¹æœé‡ã‚’ä¸€æ™‚çš„ã«åº•ä¸Šã’ã™ã‚‹ï¼ˆ_tempDebuffPowerBonusï¼‰ã€‚ä¸¡ãƒ¡ã‚½ãƒƒãƒ‰ã‚’é€šã‚‹
-  // çµŒè·¯ã™ã¹ã¦ï¼ˆè£…å‚™å›ºæœ‰åŠ¹æœãƒ»åŸºæœ¬è·skills.jsãƒ»ä¸Šç´šè·skills.jsï¼‰ã¸è‡ªå‹•ã§ä¹—ã‚‹
-  // æ­¦å™¨Affixã€Œå¼±ç‚¹çœ‹ç ´ã®å¿ƒå¾—ã€ï¼šå¼±ä½“åŒ–/DoTä»˜ä¸ã®åŠ¹æœé‡ã‚’æ’å¸¸çš„ã«åº•ä¸Šã’ã™ã‚‹
-  _debuffPowerMult() {
-    const temp = this._tempDebuffPowerBonusTurns > 0 ? this._tempDebuffPowerBonus : 0;
-    return 1 + temp + sumPassivePower(this.effects, 'debuffPowerAdd');
-  }
-  _applyWeakenToTarget(target, stat, power, turnsLeft) {
-    if (!target || target.dead) return;
-    target.weaken = target.weaken || {};
-    target.weaken[stat] = { power: power * this._debuffPowerMult(), turnsLeft };
-  }
-  // æ­¦å™¨Affixã€Œä¾µè•ã€ã€Œç©æ¯’ã€ï¼šDoTã®æŒç¶šã‚¿ãƒ¼ãƒ³ãƒ»æœ€å¤§ã‚¹ã‚¿ãƒƒã‚¯æ•°ã‚’åº•ä¸Šã’ã™ã‚‹
-  _dotDurationMult() { return 1 + sumPassivePower(this.effects, 'dotDuration'); }
-  _dotStackCapMult() { return 1 + sumPassivePower(this.effects, 'dotStackCap'); }
-  _applyDotToTarget(target, power, turnsLeft, maxStacks = 99) {
-    if (!target || target.dead) return;
-    const cap = Math.max(1, Math.round(maxStacks * this._dotStackCapMult()));
-    target.dotStacks = Math.min(cap, (target.dotStacks || 0) + 1);
-    target.dotTurnsLeft = Math.max(1, Math.round(turnsLeft * this._dotDurationMult()));
-    target.dotPower = power * this._debuffPowerMult();
-  }
-  // æ˜Ÿè© ã¿ã®é­”å¥³ã€Œæ˜Ÿè•ã€ãƒ»å¹»è¡“å¸«ã€Œå¹»è¦šã€ç­‰ï¼šweakenã‚’é…åˆ—ï¼ˆè¤‡æ•°ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ï¼‰ã§ã‚‚
-  // å˜ä¸€ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã‚‚å—ç†ã§ãã‚‹ã‚ˆã†ä¸€èˆ¬åŒ–ã—ãŸå…±é€šãƒ˜ãƒ«ãƒ‘ãƒ¼
-  _applyWeakenList(target, weaken, bossMultiplierTarget) {
-    const list = Array.isArray(weaken) ? weaken : [weaken];
-    const applied = [];
-    for (const w of list) {
-      let pct = w.pct;
-      if (bossMultiplierTarget && bossMultiplierTarget.boss && w.bossMultiplier != null) pct *= w.bossMultiplier;
-      this._applyWeakenToTarget(target, w.stat, pct, w.turns);
-      applied.push({ stat: w.stat, pct });
-    }
-    return applied;
-  }
-
-  // calculateDamage(): æ”»æ’ƒå´atkãƒ»é˜²å¾¡å´defã‹ã‚‰æœ€çµ‚ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ç®—å‡ºã™ã‚‹ã€‚
-  // PR#2ã®æ¯”ç‡å‹DEFè»½æ¸›ãƒ»CAPS_LAYER.DEF_MITIGATION_MAXãƒ»ä¼šå¿ƒãƒ»Bosså€ç‡ã‚’
-  // ãã®ã¾ã¾è¸è¥²ã™ã‚‹ï¼ˆjs/battle.jsæ—§_rollDamage()ã¨æ•°å¼ã¯å®Œå…¨ã«åŒä¸€ï¼‰ã€‚
-  calculateDamage(atk, target, opts = {}) {
-    const rawDef = target ? this._effectiveEnemyStat(target, 'def') : 0;
-    const armorPen = opts.armorPen != null ? opts.armorPen : this._effectiveArmorPen();
-    const effectiveDef = rawDef * (1 - armorPen);
-    const mitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectiveDef / (effectiveDef + DAMAGE_BUCKET.MITIGATION_K));
-    let dmg = Math.max(1, atk * (1 - mitigation));
-    const critPct = opts.critPct != null ? opts.critPct : this._effectiveCritPct();
-    const critical = Math.random() * 100 < critPct;
-    if (critical) dmg *= DAMAGE_BUCKET.CRIT_MULTIPLIER * this._critDamageBoostMult();
-    // ç‹©äººã€Œç£ç‹©ã‚Šã€ï¼ˆBoss/Eliteç‰¹åŠ¹ï¼‰ã«å¯¾å¿œã™ã‚‹ãŸã‚ã€æ—¢å­˜ã®bossDmg/executioner
-    // åˆ¤å®šæ¡ä»¶ã‚’eliteå«ã¿ã«åºƒã’ã‚‹ï¼ˆBossé™å®šã ã£ãŸæ—¢å­˜ã®æŒ™å‹•è‡ªä½“ã¯å¤‰ãˆãªã„ï¼
-    // target.boss===trueã®å ´åˆã¯å¾“æ¥ã©ãŠã‚Šå¿…ãšé©ç”¨ã•ã‚Œã‚‹ã€‚target.elite===true
-    // ã®ã‚±ãƒ¼ã‚¹ã ã‘ãŒæ–°ãŸã«å¯¾è±¡ã«åŠ ã‚ã‚‹ï¼‰ã€‚
-    if (target && (target.boss || target.elite) && !opts.noBossMult) dmg *= this._bossDmgMult(target);
-    // ç‹©çŒŸç‹ã€Œç‹©äººã®å°ã€ï¼šãƒãƒ¼ã‚¯ä¸­ã®ç›¸æ‰‹ã¸ã®ä¸€å¾‹ãƒ€ãƒ¡ãƒ¼ã‚¸å¢—åŠ ã€‚æ—¢å­˜weakenã¨
-    // å¯¾ã«ãªã‚‹æ–°ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰enemy.vulnerableã ã‘ã‚’è¦‹ã‚‹è–„ã„è¿½åŠ ï¼ˆæ–°ã—ã„çŠ¶æ…‹
-    // ç•°å¸¸ã‚·ã‚¹ãƒ†ãƒ ã‚’ä½œã‚‰ãšã€æ—¢å­˜ã®ãƒ€ãƒ¡ãƒ¼ã‚¸è¨ˆç®—ã®æœ€å¾Œã«1é …è¶³ã™ã ã‘ï¼‰
-    if (target && target.vulnerable && target.vulnerable.turnsLeft > 0) dmg *= (1 + target.vulnerable.pct);
-    return { damage: Math.round(dmg), critical };
-  }
-
-  // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼DEFã«å¯¾ã™ã‚‹æ•µæ”»æ’ƒã®è»½æ¸›ï¼ˆjs/battle.jsæ—§_updateEnemiesæ¥è§¦
-  // ãƒ€ãƒ¡ãƒ¼ã‚¸ãƒ»Bossç‰¹æ®Šæ”»æ’ƒã¨åŒã˜æ¯”ç‡å¼ï¼‰ã€‚guardMultiplierã¯åˆ¥æ ã§æ›ã‘ã‚‹
-  // ï¼ˆå…ƒæŒ‡ç¤º6ç•ªï¼šã€Œæœ€çµ‚è¢«ãƒ€ãƒ¡ãƒ¼ã‚¸Ã—guardMultiplierã€ã¨ã—ã¦ã€DEFè»½æ¸›ã¨ã¯
-  // ç‹¬ç«‹ã«å‡¦ç†ã™ã‚‹ï¼‰ã€‚
-  _enemyAttackDamage(atk, opts = {}) {
-    const effectiveDef = this._effectiveDef();
-    const mitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectiveDef / (effectiveDef + DAMAGE_BUCKET.MITIGATION_K));
-    let dmg = Math.max(1, atk * (1 - mitigation));
-    if (opts.mult == null) {
-      // opts.multãŒæŒ‡å®šã•ã‚Œãªã„ï¼äºˆå…†ã‚’çµŒãªã„ã€Œé€šå¸¸æ”»æ’ƒã€ï¼ˆBossã®é€šå¸¸æ”»æ’ƒå«ã‚€ï¼‰ã€‚
-      // å®Ÿæ™‚é–“ã®ã€Œç§»å‹•ã«ã‚ˆã‚‹å›é¿ã€ã¶ã‚“ã‚’è£œæ­£ã™ã‚‹NORMAL_ATTACK_DAMAGE_MULTã¯
-      // ã“ã“ã«ã®ã¿æ›ã‘ã‚‹ã€‚
-      dmg *= TEXT_BATTLE_LAYER.NORMAL_ATTACK_DAMAGE_MULT;
-    } else {
-      // ChatGPTãƒ¬ãƒ“ãƒ¥ãƒ¼æŒ‡æ‘˜3ç•ªï¼šäºˆå…†ã¤ãã®Bossç‰¹æ®Šæ”»æ’ƒã€‚BOSS_AI_LAYERã®
-      // SLAM/CHARGE/PROJECTILE_DAMAGE_MULTï¼ˆopts.multï¼‰ã¯å®Ÿæ™‚é–“ã®AoEå½“ãŸã‚Š
-      // åˆ¤å®šåŸºæº–ã®å€¤ãªã®ã§ã€ãã®ã¾ã¾ç´ ã®atkã«æ›ã‘ã‚‹ã ã‘ã§ã¯ã€Œé€šå¸¸æ”»æ’ƒ1å›
-      // ã¶ã‚“ã€ã®åŸºæº–ï¼ˆNORMAL_ATTACK_DAMAGE_MULTé©ç”¨å¾Œï¼‰ã‚ˆã‚Šè»½ããªã£ã¦ã—ã¾ã„ã€
-      // äºˆå…†ã®æ„å‘³ãŒè–„ã‚Œã‚‹ã€‚é€šå¸¸æ”»æ’ƒã¨åŒã˜åŸºæº–ã«è¼‰ã›æ›¿ãˆãŸã†ãˆã§ã€
-      // TELEGRAPH_MULT_SCALEã§ç‹™ã£ãŸå¼·å¼±ï¼ˆslam/charge/projectileã®ç›¸å¯¾æ¯”ã¯
-      // BOSS_AI_LAYERå´ã®å€¤ã‚’ãã®ã¾ã¾æ´»ã‹ã™ï¼‰ã«å¼•ãä¸Šã’ã‚‹ã€‚
-      dmg *= TEXT_BATTLE_LAYER.NORMAL_ATTACK_DAMAGE_MULT * opts.mult * TEXT_BATTLE_LAYER.TELEGRAPH_MULT_SCALE;
-      // æ­¦å™¨Affixã€Œå¯¾æ€ªç•°ã®å¿ƒå¾—ã€ï¼šBossç‰¹æ®Šæ”»æ’ƒã‚’å¸¸ã«ä¸€å®šå‰²åˆè»½æ¸›ã™ã‚‹
-      dmg *= 1 - Math.min(0.5, sumPassivePower(this.effects, 'bossSpecialMitigation'));
-      // Build Affixã€Œé­”å°é˜²å£ã€ï¼šMPãŒä¸€å®šå‰²åˆä»¥ä¸Šæ®‹ã£ã¦ã„ã‚‹é–“ã ã‘ã€Bossç‰¹æ®Š
-      // æ”»æ’ƒã‚’ã•ã‚‰ã«è»½æ¸›ã™ã‚‹ï¼ˆMPã‚’ç¶­æŒã™ã‚‹ãƒ—ãƒ¬ã‚¤ã‚¹ã‚¿ã‚¤ãƒ«ã¸ã®ã‚³ã‚¹ãƒˆã«ãªã‚‹ï¼‰
-      for (const eff of this._effectsOf('passive')) {
-        if (eff.kind === 'mpShield' && this.player.maxMp > 0 && this.player.mp / this.player.maxMp >= eff.threshold) dmg *= 1 - eff.power;
-      }
-    }
-    // å¤§å·¥ã€Œå—ã‘æµã—ã€ã€Œè¦å¡åŒ–ã€ï¼šé€šå¸¸ã®GUARD_DAMAGE_MULTã‚ˆã‚Šå¼·ã„è»½æ¸›ç‡ã‚’
-    // ä¸€æ™‚çš„ã«ä½¿ã†ï¼ˆguardOverrideMultãŒnullã®é–“ã¯å¾“æ¥ã©ãŠã‚Šï¼‰ã€‚å®Œå…¨ç„¡æ•µã«ã¯
-    // ãªã‚‰ãªã„ã‚ˆã†ã€guardOverrideMultè‡ªä½“ã‚‚0ã‚ˆã‚Šå¤§ãã„å€¤ã®ã¿ã‚’skills.jså´ã§
-    // å®šç¾©ã—ã¦ã„ã‚‹ã€‚
-    if (this.player.guarding) {
-      dmg *= this.player.guardOverrideMult != null ? this.player.guardOverrideMult : TEXT_BATTLE_LAYER.GUARD_DAMAGE_MULT;
-      // æ­¦å™¨Affixã€Œè¦å¡ã®å¿ƒå¾—ã€ï¼šã¼ã†ãã‚‡è»½æ¸›ç‡ã‚’ã•ã‚‰ã«åº•ä¸Šã’ã™ã‚‹ï¼ˆ0ã«ã¯ã—ãªã„ï¼‰
-      dmg *= Math.max(0.1, 1 - sumPassivePower(this.effects, 'guardMitigation'));
-    }
-    return Math.max(1, Math.round(dmg));
-  }
-
-  // ---------------------------------------------------------
-  // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼è¡Œå‹•
-  // ---------------------------------------------------------
-  performPlayerAction(action) {
-    // æ­¦å™¨Affixï¼ˆPart Aï¼‰procæš´èµ°é˜²æ­¢ï¼š1ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã”ã¨ã«perActionCapã®
-    // ã‚«ã‚¦ãƒ³ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹
-    this._actionProcCounts = {};
-    if (action.type === 'attack') return this._playerAttack(action.targetId);
-    if (action.type === 'guard') return this._playerGuard();
-    if (action.type === 'flee') return this._playerFlee();
-    if (action.type === 'skill') return this._playerTechnique('skill', action.techId, action.targetId);
-    if (action.type === 'spell') return this._playerTechnique('spell', action.techId, action.targetId);
-    return { action: action.type, noop: true };
-  }
-
-  _pickTarget(targetId) {
-    const alive = this.aliveEnemies;
-    if (targetId) {
-      const found = alive.find((e) => e.id === targetId);
-      if (found) return found;
-    }
-    return alive[0] || null;
-  }
-
-  // å…ƒinstructionã®Attack Intervalï¼ˆå®Ÿæ™‚é–“ã®æ”»æ’ƒé–“éš”ï¼‰ã‚’ãã®ã¾ã¾æµç”¨ã™ã‚‹
-  // ï¼ˆæ—§battle.js _updatePlayer()ã¨åŒä¸€ã®å¼ï¼‰ã€‚1ãƒ©ã‚¦ãƒ³ãƒ‰ï¼
-  // TEXT_BATTLE_LAYER.SECONDS_PER_ROUNDç§’ç›¸å½“ã¨ã¿ãªã—ã€ãã®é–“ã«ä½•å›
-  // æ”»æ’ƒã§ããŸã‹ã‚’hitCountã¨ã—ã¦ã€Œ1å›ã®ã“ã†ã’ãã‚³ãƒãƒ³ãƒ‰ã€ã«ã¾ã¨ã‚ã¦
-  // åæ˜ ã™ã‚‹ï¼ˆå…ƒæŒ‡ç¤º5ç•ªï¼šSPD/æ”»æ’ƒé€Ÿåº¦ã‚’ã€Œé€£ç¶šè¡Œå‹•ã€ã¸ç™ºå±•ã•ã›ã‚‹ç¬¬ä¸€æ­©ï¼‰ã€‚
-  // ã“ã†ã—ãªã„ã¨ã€PR#2ã§ç§’å˜ä½ã®TTKã¨ã—ã¦è¼ƒæ­£ã—ãŸæ•µHPã«å¯¾ã—ã€ã‚¿ãƒ¼ãƒ³åˆ¶ã®
-  // ã€Œ1ãƒ©ã‚¦ãƒ³ãƒ‰1å›æ”»æ’ƒã€ã§ã¯æ‰‹æ•°ãŒè¶³ã‚Šãšæœ¬æ¥ã®å¼·ã•ã§æ”»ç•¥ã§ããªããªã‚‹
-  // ï¼ˆå®Ÿéš›ã«3ç« ãƒ»5ç« ã®ä¸­å‹/tankæ•µã§æ¤œè¨¼ä¸­ã«ç™ºè¦šã—ã€ã“ã®å¯¾å¿œã§è§£æ¶ˆã—ãŸï¼‰ã€‚
-  _playerAttackCooldown() {
-    // æ­¦å™¨Affixã€Œç¬æ’ƒã®å¿ƒå¾—ã€ï¼šæ”»æ’ƒé–“éš”ã‚’ã•ã‚‰ã«çŸ­ç¸®ã™ã‚‹ï¼ˆä¸‹é™ã¯æ—¢å­˜è¸è¥²ï¼‰
-    const atkSpeedMult = 1 - Math.min(0.5, sumPassivePower(this.effects, 'atkSpeedAdd'));
-    return clamp((1.0 - this._effectiveSpd() * 0.012) * atkSpeedMult, CAPS_LAYER.ATTACK_INTERVAL_MIN, 1.1);
-  }
-  _playerHitsPerRound() {
-    return Math.max(1, Math.round(TEXT_BATTLE_LAYER.SECONDS_PER_ROUND / this._playerAttackCooldown()));
-  }
-
-  _playerAttack(targetId) {
-    const target = this._pickTarget(targetId);
-    if (!target) return { action: 'attack', noTarget: true };
-    this.player.guarding = false;
-    let hitCount = this._playerHitsPerRound();
-    // è»¢ç”Ÿéºç‰©ã€Œç‹‚æˆ¦å£«ã®å¿ƒè‡“ã€ï¼šHPä¸€å®šå‰²åˆä»¥ä¸‹ã§2å›æ”»æ’ƒï¼ˆå®Ÿæ™‚é–“ç‰ˆã®
-    // ã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³çŸ­ç¸®ã®ä»£ã‚ã‚Šã«ã€ã“ã¡ã‚‰ã®æ ¸å¿ƒæŒ™å‹•ã‚’ã‚¿ãƒ¼ãƒ³åˆ¶ã§ã‚‚ç¶­æŒã™ã‚‹ï¼‰
-    const berserkerDoubled = !!this._berserkerDoubleAttack;
-    if (berserkerDoubled) hitCount *= 2;
-    // é­”æ³•å‰£å£«MASTERã€Œé­”åŠ›å‰£ã€ï¼šæ•°ã‚¿ãƒ¼ãƒ³ã ã‘é€šå¸¸æ”»æ’ƒã«ã‚‚MAGè£œæ­£ã‚’è¿½åŠ ã™ã‚‹
-    // ï¼ˆæ°¸ç¶šåŒ–ã—ãªã„ã‚ˆã†å¿…ãšturnsã§ç®¡ç†ã•ã‚ŒãŸä¸€æ™‚ãƒœãƒ¼ãƒŠã‚¹ã®ã¿ã‚’è¦‹ã‚‹ï¼‰
-    const hybridBonus = this._tempHybridMagTurns > 0 ? this._effectiveMag() * this._tempHybridMagRatio : 0;
-    const atkValue = (this._effectiveAtk() + hybridBonus) * this._mainDmgMult('normal');
-    // ChatGPTãƒ¬ãƒ“ãƒ¥ãƒ¼æŒ‡æ‘˜1ç•ªï¼šmulti-hitã¯1ç™ºã”ã¨ã«ç‹¬ç«‹ã—ã¦ä¼šå¿ƒåˆ¤å®šãƒ»
-    // ãƒ€ãƒ¡ãƒ¼ã‚¸ä¹±æ•°ã‚’æŒ¯ã‚Šï¼ˆåˆ†æ•£ã‚’å®Ÿæ™‚é–“ç›¸å½“ã«ä¿ã¤ï¼‰ã€ã‹ã¤1ç™ºã”ã¨ã«
-    // _applyDamageToEnemy()ã‚’å‘¼ã‚“ã§onHit/onCritã‚’ãã®å ´ã§ç™ºç«ã•ã›ã‚‹
-    // ï¼ˆä»¥å‰ã¯å…¨hitåˆ†ã‚’åˆç®—ã—ãŸ1ã¤ã®dmgã§ã¾ã¨ã‚ã¦1å›ã ã‘é©ç”¨ã—ã¦ãŠã‚Šã€
-    // ã€Œ1hitã”ã¨ã«ç™ºå‹•ã™ã¹ãonHit/onCritã€ãŒæ­£ã—ãç™ºç«ã—ãªã„ãƒ»lifestealç­‰
-    // ã®1å‘½ä¸­å˜ä½ã®ä¸Šé™ã‚‚å…¨hitåˆ†ã‚’ã¾ã¨ã‚ã¦é£Ÿã„æ½°ã™ä¸å…·åˆãŒã‚ã£ãŸï¼‰ã€‚
-    // æ•µãŒé€”ä¸­ã®hitã§æ­»äº¡ã—ãŸã‚‰ã€ä»¥é™ã®hitã¯è¡Œã‚ãšãã“ã§æ‰“ã¡åˆ‡ã‚‹ã€‚
-    let totalDamage = 0;
-    let criticalCount = 0;
-    let hitsLanded = 0;
-    const effects = [];
-    let kill = null;
-    for (let i = 0; i < hitCount; i++) {
-      if (target.dead) break;
-      const { damage, critical } = this.calculateDamage(atkValue, target);
-      if (critical) criticalCount++;
-      hitsLanded++;
-      totalDamage += damage;
-      const hit = this._applyDamageToEnemy(target, damage, critical, i, hitCount);
-      effects.push(...hit.effects);
-      if (hit.kill) kill = hit.kill; // åŒä¸€targetãªã®ã§ã€ç›´å‰ã®ï¼ˆï¼å”¯ä¸€ã®ï¼‰æ’ƒç ´çµæœãŒæœ€çµ‚çµæœ
-    }
-    const result = {
-      action: 'attack', targetId: target.id, targetName: target.name,
-      damage: totalDamage, defeated: target.dead, effects, kill,
-      // è¡¨ç¤ºç”¨ã«ã¾ã¨ã‚ãŸé›†è¨ˆå€¤ï¼ˆChatGPTãƒ¬ãƒ“ãƒ¥ãƒ¼æŒ‡æ‘˜1ç•ªï¼‰ï¼šå†…éƒ¨å‡¦ç†ã¯1hitå˜ä½ã€
-      // UIè¡¨ç¤ºã¯hitCount/criticalCount/totalDamageã¨ã—ã¦ã¾ã¨ã‚ã¦ã‚ˆã„
-      critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, berserkerDoubled,
-    };
-    this._actionTypesUsed.add('attack');
-    this._c1VanguardGain(result);
-    this._lastActionWasAttack = true; // æ‹³è–ã€Œé€£ç’°æ‹³ã€ï¼šç›´å‰ã®è¡Œå‹•ãŒæ”»æ’ƒç³»ã ã£ãŸã‹ã®åˆ¤å®šã«ä½¿ã†
-    this._checkActionDiversityBurst(result);
-    return result;
-  }
-
-  // ---------------------------------------------------------
-  // ã¨ãããƒ»ã˜ã‚…ã‚‚ã‚“ï¼ˆè·æ¥­æŠ€ï¼‰ï¼šåŸºæœ¬è·15ç¨®ã‚’å¯¾è±¡ã«ã—ãŸå…±é€šå®Ÿè¡Œç³»ã€‚
-  // å…ƒæŒ‡ç¤ºï¼šã€Œprofileâ†’è‡ªå‹•ç”Ÿæˆã®ã¾ã¾ï¼skillsãƒ»spellsâ†’è·æ¥­ã”ã¨ã®æ‰‹å‹•
-  // ã‚³ãƒ³ãƒ†ãƒ³ãƒ„ã€ã®è²¬å‹™åˆ†é›¢ã‚’å‰æã¨ã—ã€ä¸Šç´šè·ãƒ»ç‰¹ç´šè·ãƒ»å‹‡è€…ã¯autoSkillFor()
-  // ãŒç”Ÿæˆã—ãŸå˜ä¸€æŠ€ã‚’jobs.jså´ã§job.skills[0]ã¸ãƒ©ãƒƒãƒ—ã—ã¦æµç”¨ã™ã‚‹
-  // ï¼ˆã“ã®BattleEngineå´ã¯å¸¸ã«job.skills[]/job.spells[]ã®é…åˆ—ã ã‘ã‚’è¦‹ã‚‹ï¼‰ã€‚
-  // ---------------------------------------------------------
-  _isTechniqueLearned(tech) {
-    if (tech.learnLevel === 'master') return state.isMastered(state.currentJobId);
-    return state.currentLevel >= tech.learnLevel;
-  }
-
-  _c1VanguardGain(result, techId = null) {
-    const rule = this.job?.c1Combat;
-    if (rule?.kind !== 'pressure' || (techId && !rule.gainSkillIds.includes(techId))) return;
-    const before = this._c1Pressure;
-    this._c1Pressure = Math.min(rule.maxStacks, this._c1Pressure + 1);
-    if (this._c1Pressure > before) result.pressure = { stacks:this._c1Pressure, gained:true };
-  }
-
-  _c1VanguardSpend(tech) {
-    const rule = this.job?.c1Combat;
-    if (rule?.kind !== 'pressure' || !rule.spendSkillIds.includes(tech.id) || this._c1Pressure <= 0) return 1;
-    const stacks = this._c1Pressure;
-    this._c1Pressure = 0;
-    return 1 + stacks * rule.damagePerStack;
-  }
-
-  _c1ElementCycle(result, tech, kind) {
-    const rule = this.job?.c1Combat;
-    if (rule?.kind !== 'elementCycle' || kind !== 'spell' || !tech.element || tech.element === 'random') return;
-    const previous = this._c1LastElement;
-    const switched = previous && previous !== tech.element;
-    this._c1LastElement = tech.element;
-    if (!switched) return;
-    const refunded = Math.round(this._effectiveMpCost(tech) * rule.mpRefundPct);
-    this.player.mp = Math.min(this.player.maxMp, this.player.mp + refunded);
-    result.elementCycle = { from:previous, to:tech.element, mpRestored:refunded };
-  }
-
-  // ç¿’å¾—æ¸ˆã¿ï¼ˆã‹ã¤passiveã§ã¯ãªã„ï¼ã‚³ãƒãƒ³ãƒ‰ã¨ã—ã¦é¸æŠå¯èƒ½ãªï¼‰æŠ€ä¸€è¦§
-  availableSkills() { return (this.job.skills || []).filter((t) => this._isTechniqueLearned(t) && !t.passive); }
-  availableSpells() { return (this.job.spells || []).filter((t) => this._isTechniqueLearned(t) && !t.passive); }
-
-  // æ­¦å™¨Affixã€Œçœé­”ã®å¿ƒå¾—ã€ï¼šMPã‚³ã‚¹ãƒˆã‚’æ’å¸¸çš„ã«å‰²ã‚Šå¼•ã
-  _effectiveMpCost(tech) {
-    const mult = Math.min(0.7, sumPassivePower(this.effects, 'mpCostReduce'));
-    return Math.max(0, Math.round(tech.mpCost * (1 - mult)));
-  }
-  _techniqueGoldCost(tech) {
-    let cost;
-    if (tech.goldCostFlat != null) cost = tech.goldCostFlat;
-    else if (tech.goldCostPct != null) cost = Math.max(tech.goldCostMin || 0, Math.round(state.data.gold * tech.goldCostPct));
-    else return 0;
-    // å¤§å•†äººã€Œå€¤åˆ‡ã‚Šã€ï¼šGoldæ¶ˆè²»æŠ€ã®ã‚³ã‚¹ãƒˆã‚’ä¸€æ™‚çš„ã«å‰²ã‚Šå¼•ã
-    if (this._tempGoldCostReduceTurns > 0) cost = Math.max(0, Math.round(cost * (1 - this._tempGoldCostReduce)));
-    return cost;
-  }
-
-  // MPãƒ»ã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³ãƒ»Goldãƒ»ç¿’å¾—çŠ¶æ…‹ã‚’ç¢ºèªã™ã‚‹ã ã‘ã®å‰¯ä½œç”¨ãªã—ãƒã‚§ãƒƒã‚¯ã€‚
-  // advanceTurn()å´ã§ã‚³ãƒãƒ³ãƒ‰é¸æŠã®å¯å¦ã‚’å…ˆã«åˆ¤å®šã™ã‚‹ï¼ˆã«ã’ã‚‹Bossä¸å¯åˆ¤å®šã¨
-  // åŒã˜ã€Œå®Ÿè¡Œãã®ã‚‚ã®ãŒæˆç«‹ã—ãªã„ã‚³ãƒãƒ³ãƒ‰ã¯ãƒ©ã‚¦ãƒ³ãƒ‰ã‚’æ¶ˆè²»ã—ãªã„ã€æ‰±ã„ã«
-  // ã™ã‚‹ãŸã‚ï¼‰ã®ã¨ã€_playerTechnique()å†…éƒ¨ã®å®Ÿè¡Œç›´å‰ãƒã‚§ãƒƒã‚¯ã®ä¸¡æ–¹ã§ä½¿ã†ã€‚
-  _probeTechnique(kind, techId) {
-    const list = kind === 'spell' ? this.availableSpells() : this.availableSkills();
-    const tech = list.find((t) => t.id === techId);
-    if (!tech) return { ok: false, reason: 'notLearned' };
-    // ãƒˆãƒ¬ã‚¸ãƒ£ãƒ¼ãƒãƒ³ã‚¿ãƒ¼MASTERã€Œå¤§ç™ºè¦‹ã€ãƒ»æ‘ã®ç™’ã—æ‰‹MASTERã€Œæ‘äººã®å¥‡è·¡ã€ç­‰ï¼š
-    // æŠ€IDå˜ä½ã®ã€Œ1æˆ¦1å›ã€åˆ¶é™ï¼ˆã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³ã¨ã¯åˆ¥æ ã€‚é•·ã„æˆ¦é—˜ã§CDãŒ
-    // åˆ‡ã‚Œã¦å†åº¦ä½¿ãˆã¦ã—ã¾ã‚ãªã„ã‚ˆã†ã€æ˜ç¤ºçš„ã«ä½¿ç”¨æ¸ˆã¿ã‚»ãƒƒãƒˆã§ç¸›ã‚‹ï¼‰
-    if (tech.oncePerBattle && this._oncePerBattleUsed.has(tech.id)) return { ok: false, reason: 'usedThisBattle' };
-    if ((this.skillCooldowns[tech.id] || 0) > 0) return { ok: false, reason: 'onCooldown' };
-    if (this.player.mp < this._effectiveMpCost(tech)) return { ok: false, reason: 'noMp' };
-    if (tech.goldCostPct != null || tech.goldCostFlat != null) {
-      if (state.data.gold < this._techniqueGoldCost(tech)) return { ok: false, reason: 'noGold' };
-    }
-    return { ok: true, tech };
-  }
-
-  _playerTechnique(kind, techId, targetId) {
-    const probe = this._probeTechnique(kind, techId);
-    if (!probe.ok) return { action: kind, blocked: true, reason: probe.reason };
-    const tech = probe.tech;
-    this.player.guarding = false;
-    this.player.mp -= this._effectiveMpCost(tech);
-    let goldSpent = 0;
-    if (tech.goldCostPct != null || tech.goldCostFlat != null) {
-      goldSpent = this._techniqueGoldCost(tech);
-      // å…ƒæŒ‡ç¤ºï¼šGoldãŒ0æœªæº€ã«ãªã‚‰ãªã„ã“ã¨
-      state.data.gold = Math.max(0, state.data.gold - goldSpent);
-    }
-    if (tech.oncePerBattle) this._oncePerBattleUsed.add(tech.id);
-    if (tech.cooldownTurns > 0) {
-      // æ­¦å™¨Affixã€Œå‹ã®å†´ãˆã€ï¼šè·æ¥­MASTERã®CDRã¨ã¯åˆ¥æ ã§ã€æ’å¸¸çš„ã«ã•ã‚‰ã«
-      // ã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³ã‚’çŸ­ç¸®ã™ã‚‹ï¼ˆæ—¢å­˜CAPS_LAYER.CDR_MULT_MINã®ä¸‹é™ã‚’å…±æœ‰ï¼‰
-      const cdrMult = Math.max(CAPS_LAYER.CDR_MULT_MIN, state.jobMasterCooldownMult() - sumPassivePower(this.effects, 'cdrAdd'));
-      this.skillCooldowns[tech.id] = Math.max(1, Math.round(tech.cooldownTurns * cdrMult));
-      // ã“ã®ãƒ©ã‚¦ãƒ³ãƒ‰ã®_afterRoundChecks()ã§ã†ã£ã‹ã‚Šå³åº§ã«1æ¸›ã‚‰ã—ã¦ã—ã¾ã†ã¨ã€
-      // ã€ŒcooldownTurns:1ã€ãŒå®Ÿè³ªãƒãƒ¼ã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³ã¨åŒç¾©ã«ãªã£ã¦ã—ã¾ã†
-      // ï¼ˆä½¿ã£ãŸç›´å¾Œã®ãƒ©ã‚¦ãƒ³ãƒ‰çµ‚äº†å‡¦ç†ã§1â†’0ã¾ã§é€²ã‚“ã§ã—ã¾ã†ãŸã‚ï¼‰ã€‚è¨­å®šã—ãŸ
-      // ãƒ©ã‚¦ãƒ³ãƒ‰ã¶ã‚“ã ã‘ã¯æ¸›ç®—ã‚’ã‚¹ã‚­ãƒƒãƒ—ã—ã€æ¬¡ã®ãƒ©ã‚¦ãƒ³ãƒ‰ä»¥é™ã§æ­£ã—ãæ¸›ã‚Š
-      // å§‹ã‚ã‚‹ã‚ˆã†ã«ã™ã‚‹ã€‚
-      this._skillCooldownsSetThisRound.add(tech.id);
-    }
-    // è£…å‚™onSkillã‚¨ãƒ•ã‚§ã‚¯ãƒˆï¼ˆcdRefund/hasteï¼‰ã¯ã€æ—§ãƒ»å˜ä¸€skillé‹ç”¨æ™‚ã¨åŒã˜
-    // æ„å‘³è«–ã®ã¾ã¾ã€Œä½•ã‚‰ã‹ã®ã¨ãã/ã˜ã‚…ã‚‚ã‚“ã‚’ä½¿ã£ãŸã€ç¬é–“å…¨èˆ¬ã«åŠ¹ã‹ã›ã‚‹
-    for (const eff of this._effectsOf('onSkill')) {
-      if (eff.kind === 'cdRefund' && Math.random() < eff.chance) this.skillCooldowns[tech.id] = 0;
-      else if (eff.kind === 'haste') { this._tempAtkBonus = eff.power; this._tempAtkTurns = roundsFromSeconds(eff.duration); }
-      // æ­¦å™¨Affixã€Œé­”åŠ›å¾ªç’°ã®å¿ƒå¾—ã€ã€Œé‚„å…ƒã®è¡“ç†ã€ï¼šã˜ã‚…ã‚‚ã‚“é™å®šã§ç™ºå‹•ã™ã‚‹
-      // ï¼ˆspellOnlyæŒ‡å®šã€‚procChanceã¯æ—¢å­˜ã®chanceãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã‚’ãã®ã¾ã¾ä½¿ã†ï¼‰
-      else if (eff.spellOnly && kind !== 'spell') continue;
-      else if (eff.kind === 'spellMagBuff') this._applyBuffPayload({ magPct: eff.power, turns: eff.turns }, {});
-      else if (eff.kind === 'spellMpRefund' && eff.chance != null && Math.random() < eff.chance) {
-        const refund = Math.round(tech.mpCost * eff.power);
-        this.player.mp = Math.min(this.player.maxMp, this.player.mp + refund);
-      }
-      // Build Affixã€Œé­”åŠ›åéŸ¿ã€ï¼šä½ç¢ºç‡ã§MAGãƒ™ãƒ¼ã‚¹ã®è¿½åŠ ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’é£›ã°ã™
-      // ï¼ˆæŠ€ãã®ã‚‚ã®ã‚’å†å¸°çš„ã«å†ç™ºå‹•ã™ã‚‹ã¨MP/CD/é€£ç¶šè© å”±ç­‰ã¨è¡çªã™ã‚‹ãŸã‚ã€
-      // ã€Œã‚‚ã†ä¸€æ’ƒåˆ†ã®é­”åŠ›å¼¾ã€ã¨ã—ã¦ç‹¬ç«‹ã—ãŸãƒ€ãƒ¡ãƒ¼ã‚¸å‡¦ç†ã«ã¨ã©ã‚ã‚‹ï¼
-      // ã€Œé€£ç¶šè© å”±ã¨ã®ç„¡é™é€£é–ç¦æ­¢ã€ã‚’æ§‹é€ çš„ã«æº€ãŸã™ï¼‰
-      else if (eff.kind === 'spellEcho' && eff.chance != null && Math.random() < eff.chance) {
-        const echoTarget = this._pickTarget(targetId);
-        if (echoTarget && !echoTarget.dead) {
-          const atkValue = this._effectiveMag() * 0.5 * this._mainDmgMult('spell');
-          const { damage, critical } = this.calculateDamage(atkValue, echoTarget);
-          this._applyDamageToEnemy(echoTarget, damage, critical);
-        }
-      }
-    }
-
-    const result = { action: kind, techId: tech.id, name: tech.name, techType: tech.type, goldSpent, targets: [] };
-    const dispatchTechnique = () => {
-      switch (tech.type) {
-        case 'damage': this._resolveTechniqueDamage(tech, targetId, result, kind); break;
-        case 'heal': this._resolveTechniqueHeal(tech, result); break;
-        case 'buff': this._resolveTechniqueBuff(tech, result); break;
-        case 'debuff': this._resolveTechniqueDebuff(tech, targetId, result); break;
-        case 'steal': this._resolveTechniqueSteal(tech, targetId, result); break;
-        case 'inspect': this._resolveTechniqueInspect(tech, targetId, result); break;
-        case 'burst': this._resolveTechniqueBurst(tech, targetId, result, kind); break;
-        case 'cleanse': this._resolveTechniqueCleanse(tech, result); break;
-        case 'utility': this._resolveTechniqueUtility(tech, result); break;
-        default: break;
-      }
-    };
-    dispatchTechnique();
-    this._c1ElementCycle(result, tech, kind);
-    if (tech.type === 'damage') this._c1VanguardGain(result, tech.id);
-    // è³¢è€…MASTERã€Œé€£ç¶šè© å”±ã€ï¼šç›´å‰ã«äºˆç´„ã•ã‚Œã¦ã„ã‚Œã°ã€æ¬¡ã«å”±ãˆãŸspell1å›ã«
-    // é™ã‚Š2å›ç™ºå‹•ã•ã›ã‚‹ï¼ˆMPã¯2å›åˆ†æ¶ˆè²»ã€ä¸è¶³ã—ã¦ã„ã‚Œã°1å›ã®ã¿ã§è«¦ã‚ã‚‹ï¼
-    // ãƒ©ã‚¦ãƒ³ãƒ‰è‡ªä½“ã¯ã™ã§ã«æˆç«‹ã—ã¦ã„ã‚‹ã®ã§å¤±æ•—ã«ã¯ã—ãªã„ï¼‰ã€‚é€£ç¶šè© å”±è‡ªèº«ã®
-    // å†ç™ºå‹•ã¯tech.armDoubleCastã§æ˜ç¤ºçš„ã«é™¤å¤–ã—ã¦ã„ã‚‹ãŸã‚ç„¡é™ãƒ«ãƒ¼ãƒ—ã—ãªã„
-    if (kind === 'spell' && this._doubleCastArmed && !tech.armDoubleCast) {
-      this._doubleCastArmed = false;
-      if (this.player.mp >= tech.mpCost) {
-        this.player.mp -= tech.mpCost;
-        dispatchTechnique();
-        result.doubleCast = true;
-      }
-    }
-    this._lastActionWasAttack = tech.type === 'damage' || tech.type === 'burst';
-    this._actionTypesUsed.add(kind === 'spell' ? 'spell' : 'skill');
-    this._checkActionDiversityBurst(result);
-    return result;
-  }
-
-  _resolveTargets(tech, targetId) {
-    if (tech.target === 'allEnemies') return this.aliveEnemies.slice();
-    if (tech.target === 'self') return [];
-    const t = this._pickTarget(targetId);
-    return t ? [t] : [];
-  }
-
-  _resolveTechniqueDamage(tech, targetId, result, kind) {
-    // æ˜Ÿè© ã¿ã®é­”å¥³ã€Œæµæ˜Ÿã€ï¼šãƒ©ãƒ³ãƒ€ãƒ ãªç›¸æ‰‹ã¸ç‹¬ç«‹ã—ã¦hitæ•°ã¶ã‚“æ’ƒã¤ç‰¹æ®Šåˆ†å²
-    if (tech.target === 'randomEnemies') { this._resolveTechniqueDamageRandom(tech, result); return; }
-    // hybridï¼šãƒ‘ãƒ©ãƒ‡ã‚£ãƒ³/é­”æ³•å‰£å£«/æ£®ã®åŸéŠè©©äººç­‰ã€ATKã¨MAGã‚’ä¸¡æ–¹å‚ç…§ã™ã‚‹
-    // ãƒã‚¤ãƒ–ãƒªãƒƒãƒ‰æ”»æ’ƒï¼ˆæ–°ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã€‚æ—¢å­˜ã®magic:trueã¨ã¯ç‹¬ç«‹ã«æ‰±ã†ï¼‰
-    const statValue = tech.hybrid ? (this._effectiveAtk() + this._effectiveMag()) / 2
-      : (tech.magic ? this._effectiveMag() : this._effectiveAtk());
-    const hits = tech.hits || 1;
-    const pressureMult = this._c1VanguardSpend(tech);
-    const targets = this._resolveTargets(tech, targetId);
-    if (targets.length === 0) { result.noTarget = true; return; }
-    const opts = {};
-    if (tech.armorPenBonus) opts.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, this._effectiveArmorPen() + tech.armorPenBonus);
-    // critBonusï¼šé­”æ³•å‰£å£«ã€Œé›·é³´æ–¬ã€ãƒ»æ€¥æ‰€çªãç­‰ã€ã“ã®æŠ€ã®ä¸€æ’ƒã ã‘ä¼šå¿ƒç‡ã«åŠ ç®—ã™ã‚‹
-    if (tech.critBonus) opts.critPct = Math.min(CAPS_LAYER.CRIT_PCT_MAX, this._effectiveCritPct() + tech.critBonus);
-    // è‡ªå·±å‚ç…§ã®æ¡ä»¶ä»˜ãå¨åŠ›ãƒœãƒ¼ãƒŠã‚¹ï¼ˆå…ˆæ”»/å›é¿ç›´å¾Œ/Bossäºˆå…†ä¸­/ç›´å‰ã®è¡Œå‹•/
-    // èƒŒæ°´/å›é¿å›æ•°ï¼‰ã€‚å¯¾è±¡ã”ã¨ã«ã¯å¤‰ã‚ã‚‰ãªã„ãŸã‚å…ˆã«1å›ã ã‘è¨ˆç®—ã™ã‚‹
-    let conditionBonusPower = 0;
-    if (tech.conditionBonus && this._conditionMet(tech.conditionBonus)) conditionBonusPower += tech.conditionBonus.power;
-    if (tech.lowHpScalePower) {
-      const hpRatio = this.player.maxHp > 0 ? this.player.hp / this.player.maxHp : 1;
-      conditionBonusPower += tech.lowHpScalePower.maxBonus * Math.max(0, 1 - hpRatio);
-    }
-    if (tech.evasionCountScale) {
-      const c = tech.evasionCountScale;
-      conditionBonusPower += Math.min(c.max, c.perCount * (this._playerEvasionCount || 0));
-    }
-    for (const target of targets) {
-      // æš—æ®ºæ‹³MASTERã€Œæš—æ®ºã€ï¼šé›‘é­šã®ã¿ä½ç¢ºç‡ã®å³æ­»ã€‚Eliteã«ã¯ä¸€åˆ‡åŠ¹ã‹ãšã€
-      // Bossã¯å³æ­»ã›ãštargetBonusï¼ˆExecutionæ‰±ã„ï¼‰ã¸å®Œå…¨ã«ç½®ãæ›ã‚ã‚‹
-      if (tech.instaKill && !target.dead && !target.boss && !target.elite && Math.random() < tech.instaKill.chance) {
-        const dmg = target.hp;
-        const hit = this._applyDamageToEnemy(target, dmg, false);
-        result.targets.push({
-          targetId: target.id, targetName: target.name, damage: dmg, defeated: target.dead,
-          critical: false, criticalCount: 0, hitCount: 1, effects: hit.effects, kill: hit.kill, instaKilled: true,
-        });
-        continue;
-      }
-      const targetBonusPower = this._targetBonusPower(tech.targetBonus, target);
-      let totalDamage = 0, criticalCount = 0, hitsLanded = 0;
-      const effects = []; let kill = null;
-      for (let i = 0; i < hits; i++) {
-        if (target.dead) break;
-        const power = tech.power + conditionBonusPower + targetBonusPower;
-        const atkValue = statValue * power * pressureMult * this._mainDmgMult(kind);
-        const { damage, critical } = this.calculateDamage(atkValue, target, opts);
-        if (critical) criticalCount++;
-        hitsLanded++;
-        totalDamage += damage;
-        const hit = this._applyDamageToEnemy(target, damage, critical, i, hits);
-        effects.push(...hit.effects);
-        if (hit.kill) kill = hit.kill;
-        // ç‹©çŒŸç‹ã€Œè¿½æ’ƒã€ï¼šä¼šå¿ƒãŒå‡ºãŸã‚‰åŒã˜ç›¸æ‰‹ã¸å³åº§ã«è¿½åŠ ã®ä¸€æ’ƒã‚’åŠ ãˆã‚‹
-        if (critical && tech.critFollowup && !target.dead) {
-          const followAtk = statValue * tech.power * tech.critFollowup.powerMult * this._mainDmgMult(kind);
-          const follow = this.calculateDamage(followAtk, target, opts);
-          hitsLanded++;
-          totalDamage += follow.damage;
-          if (follow.critical) criticalCount++;
-          const followHit = this._applyDamageToEnemy(target, follow.damage, follow.critical);
-          effects.push(...followHit.effects);
-          if (followHit.kill) kill = followHit.kill;
-        }
-      }
-      if (tech.weaken && !target.dead) this._applyWeakenList(target, tech.weaken, target);
-      if (tech.dot && !target.dead) {
-        this._applyDotToTarget(target, tech.dot.power, tech.dot.turns, tech.dot.maxStacks || 99);
-        this.applyEffect('onDot', {}); // æ­¦å™¨Affixã€Œæ¯’ç…™ã®å‘¼å¸ã€
-      }
-      result.targets.push({
-        targetId: target.id, targetName: target.name, damage: totalDamage, defeated: target.dead,
-        critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, effects, kill,
-      });
-    }
-    // ãƒ—ãƒªãƒãƒ»ãƒ‡ã‚£ãƒ¼ãƒ´ã‚¡ã€Œå‰£ã®èˆæ›²ã€ç­‰ï¼šæ”»æ’ƒã¨åŒæ™‚ã«è‡ªåˆ†ã¸ãƒãƒ•ã‚’ã‹ã‘ã‚‹
-    if (tech.selfBuff) this._applyBuffPayload(tech.selfBuff, result);
-    if (pressureMult > 1) result.pressure = { spent:true, mult:pressureMult };
-  }
-
-  // æ˜Ÿè© ã¿ã®é­”å¥³ã€Œæµæ˜Ÿã€å°‚ç”¨ï¼šå›ºå®šhitæ•°ã¶ã‚“ã€æ¯å›ç‹¬ç«‹ã—ã¦ãƒ©ãƒ³ãƒ€ãƒ ãªç”Ÿå­˜ä¸­ã®
-  // æ•µã‚’é¸ã³ç›´ã™ï¼ˆéå‰°ä¹±æ•°é˜²æ­¢ã®ãŸã‚hitæ•°è‡ªä½“ã¯å›ºå®šãƒ»SPDç­‰ã«ä¾å­˜ã—ãªã„ï¼‰
-  _resolveTechniqueDamageRandom(tech, result) {
-    const hits = tech.hits || 1;
-    const statValue = tech.magic ? this._effectiveMag() : this._effectiveAtk();
-    for (let i = 0; i < hits; i++) {
-      const alive = this.aliveEnemies;
-      if (alive.length === 0) break;
-      const target = alive[Math.floor(Math.random() * alive.length)];
-      const atkValue = statValue * tech.power * this._mainDmgMult();
-      const { damage, critical } = this.calculateDamage(atkValue, target);
-      const hit = this._applyDamageToEnemy(target, damage, critical);
-      let entry = result.targets.find((t) => t.targetId === target.id);
-      if (!entry) {
-        entry = { targetId: target.id, targetName: target.name, damage: 0, criticalCount: 0, hitCount: 0, effects: [], defeated: false, kill: null };
-        result.targets.push(entry);
-      }
-      entry.damage += damage; entry.hitCount++;
-      if (critical) entry.criticalCount++;
-      entry.effects.push(...hit.effects);
-      entry.defeated = target.dead;
-      entry.critical = entry.criticalCount > 0;
-      if (hit.kill) entry.kill = hit.kill;
-    }
-    if (result.targets.length === 0) result.noTarget = true;
-  }
-
-  // weakenï¼ˆèƒ½åŠ›ä½ä¸‹ï¼‰ãƒ»dotï¼ˆæ¯’/DoTä»˜ä¸ï¼‰ãƒ»stunï¼ˆä½ç¢ºç‡ã®è¡Œå‹•é˜»å®³ï¼‰ã®ã„ãšã‚Œã‹ã€
-  // ã¾ãŸã¯è¤‡æ•°ã‚’çµ„ã¿åˆã‚ã›ã¦æŒã¤ã€Œç´”ç²‹ãªãƒ‡ãƒãƒ•æŠ€ã€ï¼ˆãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ä¼´ã‚ãªã„ï¼‰ã‚’æ‰±ã†ã€‚
-  // éŒ¬é‡‘è¡“å¸«ã€Œæ¯’è–¬ã€ã®ã‚ˆã†ã«weakenã‚’æŒãŸãšdotã®ã¿ã®æŠ€ã‚‚ã‚ã‚‹ãŸã‚ã€ä¸¡æ–¹ã¨ã‚‚
-  // å­˜åœ¨ãƒã‚§ãƒƒã‚¯ã—ã¦ã‹ã‚‰é©ç”¨ã™ã‚‹ã€‚
-  _resolveTechniqueDebuff(tech, targetId, result) {
-    const targets = this._resolveTargets(tech, targetId);
-    if (targets.length === 0) { result.noTarget = true; return; }
-    for (const target of targets) {
-      const entry = { targetId: target.id, targetName: target.name };
-      if (tech.weaken) {
-        // æ˜Ÿè© ã¿ã®é­”å¥³ã€Œæ˜Ÿè•ã€ãƒ»å¹»è¡“å¸«ã€Œå¹»è¦šã€ï¼šweakenã¯å˜ä¸€ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã§ã‚‚
-        // é…åˆ—ï¼ˆè¤‡æ•°ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹åŒæ™‚å¼±ä½“ï¼‰ã§ã‚‚å—ç†ã§ãã‚‹
-        const applied = this._applyWeakenList(target, tech.weaken, target);
-        entry.weakenApplied = applied;
-        entry.weakenStat = applied[0].stat; // æ—¢å­˜BattleLogäº’æ›ã®ãŸã‚ãƒˆãƒƒãƒ—ãƒ¬ãƒ™ãƒ«ã«ã‚‚æ®‹ã™
-        entry.weakenPct = applied[0].pct;
-      }
-      if (tech.dot) {
-        this._applyDotToTarget(target, tech.dot.power, tech.dot.turns, tech.dot.maxStacks || 99);
-        entry.dotApplied = true;
-        entry.dotStacks = target.dotStacks;
-        // æ­¦å™¨Affixã€Œæ¯’ç…™ã®å‘¼å¸ã€ï¼šDoTä»˜ä¸æ™‚ã«MPå›å¾©
-        entry.dotAffixEvents = this.applyEffect('onDot', {});
-      }
-      // ç‹©çŒŸç‹ã€Œç‹©äººã®å°ã€ï¼šBoss/Eliteé™å®šã®ãƒãƒ¼ã‚¯ï¼ˆæ—¢å­˜weakenã¨å¯¾ã«ãªã‚‹
-      // enemy.vulnerableã€‚ãƒãƒ¼ã‚¯ä¸­ã¯ä¸€å¾‹ãƒ€ãƒ¡ãƒ¼ã‚¸å¢—åŠ ãŒcalculateDamageå´ã§ä¹—ã‚‹ï¼‰
-      if (tech.vulnerable && (!tech.vulnerable.bossEliteOnly || target.boss || target.elite)) {
-        target.vulnerable = { pct: tech.vulnerable.pct, turnsLeft: tech.vulnerable.turns };
-        entry.marked = true;
-      }
-      // å¿è€…ã€Œå½±ç¸«ã„ã€ãƒ»é­”æ³•ä½¿ã„ã€Œæ°·æ§ã€ï¼šBossã«ã¯å®Œå…¨åœæ­¢ã‚’é©ç”¨ã—ãªã„ï¼ˆå¼±ä½“åŒ–ï¼‰
-      if (tech.stunChance && !(tech.stunExcludesBoss && target.boss) && Math.random() < tech.stunChance) {
-        target.frozenTurns = Math.max(target.frozenTurns, tech.stunTurns || 1);
-        entry.stunned = true;
-      }
-      // å¯†åµã€Œåµå¯Ÿã€ãƒ»èªã‚Šéƒ¨ã€Œé­”ç‰©èªã‚Šã€ï¼šè§£æï¼ˆå­¦è€…ã€Œè§£æã€ã¨åŒã˜æƒ…å ±ï¼‰ã‚’
-      // ãƒ‡ãƒãƒ•ã¨åŒæ™‚ã«è¡Œã†
-      if (tech.inspect) {
-        entry.inspected = {
-          name: target.name, hp: target.hp, maxHp: target.maxHp,
-          atk: target.atk, def: target.def, spd: target.spd, boss: target.boss, elite: target.elite,
-        };
-      }
-      result.targets.push(entry);
-    }
-    // å¹»æƒ‘ã®èˆå§«ã€Œå¹»æƒ‘èˆã€ï¼šæ•µãƒ‡ãƒãƒ•ã¨åŒæ™‚ã«è‡ªåˆ†ã¸ãƒãƒ•ã‚’ã‹ã‘ã‚‹
-    if (tech.selfBuff) this._applyBuffPayload(tech.selfBuff, result);
-    // ãƒãƒ©ãƒ³ã‚¹å†è¼ƒæ­£ï¼ˆä½è€ä¹…ä¸Šç´šè·ã®ç”Ÿå­˜æ ¼å·®æ˜¯æ­£ï¼‰ï¼šdebuffå‹æŠ€ã®telegraphBonusã€‚
-    // buff/utilityå‹ã¨é•ã„ã€Œå¼±ä½“åŒ–ãã®ã‚‚ã®ã‚’ç½®ãæ›ãˆã‚‹ã€ã®ã§ã¯ãªãã€æ•µã¸ã®
-    // åŠ¹æœã¯ãã®ã¾ã¾ã«ã€Bossäºˆå…†ãŒå‡ºã¦ã„ã‚‹é–“ã ã‘è‡ªå·±ãƒãƒ•ã‚’è¿½åŠ ã§ä¹—ã›ã‚‹
-    // ï¼ˆå…ƒæŒ‡ç¤º2ãƒ»4ç•ªï¼šäºˆå…†ã‚’è¦‹ã‚‹æ„å‘³ã‚’ç¶­æŒã—ã¤ã¤ã€è·ã®å€‹æ€§ã«æ²¿ã£ãŸåå¿œæŠ€ã«ã™ã‚‹ï¼‰
-    if (tech.telegraphBonus && this._hasActiveTelegraph()) {
-      if (tech.telegraphBonus.selfBuff) this._applyBuffPayload(tech.telegraphBonus.selfBuff, result);
-      // ãƒãƒ©ãƒ³ã‚¹å†è¼ƒæ­£ï¼šä»–ã®telegraphBonuså®Ÿè£…ï¼ˆbuff/utilityå‹ï¼‰ã¨åŒã˜ãã€
-      // guardOverrideãŒæŒ‡å®šã•ã‚Œã¦ã„ã‚Œã°ã“ã“ã§guarding=trueã‚’ç«‹ã¦ã‚‹ã€‚ã“ã‚ŒãŒ
-      // ãªã„ã¨ã€Œã¼ã†ãã‚‡æ‰±ã„ã€ã«ãªã‚‰ãšGUARD_DAMAGE_MULT(0.6)ãŒä¸€åˆ‡ä¹—ã‚‰ãªã„
-      // ã¾ã¾ã€AIãŒã“ã®æŠ€ã‚’ã¼ã†ãã‚‡ã®ä»£ã‚ã‚Šã«é¸ã‚“ã§ã—ã¾ã„ã€ç´ ã®ã¼ã†ãã‚‡ã‚ˆã‚Š
-      // å¼±ã„é˜²å¾¡ã«ãªã£ã¦ã—ã¾ã†äº‹æ•…ã‚’é˜²ã
-      if (tech.telegraphBonus.guardOverride) {
-        this.player.guarding = true;
-        this.player.guardOverrideMult = tech.telegraphBonus.guardOverride.mult;
-        this.player.guardOverrideTurns = tech.telegraphBonus.guardOverride.turns;
-      }
-      result.telegraphBonusApplied = true;
-    }
-  }
-
-  _resolveTechniqueHeal(tech, result) {
-    const healPowerMult = state.jobMasterHealPowerMult();
-    const healMult = this.stage.healMult || 1;
-    const amount = Math.round(this.player.maxHp * tech.healPct * healPowerMult * healMult + this._effectiveMag() * (tech.healMagRatio || 0));
-    this.player.hp = Math.min(this.player.maxHp, this.player.hp + amount);
-    result.healAmount = amount;
-    // ã‚®ãƒ«ãƒ‰ãƒã‚¹ã‚¿ãƒ¼ã€Œè£œçµ¦ã€ï¼šGoldæ¶ˆè²»ã§HP/MPã‚’åŒæ™‚å›å¾©ã™ã‚‹
-    if (tech.mpRestorePct) {
-      const mpAmount = Math.round(this.player.maxMp * tech.mpRestorePct);
-      this.player.mp = Math.min(this.player.maxMp, this.player.mp + mpAmount);
-      result.mpRestored = mpAmount;
-    }
-    // ãƒ—ãƒªãƒãƒ»ãƒ‡ã‚£ãƒ¼ãƒ´ã‚¡ã€Œç™’ã—ã®èˆæ›²ã€ãƒ»è–æ­ŒéšŠé•·/æ‘ã®ç™’ã—æ‰‹ã®MASTERæŠ€ç­‰ï¼š
-    // å›å¾©ã¨åŒæ™‚ã«ãƒãƒ•ã‚’ã‹ã‘ã‚‹ï¼ˆæ—¢å­˜_applyBuffPayloadã‚’ãã®ã¾ã¾å†åˆ©ç”¨ï¼‰
-    if (tech.buff) this._applyBuffPayload(tech.buff, result);
-  }
-
-  _setBuff(stat, pct, turns) { this.player.buffs[stat] = { mult: 1 + pct, turnsLeft: turns }; }
-  _setAddBuff(key, value, turns) {
-    if (key === 'critAdd') this.player.buffs.critAdd = { value: Math.min(value, CAPS_LAYER.CRIT_PCT_MAX), turnsLeft: turns };
-    else if (key === 'evasionAdd') this.player.buffs.evasionAdd = { value: Math.min(value, CAPS_LAYER.EVASION_MAX), turnsLeft: turns };
-    else if (key === 'regenAdd') this.player.buffs.regenAdd = { value, turnsLeft: turns };
-  }
-
-  _applyBuffPayload(b, result) {
-    if (!b) return;
-    if (b.atkPct) this._setBuff('atk', b.atkPct, b.turns);
-    if (b.defPct) this._setBuff('def', b.defPct, b.turns);
-    if (b.spdPct) this._setBuff('spd', b.spdPct, b.turns);
-    if (b.magPct) this._setBuff('mag', b.magPct, b.turns);
-    if (b.critAdd) this._setAddBuff('critAdd', b.critAdd, b.turns);
-    if (b.evasionAdd) this._setAddBuff('evasionAdd', b.evasionAdd, b.turns);
-    if (b.regenAdd) this._setAddBuff('regenAdd', b.regenAdd, b.turns);
-    if (b.goldMultAdd) { this._tempGoldBonus = b.goldMultAdd; this._tempGoldBonusTurns = b.turns; }
-    if (b.bossGuardPct) { this.player.guardOverrideMult = 1 - b.bossGuardPct; this.player.guardOverrideTurns = b.turns; }
-    if (b.bossDmgAdd) { this._tempBossDmgBonus = b.bossDmgAdd; this._tempBossDmgTurns = b.turns; }
-    if (b.dmgBonusAdd) { this._tempDmgBonus = b.dmgBonusAdd; this._tempDmgBonusTurns = b.turns; }
-    // ä¸Šç´šè·å‘ã‘ã«è¿½åŠ ã—ãŸä¸€æ™‚ãƒœãƒ¼ãƒŠã‚¹å„ç¨®ï¼ˆå…ƒæŒ‡ç¤ºï¼šã©ã†ã—ã¦ã‚‚å¿…è¦ãªã‚‚ã®ã ã‘
-    // æ±ç”¨status/buffæ§‹é€ ã¸è¿½åŠ ã™ã‚‹ã€‚ã„ãšã‚Œã‚‚æ—¢å­˜ã®_tempXxx/_tempXxxTurnsã¨
-    // åŒã˜ã€Œturnsã§å¿…ãšåˆ‡ã‚Œã‚‹ã€ãƒ‘ã‚¿ãƒ¼ãƒ³ã‚’è¸è¥²ã—ã¦ã„ã‚‹ï¼‰
-    if (b.armorPenAdd) { this._tempArmorPenBonus = b.armorPenAdd; this._tempArmorPenTurns = b.turns; }
-    if (b.goldCostReduceAdd) { this._tempGoldCostReduce = b.goldCostReduceAdd; this._tempGoldCostReduceTurns = b.turns; }
-    if (b.dropRateMultAdd) { this._tempDropRateBonus = b.dropRateMultAdd; this._tempDropRateBonusTurns = b.turns; }
-    if (b.debuffPowerAdd) { this._tempDebuffPowerBonus = b.debuffPowerAdd; this._tempDebuffPowerBonusTurns = b.turns; }
-    if (b.expMultAdd) { this._tempExpBonus = b.expMultAdd; this._tempExpBonusTurns = b.turns; }
-    if (b.hybridAtkAdd) { this._tempHybridMagRatio = b.hybridAtkAdd.ratio; this._tempHybridMagTurns = b.hybridAtkAdd.turns; }
-    // é­”å°æŠ€å¸«MASTERã€Œè¶…éé§†å‹•ã€ï¼šè¨­ç½®ä¸­ã®è‡ªå‹•ç ²å°ãŒã‚ã‚‹å ´åˆã ã‘å¨åŠ›ã‚’åº•ä¸Šã’ã™ã‚‹
-    if (b.turretPowerAdd && this.player.autoTurret) this.player.autoTurret.power += b.turretPowerAdd;
-    result.buffed = true;
-  }
-
-  _resolveTechniqueBuff(tech, result) {
-    // è¾²æ°‘ã€Œæ ¹æ€§ã€ãƒ»å‰›åŠ›å£«MASTERã€Œä»ç‹ç«‹ã¡ã€ãƒ»é‰„è¾²å…µMASTERã€Œä¸å±ˆã®è¾²å…µã€ç­‰ï¼š
-    // HPãŒä½ã„ã»ã©æ©æµãŒå¤§ãã„ï¼ˆç„¡é§„æ‰“ã¡ã‚’é¿ã‘ã‚‹ãŸã‚ã€é€šå¸¸æ™‚ã‚‚æœ€ä½é™ã®buffã¯
-    // å¿…ãšå¾—ã‚‰ã‚Œã‚‹ã‚ˆã†ã«ã—ã¦ã‚ã‚‹ï¼‰ã€‚lowHpBonuså´ã¯atkPct/defPct/guardOverride
-    // ã¾ã§å—ç†ã§ãã‚‹ã‚ˆã†ä¸€èˆ¬åŒ–ã—ã¦ã‚ã‚‹
-    if (tech.lowHpThreshold != null && tech.lowHpBonus) {
-      const hpRatio = this.player.maxHp > 0 ? this.player.hp / this.player.maxHp : 1;
-      if (hpRatio <= tech.lowHpThreshold) {
-        if (tech.lowHpBonus.healPct) {
-          const amount = Math.round(this.player.maxHp * tech.lowHpBonus.healPct);
-          this.player.hp = Math.min(this.player.maxHp, this.player.hp + amount);
-          result.healAmount = amount;
-        }
-        this._applyBuffPayload({ atkPct: tech.lowHpBonus.atkPct, defPct: tech.lowHpBonus.defPct, turns: tech.lowHpBonus.turns }, result);
-        if (tech.lowHpBonus.guardOverride) {
-          this.player.guarding = true;
-          this.player.guardOverrideMult = tech.lowHpBonus.guardOverride.mult;
-          this.player.guardOverrideTurns = tech.lowHpBonus.guardOverride.turns;
-        }
-        return;
-      }
-    }
-    // ãƒ‘ãƒ©ãƒ‡ã‚£ãƒ³ã€Œè–ç›¾ã€ãƒ»å·«å¥³ã€Œç¥è¨—ã€ã®åŒå‹buffç‰ˆç­‰ï¼šBossäºˆå…†ãŒå‡ºã¦ã„ã‚‹é–“ã«
-    // ä½¿ã†ã¨ã€é€šå¸¸ã®buffã®ä»£ã‚ã‚Šã«å¼·åŒ–ç‰ˆï¼ˆtelegraphBonusï¼‰ãŒä¹—ã‚‹
-    if (tech.telegraphBonus && this._hasActiveTelegraph()) {
-      if (tech.telegraphBonus.buff) this._applyBuffPayload(tech.telegraphBonus.buff, result);
-      if (tech.telegraphBonus.guardOverride) {
-        this.player.guarding = true;
-        this.player.guardOverrideMult = tech.telegraphBonus.guardOverride.mult;
-        this.player.guardOverrideTurns = tech.telegraphBonus.guardOverride.turns;
-      }
-      result.telegraphBonusApplied = true;
-      if (tech.haste) { this._hasteInitiativeBonus = tech.haste.power; this._hasteInitiativeTurns = tech.haste.turns; }
-      return;
-    }
-    this._applyBuffPayload(tech.buff, result);
-    if (tech.haste) { this._hasteInitiativeBonus = tech.haste.power; this._hasteInitiativeTurns = tech.haste.turns; }
-  }
-
-  _resolveTechniqueUtility(tech, result) {
-    // å·«å¥³MASTERã€Œç¥è¨—ã€ç­‰ï¼ˆutilityå‹ã®telegraphBonusï¼‰ï¼šBossäºˆå…†ãŒå‡ºã¦ã„ã‚‹
-    // é–“ã«ä½¿ã†ã¨é€šå¸¸ã®guardOverride/buffã®ä»£ã‚ã‚Šã«å¼·åŒ–ç‰ˆãŒä¹—ã‚‹
-    if (tech.telegraphBonus && this._hasActiveTelegraph()) {
-      if (tech.telegraphBonus.guardOverride) {
-        this.player.guarding = true;
-        this.player.guardOverrideMult = tech.telegraphBonus.guardOverride.mult;
-        this.player.guardOverrideTurns = tech.telegraphBonus.guardOverride.turns;
-      }
-      if (tech.telegraphBonus.buff) this._applyBuffPayload(tech.telegraphBonus.buff, result);
-      result.telegraphBonusApplied = true;
-    } else {
-      if (tech.guardOverride) {
-        this.player.guarding = true;
-        this.player.guardOverrideMult = tech.guardOverride.mult;
-        this.player.guardOverrideTurns = tech.guardOverride.turns;
-      }
-      if (tech.buff) this._applyBuffPayload(tech.buff, result);
-    }
-    if (tech.tempEffect) this._addTempEffect(tech.tempEffect.effect, tech.tempEffect.turns);
-    // ãƒ‘ãƒ©ãƒ‡ã‚£ãƒ³ã€Œç™’ã—ã®åæ’ƒã€ï¼šã‚«ã‚¦ãƒ³ã‚¿ãƒ¼ï¼‹å›å¾©ã‚’åŒæ™‚ã«ä¸€æ™‚ä»˜ä¸ã™ã‚‹ç­‰ã€
-    // è¤‡æ•°effectã‚’åŒæ™‚ã«ä»˜ä¸ã—ãŸã„å ´åˆã¯tempEffectsï¼ˆé…åˆ—ï¼‰ã‚’ä½¿ã†
-    if (tech.tempEffects) for (const te of tech.tempEffects) this._addTempEffect(te.effect, te.turns);
-    // è³¢è€…MASTERã€Œé€£ç¶šè© å”±ã€ï¼šæ¬¡ã®spell1å›ã‚’2å›ç™ºå‹•ã•ã›ã‚‹äºˆç´„
-    if (tech.armDoubleCast) this._doubleCastArmed = true;
-    // ãƒ‘ãƒ©ãƒ‡ã‚£ãƒ³MASTERã€Œä¸è½ã®èª“ã„ã€ï¼šè‡´æ­»ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’1æˆ¦1å›ã ã‘è€ãˆã‚‹æ¨©åˆ©ã‚’èµ·å‹•
-    if (tech.deathGuard) this._paladinDeathGuardArmed = true;
-    // ãƒˆãƒ¬ã‚¸ãƒ£ãƒ¼ãƒãƒ³ã‚¿ãƒ¼ã€Œç™ºæ˜ã€ãƒ»å¤§å•†äººã€Œå¸‚å ´æ”¯é…ã€ï¼šæˆ¦é—˜ã‚¯ãƒªã‚¢æ™‚ã®è¿½åŠ å ±é…¬ã‚’äºˆç´„
-    if (tech.bonusRewardArm) this._battleEndBonusReward = { goldPct: tech.bonusRewardArm.goldPct, dropChance: tech.bonusRewardArm.dropChance };
-    // ãƒˆãƒ¬ã‚¸ãƒ£ãƒ¼ãƒãƒ³ã‚¿ãƒ¼MASTERã€Œå¤§ç™ºè¦‹ã€ï¼šæ—¢å­˜_rollDrop()ã®ã¿ã‚’ä½¿ã†ãŸã‚
-    // Bosså›ºæœ‰æ­¦å™¨ãƒ»åˆå›ã‚¯ãƒªã‚¢å ±é…¬ï¼ˆåˆ¥çµŒè·¯ï¼‰ã¯å¯¾è±¡å¤–
-    if (tech.instantDropRoll && Math.random() < tech.instantDropRoll.chance) {
-      const dropInfo = this._rollDrop();
-      if (dropInfo) result.instantDrop = dropInfo;
-    }
-    // é­”å°æŠ€å¸«ã€Œè‡ªå‹•ç ²å°ã€ï¼šè¨­ç½®ï¼ˆæ—¢å­˜ã®ä¸€æ™‚åŠ¹æœã¨åŒã˜turnsç®¡ç†ï¼‰
-    if (tech.autoTurretArm) this.player.autoTurret = { power: tech.autoTurretArm.power, turnsLeft: tech.autoTurretArm.turns };
-    result.utility = true;
-  }
-
-  // ç›—è³Šã€Œç›—ã‚€ã€ï¼šåŒä¸€æ•µã‹ã‚‰ã®é€£ç¶šçªƒç›—ã‚’é˜²ããŸã‚ã€_stolenEnemyIdsã§1æˆ¦/1æ•µã«
-  // åˆ¶é™ã™ã‚‹ï¼ˆæ—¢å­˜ã®_rollDropãƒ»stateã®GoldåŠ ç®—ã‚’ãã®ã¾ã¾å†åˆ©ç”¨ã™ã‚‹ï¼‰
-  _resolveTechniqueSteal(tech, targetId, result) {
-    const target = this._pickTarget(targetId);
-    if (!target) { result.noTarget = true; return; }
-    if (this._stolenEnemyIds.has(target.id)) { result.alreadyStolen = true; return; }
-    this._stolenEnemyIds.add(target.id);
-    const goldGain = Math.max(1, Math.round(target.gold * (tech.stealGoldMult || 1.5)));
-    state.gainGold(goldGain);
-    this.runGold += goldGain;
-    result.stolenGold = goldGain;
-    if (Math.random() < (tech.stealDropChance || 0.25)) {
-      const dropInfo = this._rollDrop();
-      if (dropInfo) result.stolenItem = dropInfo;
-    }
-  }
-
-  // å­¦è€…ã€Œè§£æã€ï¼šæ•µã®ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’ãƒ­ã‚°ã«è¡¨ç¤ºã™ã‚‹ã ã‘ã®æƒ…å ±æŠ€ï¼ˆBossã«ã‚‚æœ‰åŠ¹ï¼‰
-  _resolveTechniqueInspect(tech, targetId, result) {
-    const target = this._pickTarget(targetId);
-    if (!target) { result.noTarget = true; return; }
-    result.inspected = {
-      name: target.name, hp: target.hp, maxHp: target.maxHp,
-      atk: target.atk, def: target.def, spd: target.spd, boss: target.boss, elite: target.elite,
-    };
-  }
-
-  // éŒ¬é‡‘è¡“å¸«ã€Œèµ·çˆ†ã€ï¼šå¯¾è±¡ã®ç¾åœ¨ã®DoTï¼ˆburnStackï¼‰ã‚’æ¶ˆè²»ã—ã¦ãƒœãƒ¼ãƒŠã‚¹ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ä¸ãˆã‚‹
-  _resolveTechniqueBurst(tech, targetId, result, kind) {
-    const target = this._pickTarget(targetId);
-    if (!target) { result.noTarget = true; return; }
-    // å¹»è¡“å¸«MASTERã€Œå¹»æ¯’çˆ†ã€ï¼šstackSource:'debuffCount'ã§DoTã ã‘ã§ãªã
-    // weakenã®æœ¬æ•°ã‚‚åˆç®—ã§ãã‚‹ã‚ˆã†ä¸€èˆ¬åŒ–ã—ãŸï¼ˆæ—¢å®š'dot'ã¯éŒ¬é‡‘è¡“å¸«ã€Œèµ·çˆ†ã€ã¨
-    // å®Œå…¨ã«åŒã˜æŒ™å‹•ã®ã¾ã¾ï¼‰
-    const stacks = tech.stackSource === 'debuffCount'
-      ? (target.dotStacks || 0) + (target.weaken ? Object.keys(target.weaken).length : 0)
-      : (target.dotStacks || 0);
-    const atkValue = this._effectiveAtk() * (tech.power + stacks * (tech.stackPowerMult || 0.5)) * this._mainDmgMult(kind);
-    const { damage, critical } = this.calculateDamage(atkValue, target);
-    const hit = this._applyDamageToEnemy(target, damage, critical);
-    target.dotStacks = 0; target.dotTurnsLeft = 0;
-    if (tech.stackSource === 'debuffCount') target.weaken = {};
-    result.targets.push({
-      targetId: target.id, targetName: target.name, damage, critical, defeated: target.dead,
-      effects: hit.effects, kill: hit.kill, consumedStacks: stacks,
-    });
-  }
-
-  // åƒ§ä¾¶ã€Œæµ„åŒ–ã€ï¼šç¾çŠ¶ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¸weaken/DoTã‚’ä¸ãˆã‚‹æ•µæ‰‹æ®µã¯å­˜åœ¨ã—ãªã„ãŸã‚ã€
-  // ç©ºã®negativeStatusã‚’ã‚¯ãƒªã‚¢ã™ã‚‹ã ã‘ã®å°†æ¥æ‹¡å¼µå‘ã‘ã‚¹ã‚­ãƒ£ãƒ•ã‚©ãƒ¼ãƒ«ãƒ‰ã¨ã—ã¦å‹•ä½œã™ã‚‹
-  _resolveTechniqueCleanse(tech, result) {
-    this.player.negativeStatus = { weaken: {}, dotStacks: 0, dotTurnsLeft: 0 };
-    result.cleansed = true;
-  }
-
-  // æŠ€ï¼ˆå¤§å·¥ã€Œåæ’ƒã€ç­‰ï¼‰ãŒä»˜ä¸ã™ã‚‹ä¸€æ™‚çš„ãªonHit/onCrit/onHurt/onKillåŠ¹æœã€‚
-  // æ—¢å­˜ã®è£…å‚™å›ºæœ‰åŠ¹æœï¼ˆ_applyOneEffectï¼‰ã¨å…¨ãåŒã˜å½¢ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’
-  // this.effectsã¸ä¸€æ™‚çš„ã«è¿½åŠ ã™ã‚‹ã ã‘ãªã®ã§ã€æ–°ã—ã„ç™ºå‹•çµŒè·¯ã‚’ä½œã‚‰ãšã«
-  // æ—¢å­˜ã®counterç­‰ã‚’ãã®ã¾ã¾å†åˆ©ç”¨ã§ãã‚‹ã€‚
-  _addTempEffect(effObj, turns) {
-    this.effects.push({ ...effObj, __tempTurnsLeft: turns });
-  }
-
-  _playerGuard() {
-    this.player.guarding = true;
-    // æ­¦å™¨Affixï¼ˆPart Aï¼‰ï¼šã¼ã†ãã‚‡æˆåŠŸæ™‚ã«ç™ºå‹•ã™ã‚‹onGuardãƒˆãƒªã‚¬ãƒ¼
-    const guardEvents = this.applyEffect('onGuard', {});
-    return { action: 'guard', guardEvents };
-  }
-
-  // ã«ã’ã‚‹ï¼ˆå…ƒæŒ‡ç¤º17ç•ªï¼‰ï¼šBossæˆ¦ãƒ»ã‚¨ãƒªãƒ¼ãƒˆæ··åœ¨æˆ¦ã§ã¯ä¸å¯ã€‚ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼SPDãƒ»
-  // æ•µã‚°ãƒ«ãƒ¼ãƒ—ã®ä»£è¡¨SPDãƒ»ã‚¹ãƒ†ãƒ¼ã‚¸é›£æ˜“åº¦ï¼ˆæ·±æ·µã‹ã©ã†ã‹ï¼‰ã‹ã‚‰æˆåŠŸç‡ã‚’å‡ºã™ã€‚
-  canFlee() {
-    return !this.aliveEnemies.some((e) => e.boss);
-  }
-
-  _playerFlee() {
-    if (!this.canFlee()) return { action: 'flee', blocked: true };
-    const alive = this.aliveEnemies;
-    const avgEnemySpd = alive.length > 0 ? alive.reduce((s, e) => s + e.spd, 0) / alive.length : 0;
-    const stagePenalty = this.stage.isAbyss ? 0.05 : 0;
-    const chance = clamp(0.5 + (this._effectiveSpd() - avgEnemySpd) * 0.01 - stagePenalty, 0.1, 0.9);
-    const success = Math.random() < chance;
-    return { action: 'flee', success };
-  }
-
-  // ---------------------------------------------------------
-  // ãƒ€ãƒ¡ãƒ¼ã‚¸é©ç”¨ãƒ»onHit/onCrit/onKillç³»å›ºæœ‰åŠ¹æœï¼ˆå…ƒæŒ‡ç¤º4ãƒ»12ç•ªï¼šæ—¢å­˜ã‚’æµç”¨ï¼‰
-  // ---------------------------------------------------------
-  applyEffect(trigger, ctx) {
-    const events = [];
-    for (const eff of this._effectsOf(trigger)) {
-      if (eff.chance != null && Math.random() > eff.chance) continue;
-      // æ­¦å™¨Affixï¼ˆPart Aï¼‰procæš´èµ°é˜²æ­¢ï¼šperActionCapã‚’æŒã¤åŠ¹æœã¯ã€
-      // 1ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ï¼ˆé€šå¸¸æ”»æ’ƒ/ã¨ãã/ã˜ã‚…ã‚‚ã‚“1å›ï¼‰ã«ã¤ãæœ€å¤§Nå›
-      // ã¾ã§ã—ã‹ç™ºå‹•ã—ãªã„ã€‚multi-hité€šå¸¸æ”»æ’ƒãƒ»æ‹³è–ç­‰ã®é€£æ’ƒã§onHit/onCritãŒ
-      // ä½•åº¦ã‚‚å‘¼ã°ã‚Œã¦ã‚‚ã€åŒã˜AffixãŒéš›é™ãªãç©ã¿é‡ãªã‚‰ãªã„ã‚ˆã†ã«ã™ã‚‹
-      // ï¼ˆperformPlayerAction()ã§1ã‚¢ã‚¯ã‚·ãƒ§ãƒ³ã”ã¨ã«ã‚«ã‚¦ãƒ³ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹ï¼‰
-      if (eff.perActionCap) {
-        const key = eff.__affixId || eff.kind;
-        const used = this._actionProcCounts[key] || 0;
-        if (used >= eff.perActionCap) continue;
-        this._actionProcCounts[key] = used + 1;
-      }
-      const ev = this._applyOneEffect(eff, trigger, ctx);
-      if (ev) events.push(ev);
-    }
-    return events;
-  }
-
-  _applyOneEffect(eff, trigger, ctx) {
-    if (trigger === 'onHit') {
-      const { target, dmg } = ctx;
-      if (eff.kind === 'lifesteal') {
-        const allowed = Math.max(0, CAPS_LAYER.LIFESTEAL_PCT_MAX - (ctx.lifestealUsed || 0));
-        const applied = Math.min(eff.power, allowed);
-        ctx.lifestealUsed = (ctx.lifestealUsed || 0) + applied;
-        const healed = Math.round(dmg * applied);
-        this.player.hp = Math.min(this.player.maxHp, this.player.hp + healed);
-        return { kind: 'lifesteal', amount: healed };
-      }
-      // Build Affixã€Œè¡€åˆƒã€ï¼šHPãŒé–¾å€¤ä»¥ä¸‹ã®é–“ã ã‘LifestealãŒä¸Šä¹—ã›ã•ã‚Œã‚‹
-      // ï¼ˆæ—¢å­˜lifestealã¨åŒã˜LIFESTEAL_PCT_MAXä¸Šé™ã‚’å…±æœ‰ã™ã‚‹ï¼‰
-      if (eff.kind === 'lifestealLowHp' && this._hpRatio() <= eff.hpThreshold) {
-        const allowed = Math.max(0, CAPS_LAYER.LIFESTEAL_PCT_MAX - (ctx.lifestealUsed || 0));
-        const applied = Math.min(eff.power, allowed);
-        ctx.lifestealUsed = (ctx.lifestealUsed || 0) + applied;
-        const healed = Math.round(dmg * applied);
-        this.player.hp = Math.min(this.player.maxHp, this.player.hp + healed);
-        return { kind: 'lifestealLowHp', amount: healed };
-      }
-      // æ­¦å™¨Affixã€Œå‘ªæ¯’ã®åˆƒã€ï¼šhitæ™‚ä½ç¢ºç‡ã§DoTã‚’ä»˜ä¸ã™ã‚‹
-      if (eff.kind === 'hitApplyDot' && !target.dead) {
-        this._applyDotToTarget(target, eff.power, eff.dotTurns || 3, eff.maxStacks || 3);
-        return { kind: 'hitApplyDot', stacks: target.dotStacks };
-      }
-      // Build Affixã€Œåƒåˆƒã€ï¼šmulti-hité€šå¸¸æ”»æ’ƒ/é€£æ’ƒæŠ€ã®æœ€å¾Œã®ä¸€æ’ƒã«ã ã‘
-      // è¿½åŠ ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’ä¹—ã›ã‚‹ï¼ˆctx.hitIndex/ctx.hitsTotalãŒæ¸¡ã•ã‚Œãªã„
-      // å‘¼ã³å‡ºã—å…ƒã§ã¯å˜ç™ºã¨ã¿ãªã—ãã®ã¾ã¾ç™ºå‹•ã™ã‚‹ï¼‰
-      if (eff.kind === 'lastHitBonus' && !target.dead) {
-        const isLast = ctx.hitsTotal == null || ctx.hitIndex === ctx.hitsTotal - 1;
-        if (!isLast) return null;
-        const bonus = Math.round(dmg * eff.power);
-        const kill = this._applyRawDamageAndReward(target, bonus);
-        return { kind: 'lastHitBonus', amount: bonus, targetName: target.name, targetDead: target.dead, kill };
-      }
-      if (eff.kind === 'burnDamage' && !target.dead) {
-        const burn = Math.round(this.player.atk * eff.power);
-        const kill = this._applyRawDamageAndReward(target, burn);
-        return { kind: 'burnDamage', amount: burn, targetName: target.name, targetDead: target.dead, kill };
-      }
-      if (eff.kind === 'bloodChalice') {
-        this._bloodChaliceBonus = eff.power;
-        this._bloodChaliceTurns = roundsFromSeconds(eff.duration);
-        return { kind: 'bloodChalice' };
-      }
-      if (eff.kind === 'weaken' && !target.dead) {
-        this._applyWeakenToTarget(target, eff.stat, eff.power, roundsFromSeconds(eff.duration));
-        return { kind: 'weaken', stat: eff.stat };
-      }
-      if (eff.kind === 'burnStack' && !target.dead) {
-        // ChatGPTãƒ¬ãƒ“ãƒ¥ãƒ¼æŒ‡æ‘˜4ç•ªï¼šdurationã‚’ãã®ã¾ã¾roundsFromSeconds()ã«
-        // é€šã™ã¨ã€Œä½•ãƒ©ã‚¦ãƒ³ãƒ‰å±…åº§ã‚‹ã‹ã€ã§ã‚ã£ã¦ã€Œä½•å›tickã™ã‚‹ã‹ã€ã§ã¯ãªã
-        // ãªã£ã¦ã—ã¾ã†ï¼ˆå®Ÿæ™‚é–“ã§ã¯tickInterval=1ç§’æ¯ã€duration=3ã€œ4ç§’ï¼
-        // 3ã€œ4å›tickã—ã¦ã„ãŸã®ã«ã€roundsFromSeconds(3ã€œ4)ã¯1ãƒ©ã‚¦ãƒ³ãƒ‰ã«ã—ã‹
-        // ãªã‚‰ãšã€1ãƒ©ã‚¦ãƒ³ãƒ‰1tickã®æœ¬å®Ÿè£…ã§ã¯åˆè¨ˆtickæ•°ãŒå®Ÿæ™‚é–“ã®1/3ã€œ1/4ã«
-        // æ¸›ã£ã¦ã—ã¾ã£ã¦ã„ãŸï¼‰ã€‚ã€Œ1ãƒ©ã‚¦ãƒ³ãƒ‰ã«ã¤ã1tickã€ã¨ã„ã†åˆ†ã‹ã‚Šã‚„ã™ã„
-        // ã‚¿ãƒ¼ãƒ³åˆ¶ã®é‹ç”¨ã¯ä¿ã£ãŸã¾ã¾ã€tickå›æ•°ï¼ˆ=dotTurnsLeftï¼‰è‡ªä½“ã‚’
-        // duration/tickIntervalã®å®Ÿæ™‚é–“tickç·æ•°ã§æ±ºã‚ã‚‹ã“ã¨ã§ã€1tickã‚ãŸã‚Šã®
-        // å¨åŠ›ï¼ˆdotPowerï¼‰ã¯å¤‰ãˆãšã«åˆè¨ˆæœŸå¾…ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’å®Ÿæ™‚é–“ç›¸å½“ã«ä¿ã¤ã€‚
-        const turns = Math.max(1, Math.round(eff.duration / (eff.tickInterval || TEXT_BATTLE_LAYER.SECONDS_PER_ROUND)));
-        this._applyDotToTarget(target, eff.power, turns, eff.maxStacks);
-        return { kind: 'burnStack', stacks: target.dotStacks };
-      }
-      if (eff.kind === 'everyNHits' && !target.dead) {
-        this._hitCounters[eff.id] = (this._hitCounters[eff.id] || 0) + 1;
-        if (this._hitCounters[eff.id] % eff.n === 0) {
-          const burst = Math.round(this.player.atk * eff.power);
-          if (eff.aoe) {
-            const hits = [];
-            const kills = [];
-            for (const e of this.aliveEnemies) {
-              const kill = this._applyRawDamageAndReward(e, burst);
-              hits.push(e.name);
-              if (kill) kills.push({ name: e.name, kill });
-            }
-            return { kind: 'everyNHits', amount: burst, aoe: true, hits, kills };
-          }
-          const kill = this._applyRawDamageAndReward(target, burst);
-          return { kind: 'everyNHits', amount: burst, aoe: false, targetName: target.name, targetDead: target.dead, kill };
-        }
-        return null;
-      }
-    } else if (trigger === 'onCrit') {
-      const { target } = ctx;
-      if (eff.kind === 'lightning' && !target.dead) {
-        const bolt = Math.round(this.player.atk * eff.power);
-        const kill = this._applyRawDamageAndReward(target, bolt);
-        return { kind: 'lightning', amount: bolt, targetName: target.name, targetDead: target.dead, kill };
-      }
-      if (eff.kind === 'timeStop' && !target.dead) {
-        target.frozenTurns = Math.max(target.frozenTurns, roundsFromSeconds(eff.duration));
-        return { kind: 'timeStop' };
-      }
-      // æ­¦å™¨Affixã€Œä¼šå¿ƒã®ç™’ã—ã€ã€Œä¼šå¿ƒã®é–ƒãã€ã€Œé­”åŠ›å¾ªç’°ã€ï¼ˆBuildå¼·åŒ–å‹è¾¼ã¿ï¼‰
-      if (eff.kind === 'healOnCrit') {
-        const healed = Math.round(this.player.maxHp * eff.power);
-        this.player.hp = Math.min(this.player.maxHp, this.player.hp + healed);
-        return { kind: 'healOnCrit', amount: healed };
-      }
-      if (eff.kind === 'mpOnCrit') {
-        const restored = Math.round(this.player.maxMp * eff.power);
-        this.player.mp = Math.min(this.player.maxMp, this.player.mp + restored);
-        return { kind: 'mpOnCrit', amount: restored };
-      }
-      // æ­¦å™¨Affixã€Œä¼šå¿ƒã®é€£æ’ƒã€ï¼šä¼šå¿ƒæ™‚ã«ä½ç¢ºç‡ã§è¿½æ’ƒï¼ˆperActionCapã§æš´èµ°é˜²æ­¢æ¸ˆã¿ï¼‰
-      if (eff.kind === 'critExtraAttack' && !target.dead) {
-        const atkValue = this._effectiveAtk() * eff.power;
-        const { damage } = this.calculateDamage(atkValue, target, { noBossMult: false });
-        const hit = this._applyDamageToEnemy(target, damage, false);
-        return { kind: 'critExtraAttack', amount: damage, targetName: target.name, targetDead: target.dead, kill: hit.kill };
-      }
-      // æ­¦å™¨Affixã€Œä¼šå¿ƒã®é«˜æšã€ã€Œä¼šå¿ƒã®è¸è¾¼ã€ï¼šä¼šå¿ƒæ™‚ã«çŸ­æ™‚é–“ã®è‡ªå·±ãƒãƒ•
-      if (eff.kind === 'critAtkBuff') { this._applyBuffPayload({ atkPct: eff.power, turns: eff.turns }, {}); return { kind: 'critAtkBuff' }; }
-      if (eff.kind === 'critSpdBuff') { this._applyBuffPayload({ spdPct: eff.power, turns: eff.turns }, {}); return { kind: 'critSpdBuff' }; }
-    } else if (trigger === 'onHurt') {
-      const { attacker } = ctx;
-      if (eff.kind === 'counter' && attacker && !attacker.dead) {
-        const counterDmg = Math.round(this.player.atk * eff.power);
-        const kill = this._applyRawDamageAndReward(attacker, counterDmg);
-        return { kind: 'counter', amount: counterDmg, targetName: attacker.name, targetDead: attacker.dead, kill };
-      }
-      if (eff.kind === 'haste') {
-        // å®Ÿæ™‚é–“ç§»å‹•é€Ÿåº¦ãƒãƒ•â†’ãƒ†ã‚­ã‚¹ãƒˆæˆ¦é—˜ã§ã¯SPD/å…ˆæ”»ãƒœãƒ¼ãƒŠã‚¹ã¸è»¢ç”¨ï¼ˆå…ƒæŒ‡ç¤º5ç•ªï¼‰
-        this._hasteInitiativeBonus = eff.power * 20;
-        this._hasteInitiativeTurns = roundsFromSeconds(eff.duration);
-        return { kind: 'haste' };
-      }
-      if (eff.kind === 'guardianHeal') {
-        const healed = Math.round(this.player.maxHp * eff.power);
-        this.player.hp = Math.min(this.player.maxHp, this.player.hp + healed);
-        return { kind: 'guardianHeal', amount: healed };
-      }
-    } else if (trigger === 'onKill') {
-      const { enemy } = ctx;
-      if (eff.kind === 'deathNova') {
-        const nova = Math.round(this.player.atk * eff.power);
-        const hits = [];
-        const kills = [];
-        for (const e of this.aliveEnemies) {
-          if (e === enemy) continue;
-          const kill = this._applyRawDamageAndReward(e, nova);
-          hits.push(e.name);
-          if (kill) kills.push({ name: e.name, kill });
-        }
-        return { kind: 'deathNova', amount: nova, hits, kills };
-      }
-      // èªã‚Šéƒ¨ã€Œå‹åˆ©ã®ç‰©èªã€ï¼šæ’ƒç ´æ™‚ã«çŸ­æ™‚é–“ã®è‡ªå·±ãƒãƒ•ãŒè‡ªå‹•ç™ºå‹•ã™ã‚‹
-      // ï¼ˆæ—¢å­˜ã®_addTempEffectã§onKillãƒˆãƒªã‚¬ãƒ¼ã¸ä¸€æ™‚ä»˜ä¸ã•ã‚ŒãŸåŠ¹æœã‚’ã€
-      // é€šå¸¸ã®onKillãƒ‡ã‚£ã‚¹ãƒ‘ãƒƒãƒçµŒè·¯ã§ãã®ã¾ã¾å‡¦ç†ã™ã‚‹ã ã‘ã®è–„ã„è¿½åŠ ï¼‰
-      if (eff.kind === 'selfBuffOnKill') {
-        this._applyBuffPayload(eff.buffPayload, {});
-        return { kind: 'selfBuffOnKill' };
-      }
-      // æ­¦å™¨Affixã€Œå–°ã‚‰ã„ã—åˆƒã€ã€Œé­‚ã®æ®‹æ»“ã€ï¼šæ’ƒç ´æ™‚ã«HP/MPã‚’å›å¾©ã™ã‚‹
-      if (eff.kind === 'healOnKill') {
-        const healed = Math.round(this.player.maxHp * eff.power);
-        this.player.hp = Math.min(this.player.maxHp, this.player.hp + healed);
-        return { kind: 'healOnKill', amount: healed };
-      }
-      if (eff.kind === 'mpOnKill') {
-        const restored = Math.round(this.player.maxMp * eff.power);
-        this.player.mp = Math.min(this.player.maxMp, this.player.mp + restored);
-        return { kind: 'mpOnKill', amount: restored };
-      }
-    } else if (trigger === 'onEvade') {
-      // å‰£è±ªã€Œè¦‹åˆ‡ã‚Šã€ãƒ»é‰„è¾²å…µç³»ï¼šå›é¿ã«æˆåŠŸã—ãŸç¬é–“ã®åæ’ƒï¼ˆæ—¢å­˜counterã¨
-      // åŒã˜è¨ˆç®—å¼ã‚’ã€æ–°ã—ã„ãƒˆãƒªã‚¬ãƒ¼åonEvadeã§ç™ºç«ã•ã›ã‚‹ã ã‘ï¼‰
-      const { attacker } = ctx;
-      if (eff.kind === 'counter' && attacker && !attacker.dead) {
-        const counterDmg = Math.round(this.player.atk * eff.power);
-        const kill = this._applyRawDamageAndReward(attacker, counterDmg);
-        return { kind: 'counter', amount: counterDmg, targetName: attacker.name, targetDead: attacker.dead, kill };
-      }
-      // æ­¦å™¨Affixã€Œè¦‹åˆ‡ã‚Šã®å¿ƒå¾—ã€ï¼šå›é¿æˆåŠŸå¾Œã€çŸ­æ™‚é–“CritãŒä¸ŠãŒã‚‹
-      if (eff.kind === 'evadeCritBuff') {
-        this._applyBuffPayload({ critAdd: eff.power, turns: eff.turns }, {});
-        return { kind: 'evadeCritBuff' };
-      }
-    } else if (trigger === 'onGuard') {
-      // æ­¦å™¨Affixã€Œå®ˆã‚Šã®å¿ƒå¾—ã€ã€Œé™å¯‚ã®å‘¼å¸ã€ã€Œå—ã‘ã®æ§‹ãˆã€ã€Œé‰„ã®å¾©è®ã€ï¼š
-      // ã¼ã†ãã‚‡æˆåŠŸæ™‚ã«ç™ºå‹•ã™ã‚‹ï¼ˆ_playerGuard()ã‹ã‚‰å‘¼ã°ã‚Œã‚‹æ–°è¦triggerï¼‰
-      if (eff.kind === 'healOnGuard') {
-        const healed = Math.round(this.player.maxHp * eff.power);
-        this.player.hp = Math.min(this.player.maxHp, this.player.hp + healed);
-        return { kind: 'healOnGuard', amount: healed };
-      }
-      if (eff.kind === 'mpOnGuard') {
-        const restored = Math.round(this.player.maxMp * eff.power);
-        this.player.mp = Math.min(this.player.maxMp, this.player.mp + restored);
-        return { kind: 'mpOnGuard', amount: restored };
-      }
-      if (eff.kind === 'guardNextAtkBuff') {
-        this._tempAtkBonus = eff.power; this._tempAtkTurns = 1;
-        return { kind: 'guardNextAtkBuff' };
-      }
-      // Build Affixã€Œé‰„ã®å¾©è®ã€ï¼šæ¬¡ã«è¢«å¼¾ã—ãŸç¬é–“ã ã‘åæ’ƒã™ã‚‹ä¸€æ™‚åŠ¹æœã‚’ç©ã‚€
-      // ï¼ˆæ—¢å­˜ã®æŠ€tempEffectï¼_addTempEffectã¨å…¨ãåŒã˜ä»•çµ„ã¿ã‚’å†åˆ©ç”¨ï¼‰
-      if (eff.kind === 'guardCounter') {
-        this._addTempEffect({ trigger: 'onHurt', kind: 'counter', power: eff.power }, 1);
-        return { kind: 'guardCounter' };
-      }
-    } else if (trigger === 'onDot') {
-      // æ­¦å™¨Affixã€Œæ¯’ç…™ã®å‘¼å¸ã€ï¼šDoTä»˜ä¸æ™‚ã«MPå›å¾©
-      if (eff.kind === 'mpOnDot') {
-        const restored = Math.round(this.player.maxMp * eff.power);
-        this.player.mp = Math.min(this.player.maxMp, this.player.mp + restored);
-        return { kind: 'mpOnDot', amount: restored };
-      }
-    }
-    return null;
-  }
-
-  _checkActionDiversityBurst(result) {
-    const eff = this._effectsOf('passive').find((e) => e.kind === 'actionDiversityBurst');
-    if (!eff || this._actionTypesUsed.size < 2) return; // ã‚¿ãƒ¼ãƒ³åˆ¶ã§ã¯é€šå¸¸æ”»æ’ƒ/ã¨ããã®2ç¨®ã®ã¿é‹ç”¨
-    const dmg = Math.round(this.player.atk * eff.power);
-    const hits = [];
-    const kills = [];
-    for (const e of this.aliveEnemies) {
-      const kill = this._applyRawDamageAndReward(e, dmg);
-      hits.push(e.name);
-      if (kill) kills.push({ name: e.name, kill });
-    }
-    result.actionDiversityBurst = { amount: dmg, hits, kills };
-    this._actionTypesUsed.clear();
-  }
-
-  // dmgã‚’ä¸ãˆã€ç”Ÿãã¦ã„ã‚Œã°onHit/ï¼ˆcriticalãªã‚‰ï¼‰onCritç³»å›ºæœ‰åŠ¹æœã‚’é©ç”¨ã™ã‚‹ã€‚
-  // 1hitã¶ã‚“ã®çµæœã‚’ã¾ã¨ã‚ã¦è¿”ã™ï¼ˆChatGPTãƒ¬ãƒ“ãƒ¥ãƒ¼æŒ‡æ‘˜1ç•ªï¼šmulti-hitã¯
-  // ã“ã®ãƒ¡ã‚½ãƒƒãƒ‰ã‚’1hitã”ã¨ã«å‘¼ã³å‡ºã™ã“ã¨ã§ã€1hitå˜ä½ã®onHit/onCritç™ºç«ãƒ»
-  // lifestealä¸Šé™ã‚’æˆç«‹ã•ã›ã‚‹ã€‚criticalã¯å‘¼ã³å‡ºã—å´ãŒãã®hitã®ä¼šå¿ƒåˆ¤å®š
-  // çµæœã‚’æ˜ç¤ºçš„ã«æ¸¡ã™ï¼ä»¥å‰å‚ç…§ã—ã¦ã„ãŸæœªåˆæœŸåŒ–ã®this.lastHitCritã¯å»ƒæ­¢ï¼‰ã€‚
-  // hitIndex/hitsTotalï¼ˆBuild Affixã€Œåƒåˆƒã€ç”¨ï¼‰ï¼šmulti-hitå‘¼ã³å‡ºã—å…ƒã ã‘ãŒ
-  // æ¸¡ã™ã€‚çœç•¥æ™‚ï¼ˆä»–ã®å…¨å‘¼ã³å‡ºã—ï¼‰ã¯å˜ç™ºæ‰±ã„ã¨ã—ã¦lastHitBonusãŒç´ ç›´ã«ç™ºå‹•ã™ã‚‹
-  _applyDamageToEnemy(target, dmg, critical = false, hitIndex = null, hitsTotal = null) {
-    const killResult = this._applyRawDamageAndReward(target, dmg);
-    const hitEvents = this.applyEffect('onHit', { target, dmg, lifestealUsed: 0, hitIndex, hitsTotal });
-    const critEvents = critical ? this.applyEffect('onCrit', { target }) : [];
-    return {
-      damage: dmg, targetId: target.id, targetName: target.name, defeated: target.dead,
-      effects: [...hitEvents, ...critEvents], kill: killResult,
-    };
-  }
-
-  // é€šå¸¸æ”»æ’ƒãƒ»ã‚¹ã‚­ãƒ«ä»¥å¤–ã®çµŒè·¯ï¼ˆDoT/AoE/è¿½æ’ƒ/deathNovaç­‰ï¼‰ã§æ•µã‚’å€’ã—ã¦ã‚‚ã€
-  // å¿…ãšä¸€åº¦ã ã‘æ’ƒç ´å‡¦ç†ï¼ˆEXP/Gold/Drop/onKillï¼‰ã«åˆ°é”ã•ã›ã‚‹ãŸã‚ã®å…±é€šå‡¦ç†
-  // ï¼ˆChatGPTãƒ¬ãƒ“ãƒ¥ãƒ¼æŒ‡æ‘˜2ç•ªï¼‰ã€‚enemy._rewardsGrantedï¼ˆ_grantKillRewardså†…ã§
-  // ç«‹ã¦ã‚‹ï¼‰ã«ã‚ˆã‚Šã€åŒã˜æ•µã¸ã®è¤‡æ•°ã®çµŒè·¯ã‹ã‚‰ã®å‘¼ã³å‡ºã—ã§ã‚‚å ±é…¬ã®äºŒé‡å–å¾—ã¯
-  // ç™ºç”Ÿã—ãªã„ã€‚
-  _applyRawDamageAndReward(enemy, dmg) {
-    this._applyRawDamage(enemy, dmg);
-    if (enemy.dead && !enemy._rewardsGranted) return this._grantKillRewards(enemy);
-    return null;
-  }
-
-  _applyRawDamage(enemy, dmg) {
-    enemy.hp -= dmg;
-    if (enemy.hp <= 0 && !enemy.dead) {
-      enemy.dead = true;
-      this.defeated++;
-    }
-  }
-
-  _grantKillRewards(enemy) {
-    enemy._rewardsGranted = true;
-    const expRes = state.gainExp(Math.round(enemy.xp * this._expMult()));
-    const goldGain = state.gainGold(Math.round(enemy.gold * this._goldMult()));
-    this.runExp += expRes.gained;
-    this.runGold += goldGain;
-    if (this.weaponType) state.addWeaponKill(this.weaponType);
-    state.addItemAwakenKills();
-    if (enemy.elite) state.addAbyssShards(ABYSS_EXPANSION_LAYER.ELITE_SHARD_DROP);
-    const onKillEvents = this.applyEffect('onKill', { enemy });
-    // æ­¦å™¨Affixï¼ˆPart Aï¼‰ï¼šæ·±æ·µæ·±åº¦ãƒ»Eliteãƒ»Bossè¨ä¼ã§Affixå“è³ªãŒå°‘ã—ä¸ŠãŒã‚‹
-    const dropCtx = { depth: this.stage.isAbyss ? (this.stage.abyssDepth || 0) : 0, elite: !!enemy.elite, boss: !!enemy.boss };
-    const drops = [];
-    const dropInfo = this._rollDrop(dropCtx); if (dropInfo) drops.push(dropInfo);
-    const weaponDropInfo = this._rollWeaponDrop(dropCtx); if (weaponDropInfo) drops.push(weaponDropInfo);
-    const manastone = this._rollManastone(enemy);
-    let bossSlayerBuff = null;
-    if (enemy.boss) {
-      for (const eff of this._effectsOf('passive')) {
-        if (eff.kind === 'bossSlayerBuff') {
-          this._tempAtkBonus = eff.power;
-          this._tempAtkTurns = roundsFromSeconds(eff.duration);
-          bossSlayerBuff = true;
-        }
-      }
-      const bossWeaponDrop = this._rollBossWeaponDrop(dropCtx);
-      if (bossWeaponDrop) drops.push(bossWeaponDrop);
-      this.boss = null;
-    }
-    return {
-      xp: expRes.gained, gold: goldGain, leveledUp: expRes.leveledUp,
-      drops, manastone, onKillEvents, bossSlayerBuff,
-    };
-  }
-
-  _goldMult() {
-    let m = this.blessing && this.blessing.kind === 'goldMult' ? 1 + this.blessing.power : 1;
-    if (this.stage.isAbyss && this.stage.boss) m *= state.abyssBossFloorRewardMult();
-    // å•†äººã€Œå•†é­‚ã€ãƒ»è¾²æ°‘ã€Œå¤§åç©«ã€ï¼šæˆ¦é—˜ä¸­ã®ä¸€æ™‚çš„ãªGoldç²å¾—ãƒœãƒ¼ãƒŠã‚¹
-    if (this._tempGoldBonusTurns > 0) m *= (1 + this._tempGoldBonus);
-    // æ­¦å™¨Affixã€Œå•†æ‰ã€
-    m *= 1 + sumPassivePower(this.effects, 'goldMultAdd');
-    return m;
-  }
-  _expMult() {
-    let m = this.blessing && this.blessing.kind === 'expMult' ? 1 + this.blessing.power : 1;
-    if (this.stage.isAbyss && this.stage.boss) m *= state.abyssBossFloorRewardMult();
-    // èªã‚Šéƒ¨ã€Œä¼èª¬ã®ä¸€ç¯€ã€ï¼šæ•°ã‚¿ãƒ¼ãƒ³ã®çµŒé¨“å€¤å–å¾—ãƒœãƒ¼ãƒŠã‚¹
-    if (this._tempExpBonusTurns > 0) m *= (1 + this._tempExpBonus);
-    // æ­¦å™¨Affixã€Œç¿’ç†Ÿã®å¿ƒå¾—ã€
-    m *= 1 + sumPassivePower(this.effects, 'expMultAdd');
-    return m;
-  }
-  // ãƒˆãƒ¬ã‚¸ãƒ£ãƒ¼ãƒãƒ³ã‚¿ãƒ¼ã€Œç›®åˆ©ãã€ãƒ»å¤§å•†äººã€Œé‘‘å®šçœ¼ã€ï¼šæˆ¦é—˜ä¸­ã ã‘ãƒ‰ãƒ­ãƒƒãƒ—ç‡ã‚’
-  // åº•ä¸Šã’ã™ã‚‹ä¸€æ™‚ãƒœãƒ¼ãƒŠã‚¹ï¼ˆæ—¢å­˜ã®state.dropRateMult()ç­‰ãƒ»æ°¸ç¶šé€²è¡Œåº¦ã¯å¤‰æ›´ã—ãªã„ï¼‰ã€‚
-  // æ­¦å™¨Affixã€Œå¹¸é‹ã€ã‚‚åŒã˜ã€Œæˆ¦é—˜ä¸­ã ã‘ã®æ›ã‘ç®—ãƒœãƒ¼ãƒŠã‚¹ã€æ ã«åˆæµã•ã›ã‚‹
-  _dropChanceBonusMult() {
-    let m = this._tempDropRateBonusTurns > 0 ? (1 + this._tempDropRateBonus) : 1;
-    m *= 1 + sumPassivePower(this.effects, 'dropRateMultAdd');
-    return m;
-  }
-
-  _rollWeaponDrop(dropCtx) {
-    if (Math.random() > WEAPON_CODEX_LAYER.DROP_CHANCE * state.dropRateMult() * this._dropChanceBonusMult()) return null;
-    const pool = weaponDropPoolForStage(this.stage);
-    if (pool.length === 0) return null;
-    const totalW = pool.reduce((s, d) => s + d.weight, 0);
-    let r = Math.random() * totalW;
-    for (const d of pool) {
-      r -= d.weight;
-      if (r <= 0) {
-        const isNew = state.addItem(d.itemId, 1, dropCtx);
-        this.runItems.push(d.itemId);
-        return this._describeDrop(d.itemId, isNew, state.consumeLastWeaponInstanceId());
-      }
-    }
-    return null;
-  }
-
-  _rollBossWeaponDrop(dropCtx) {
-    if (this._bossWeaponDropped || !this.chapter) return null;
-    const bossWeapon = bossWeaponForChapter(this.chapter.id);
-    if (!bossWeapon) return null;
-    if (Math.random() > WEAPON_CODEX_LAYER.BOSS_WEAPON_DROP_CHANCE) return null;
-    this._bossWeaponDropped = true;
-    const isNew = state.addItem(bossWeapon.id, 1, dropCtx);
-    this.runItems.push(bossWeapon.id);
-    return this._describeDrop(bossWeapon.id, isNew, state.consumeLastWeaponInstanceId());
-  }
-
-  _rollManastone(enemy) {
-    if (enemy.boss) {
-      const amount = Math.round(rand(ECONOMY.MANASTONE_BOSS_MIN, ECONOMY.MANASTONE_BOSS_MAX));
-      state.addManastone(amount);
-      return amount;
-    }
-    if (Math.random() > ECONOMY.MANASTONE_NORMAL_CHANCE) return 0;
-    const amount = Math.round(rand(ECONOMY.MANASTONE_NORMAL_MIN, ECONOMY.MANASTONE_NORMAL_MAX));
-    state.addManastone(amount);
-    return amount;
-  }
-
-  _rollDrop(dropCtx) {
-    const table = this.stage.dropTable || [];
-    if (table.length === 0) return null;
-    const abyssMult = this.stage.isAbyss ? (this.stage.dropMult || 1) * state.abyssDropRateMult() : 1;
-    const chance = ECONOMY.BASE_DROP_CHANCE * state.dropRateMult() * abyssMult * this._dropChanceBonusMult();
-    if (Math.random() > chance) return null;
-    let pool = table;
-    if (Math.random() < state.awakeningUnownedBiasChance()) {
-      const unowned = table.filter((d) => !state.ownsItem(d.itemId));
-      if (unowned.length > 0) pool = unowned;
-    }
-    const totalW = pool.reduce((s, d) => s + d.weight, 0);
-    let r = Math.random() * totalW;
-    for (const d of pool) {
-      r -= d.weight;
-      if (r <= 0) {
-        const isNew = state.addItem(d.itemId, 1, dropCtx);
-        this.runItems.push(d.itemId);
-        return this._describeDrop(d.itemId, isNew, state.consumeLastWeaponInstanceId());
-      }
-    }
-    return null;
-  }
-
-  // instanceIdï¼ˆæ­¦å™¨Affixãƒ»Part Aï¼‰ï¼šæ­¦å™¨ãƒ‰ãƒ­ãƒƒãƒ—ã®å ´åˆã ã‘æ¸¡ã•ã‚Œã‚‹ã€‚
-  // Legendaryä»¥ä¸Šã®Affixã‚’å«ã‚€å ´åˆã¯hasRareAffixã‚’ç«‹ã¦ã€ç”»é¢å´ã®ãƒ­ã‚°æ¼”å‡º
-  // ï¼ˆå…ƒæŒ‡ç¤ºã€Œãƒ¬ã‚¢Affixæ¼”å‡ºã€ï¼‰ãŒå‚ç…§ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
-  _describeDrop(itemId, isNew, instanceId) {
-    const item = getItem(itemId);
-    if (item) {
-      const affixes = instanceId ? state.weaponInstanceAffixes(instanceId) : [];
-      return {
-        itemId, name: item.name, rarity: item.rarity, isNew, isBossWeapon: !!item.isBossWeapon,
-        instanceId: instanceId || null, affixCount: affixes.length,
-        hasRareAffix: hasRareAffix(affixes), highestAffixRarity: highestAffixRarity(affixes),
-      };
-    }
-    const rune = getRune(itemId);
-    if (rune) return { itemId, name: rune.name, rarity: null, isNew, isRune: true };
-    return { itemId, name: itemId, rarity: null, isNew };
-  }
-
-  // ---------------------------------------------------------
-  // æ•µã®æ‰‹ç•ªï¼ˆé€šå¸¸æ•µAIãƒ»Boss AIï¼‰å…ƒæŒ‡ç¤º7ãƒ»8ãƒ»9ãƒ»11ç•ª
-  // ---------------------------------------------------------
-  performEnemyTurn(enemy) {
-    if (enemy.dead) return null;
-    if (enemy.frozenTurns > 0) { enemy.frozenTurns--; return { enemyId: enemy.id, name: enemy.name, frozen: true }; }
-
-    if (enemy.boss) return this._performBossTurn(enemy);
-
-    // é€šå¸¸æ•µAIï¼ˆå…ƒæŒ‡ç¤º11ç•ªï¼‰ï¼šç¾çŠ¶ã¯ã€Œé€šå¸¸æ”»æ’ƒä¸­å¿ƒã€ã§çµ±ä¸€ã™ã‚‹ã€‚fast/tankç­‰ã®
-    // å€‹æ€§ã¯æ—¢ã«ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹å·®ï¼ˆspdé«˜ã„ï¼å…ˆæ”»ã—ã‚„ã™ã„ã€tank defé«˜ã„ç­‰ï¼‰ã§
-    // è¡¨ç¾ã•ã‚Œã¦ã„ã‚‹ãŸã‚ã€è¡Œå‹•ãã®ã‚‚ã®ã¯å˜ç´”ãªé€šå¸¸æ”»æ’ƒã§ååˆ†ã€‚å°†æ¥ã€å›å¾©/
-    // ãƒãƒ•/ãƒ‡ãƒãƒ•/é­”æ³•/é˜²å¾¡ã‚¿ã‚¤ãƒ—ã®æ•µã‚’è¿½åŠ ã™ã‚‹éš›ã¯ã“ã“ã«åˆ†å²ã‚’å¢—ã‚„ã™ã€‚
-    const enemyAtk = this._effectiveEnemyStat(enemy, 'atk');
-    if (Math.random() < this._effectiveEvasion()) {
-      const evadeEvents = this._onPlayerEvaded(enemy);
-      return { enemyId: enemy.id, name: enemy.name, kind: 'attack', evaded: true, evadeEvents };
-    }
-    const dmg = this._enemyAttackDamage(enemyAtk);
-    this.player.hp -= dmg;
-    const hurtEvents = this.applyEffect('onHurt', { attacker: enemy });
-    return { enemyId: enemy.id, name: enemy.name, kind: 'attack', damage: dmg, evaded: false, hurtEvents };
-  }
-
-  // å‰£è±ªã€Œè¦‹åˆ‡ã‚Šã€ãƒ»æ€ªç›—MASTERã€ŒèƒŒå¾Œã®ä¸€æ’ƒã€ãƒ»å¹»æƒ‘ã®èˆå§«MASTERã€Œå¤¢å¹»ä¹±èˆã€ï¼š
-  // å›é¿æˆåŠŸã‚’æ¤œçŸ¥ã™ã‚‹3ç®‡æ‰€ï¼ˆé€šå¸¸æ•µãƒ»Bossé€šå¸¸æ”»æ’ƒãƒ»Bossç‰¹æ®Šæ”»æ’ƒï¼‰ã§å…±é€šã«å‘¼ã¶
-  _onPlayerEvaded(attacker) {
-    this._playerEvadedLastRound = true;
-    this._playerEvasionCount = (this._playerEvasionCount || 0) + 1;
-    return this.applyEffect('onEvade', { attacker });
-  }
-
-  _performBossTurn(enemy) {
-    // ãƒ•ã‚§ãƒ¼ã‚º2ãƒã‚§ãƒƒã‚¯ï¼ˆå…ƒæŒ‡ç¤º9ç•ªï¼‰ï¼šHP50%ä»¥ä¸‹ã§å¼·åŒ–çŠ¶æ…‹ã¸ç§»è¡Œ
-    if (enemy.aiPhase === 1 && enemy.hp / enemy.maxHp <= BOSS_AI_LAYER.PHASE2_HP_RATIO) {
-      enemy.aiPhase = 2;
-      enemy.atk = Math.round(enemy.atk * BOSS_AI_LAYER.PHASE2_ATK_MULT);
-      if (enemy.slamTurns != null) enemy.slamTurns = Math.max(1, Math.round(enemy.slamTurns * BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT));
-      if (enemy.chargeTurns != null) enemy.chargeTurns = Math.max(1, Math.round(enemy.chargeTurns * BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT));
-      if (enemy.projectileTurns != null) enemy.projectileTurns = Math.max(1, Math.round(enemy.projectileTurns * BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT));
-      if (enemy.summonTurns != null) enemy.summonTurns = Math.max(1, Math.round(enemy.summonTurns * BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT));
-      enemy._justPhased = true;
-    }
-    // ã“ã®ã‚¿ãƒ¼ãƒ³ã®æ‰‹ç•ªãŒã©ã®åˆ†å²ï¼ˆäºˆå…†è§£æ±ºï¼æ–°è¦äºˆå…†ï¼å¬å–šï¼é€šå¸¸æ”»æ’ƒï¼‰ã«é€²ã‚“ã§ã‚‚
-    // ã€ŒPhase2ã¸ç§»è¡Œã—ãŸç›´å¾Œã®æ‰‹ç•ªã§ã‚ã‚‹ã€ã“ã¨ã‚’ä¸€åº¦ã ã‘ãƒ­ã‚°ã¸ä¼ãˆã‚‰ã‚Œã‚‹ã‚ˆã†ã€
-    // ã“ã“ã§èª­ã¿å–ã£ã¦å³åº§ã«æ¶ˆè²»ã™ã‚‹ï¼ˆåˆ†å²ã”ã¨ã«èª­ã¿æ›¸ãã™ã‚‹ã¨ã€ç‰¹æ®Šæ”»æ’ƒè§£æ±ºã‚„
-    // å¬å–šã®åˆ†å²ã§ã¯ãƒ•ãƒ©ã‚°ãŒèª­ã¾ã‚Œãšãƒªã‚»ãƒƒãƒˆã‚‚ã•ã‚Œãªã„ã¾ã¾æ¬¡å›ä»¥é™ã®é€šå¸¸æ”»æ’ƒ
-    // ã¾ã§æŒã¡è¶Šã•ã‚Œã¦ã—ã¾ã„ã€ç„¡é–¢ä¿‚ãªã‚¿ãƒ¼ãƒ³ã§ã€Œæ§˜å­ãŒå¤‰ã‚ã£ãŸã€ã¨èª¤ã£ã¦
-    // è¡¨ç¤ºã•ã‚Œã‚‹ä¸å…·åˆãŒã‚ã£ãŸï¼‰
-    const justPhased = !!enemy._justPhased;
-    enemy._justPhased = false;
-
-    // äºˆå…†ã‚¿ãƒ¼ãƒ³ã®è§£æ±ºï¼ˆå…ƒæŒ‡ç¤º7ç•ªï¼šå‰ã‚¿ãƒ¼ãƒ³ã§å®£è¨€ã—ãŸç‰¹æ®Šæ”»æ’ƒãŒå®Ÿéš›ã«ç™ºå‹•ã™ã‚‹ï¼‰
-    if (enemy.pendingSpecial) {
-      const kind = enemy.pendingSpecial;
-      enemy.pendingSpecial = null;
-      return this._resolveBossSpecial(enemy, kind, justPhased);
-    }
-
-    // æ–°è¦ã®ç‰¹æ®Šæ”»æ’ƒã‚’äºˆå…†ã™ã‚‹ï¼é›‘é­šã‚’å¬å–šã™ã‚‹ï¼é€šå¸¸æ”»æ’ƒã™ã‚‹ã€ã®åˆ¤å®šã€‚
-    // ------------------------------------------------------------
-    // ãƒãƒ©ãƒ³ã‚¹å†è¼ƒæ­£ï¼ˆå…ƒæŒ‡ç¤ºï¼šBossæ‰‹ç•ªã®å„ªå…ˆåº¦ç«¶åˆã«ã‚ˆã‚‹starvationé˜²æ­¢ï¼‰ï¼š
-    // æ—§å®Ÿè£…ã¯slamâ†’chargeâ†’projectileâ†’summonã®é †ã«ã€Œæ—©ã„è€…å‹ã¡ã€ã§åˆ¤å®šã—ã¦
-    // ãŠã‚Šã€ã©ã‚Œã‹1ã¤ãŒè‡ªåˆ†ã®ã‚«ã‚¦ãƒ³ã‚¿ã‚’0ã«ã—ãŸç¬é–“ã«å³returnã—ã¦ã„ãŸã€‚
-    // slamãŒæœ€çŸ­é–“éš”ï¼ˆç´„2ãƒ©ã‚¦ãƒ³ãƒ‰ï¼‰ã®ãŸã‚æœ€ã‚‚é »ç¹ã«æ¡ä»¶ã‚’æº€ãŸã—ã€ãã®åº¦ã«
-    // charge/projectile/summonå´ã®ã‚«ã‚¦ãƒ³ã‚¿åˆ¤å®šãã®ã‚‚ã®ã¸å‡¦ç†ãŒåˆ°é”ã—ãªããªã‚‹
-    // ï¼ˆæ—©æœŸreturnã§å¾Œç¶šã®ifæ–‡ãŒå®Ÿè¡Œã•ã‚Œãªã„ï¼å¾Œç¶šã®æŠ€ã¯ã€Œé †ç•ªå¾…ã¡ã§æ¸›ã‚Š
-    // ç¶šã‘ã‚‹ã€ã ã‘ã«ãªã‚Šã€20æ‰‹ç•ªä¸­ã§ã‚‚æ»…å¤šã«é †ç•ªãŒå›ã£ã¦ã“ãªã„ï¼šå®Ÿæ¸¬ã§
-    // summonãŒ5ç« Bossã®20æ‰‹ç•ªä¸­0å›ã ã£ãŸï¼‰ã€‚
-    // ä¿®æ­£ï¼šã¾ãšå…¨ã¦ã®æŠ€ã®ã‚«ã‚¦ãƒ³ã‚¿ã‚’æ¯å›å¿…ãšæ¸›ç®—ã—ã€ã€Œæº–å‚™å®Œäº†(<=0)ã€ã«
-    // ãªã£ãŸæŠ€ã‚’å…¨ã¦é›†ã‚ã¦ã‹ã‚‰ã€ç›´å‰ã«ä½¿ã£ãŸæŠ€ã‚’é™¤å¤–ã—ãŸä¸Šã§ä¹±æ•°é¸æŠã™ã‚‹
-    // ï¼ˆã©ã‚Œã‚‚æº–å‚™å®Œäº†ã—ã¦ã„ãªã‘ã‚Œã°é€šå¸¸æ”»æ’ƒï¼‰ã€‚é¸ã°ã‚Œãªã‹ã£ãŸæº–å‚™å®Œäº†æ¸ˆã¿ã®
-    // æŠ€ã¯ã‚«ã‚¦ãƒ³ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆã—ãªã„ï¼æ¬¡ã®åˆ¤å®šæ©Ÿä¼šã§ã‚‚å¼•ãç¶šãå€™è£œã«æ®‹ã‚‹ãŸã‚ã€
-    // å–ã‚Šã“ã¼ã•ã‚Œãªã„ã€‚åŒã˜æŠ€ã®é€£ç¶šä½¿ç”¨ã‚‚ï¼ˆä»–ã«é¸æŠè‚¢ãŒã‚ã‚‹é™ã‚Šï¼‰é¿ã‘ã‚‹ã€‚
-    const phaseMult = enemy.aiPhase === 2 ? BOSS_AI_LAYER.PHASE2_ATTACK_INTERVAL_MULT : 1;
-    const readyMoves = [];
-    if (enemy.slamTurns != null) { enemy.slamTurns--; if (enemy.slamTurns <= 0) readyMoves.push('slam'); }
-    if (enemy.chargeTurns != null) { enemy.chargeTurns--; if (enemy.chargeTurns <= 0) readyMoves.push('charge'); }
-    if (enemy.projectileTurns != null) { enemy.projectileTurns--; if (enemy.projectileTurns <= 0) readyMoves.push('projectile'); }
-    if (enemy.summonTurns != null) { enemy.summonTurns--; if (enemy.summonTurns <= 0) readyMoves.push('summon'); }
-    if (readyMoves.length > 0) {
-      let candidates = readyMoves;
-      if (readyMoves.length > 1 && enemy._lastMoveKind) {
-        const withoutLast = readyMoves.filter((k) => k !== enemy._lastMoveKind);
-        if (withoutLast.length > 0) candidates = withoutLast;
-      }
-      const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-      enemy._lastMoveKind = chosen;
-      if (chosen === 'summon') {
-        enemy.summonTurns = Math.max(1, Math.round(roundsFromSeconds(BOSS_AI_LAYER.SUMMON_INTERVAL_SEC) * phaseMult));
-        return this._bossSummon(enemy, justPhased);
-      }
-      return this._startBossTelegraph(enemy, chosen, phaseMult, justPhased);
-    }
-
-    // é€šå¸¸æ”»æ’ƒ
-    const enemyAtk = this._effectiveEnemyStat(enemy, 'atk');
-    if (Math.random() < this._effectiveEvasion()) {
-      const evadeEvents = this._onPlayerEvaded(enemy);
-      return { enemyId: enemy.id, name: enemy.name, kind: 'attack', evaded: true, phased: justPhased, evadeEvents };
-    }
-    const dmg = this._enemyAttackDamage(enemyAtk);
-    this.player.hp -= dmg;
-    const hurtEvents = this.applyEffect('onHurt', { attacker: enemy });
-    return { enemyId: enemy.id, name: enemy.name, kind: 'attack', damage: dmg, evaded: false, hurtEvents, phased: justPhased };
-  }
-
-  // äºˆå…†ã‚¿ãƒ¼ãƒ³é–‹å§‹ï¼ˆå…ƒæŒ‡ç¤º7ãƒ»11ãƒ»33ç•ªï¼šå¿…ãš1ã‚¿ãƒ¼ãƒ³åˆ†ã®å®£è¨€ã‚’çµŒã¦ã‹ã‚‰ç™ºå‹•ã™ã‚‹
-  // ãŸã‚ã€ãƒ¢ãƒã‚¤ãƒ«ã®ã‚¿ãƒƒãƒæ“ä½œã§ã‚‚ã€Œè¦‹ã¦ã‹ã‚‰é˜²å¾¡ã‚’é¸ã¹ã‚‹ã€è¨­è¨ˆã‚’ç¶­æŒã™ã‚‹ï¼‰
-  _startBossTelegraph(enemy, kind, phaseMult, justPhased) {
-    enemy.pendingSpecial = kind;
-    const resetTurns = () => {
-      if (kind === 'slam') enemy.slamTurns = Math.max(1, Math.round(roundsFromSeconds(BOSS_AI_LAYER.SLAM_INTERVAL_SEC) * phaseMult));
-      if (kind === 'charge') enemy.chargeTurns = Math.max(1, Math.round(roundsFromSeconds(BOSS_AI_LAYER.CHARGE_INTERVAL_SEC) * phaseMult));
-      if (kind === 'projectile') enemy.projectileTurns = Math.max(1, Math.round(roundsFromSeconds(BOSS_AI_LAYER.PROJECTILE_INTERVAL_SEC) * phaseMult));
-    };
-    resetTurns();
-    return { enemyId: enemy.id, name: enemy.name, kind: 'telegraph', specialKind: kind, phased: !!justPhased };
-  }
-
-  _resolveBossSpecial(enemy, kind, justPhased) {
-    const enemyAtk = this._effectiveEnemyStat(enemy, 'atk');
-    const multByKind = {
-      slam: BOSS_AI_LAYER.SLAM_DAMAGE_MULT,
-      charge: BOSS_AI_LAYER.CHARGE_DAMAGE_MULT,
-      projectile: BOSS_AI_LAYER.PROJECTILE_DAMAGE_MULT,
-    };
-    if (Math.random() < this._effectiveEvasion()) {
-      const evadeEvents = this._onPlayerEvaded(enemy);
-      return { enemyId: enemy.id, name: enemy.name, kind: 'special', specialKind: kind, evaded: true, phased: !!justPhased, evadeEvents };
-    }
-    const dmg = this._enemyAttackDamage(enemyAtk, { mult: multByKind[kind] });
-    this.player.hp -= dmg;
-    const hurtEvents = this.applyEffect('onHurt', { attacker: enemy });
-    return { enemyId: enemy.id, name: enemy.name, kind: 'special', specialKind: kind, damage: dmg, evaded: false, hurtEvents, phased: !!justPhased };
-  }
-
-  // Boss AIã€Œé›‘é­šå¬å–šã€ï¼ˆå…ƒæŒ‡ç¤º7ç•ªï¼šsummonï¼‰ï¼šç¾åœ¨ã®é­é‡ã‚°ãƒ«ãƒ¼ãƒ—ã¸æ‰‹ä¸‹ã‚’
-  // è¿½åŠ ã™ã‚‹ã€‚å ±é…¬ã‚¤ãƒ³ãƒ•ãƒ¬ã‚’é¿ã‘ã‚‹ãŸã‚xp/goldã¯ä¸ãˆãªã„ï¼ˆå…ƒbattle.jsã¨åŒã˜ï¼‰ã€‚
-  // ãƒãƒ©ãƒ³ã‚¹å†è¼ƒæ­£ï¼šBossæ‰‹ç•ªã®starvationä¿®æ­£ã«ã‚ˆã‚Šã€ã“ã‚Œã¾ã§æ»…å¤šã«é¸ã°ã‚Œãª
-  // ã‹ã£ãŸsummonãŒå®šæœŸçš„ã«ç™ºå‹•ã™ã‚‹ã‚ˆã†ã«ãªã£ãŸãŸã‚ã€é•·å¼•ã„ãŸBossæˆ¦ã§æ‰‹ä¸‹ãŒ
-  // éš›é™ãªãç©ã¿ä¸ŠãŒã‚‰ãªã„ã‚ˆã†åŒæ™‚å¬å–šæ•°ã®ä¸Šé™ã‚’è¨­ã‘ã‚‹ï¼ˆå…ƒæŒ‡ç¤ºï¼š6ã€œ8ä½“ï¼‰ã€‚
-  _bossSummon(enemy, justPhased) {
-    const added = [];
-    const aliveNonBoss = this.enemies.filter((e) => !e.dead && !e.boss).length;
-    const room = Math.max(0, BOSS_AI_LAYER.SUMMON_MAX_ALIVE - aliveNonBoss);
-    const spawnCount = Math.min(BOSS_AI_LAYER.SUMMON_COUNT, room);
-    for (let i = 0; i < spawnCount; i++) {
-      const hp = Math.max(1, Math.round(enemy.maxHp * 0.05));
-      const summon = {
-        id: `${enemy.id}_summon_${this._nextEnemyId = (this._nextEnemyId || 0) + 1}`,
-        type: '__boss_summon__', name: `${enemy.name}ã®æ‰‹ä¸‹`, boss: false, elite: false,
-        hp, maxHp: hp, atk: Math.max(1, Math.round(enemy.atk * 0.3)), def: Math.round(enemy.def * 0.4), spd: 150,
-        xp: 0, gold: 0, dead: false, weaken: null, dotStacks: 0, dotTurnsLeft: 0, frozenTurns: 0,
-      };
-      this.enemies.push(summon);
-      added.push(summon.name);
-      this.totalToDefeat++; // å¬å–šã•ã‚ŒãŸæ‰‹ä¸‹ã‚‚ã€Œå€’ã™ã¹ãæ•µã€ã®ç·æ•°ã«åŠ ãˆã‚‹ï¼ˆæ®‹ã‚Šè¡¨ç¤ºã®æ•´åˆæ€§ï¼‰
-    }
-    // ä¸Šé™ã«é”ã—ã¦ã„ã¦1ä½“ã‚‚å¬å–šã§ããªã‹ã£ãŸå ´åˆã¯ã€å¬å–šã‚’è©¦ã¿ãŸãŒå¢—æ´ãŒ
-    // é–“ã«åˆã‚ãªã‹ã£ãŸã€ã¨ã„ã†ä½“è£ã«ã™ã‚‹ï¼ˆBattleLogå´ã§addedãŒç©ºã®åˆ†å²ã‚’ç”¨æ„ï¼‰
-    return { enemyId: enemy.id, name: enemy.name, kind: 'summon', added, capped: spawnCount === 0, phased: !!justPhased };
-  }
-
-  // ---------------------------------------------------------
-  // ãƒ©ã‚¦ãƒ³ãƒ‰é€²è¡Œï¼ˆadvanceTurnï¼‰ï¼šå…ˆæ”»/å¾Œæ”»ã®æ±ºå®šâ†’ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼è¡Œå‹•â†’æ•µã®æ‰‹ç•ªâ†’
-  // ãƒ©ã‚¦ãƒ³ãƒ‰çµ‚äº†å‡¦ç†ï¼ˆDoTãƒ»ãƒãƒ•/ãƒ‡ãƒãƒ•ã®ã‚¿ãƒ¼ãƒ³çµŒéãƒ»æˆ¦é—˜çµ‚äº†åˆ¤å®šï¼‰
-  // å…ƒæŒ‡ç¤º5ç•ªï¼šinitiative = spd + å°ã•ãªä¹±æ•°ã€ã§ã‚·ãƒ³ãƒ—ãƒ«ã«å…ˆæ”»/å¾Œæ”»ã‚’æ±ºã‚ã‚‹ã€‚
-  // ---------------------------------------------------------
-  advanceTurn(command) {
-    const events = [];
-    this.round++;
-    // æ€ªç›—MASTERã€ŒèƒŒå¾Œã®ä¸€æ’ƒã€ç­‰ï¼šç›´å‰ã®æ•µæ‰‹ç•ªã®å›é¿åˆ¤å®šã¯æ¯ãƒ©ã‚¦ãƒ³ãƒ‰æŒã¡è¶Šã•ãªã„
-    // ï¼ˆã“ã®ãƒ©ã‚¦ãƒ³ãƒ‰ã®æ•µæ‰‹ç•ªã§ã¾ãŸç«‹ã¦ç›´ã‚‹ã€‚playerFirstã‹ã©ã†ã‹ã§ã€Œå‰ãƒ©ã‚¦ãƒ³ãƒ‰ã€
-    // ã€ŒåŒãƒ©ã‚¦ãƒ³ãƒ‰ã€ã„ãšã‚Œã®å›é¿ã‚‚æ‹¾ãˆã‚‹ã‚ˆã†ã“ã“ã§ãƒªã‚»ãƒƒãƒˆã™ã‚‹ï¼‰
-    this._playerEvadedLastRound = false;
-
-    // æ–°ã—ã„é­é‡ã‚°ãƒ«ãƒ¼ãƒ—ãŒå‡ºç¾ã—ãŸãƒ©ã‚¦ãƒ³ãƒ‰ã¯ã€æ•µãŒã¾ã æ¥è§¦è·é›¢ã¾ã§ç§»å‹•ã—ã¦ãã‚‹
-    // ã€Œé–“åˆã„ã€ã«ç›¸å½“ã—ã€ã“ã®1ãƒ©ã‚¦ãƒ³ãƒ‰ã ã‘ã¯æ•µã®æ‰‹ç•ªã‚’ç™ºç”Ÿã•ã›ãªã„ï¼ˆå®Ÿæ™‚é–“ç‰ˆã§ã‚‚
-    // waveå‡ºç¾ç›´å¾Œã¯æ•µãŒæ¥è§¦è·é›¢ã¾ã§æ­©ã„ã¦ãã‚‹ã¾ã§ã®ã‚¿ã‚¤ãƒ ãƒ©ã‚°ãŒã‚ã‚Šã€å‡ºç¾ã—ãŸ
-    // ç¬é–“ã«å¿…ãšè¢«å¼¾ã™ã‚‹ã‚ã‘ã§ã¯ãªã‹ã£ãŸã€‚å…ƒæŒ‡ç¤º10ç•ªã§å®Ÿæ™‚é–“ã®æ™‚é–“å·®æ¹§ãã¯
-        // å»ƒæ­¢ã—ãŸãŒã€ã“ã®ã€Œå‡ºç¾ç›´å¾Œã®çŒ¶äºˆã€ã¾ã§å¤±ã†ã¨ã€è¤‡æ•°ã‚°ãƒ«ãƒ¼ãƒ—ãŒé€£ç¶šã™ã‚‹
-    // ã‚¹ãƒ†ãƒ¼ã‚¸ã§è¢«å¼¾ãŒç©ã¿ä¸ŠãŒã‚Šã™ãã¦æ—¢å­˜ã®ENEMY_SCALINGè¼ƒæ­£ã‹ã‚‰ä¹–é›¢ã™ã‚‹ãŸã‚ã€
-    // ã‚°ãƒ«ãƒ¼ãƒ—å˜ä½ã§ã“ã®çŒ¶äºˆã ã‘æ®‹ã™ï¼‰
-    if (this.aliveEnemies.length === 0) {
-      const startEvent = this.beginNextEncounter();
-      if (startEvent) events.push(startEvent);
-      else { this._finishBattle(true, false); return { events, over: true, result: this.finalResult }; }
-    }
-    // TextBattleScreenãŒè¡¨ç¤ºã®ãŸã‚ã«äº‹å‰ã«beginNextEncounter()ã‚’å‘¼ã‚“ã§ã„ãŸ
-    // å ´åˆã‚‚å«ã‚ã€ã“ã®ã‚°ãƒ«ãƒ¼ãƒ—ã®ã€Œå‡ºç¾ç›´å¾Œã®çŒ¶äºˆãƒ©ã‚¦ãƒ³ãƒ‰ã€ãƒ•ãƒ©ã‚°ã‚’ã“ã“ã§æ¶ˆè²»ã™ã‚‹
-    const freshEncounter = !!this._freshGroupPending;
-    this._freshGroupPending = false;
-
-    // ã«ã’ã‚‹ãƒ»ã¨ããã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³åˆ‡ã‚Œç­‰ã¯è¡Œå‹•é¸æŠãã®ã‚‚ã®ãªã®ã§ã€é€šå¸¸ã®
-    // å…ˆæ”»/å¾Œæ”»è¨ˆç®—ã‚’ã‚¹ã‚­ãƒƒãƒ—ã—ã¦ã‚ˆã„ã‚³ãƒãƒ³ãƒ‰ã‹ã‚‰å…ˆã«å‡¦ç†ã™ã‚‹
-    if (command.type === 'flee') {
-      const fleeResult = this._playerFlee();
-      events.push({ type: 'playerAction', result: fleeResult });
-      if (fleeResult.success) { this._finishBattle(false, true); return { events, over: true, result: this.finalResult }; }
-      if (fleeResult.blocked) return { events, over: false };
-      // å¤±æ•—ã—ãŸå ´åˆã¯1ãƒ©ã‚¦ãƒ³ãƒ‰æ¶ˆè²»ã—ã€æ•µã¯ãã®ã¾ã¾è¡Œå‹•ã™ã‚‹ï¼ˆãŸã ã—å‡ºç¾ç›´å¾Œã®
-      // çŒ¶äºˆãƒ©ã‚¦ãƒ³ãƒ‰ã§ã¯æ•µã¯ã¾ã å‹•ã‹ãªã„ï¼‰
-      if (!freshEncounter) {
-        const enemyEvents = this._runEnemyPhase();
-        events.push(...enemyEvents);
-      }
-      const end = this._afterRoundChecks();
-      events.push(...end.events);
-      return { events, over: end.over, result: this.finalResult };
-    }
-
-    // ã¨ãããƒ»ã˜ã‚…ã‚‚ã‚“ã¯ã€MPä¸è¶³/ã‚¯ãƒ¼ãƒ«ãƒ€ã‚¦ãƒ³ä¸­/æœªç¿’å¾—ã§å®Ÿè¡Œãã®ã‚‚ã®ãŒ
-    // æˆç«‹ã—ãªã„å ´åˆã€ã«ã’ã‚‹ã®Bossä¸å¯åˆ¤å®šã¨åŒã˜ãã€Œè¡Œå‹•é¸æŠè‡ªä½“ãŒç„¡åŠ¹ã€
-    // ã¨ã—ã¦æ‰±ã„ã€ãƒ©ã‚¦ãƒ³ãƒ‰ã‚’æ¶ˆè²»ã—ãªã„ï¼ˆå…ƒæŒ‡ç¤ºï¼šMPä¸è¶³ã®å ´åˆã¯ã‚¿ãƒ¼ãƒ³ã‚’
-    // æ¶ˆè²»ã—ãªã„ä»•æ§˜ã‚’æ¨å¥¨ï¼‰ã€‚å®Ÿè¡Œã§ãã‚‹å ´åˆã¯ã€ä¸‹ã®å…ˆæ”»/å¾Œæ”»ãƒ­ã‚¸ãƒƒã‚¯ã«
-    // ãã®ã¾ã¾åˆæµã•ã›ã‚‹ï¼ˆperformPlayerActionâ†’_playerTechnique()ãŒ
-    // å®Ÿéš›ã®æ¶ˆè²»ãƒ»åŠ¹æœé©ç”¨ã‚’è¡Œã†ï¼‰ã€‚
-    let preResolvedPlayerResult = null;
-    if (command.type === 'skill' || command.type === 'spell') {
-      const probe = this._probeTechnique(command.type, command.techId);
-      if (!probe.ok) {
-        const result = { action: command.type, blocked: true, reason: probe.reason };
-        events.push({ type: 'playerAction', result });
-        return { events, over: false };
-      }
-      // ã‚¬ãƒ¼ãƒ‰ã¨å…¨ãåŒã˜ç†ç”±ã§ã€è‡ªå·±å¯¾è±¡ã®buff/utilityæŠ€ï¼ˆæŒ‘ç™ºãƒ»ä¸å±ˆã®æ§‹ãˆãƒ»
-      // å—ã‘æµã—ãƒ»è¦å¡åŒ–ãƒ»é­”åŠ›é›†ä¸­ãƒ»é¼“èˆã®æ­Œç­‰ï¼‰ã¯ã€å…ˆæ”»/å¾Œæ”»ã®åˆ¤å®šçµæœã«
-      // é–¢ã‚ã‚‰ãšã“ã®ãƒ©ã‚¦ãƒ³ãƒ‰ã®æ•µè¡Œå‹•è§£æ±ºã‚ˆã‚Šå‰ã«å®Ÿè¡Œã—ã¦ãŠãå¿…è¦ãŒã‚ã‚‹ã€‚
-      // ã§ãªã‘ã‚Œã°ã€æ•µãŒå…ˆæ”»ã®å ´é¢ã§ã€Œé˜²å¾¡ç³»ã¨ããã‚’é¸ã‚“ã ã®ã«åŒã˜ãƒ©ã‚¦ãƒ³ãƒ‰ã®
-      // æ•µæ”»æ’ƒã‚’é˜²ã’ãªã„ã€ã¨ã„ã†ã€ã¼ã†ãã‚‡ã§æ—¢ã«ä¿®æ­£æ¸ˆã¿ã®ãƒã‚°ã¨åŒã˜å•é¡ŒãŒ
-      // å—ã‘æµã—ãƒ»è¦å¡åŒ–ç­‰ã§ã‚‚å†ç™ºã™ã‚‹ï¼ˆå®Ÿæ¸¬ï¼šguardedDamageãŒè»½æ¸›ã•ã‚Œãªã„
-      // ä¸å…·åˆã¨ã—ã¦ç™ºè¦šï¼‰ã€‚
-      if (probe.tech.target === 'self' && (probe.tech.type === 'buff' || probe.tech.type === 'utility')) {
-        preResolvedPlayerResult = this.performPlayerAction(command);
-        events.push({ type: 'playerAction', result: preResolvedPlayerResult });
-      }
-    }
-
-    // ã‚¬ãƒ¼ãƒ‰ã¯ã€Œã“ã®ãƒ©ã‚¦ãƒ³ãƒ‰ã«é£›ã‚“ã§ãã‚‹æ•µã®æ”»æ’ƒã‚’è»½æ¸›ã™ã‚‹ã€ãŸã‚ã®ã‚³ãƒãƒ³ãƒ‰ãªã®ã§ã€
-    // å…ˆæ”»/å¾Œæ”»ã®åˆ¤å®šçµæœã«é–¢ã‚ã‚‰ãšã€ã“ã®ãƒ©ã‚¦ãƒ³ãƒ‰ã®æ•µè¡Œå‹•è§£æ±ºã‚ˆã‚Šå‰ã«æœ‰åŠ¹åŒ–ã—ã¦ãŠã
-    // å¿…è¦ãŒã‚ã‚‹ã€‚æ—§å®Ÿè£…ã§ã¯performPlayerActionçµŒç”±ã®_playerGuard()ã§ã—ã‹
-    // guarding=trueã«ã—ã¦ãŠã‚‰ãšã€æ•µãŒå…ˆæ”»ï¼ˆãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚ˆã‚ŠSPDãŒä½ã„å ´é¢ï¼‰ã®å ´åˆã«
-    // ã€Œã‚¬ãƒ¼ãƒ‰ã‚’é¸ã‚“ã ã®ã«åŒã˜ãƒ©ã‚¦ãƒ³ãƒ‰ã®æ•µæ”»æ’ƒã‚’é˜²ã’ãªã„ã€ãƒã‚°ãŒã‚ã£ãŸ
-    // ï¼ˆ3ç« ã®tankç³»æ•µã§ã®æ¤œè¨¼ã§ç™ºè¦šï¼‰ã€‚
-    if (command.type === 'guard') this.player.guarding = true;
-
-    const playerInitiative = this._effectiveSpd() + this._hasteInitiativeBonus + rand(0, 8);
-    const alive = this.aliveEnemies;
-    const enemyInitiative = (alive.reduce((s, e) => s + e.spd, 0) / Math.max(1, alive.length)) + rand(0, 8);
-    const playerFirst = playerInitiative >= enemyInitiative;
-    // å‰£è±ªã€Œå±…åˆã€ãƒ»å¯†åµã€Œå¥‡è¥²ã€ç­‰ï¼šã“ã®ãƒ©ã‚¦ãƒ³ãƒ‰å…ˆæ”»ã—ãŸã‹ã‚’æŠ€è§£æ±ºå´ã‹ã‚‰èª­ã‚ã‚‹ã‚ˆã†ã«ã™ã‚‹
-    this._lastPlayerFirst = playerFirst;
-
-    const runPlayer = () => {
-      if (preResolvedPlayerResult) return preResolvedPlayerResult; // æ—¢ã«å®Ÿè¡Œæ¸ˆã¿ï¼ˆäºŒé‡å®Ÿè¡Œé˜²æ­¢ï¼‰
-      const result = this.performPlayerAction(command);
-      events.push({ type: 'playerAction', result });
-      return result;
-    };
-    const runEnemies = () => { events.push(...this._runEnemyPhase()); };
-
-    if (freshEncounter) {
-      // å‡ºç¾ç›´å¾Œã®çŒ¶äºˆãƒ©ã‚¦ãƒ³ãƒ‰ï¼šãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã¯é€šå¸¸é€šã‚Šè¡Œå‹•ã§ãã‚‹ãŒã€æ•µã¯ã¾ã 
-      // é–“åˆã„ã«å…¥ã£ã¦ã„ãªã„ãŸã‚æ‰‹ç•ªã‚’ç™ºç”Ÿã•ã›ãªã„
-      runPlayer();
-    } else if (playerFirst) { runPlayer(); if (this.player.hp > 0) runEnemies(); }
-    else { runEnemies(); if (this.player.hp > 0) runPlayer(); }
-
-    const end = this._afterRoundChecks();
-    events.push(...end.events);
-    return { events, over: end.over, result: this.finalResult, playerFirst };
-  }
-
-  // å…ƒæŒ‡ç¤º5ãƒ»7ç•ªã®å®Ÿæ™‚é–“ç‰ˆã¯è¢«å¼¾å¾Œ0.9ç§’ã®ç„¡æ•µæ™‚é–“ãŒã‚ã‚Šã€æ•µã®é ­æ•°ã«é–¢ã‚ã‚‰ãš
-  // ã€Œåˆè¨ˆã§è¦‹ã‚‹ã¨ã»ã¼1ä½“ã¶ã‚“ã€ã®ãƒšãƒ¼ã‚¹ã§ã—ã‹è¢«å¼¾ã—ãªã‹ã£ãŸï¼ˆPR#2ã®
-  // ENEMY_SCALINGãƒ»æ•µATKã¯ã“ã®å‰æã§è¼ƒæ­£æ¸ˆã¿ï¼‰ã€‚ã‚¿ãƒ¼ãƒ³åˆ¶ã§æ•µå…¨å“¡ãŒæ¯ãƒ©ã‚¦ãƒ³ãƒ‰
-  // æ”»æ’ƒã™ã‚‹ã¨é ­æ•°ã®å¤šã„waveã»ã©éå‰°ã«ç—›ããªã‚‹ãŸã‚ã€éBossæ•µã¯1ãƒ©ã‚¦ãƒ³ãƒ‰ã«
-  // ã¤ãMAX_NORMAL_ATTACKERS_PER_ROUNDä½“ã ã‘ãŒãƒ©ãƒ³ãƒ€ãƒ ã«é¸ã°ã‚Œã¦æ”»æ’ƒã™ã‚‹
-  // ï¼ˆæ—¢å­˜ã®ENEMY_SCALINGãƒ»æ•µATKè‡ªä½“ã¯ä¸€åˆ‡å¤‰æ›´ã—ãªã„ï¼‰ã€‚Bossã¯å¯¾è±¡å¤–ã§
-  // å¸¸ã«è¡Œå‹•ã™ã‚‹ã€‚
-  _runEnemyPhase() {
-    const events = [];
-    const alive = this.enemies.filter((e) => !e.dead);
-    const bosses = alive.filter((e) => e.boss);
-    const normals = alive.filter((e) => !e.boss);
-    const shuffled = [...normals].sort(() => Math.random() - 0.5);
-    const cap = TEXT_BATTLE_LAYER.MAX_NORMAL_ATTACKERS_PER_ROUND;
-    const acting = shuffled.slice(0, cap);
-    const waiting = shuffled.slice(cap);
-
-    for (const enemy of [...bosses, ...acting]) {
-      if (enemy.dead || this.player.hp <= 0) continue;
-      const result = this.performEnemyTurn(enemy);
-      if (result) events.push({ type: 'enemyAction', result });
-    }
-    for (const enemy of waiting) {
-      events.push({ type: 'enemyWait', enemyId: enemy.id, name: enemy.name });
-    }
-    return events;
-  }
-
-  // DoTãƒ»ã‚¿ãƒ¼ãƒ³çµŒéå‡¦ç†ãƒ»æˆ¦é—˜çµ‚äº†åˆ¤å®šï¼ˆå…ƒæŒ‡ç¤º13ç•ªã®DoTé‹ç”¨ã‚’ã‚¿ãƒ¼ãƒ³åˆ¶ã«åˆã‚ã›ã‚‹ï¼š
-  // 1ãƒ©ã‚¦ãƒ³ãƒ‰ã«ã¤ã1å›ãƒ†ã‚£ãƒƒã‚¯ã™ã‚‹ï¼‰
-  _afterRoundChecks() {
-    const events = [];
-    for (const enemy of this.enemies) {
-      if (enemy.dead) continue;
-      if (enemy.weaken) {
-        for (const stat in enemy.weaken) {
-          enemy.weaken[stat].turnsLeft--;
-          if (enemy.weaken[stat].turnsLeft <= 0) delete enemy.weaken[stat];
-        }
-      }
-      // ç‹©çŒŸç‹ã€Œç‹©äººã®å°ã€ï¼šæ—¢å­˜weakenã¨åŒã˜turnsç®¡ç†ã®ãƒãƒ¼ã‚¯
-      if (enemy.vulnerable && enemy.vulnerable.turnsLeft > 0) {
-        enemy.vulnerable.turnsLeft--;
-        if (enemy.vulnerable.turnsLeft <= 0) enemy.vulnerable = null;
-      }
-      if (enemy.dotStacks > 0 && enemy.dotTurnsLeft > 0) {
-        // æ­¦å™¨Affixã€Œæ¯’æ‰‹ã€ï¼šDoT Damage+
-        const dotDmgMult = 1 + sumPassivePower(this.effects, 'dotDmg');
-        const dmg = Math.max(1, Math.round(this.player.atk * enemy.dotPower * enemy.dotStacks * dotDmgMult));
-        // ChatGPTãƒ¬ãƒ“ãƒ¥ãƒ¼æŒ‡æ‘˜2ç•ªï¼šDoTæ’ƒç ´ã‚‚ä»–ã®çµŒè·¯ã¨åŒã˜å…±é€šå‡¦ç†ã¸çµ±ä¸€ã™ã‚‹
-        const kill = this._applyRawDamageAndReward(enemy, dmg);
-        events.push({ type: 'dotTick', enemyId: enemy.id, name: enemy.name, amount: dmg, targetDead: enemy.dead, kill });
-        enemy.dotTurnsLeft--;
-        if (enemy.dotTurnsLeft <= 0) enemy.dotStacks = 0;
-      }
-    }
-    // player.buffsã®æ±ç”¨æ§‹é€ ï¼ˆå…ƒæŒ‡ç¤ºï¼šã©ã†ã—ã¦ã‚‚å¿…è¦ãªæ±ç”¨statusæ§‹é€ ï¼‰ï¼š
-    // ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã”ã¨ã«ç‹¬ç«‹ã—ãŸã‚¿ãƒ¼ãƒ³çµŒéã€‚æ—§buffAtkMult/buffDefMult/
-    // buffTurnsï¼ˆATKãƒ»DEFãŒ1æœ¬ã®ã‚¿ã‚¤ãƒãƒ¼ã§é€£å‹•ã—ã¦ã„ãŸï¼‰ã¯ã“ã‚Œã«çµ±åˆã—ãŸã€‚
-    for (const key of Object.keys(this.player.buffs)) {
-      const b = this.player.buffs[key];
-      if (b.turnsLeft > 0) {
-        b.turnsLeft--;
-        if (b.turnsLeft <= 0) { b.mult = 1; b.value = 0; }
-      }
-    }
-    if (this.player.guardOverrideTurns > 0) {
-      this.player.guardOverrideTurns--;
-      if (this.player.guardOverrideTurns <= 0) this.player.guardOverrideMult = null;
-    }
-    if (this._bloodChaliceTurns > 0) this._bloodChaliceTurns--;
-    if (this._tempAtkTurns > 0) this._tempAtkTurns--;
-    if (this._hasteInitiativeTurns > 0) { this._hasteInitiativeTurns--; if (this._hasteInitiativeTurns <= 0) this._hasteInitiativeBonus = 0; }
-    if (this._tempGoldBonusTurns > 0) this._tempGoldBonusTurns--;
-    if (this._tempBossDmgTurns > 0) this._tempBossDmgTurns--;
-    if (this._tempDmgBonusTurns > 0) this._tempDmgBonusTurns--;
-    // ä¸Šç´šè·å‘ã‘ã«è¿½åŠ ã—ãŸä¸€æ™‚ãƒœãƒ¼ãƒŠã‚¹å„ç¨®ã®ã‚¿ãƒ¼ãƒ³çµŒéï¼ˆæ—¢å­˜ãƒ‘ã‚¿ãƒ¼ãƒ³ã¨åŒå‹ï¼‰
-    if (this._tempGoldCostReduceTurns > 0) this._tempGoldCostReduceTurns--;
-    if (this._tempDropRateBonusTurns > 0) this._tempDropRateBonusTurns--;
-    if (this._tempDebuffPowerBonusTurns > 0) this._tempDebuffPowerBonusTurns--;
-    if (this._tempExpBonusTurns > 0) this._tempExpBonusTurns--;
-    if (this._tempArmorPenTurns > 0) this._tempArmorPenTurns--;
-    if (this._tempHybridMagTurns > 0) this._tempHybridMagTurns--;
-    // é­”å°æŠ€å¸«ã€Œè‡ªå‹•ç ²å°ã€ï¼šãƒ©ã‚¦ãƒ³ãƒ‰çµ‚äº†æ™‚ã«1å›ã ã‘è‡ªå‹•ã§è¿½æ’ƒã™ã‚‹ï¼ˆæ—¢å­˜ã®
-    // calculateDamage/_applyRawDamageAndRewardã‚’ãã®ã¾ã¾å‘¼ã¶ã ã‘ã®è»½é‡tickã€‚
-    // DoT tickç­‰ã¨åŒæ§˜ã€onHit/onCritã¯ç™ºç«ã•ã›ãªã„ï¼ã€Œå‘½ä¸­ã€ã§ã¯ãªãè¨­ç½®ç‰©ã®
-    // è‡ªå‹•ç€å¼¾ã¨ã„ã†æ‰±ã„ã«ã—ã¦ã‚ã‚‹ï¼‰
-    if (this.player.autoTurret && this.player.autoTurret.turnsLeft > 0 && this.aliveEnemies.length > 0) {
-      const target = this.aliveEnemies[0];
-      const atkValue = this._effectiveMag() * this.player.autoTurret.power * this._mainDmgMult();
-      const { damage, critical } = this.calculateDamage(atkValue, target);
-      const kill = this._applyRawDamageAndReward(target, damage);
-      events.push({ type: 'autoTurret', targetId: target.id, targetName: target.name, damage, critical, targetDead: target.dead, kill });
-      this.player.autoTurret.turnsLeft--;
-      if (this.player.autoTurret.turnsLeft <= 0) this.player.autoTurret = null;
-    }
-    for (const key in this.skillCooldowns) {
-      if (this._skillCooldownsSetThisRound.has(key)) continue;
-      if (this.skillCooldowns[key] > 0) this.skillCooldowns[key]--;
-    }
-    this._skillCooldownsSetThisRound.clear();
-    // å¤§å·¥ã€Œåæ’ƒã€ç­‰ã€æŠ€ãŒä¸€æ™‚çš„ã«ä»˜ä¸ã—ãŸonHit/onCrit/onHurt/onKillåŠ¹æœã®æœŸé™åˆ‡ã‚Œå‡¦ç†
-    this.effects = this.effects.filter((e) => {
-      if (e.__tempTurnsLeft == null) return true;
-      e.__tempTurnsLeft--;
-      return e.__tempTurnsLeft > 0;
-    });
-    this._updatePassiveEffects();
-    // ChatGPTãƒ¬ãƒ“ãƒ¥ãƒ¼æŒ‡æ‘˜4ç•ªï¼š_regenPowerã¯ï¼ˆCAPS_LAYER.REGEN_PCT_PER_SEC_MAXã‚‚
-    // å«ã‚ã¦ï¼‰ã€Œ1ç§’ã‚ãŸã‚Šã€ã®å‰²åˆã®ã¾ã¾ä¿æŒã—ã¦ã„ã‚‹ã€‚1ãƒ©ã‚¦ãƒ³ãƒ‰
-    // ï¼TEXT_BATTLE_LAYER.SECONDS_PER_ROUNDç§’ç›¸å½“ãªã®ã§ã€1ãƒ©ã‚¦ãƒ³ãƒ‰ã«1å›ã—ã‹
-    // é©ç”¨ã—ãªã„ã“ã“ã§ã¯ç§’ã‚ãŸã‚Šã®å€¤ã‚’ãã®ã¾ã¾ä½¿ã†ã¨å¼±ä½“åŒ–ã™ã‚‹ï¼ˆä¾‹ï¼š
-    // 1%/ç§’ã®ã¯ãšãŒ1%/ãƒ©ã‚¦ãƒ³ãƒ‰ã«ãªã£ã¦ã—ã¾ã„ã€æœ¬æ¥ã®1/SECONDS_PER_ROUNDã«
-    // æ¸›ã£ã¦ã—ã¾ã†ï¼‰ã€‚SECONDS_PER_ROUNDã‚’æ›ã‘ã¦ã€Œ1ãƒ©ã‚¦ãƒ³ãƒ‰ã‚ãŸã‚Šã€ã®å‰²åˆã«
-    // æ›ç®—ã—ã¦ã‹ã‚‰é©ç”¨ã™ã‚‹ã€‚
-    if (this._regenPower > 0) {
-      this.player.hp = Math.min(this.player.maxHp, this.player.hp + this.player.maxHp * this._regenPower * TEXT_BATTLE_LAYER.SECONDS_PER_ROUND);
-    }
-    this.player.guarding = false; // ã‚¬ãƒ¼ãƒ‰ã¯ã€Œæ¬¡ã®è‡ªåˆ†ã®ã‚¿ãƒ¼ãƒ³ã¾ã§ã€ï¼ã“ã®æ™‚ç‚¹ã§ãƒªã‚»ãƒƒãƒˆ
-
-    const end = this.checkBattleEnd();
-    return { events, over: end.over };
-  }
-
-  _updatePassiveEffects() {
-    const hpRatio = this.player.maxHp > 0 ? this.player.hp / this.player.maxHp : 1;
-    const passives = this._effectsOf('passive');
-    const awaken = passives.find((e) => e.kind === 'damageBoost');
-    let mult = 1;
-    if (awaken && hpRatio <= awaken.threshold) mult += awaken.power;
-    mult += state.jobMasterLowHpDamageBonus(hpRatio);
-    let regenPower = 0;
-    let doubleAttack = false;
-    for (const eff of passives) {
-      if (eff.kind === 'glassCannon' && eff.dmgMult) mult += eff.dmgMult;
-      if (eff.kind === 'regen') regenPower += eff.power;
-      // è»¢ç”Ÿéºç‰©ã€Œç‹‚æˆ¦å£«ã®å¿ƒè‡“ã€ï¼šå®Ÿæ™‚é–“ã®æ”»æ’ƒé–“éš”çŸ­ç¸®ã¯ã‚¿ãƒ¼ãƒ³åˆ¶ã«æ„å‘³ãŒãªã„ãŸã‚
-      // å»ƒæ­¢ã™ã‚‹ãŒã€ã€ŒHPä¸€å®šå‰²åˆä»¥ä¸‹ã§2å›æ”»æ’ƒã€ã¨ã„ã†æ ¸å¿ƒã®æŒ™å‹•ã¯ç¶­æŒã™ã‚‹
-      if (eff.kind === 'berserker' && hpRatio <= eff.threshold) doubleAttack = true;
-    }
-    // åƒ§ä¾¶ã€Œç¥ˆã‚Šã€ãƒ»åŸéŠè©©äººã€Œç™’ã—ã®æ—‹å¾‹ã€ï¼šä¸€æ™‚çš„ãªregenãƒœãƒ¼ãƒŠã‚¹ã‚‚åŒã˜
-    // ã€Œæ¯ç§’%ã€ã®æ„å‘³ã§åˆç®—ã—ã€æ—¢å­˜ã®CAPS_LAYERä¸Šé™ã‚’ãã®ã¾ã¾é©ç”¨ã™ã‚‹
-    if (this.player.buffs.regenAdd.turnsLeft > 0) regenPower += this.player.buffs.regenAdd.value;
-    this.awakenMult = mult;
-    this._regenPower = Math.min(CAPS_LAYER.REGEN_PCT_PER_SEC_MAX, regenPower);
-    this._berserkerDoubleAttack = doubleAttack;
-  }
-
-  // ---------------------------------------------------------
-  // æˆ¦é—˜çµ‚äº†åˆ¤å®šãƒ»çµ‚äº†å‡¦ç†
-  // ---------------------------------------------------------
-  checkBattleEnd() {
-    if (this.over) return { over: true };
-    if (this.player.hp <= 0) {
-      // æ·±æ·µã®è˜‡ç”Ÿï¼ˆæ—¢å­˜ãƒ»ã‚ˆã‚Šå¼·åŠ›ãª50%è˜‡ç”Ÿï¼‰ã‚’å„ªå…ˆã—ã€ãã‚ŒãŒä½¿ãˆãªã„å ´åˆã«
-      // ã®ã¿è¾²æ°‘MASTERã€Œç™¾å§“é­‚ã€ã‚’åˆ¤å®šã™ã‚‹ï¼ˆé‡è¤‡ãƒ«ãƒ¼ãƒ«ï¼šæ·±æ·µè˜‡ç”ŸãŒæœ€å„ªå…ˆï¼‰
-      if (this.stage.isAbyss && !this._abyssReviveUsed && state.hasAbyssRevive()) {
-        this._abyssReviveUsed = true;
-        this.player.hp = Math.round(this.player.maxHp * 0.5);
-        return { over: false, revived: true };
-      }
-      if (state.currentJobId === 'farmer' && state.isMastered('farmer') && !this._farmerSurviveUsed) {
-        this._farmerSurviveUsed = true;
-        if (Math.random() < FARMER_SURVIVE_CHANCE) {
-          this.player.hp = 1;
-          return { over: false, revived: true, farmerSurvive: true };
-        }
-      }
-      // ãƒ‘ãƒ©ãƒ‡ã‚£ãƒ³MASTERã€Œä¸è½ã®èª“ã„ã€ï¼šæŠ€ã‚’ä½¿ã£ã¦èµ·å‹•ã—ã¦ã„ãŸå ´åˆã®ã¿ã€
-      // 1æˆ¦1å›ã ã‘è‡´æ­»ãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’è€ãˆã‚‹ï¼ˆæ·±æ·µè˜‡ç”Ÿâ†’ç™¾å§“é­‚â†’ã“ã®é †ã§åˆ¤å®šã™ã‚‹
-      // ã“ã¨ã§ã€æ—¢å­˜ã®æ­»äº¡å›é¿ç³»ã¨é‡è¤‡ã—ã¦ã‚‚äºŒé‡ç™ºå‹•ã—ãªã„ï¼‰
-      if (this._paladinDeathGuardArmed && !this._paladinSurviveUsed) {
-        this._paladinSurviveUsed = true;
-        this._paladinDeathGuardArmed = false;
-        this.player.hp = 1;
-        return { over: false, revived: true, paladinGuard: true };
-      }
-      this._finishBattle(false, false);
-      return { over: true };
-    }
-    if (!this.hasMoreEncounters()) {
-      this._finishBattle(true, false);
-      return { over: true };
-    }
-    return { over: false };
-  }
-
-  // ç”»é¢ä¸Šéƒ¨ã®âœ•ãƒœã‚¿ãƒ³ï¼ˆæ—§battle.jsã®retreatBtnï¼‰ç”¨ï¼šæˆåŠŸç‡åˆ¤å®šã‚’æŒŸã‚€ã€Œã«ã’ã‚‹ã€
-  // ã‚³ãƒãƒ³ãƒ‰ï¼ˆ_playerFleeã€å…ƒæŒ‡ç¤º17ç•ªï¼‰ã¨ã¯åˆ¥ç‰©ã®ã€ç„¡æ¡ä»¶ãƒ»å³æ™‚ã®é›¢è„±ã€‚
-  // æ—§battle.jsã®`this._endRun(false, true)`ã¨åŒã˜ãå¿…ãšæˆåŠŸã—ã€ãƒ©ã‚¦ãƒ³ãƒ‰ã‚‚
-  // æ¶ˆè²»ã—ãªã„ï¼ˆãã‚Œã¾ã§ã«å¾—ãŸrunExp/runGold/runItemsã¯ãã®ã¾ã¾çµæœã«æ®‹ã‚‹ï¼‰ã€‚
-  forceRetreat() {
-    if (this.over) return this.finalResult;
-    this._finishBattle(false, true);
-    return this.finalResult;
-  }
-
-  // æˆ¦é—˜çµ‚äº†æ™‚ã®å ±é…¬ãƒ»ã‚»ãƒ¼ãƒ–å‡¦ç†ï¼ˆæ—§battle.js _endRun()ã¨åŒä¸€ã®stateå‘¼ã³å‡ºã—ï¼‰
-  _finishBattle(cleared, retreated) {
-    if (this.over) return;
-    this.over = true;
-    let firstClear = false;
-    let bonusItem = null;
-    let stageExp = 0;
-    let stageGold = 0;
-    try {
-      if (cleared) {
-        stageExp = Math.round(this.stage.rewards.exp * this._expMult());
-        stageGold = Math.round(this.stage.rewards.gold * this._goldMult());
-        state.gainExp(stageExp);
-        state.gainGold(stageGold);
-        // ãƒˆãƒ¬ã‚¸ãƒ£ãƒ¼ãƒãƒ³ã‚¿ãƒ¼ã€Œç™ºæ˜ã€ãƒ»å¤§å•†äººã€Œå¸‚å ´æ”¯é…ã€ï¼šæˆ¦é—˜ã‚¯ãƒªã‚¢æ™‚ã«1å›ã ã‘
-        // è¿½åŠ å ±é…¬ã‚’åˆ¤å®šã™ã‚‹ã€‚æ—¢å­˜runGoldã«å¯¾ã™ã‚‹å‰²åˆãƒœãƒ¼ãƒŠã‚¹ã®ã¿ãƒ»
-        // æ—¢å­˜_rollDrop()ï¼ˆã‚¹ãƒ†ãƒ¼ã‚¸ã®dropTableã®ã¿ï¼‰ã—ã‹ä½¿ã‚ãªã„ãŸã‚ã€
-        // Bosså›ºæœ‰æ­¦å™¨ãƒ»åˆå›ã‚¯ãƒªã‚¢å ±é…¬ï¼ˆåˆ¥çµŒè·¯ï¼‰ã¯å¯¾è±¡å¤–ï¼ç„¡é™å¢—æ®–ã—ãªã„
-        if (this._battleEndBonusReward) {
-          const bonus = this._battleEndBonusReward;
-          this._battleEndBonusReward = null;
-          if (bonus.goldPct && this.runGold > 0) {
-            const bonusGold = Math.round(this.runGold * bonus.goldPct);
-            if (bonusGold > 0) { state.gainGold(bonusGold); this.runGold += bonusGold; }
-          }
-          if (bonus.dropChance && Math.random() < bonus.dropChance) this._rollDrop();
-        }
-        if (this.stage.isAbyss) {
-          state.recordAbyssClear(this.stage.abyssDepth);
-        } else {
-          const res = state.recordStageResult(this.stage.id, true);
-          firstClear = res.wasFirstClear;
-          if (firstClear && this.stage.firstClear && this.stage.firstClear.itemId) {
-            state.addItem(this.stage.firstClear.itemId, 1);
-            bonusItem = this.stage.firstClear.itemId;
-          }
-        }
-      } else if (!retreated) {
-        if (!this.stage.isAbyss) state.recordStageResult(this.stage.id, false);
-      }
-    } catch (err) {
-      console.error('BattleEngine._finishBattle reward/save error (recovered):', err);
-    }
-    const items = [...this.runItems];
-    if (bonusItem) items.push(bonusItem);
-    this.finalResult = {
-      cleared, retreated,
-      expGained: cleared ? this.runExp + stageExp : this.runExp,
-      goldGained: cleared ? this.runGold + stageGold : this.runGold,
-      items, firstClear,
-    };
-  }
-}
+YªçŠx-®éÜj×¢ëiºÚ+Š§j[h‘éÜ¢éíãn<á:-jZ.¶›­–)Ş³Rò¢ÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓĞ¢&GFÆTVæv–æ^ûÈ88n8*Ş8+88hŠn™y88îz{¾ŠÎûÉ®hŠn™y8:¾8;Î8:¾8;¾Šˆzé~8î8ş8).h¸^[Ù>ûÈ¢ÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢izr&GFÆRæ§>ûÈ„&GFÆU67&VVîûÈ8ş8:®8*.8:¾8+ş8*N8:6çf>hŠn™y8î8:Ş8+88>8*ş8€¢høşyK¾8;¾XZ^X©¾ûÈ„6çf2ô¦÷—7F–6²÷&WVW7Dæ–ÖF–öäg&Ö^ûÈ8)#8*ş8:8+8°¢8î88(8n8N8ş8.K¸®Y¹î8î88n8*Ş8+88hŠn™yz{¾ŠÎ8~8ş8‹*ÎX¹8) ¢&GFÆTVæv–æR(
+bhŠn™y8:¾8;Î8:¾8;¾888:8;Î8+Šˆzé~8;¾x«nhX¾zêynûÈ„DôŞ™ÙîKéŞZÙûÈ¢&GFÆTÆör(
+bVæv–æ^8Î‹ùN8–WfVçEµŞ8).iz^iÊÎŠ©î8îih~zº8ZHhù°¢FW‡D&GFÆU67&VVâ(
+byK¾™Ú.ŠzK®8;¾8+>89î8;>88XZ^X©¾ûÈ†§2÷67&VVç2÷FW‡D&GFÆRæ§>ûÈ¢8¾Xˆn™º.88(¾8%"3.8~XhŞŠŠŞŠˆ8~8ôFÖvR'V6¶WN8;¾jùNxè~Yè´DTn‹»Şk‰¾8;°¢45ôÄ”U.8;¾iÊÎ{z„VæV×’66Æ–æ~8;¾k{k{U–V6Wv—6R66Æ–æ~8;´&÷72’&öf–ÆP¢8şKˆXˆ~ZHi»N8¾8®88Ş8î8î8îYÎ8>X{®8ûÈ8>8î89^8*8*N8:¾8şik8~8NŠˆzé~[Èş8) ¢KˆXˆ~[îXZ^8~8®8NûÈ8  ¢8+ş8;Î8;>X‹n88îZHhù¾ik˜yŞûÈXX>hÈ~zK£^8;³n8;³~yZ®ûÈûÉ ¢Ò5NûÉ®iz~iÚ^8ôGF6²–çFW'fÎûÈZéşi˜.™i>8îiK¾i(>™i>™©NûÈ8¾KÛş8(ş8(Î8n8N8ş8Î8¢88n8*Ş8+88hŠn™y8~8ş8Æ–æ—F–F—fRÒ7B²[ş8^8®K›i[8Ş8s8:8*n8;>888N88à¢XXiK²ş[èÎiK¾8).k®8(8(¾ûÈ89~8:Î8*N8:N8;Âg2i[^8+8:¾8;Î89~8îKº>Š…5NûÈ8 ¢Ò&÷7>K¨XXnûÈZéşi˜.™i3ãzy.ûÈ(i.8ÎK¨XXn8+ş8;Î8;>8ŞûÉ®8Ş8î8+ş8;Î8;>8şiK¾i(>8¾8 ¢Zê>Šˆ88ŠÎ8N8jÊ8ä&÷7>8îh˜¾yZ®8~Zéş™©¾8¾888:8;Î8+8).Kˆî88(¾8 ¢ÒYNzŠîzy.i[ûÈ…4ÄÕô”åDU%dÅõ4T>zØûÈ8ò†VÇW"&÷VæG4g&öÕ6V6öæG2‚–8p¢8Î8®8®8(8Ó>zy#Ó8+ş8;Î8;>8Ş88~8n8+ş8;Î8;>i[8¾ZHhù¾88(¾ûÈ„$õ55ô•ôÄ”U.ˆz®KÙ>8ğ¢ZHi»N8~8®8N8.kh‹+¾88(¾XN8~8+ş8;Î8;>hù¾zé~88(¾88ûÈ8 ¢ÒŠ*¾[Ëîi˜.8îxJi[^i˜.™i>ûÈ†–çgVÆîûÈ8;¾hê^Šzn8*ş8;Î8:¾888*n8;>ûÈ†6öçF7D6ööÆF÷vîûÈ8ş8¢8:8*n8;>888¾8N8Ş8Îi[SKÙ>ûÉÓY¹î88iK¾i(>8Ş88N8n8+ş8;Î8;>X‹n8îjx¾˜
+Kˆ ¢ˆz®xKn8¾KˆŞŠh8¾8®8(¾8ş8(ZéşŠ8^8~8®8NûÈYÎ8ynyK8w‚÷[ª~j‰8;¾z{¾X¹^8;µ&ö¦V7F–ÆP¢8îZéş[Ëîš9¾{ùN8®88(.KˆŞŠh8.K¨XXn(i.jÊ8+ş8;Î8;>8~yØ[Ëî888N8ni˜.™i>jx¾˜
+888).kXyJûÈ8 ¢ÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÓÒ¢ğ¦–×÷'B²7FFRÒg&öÒrâ÷7FFRæ§2s°¦–×÷'B²f–æE7FvRÒg&öÒrâöFF÷7FvW2æ§2s°¦–×÷'B²TäTÕ•õE•U2Òg&öÒrâöFFöVæVÖ–W2æ§2s°¦–×÷'B²vWD—FVÒÂ$$•E’Â&&—G”–æFW‚Òg&öÒrâöFFöWV—ÖVçBæ§2s°¦–×÷'B²vWE'VæRÒg&öÒrâöFF÷'VæW2æ§2s°¦–×÷'B²DÔtUô%T4´UBÂT4ôäôÕ’Â%•55ôU…å4”ôåôÄ”U"ÂtTôåô4ôDU…ôÄ”U"Â45ôÄ”U"Â$õ55ô•ôÄ”U"Â&W6öÇfT&÷74•&öf–ÆRÂDU…Eô$EDÄUôÄ”U"Òg&öÒrâöFFö&Ææ6Ræ§2s°¦–×÷'B²vWD&ÆW76–ærÒg&öÒrâöFFö&ÆW76–æw2æ§2s°¦–×÷'B²vVöäG&÷ööÄf÷%7FvRÂ&÷75vVöäf÷$6†FW"Òg&öÒrâöFF÷vVöç2æ§2s°¦–×÷'B²7VÕ76—fU÷vW"Òg&öÒrâöFFö6öÖ&E7FG2æ§2s°¦–×÷'B²†5&&Tff—‚Â†–v†W7Dff—…&&—G’Òg&öÒrâöFFöff—†W2æ§2s° ¦6öç7B&æBÒ†Â"’Óâ²ÖF‚ç&æFöÒ‚’¢†"Ò“°¦6öç7B6Æ×Ò‡bÂÆòÂ†’’ÓâÖF‚æÖ‚†ÆòÂÖF‚æÖ–â††’Âb’“° ¢òò8:8*n8;>88’(™">zy.888N8n{z8Nhù¾zé~8t$õ55ô•ôÄ”U.8îzy.i[8).8+ş8;Î8;>i[8ZHhù¾88(¾8 ¢òò&Ææ6Ræ§>ˆz®KÙ>ûÈ…"3.8îX‹˜NxšûÈ8şKˆXˆ~ZHi»N8~8®8N8 ¦gVæ7F–öâ&÷VæG4g&öÕ6V6öæG2‡6V2’°¢&WGW&âÖF‚æÖ‚ƒÂÖF‚ç&÷VæB‡6V2òDU…Eô$EDÄUôÄ”U"å4T4ôäE5õU%õ$õTäB’“°§Ğ ¢òò88n8*Ş8+88hŠn™y8~Kˆ[ªn8¾ŠzK®8;¾˜h©î88(¾i[^8îi[8îKˆ®™™ûÈXX>hÈ~zK£yZ®ûÉ¥vf^jx¾h‰8ğ¢òò{jŞhÈ8~8N8N88:®8*.8:¾8+ş8*N8:8îi˜.™i>[zå7vî8şKˆŞŠh88N8nhÈ~zK®8).XøŞiŠûÈ8 ¢òòk{k{^k{˜:8~8÷vf^Xh^8îš
+Şi[8Îi[XØKÙ>8¾˜N88(¾8>88Î8.8(¾8ş8(ûÈ…"3.8:Î89>8:^8;Î8p¢òòX{®xûîi[Kˆ®™™8).[É^8ŞKˆ®8.8ş[Û™ûşûÈ88N8î˜Ş˜~ûÈ†Væ6÷VçFW.ûÈ8.8ş8(®8îŠzK®i[8) ¢òò8>8(Î8~XË®Xˆ~8(®8YÎ8zŠîšî8îi[^8).ŠH~i[8î˜Ş˜~8¾XˆnX›.88(¾8.{xşi[8;¾{XNh‰88~8;Î8+ğ¢òòˆz®KÙ>8şZH88®8N8 ¦6öç7BTä4õTåDU%ôu$õUõ4•¤RÒDU…Eô$EDÄUôÄ”U"äTä4õTåDU%ôu$õUõ4•¤S° ¢òò‹ë.k	Ô5DU.8Îy›îZy>šØ.8ŞûÉ£hŠcY¹î888ˆ{NjÛ¾888:8;Î8+8).KØîz+®xè~8~ˆ	88(¾ûÈ„…8~yIşZÙûÈ8 ¢òòz+®Zé®Y¹î˜ş8(NxJ™™[êkK¾8¾8ş8~8®8NûÈXX>hÈ~zK®ûÉ®Z8®8(Î8şh¨8).˜ş88(¾ûÈ8 ¦6öç7Bd$ÔU%õ5U%d•dUô4„ä4RÒã3° ¦W‡÷'B6Æ72&GFÆTVæv–æR°¢6öç7G'V7F÷"‡7FvT–BÂ&ÆW76–æt–B’°¢6öç7Bf÷VæBÒf–æE7FvR‡7FvT–BÂ7FFRæFFç&–gD¶W—2ÇÂµÒ“°¢–b‚f÷VæBbb7FvT–Bç7F'G5v—F‚‚w&–gBÒr’’F‡&÷rö&¦V7Bæ76–vâ†æWrW'&÷"‚~Š8.yXÎ˜Û^8ÎŠh¾8N8¾8(8®8N8¾8KÛşyJ8~8Ş8î8¾8)>8"r’Â²6öFS¢u$”eEô´U•õTäd”Ä$ÄRrÒ“°¢–b‚f÷VæB’F‡&÷ræWrW'&÷"†Væ¶æ÷vâ7FvS¢G·7FvT–GÖ“°¢F†—2ç7FvRÒf÷VæBç7FvS°¢F†—2æ6†FW"Òf÷VæBæ6†FW#°¢F†—2æ&ÆW76–ærÒF†—2ç7FvRæ—4'—72òvWD&ÆW76–ær†&ÆW76–æt–B’¢çVÆÃ°¢F†—2åö'—75&Wf—fUW6VBÒfÇ6S° ¢6öç7B7FG2Ò7FFRævWE7FG2‚“°¢F†—2çÆ–W"Ò°¢‡¢7FG2æ‡ÂÖ„‡¢7FG2æ‡À¢×¢7FG2æ×ÂÖ„×¢7FG2æ×À¢F³¢7FG2æF²ÂFVc¢7FG2æFVbÂÖs¢7FG2æÖrÂ7C¢7FG2ç7BÂ7&—E7C¢7FG2æ7&—E7BÀ¢&Ö÷%Vã¢7FG2æ&Ö÷%VâÇÂÂWf6–öã¢7FG2æWf6–öâÇÂÀ¢wV&F–æs¢fÇ6RÀ¢òòˆ~jZŞ88ş8î8;¾88(^8(.8)>ZéşŠ8^ûÉ®kîyJ8989^jx¾˜
+ûÈXX>hÈ~zK®8Î88n8~8n8(.[ø^Šh8 ¢òò8(.8î88&GFÆTVæv–æ^XN8¾kîyJ‡7FGW>jx¾˜
+8).‹ûŞXª8ŞûÈ8.izv'VfdF´×VÇBğ¢òò'VfdFVd×VÇBö'VfeGW&ç>ûÈ„D¾8;´DTn8Î[‹8¾YÎ8ƒiÊÎ8î8+ş8*N89î8;Î8~˜
+>X¹^88(°¢òòŠŠŞŠˆûÈ8).88+88n8;Î8+ş8+8N88¾xºÎz¸¾8~8ş8+ş8;Î8;>K¹8Ş8989^8KˆˆŠÎXÉn8~8ş8 ¢òòF²öFVb÷7BöÖ~8ö×VÇNûÈƒãYû®k©n8îXŞxè~ûÈ87&—DFBöWf6–öäFB÷&VvVäFN8ğ¢òòXªzé~X
+NûÈ„45ôÄ”U.XN8îKˆ®™™8ş˜yJXN8åöVffV7F—fU‡‡‚‚8~[ø^8®š
+Şh™>888(¾ûÈ8 ¢'Vfg3¢°¢F³¢²×VÇC¢ÂGW&ç4ÆVgC¢ÒÂFVc¢²×VÇC¢ÂGW&ç4ÆVgC¢ÒÀ¢7C¢²×VÇC¢ÂGW&ç4ÆVgC¢ÒÂÖs¢²×VÇC¢ÂGW&ç4ÆVgC¢ÒÀ¢7&—DFC¢²fÇVS¢ÂGW&ç4ÆVgC¢ÒÂWf6–öäFC¢²fÇVS¢ÂGW&ç4ÆVgC¢ÒÀ¢&VvVäFC¢²fÇVS¢ÂGW&ç4ÆVgC¢ÒÀ¢ÒÀ¢òò8*Î8;Î88‹»Şk‰¾xè~8îKˆi˜.y¨N8®Kˆ®i»8ŞûÈZJ~[z^8ÎXù~8kX8~8Ş8ÎŠhZîXÉn8ŞyJûÈ8 ¢òòçVÆÎûÉŞ˜	®[‹8åDU…Eô$EDÄUôÄ”U"äuT$EôDÔtUôÕTÅN8).KÛş8n8 ¢wV&D÷fW'&–FT×VÇC¢çVÆÂÂwV&D÷fW'&–FUGW&ç3¢À¢òòxûîx«n89~8:Î8*N8:N8;Î8‡vV¶VâôFõNy»[Ù>8).Kˆî88(¾i[^XN8îh˜¾jë^8şZÙYÊ8~8®8N8ş8(8¢òòX:~Kën8ÎkXNXÉn8ŞyJ8îz›®8î8+8*Ş8:>89^8*8;Î8:¾8888~8n8î8şKùŞhÈ88(¾ûÈ[niÚT&÷7>zØ8À¢òò89~8:Î8*N8:N8;Î8).[ËKÙ>XÉn8^8¾8(¾h˜¾jë^8).hÈ8>8ş™©¾8¾8>8>8i»8Ş‹ëÎ8(h;>Zé®ûÈ8 ¢æVvF—fU7FGW3¢²vV¶Vã¢·ÒÂF÷E7F6·3¢ÂF÷EGW&ç4ÆVgC¢ÒÀ¢òòšÙN[îh¨[Š¾8Îˆz®X¹^z.Xû8ŞûÉ®ŠŠŞ{ÚîKŠŞ8õögFW%&÷VæD6†V6·2‚8~8:8*n8;>88{X.K¨ni˜.8°¢òòY¹î88ˆz®X¹^8~‹ûŞi(>88(¾ûÈikŠh÷7VÖÖöî8;¾Zéş[Ëî8şKÙÎ8(8®8iz.ZÙ8à¢òò6Æ7VÆFTFÖvRõöÇ•&tFÖvTæE&Wv&N8).8Ş8î8î8îYÎ8n888î‹»Ş˜x÷F–6¾ûÈ¢WFõGW'&WC¢çVÆÂÀ¢Ó°¢–b‡F†—2æ&ÆW76–ær’°¢6öç7B"ÒF†—2æ&ÆW76–æs°¢–b†"æ¶–æBÓÓÒvF´×VÇBr’F†—2çÆ–W"æF²ÒÖF‚ç&÷VæB‡F†—2çÆ–W"æF²¢ƒ²"ç÷vW"’“°¢VÇ6R–b†"æ¶–æBÓÓÒvFVd×VÇBr’F†—2çÆ–W"æFVbÒÖF‚ç&÷VæB‡F†—2çÆ–W"æFVb¢ƒ²"ç÷vW"’“°¢VÇ6R–b†"æ¶–æBÓÓÒw7D×VÇBr’F†—2çÆ–W"ç7BÒÖF‚ç&÷VæB‡F†—2çÆ–W"ç7B¢ƒ²"ç÷vW"’“°¢VÇ6R–b†"æ¶–æBÓÓÒv7&—DFBr’F†—2çÆ–W"æ7&—E7B³Ò"ç÷vW#°¢VÇ6R–b†"æ¶–æBÓÓÒv‡×VÇBr’°¢F†—2çÆ–W"æÖ„‡ÒÖF‚ç&÷VæB‡F†—2çÆ–W"æÖ„‡¢ƒ²"ç÷vW"’“°¢F†—2çÆ–W"æ‡ÒF†—2çÆ–W"æÖ„‡°¢Ğ¢Ğ ¢F†—2æ¦ö"Ò7FFRæ7W'&VçD¦ö#°¢òò3XX™š3¢hŠn™yKŠŞ88KùŞhÈ88(µ&W77W&^8.KùŞZÙ8;¾ˆ+.h‰WF†÷&—G8¾8şŠzn8(Î8®8N8 ¢F†—2åö3&W77W&RÒ°¢F†—2åö3Æ7DVÆVÖVçBÒçVÆÃ°¢F†—2æVffV7G2Ò7FFRævWDWV—VDVffV7G2‚“°¢f÷"†6öç7BVfböbF†—2æVffV7G2’°¢–b†Vfbæ¶–æBÓÓÒvvÆ746ææöârbbVfbæ‡×VÇB’°¢F†—2çÆ–W"æÖ„‡ÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB‡F†—2çÆ–W"æÖ„‡¢ƒ²Vfbæ‡×VÇB’’“°¢F†—2çÆ–W"æ‡ÒÖF‚æÖ–â‡F†—2çÆ–W"æ‡ÂF†—2çÆ–W"æÖ„‡“°¢Ğ¢Ğ¢6öç7BWV—VEvVöâÒvWD—FVÒ‡7FFRæFFæWV—VBçvVöâ“°¢F†—2çvVöåG—RÒWV—VEvVöâòWV—VEvVöâçvVöåG—R¢çVÆÃ° ¢F†—2æv¶Vä×VÇBÒ°¢F†—2å÷&VvVå÷vW"Ò°¢F†—2åö†—D6÷VçFW'2Ò·Ó°¢F†—2åö7F–öå&ö46÷VçG2Ò·Ó²òòjÚnYš„ff—ûÈ…'BûÈ—&ö>i«N‹[™‹.jÚ.ûÉ£8*.8*ş8+~8:~8;>8N88¾8:®8+¾88>88€¢F†—2å÷FV×F´&öçW2Ò°¢F†—2å÷FV×FµGW&ç2Ò°¢F†—2åö&ÆööD6†Æ–6T&öçW2Ò°¢F†—2åö&ÆööD6†Æ–6UGW&ç2Ò°¢F†—2åö†7FT–æ—F–F—fT&öçW2Ò²òòXX>8Æ†7F^8ŞûÈ†öä‡W'NûÈûÉ¥5BşXXiK¾89Î8;Î88®8+8‹º.yJûÈXX>hÈ~zK£^yZ®ûÈ¢F†—2åö†7FT–æ—F–F—fUGW&ç2Ò°¢F†—2åö7F–öåG—W5W6VBÒæWr6WB‚“²òò7F–öäF—fW'6—G”'W'7NyJûÈ˜	®[‹‚ş88ş8âş88(^8(.8)>ûÈ¢F†—2åö&÷75vVöäG&÷VBÒfÇ6S°¢òò88ş8î8;¾88(^8(.8)>8î8*ş8;Î8:¾888*n8;>8#h¨Ó8+8:Ş88>88X˜Şhù88>8şizu÷6¶–ÆÄ6EGW&ç0¢òòûÈXÙKˆ8îi[X
+NûÈ8¾8(8h¨”N8N88¾X¾XŠ^8*ş8;Î8:¾888*n8;>8).hÈ8n8(´Ö8ZHi»N8~8ğ¢òòûÈXX>hÈ~zK®ûÉ¤Ööö&¦V7N88îZHi»NûÈ8 ¢F†—2ç6¶–ÆÄ6ööÆF÷vç2Ò·Ó°¢F†—2å÷6¶–ÆÄ6ööÆF÷vç56WEF†—5&÷VæBÒæWr6WB‚“°¢òòYXnK«®8;¾‹ë.k	8îKˆi˜.y¨N8¤vöÆNxÛ.[é~89Î8;Î88®8+ûÈYXnšØ.ûÈşZJ~Xøîzš¾ûÈ¢F†—2å÷FV×vöÆD&öçW2Ò²F†—2å÷FV×vöÆD&öçW5GW&ç2Ò°¢òòxºK«®8ÎxÚ>xº8(®8ŞûÉ¤&÷72ôVÆ—F^™™Zé®8îKˆi˜.y¨N8®Kˆî888:8;Î8+Xªzép¢F†—2å÷FV×&÷74FÖt&öçW2Ò²F†—2å÷FV×&÷74FÖuGW&ç2Ò°¢òòZÚnˆTÔ5DU.8ÎZèÎXZŠz>ié8ŞûÉ®Kˆî888:8;Î8+XZˆŠÎ88îKˆi˜.Xªzép¢F†—2å÷FV×FÖt&öçW2Ò²F†—2å÷FV×FÖt&öçW5GW&ç2Ò°¢òò‹ë.k	Ô5DU.8Îy›îZy>šØ.8ŞûÉ£hŠcY¹î8KØîz+®xè~8~ˆ{NjÛ¾888:8;Î8+8).ˆ	88(°¢F†—2åöf&ÖW%7W'f—fUW6VBÒfÇ6S°¢òòy¹~‹8®8Îy¹~8(8ŞûÉ®Zûî‹8N88³hŠcY¹î88h‰z¸¾8^8¾8(¾8ş8(8y¹~8)>8i[^8æ–N8).Š‰˜Ë.88(°¢F†—2å÷7FöÆVäVæV×”–G2ÒæWr6WB‚“° ¢ò¢ÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢8>8>8¾8(Kˆ®{I®ˆs3zŠîûÈzÊÃ.89^8*~8;Î8+®ûÈY	88¾‹ûŞXª8~8şx«nhX¾8 ¢8N8®8(Î8(.8Îiz.ZÙ8îKˆi˜.8989^ûÈşKˆi˜.89Î8;Î88®8+8YÎ8‡GW&ç>zêyn8î‰hN8N89^8*>8;Î8:¾888Ğ¢8~8.8(®8ik8~8Nx«nhX¾y[[‹8+~8+88n8:8~8ş8®8NûÈXX>hÈ~zK®ûÉ®88n8~8n8(.[ø^Šh8 ¢8(.8î88kîyJ‡7FGW2ö'Vfnjx¾˜
+8‹ûŞXª88(¾ûÈ8 ¢ÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒ¢ğ¢òòšÙNk9^Xš>Z:´Ô5DU.8ÎšÙNX©¾Xš>8ŞûÉ®i[8+ş8;Î8;>8˜	®[‹iK¾i(>8¾8($Ô~Š9ÎjÚ>8).‹ûŞXª88(°¢F†—2å÷FV×‡–'&–DÖu&F–òÒ²F†—2å÷FV×‡–'&–DÖuGW&ç2Ò°¢òòZJ~YXnK«¢şZJ~[z^{;¾8ÎX
+NXˆ~8(®8ŞûÉ¤vöÆNkh‹+¾h¨8î8+>8+888).Kˆi˜.y¨N8¾X›.8(®[É^8ğ¢F†—2å÷FV×vöÆD6÷7E&VGV6RÒ²F†—2å÷FV×vöÆD6÷7E&VGV6UGW&ç2Ò°¢òò888:Î8+8:>8;Î88ş8;>8+ş8;Î8ÎyºîXŠ8Ş8Ş8;¾ZJ~YXnK«®8Î™Zé®yËÎ8ŞûÉ®hŠn™yKŠŞ88888:Ş88>89~xè~8).[©^Kˆ®8 ¢F†—2å÷FV×G&÷&FT&öçW2Ò²F†—2å÷FV×G&÷&FT&öçW5GW&ç2Ò°¢òò8*.8:¾8*¾88¾8+888Î˜ÊÎh‰™š>8ŞzØûÉ®ˆz®Xˆn8Î8¾88(·vV¶VâöF÷N8îX«iéÎ˜xş8).Kˆi˜.y¨N8¾[©^Kˆ®8 ¢F†—2å÷FV×FV'Vfe÷vW$&öçW2Ò²F†—2å÷FV×FV'Vfe÷vW$&öçW5GW&ç2Ò°¢òòŠ©î8(®˜:8ÎKÉŞŠªÎ8îKˆzø8ŞûÉ®i[8+ş8;Î8;>{XÎš‰>X
+NXùn[é~8).[©^Kˆ®8 ¢F†—2å÷FV×W‡&öçW2Ò²F†—2å÷FV×W‡&öçW5GW&ç2Ò°¢òò8*.8;Î8:8+®88®8*N88„Ô5DU.8ÎZèÎXZjÚnŠ8^8ŞûÉ¤&Ö÷"Vî88îKˆi˜.Xªzép¢F†—2å÷FV×&Ö÷%Vä&öçW2Ò²F†—2å÷FV×&Ö÷%VåGW&ç2Ò°¢òò‹:.ˆTÔ5DU.8Î˜
+>{i®ŠšYK8ŞûÉ®jÊ8¾YK88(·7VÆÃY¹î88.Y¹îy›®X¹^8^8¾8(¾K¨{HN89^8:8+ ¢F†—2åöF÷V&ÆT67D&ÖVBÒfÇ6S°¢òòXš>‹®8Î[^Y8Ş8;¾ZønX^8ÎZX~Š[.8ŞzØûÉ®8>8î8:8*n8;>88XXiK¾8~8ş8¾ûÈ†Gfæ6UGW&îXN8~ŠŠŞZé®ûÈ¢F†—2åöÆ7EÆ–W$f—'7BÒfÇ6S°¢òòh
+®y¹tÔ5DU.8Îˆ8Î[èÎ8îKˆi(>8ŞûÉ®y»NX˜Ş8¾i[^8îiK¾i(>8).Y¹î˜ş8~8n8N8ş8°¢F†—2å÷Æ–W$WfFVDÆ7E&÷VæBÒfÇ6S°¢òò[›¾h98îˆ‰îZz´Ô5DU.8ÎZJ.[›¾K›ˆ‰î8ŞûÉ®hŠn™yKŠŞ8¾Y¹î˜ş8h‰X©ş8~8ş{JşŠˆY¹îi[ ¢F†—2å÷Æ–W$Wf6–öä6÷VçBÒ°¢òòh»>ˆn8Î˜
+>y+h»>8ŞûÉ®y»NX˜Ş8îˆz®Xˆn8îŠÎX¹^8ÎiK¾i(>{;¾ûÈ˜	®[‹iK¾i(2÷"FÖv^h¨ûÈ88>8ş8°¢F†—2åöÆ7D7F–öåv4GF6²ÒfÇ6S°¢òò888:Î8+8:>8;Î88ş8;>8+ş8;Î8Îy›®hé8Ş8;¾ZJ~YXnK«®8Î[ˆ.ZNiJş˜XŞ8ŞûÉ®hŠn™y8*ş8:®8*.i˜.8³Y¹î88¢òò‹ûŞXªZ˜ZÎ8).XŠNZé®88(¾K¨{HNûÈ‡¶vöÆE7BÂG&÷6†æ6WŞûÈ8.iz.ZÙ…÷&öÆÄG&÷‚8î8ş8) ¢òòKÛş8n8ş8(&÷7>Y»®iÈjÚnYš8;¾X‰ŞY¹î8*ş8:®8*.Z˜ZÎûÈXŠ^{XÎ‹zşûÈ8şZûî‹ZInûÉŞxJ™™Z)~jén8~8®8@¢F†—2åö&GFÆTVæD&öçW5&Wv&BÒçVÆÃ°¢òò888:Î8+8:>8;Î88ş8;>8+ş8;ÄÔ5DU.8ÎZJ~y›®Šh¾8Ş8;¾iÙ8îy™.8~h˜´Ô5DU.8ÎiÙK«®8îZX~‹z8ŞzØ8¢òòh¨”NXÙKØŞ8~8ÃhŠcY¹î8Ş8).Xë>Zøn8¾KùŞŠ‹Î88(¾kîyJ8+¾88>88ûÈ…÷&ö&UFV6†æ—VRğ¢òò÷Æ–W%FV6†æ—V^XN8~X[˜	®8¾Xø.xZ~88(¾ûÈ¢F†—2åööæ6UW$&GFÆUW6VBÒæWr6WB‚“°¢òò898:88~8*>8;4Ô5DU.8ÎKˆŞ‰Ş8îŠ©>8N8ŞûÉ®ˆ{NjÛ¾888:8;Î8+8)#hŠcY¹î88ˆ	88(¾jŠXŠ8) ¢òòh¨8îKÛşyJi˜.8¾8Î‹[~X¹^8Ş88(¾ûÈ‹ë.k	8îy›îZy>šØ.ûÉŞ[‹i˜.8988>8+~89n88şy[8®8(®8¢òòKÛş8>8şi˜.88iÈX«8¾8®8(¾ûÈ8&6†V6´&GFÆTVæB‚8~8şk{k{^‰ˆ~yIş(i.y›îZy>šØ.(i ¢òò8>8îšn8~XŠNZé®8~8˜xŞŠH~y›®X¹^8~8®8N8(8n8¾88(°¢F†—2å÷ÆF–äFVF„wV&D&ÖVBÒfÇ6S°¢F†—2å÷ÆF–å7W'f—fUW6VBÒfÇ6S° ¢F†—2ç'VäW‡Ò°¢F†—2ç'VävöÆBÒ°¢F†—2ç'Vä—FV×2ÒµÓ°¢F†—2æ&÷72ÒçVÆÃ° ¢òòvf^jx¾h‰ûÈXX>hÈ~zK£yZ®ûÈûÉ®iz.ZÙ8ç7FvRçvfW>8ş8Ş8î8î8îKÛş8N88:®8*.8:¾8+ş8*N8:8à¢òòi˜.™i>[zå7vî888).[¸>jÚ.8~8n8Ã8N8î˜Ş˜~ûÈ†Væ6÷VçFW.ûÈ8+8:¾8;Î89~8Ş8îX‰~8€¢òòZHhù¾88(¾8#8+8:¾8;Î89~8îš
+Şi[8ôTä4õTåDU%ôu$õUõ4•¤^8~XË®Xˆ~8(¾8Î8{xşi[8;°¢òò{XNh‰88~8;Î8+şˆz®KÙ>8şZH88®8N8 ¢F†—2æVæ6÷VçFW%VWVRÒµÓ°¢f÷"†6öç7BvfRöbF†—2ç7FvRçvfW2’°¢ÆWB&VÖ–æ–ærÒvfRæ6÷VçC°¢v†–ÆR‡&VÖ–æ–ærâ’°¢6öç7BâÒÖF‚æÖ–â„Tä4õTåDU%ôu$õUõ4•¤RÂ&VÖ–æ–ær“°¢F†—2æVæ6÷VçFW%VWVRçW6‚‡²G—S¢vfRçG—RÂ6÷VçC¢âÒ“°¢&VÖ–æ–ærÓÒã°¢Ğ¢Ğ¢F†—2çF÷FÅFôFVfVBÒF†—2ç7FvRçvfW2ç&VGV6R‚‡2Âr’Óâ2²ræ6÷VçBÂ“°¢F†—2æFVfVFVBÒ°¢F†—2æVæVÖ–W2ÒµÓ²òòxûîYÊ8î˜Ş˜~8+8:¾8;Î89~ûÈyIşZÙˆ^8î8şjè¾8ûÈ¢F†—2ç&÷VæBÒ°¢F†—2æ÷fW"ÒfÇ6S°¢F†—2æf–æÅ&W7VÇBÒçVÆÃ°¢òò&W6öÇfRæB–æ—F–Æ—¦Rf—'7C²&Wf–Ww2æBf–ÆVB–æ—F–Æ—¦F–öâæWfW"7VæB¶W’à¢–b‡F†—2ç7FvRæ—5&–gBbb7FFRæ6öç7VÖU&–gD¶W“òâ‡F†—2ç7FvRç&–gD¶W’æ–B’’°¢F‡&÷rö&¦V7Bæ76–vâ†æWrW'&÷"‚~Š8.yXÎ˜Û^8ÎŠh¾8N8¾8(8®8N8¾8KÛşyJ8~8Ş8î8¾8)>8"r’Â²6öFS¢u$”eEô´U•õTäd”Ä$ÄRrÒ“°¢Ğ¢Ğ ¢òòÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢òò˜Ş˜~ûÈ†Væ6÷VçFW.ûÈ8+8:¾8;Î89~8î™h¾Zx°¢òòÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢†4Ö÷&TVæ6÷VçFW'2‚’°¢&WGW&âF†—2æVæ6÷VçFW%VWVRæÆVæwF‚âÇÂF†—2æVæVÖ–W2ç6öÖR‚†R’ÓâRæFVB“°¢Ğ ¢òòxûîYÊ8î8+8:¾8;Î89~8).XZk¸^8^8¾88¾8NjÊ8î8+8:¾8;Î89~8Îhê~88n8N8(¾ZNY8¾YÎ8n8 ¢òò8Î8	Î8Ã.KÙ28	Î8ÃKÙ28.8(8(ş8(Î8şûÈ8Ş8îZê>Šˆ8*N898;>888).‹ùN8ûÈXX>hÈ~zK£yZ®ûÈ8 ¢&Vv–äæW‡DVæ6÷VçFW"‚’°¢6öç7B7V2ÒF†—2æVæ6÷VçFW%VWVRç6†–gB‚“°¢–b‚7V2’&WGW&âçVÆÃ°¢6öç7Bw&÷WÒµÓ°¢f÷"†ÆWB’Ò²’Â7V2æ6÷VçC²’²²’w&÷WçW6‚‡F†—2å÷7väVæV×’‡7V2çG—R’“°¢F†—2æVæVÖ–W2Òw&÷W°¢òòFW‡D&GFÆU67&VVîXN8Î8Î8+>89î8;>888).˜8nX˜Ş8¾i[^8îZ{ş8).Šh¾8¾8(¾8Ş8ş8(8¾8>8î8:8+Ş88>888) ¢òòGfæ6UGW&â‚8(8(®X˜Ş8¾YÎ8)>8~8®88(¾ûÈŠzK®[.yJ8îYÎ8>X{®8~ûÈ8(8n8¾88>8à¢òò8+8:¾8;Î89~8Î8ÎX{®xûîy»N[èÎ8~xËnK¨8:8*n8;>888Î[ø^Šh8Ş8~8.8(¾8>88).8>8>8¾Š‰˜Ë.8~8n8®8Ş8¢òòGfæ6UGW&â‚XN8ş8Î8>8î8:8*n8;>88KŠŞ8¶&Vv–äæW‡DVæ6÷VçFW.8).YÎ8)>88¾8Ş8~8ş8®8ğ¢òò8>8î89^8:8+8~XŠNZé®88(¾8.8>8n88(¾8>88~8T8ÎXX8¾ŠzK®888~8n8®8N8n8(.8¢òò{i®8ş89~8:Î8*N8:N8;Î8îiÈX‰Ş8î8+>89î8;>888ã8:8*n8;>88yºî8ş8>8(Î8î8~˜	®8(®i[^8À¢òò8î8X¹^8¾8®8NxËnK¨8:8*n8;>888î8î8îKùŞ8ş8(Î8iz.ZÙ8î‹È>jÚ>kˆ8ş898:8;>8+8şZH8(ş8(8®8N8 ¢F†—2åög&W6„w&÷WVæF–ærÒG'VS°¢&WGW&â²G—S¢vVæ6÷VçFW%7F'BrÂVæVÖ–W3¢w&÷WæÖ‚†R’Óâ‡²–C¢Ræ–BÂæÖS¢RææÖRÂ&÷73¢Ræ&÷72ÂVÆ—FS¢RæVÆ—FRÒ’’Ó°¢Ğ ¢÷7väVæV×’‡G—R’°¢6öç7BBÒTäTÕ•õE•U5·G—UÓ°¢ÆWB‡ÒBæ‡ÂF²ÒBæF²ÂFVbÒBæFVbÂ7BÒBç7VVC°¢ÆWB‡ÒBç‡ÂvöÆBÒBævöÆC°¢ÆWBVÆ—FRÒfÇ6S° ¢òòk{k{^hº[Ë^ûÉ®8:.88~8*>89^8*8*N8*.yKiÚ^8îi[^[Ë~XÉnûÈ¾8*8:®8;Î88XÉnh«Ş˜ûÈXX>8æ&GFÆRæ§>8YÎKˆ8:Ş8+88>8*şûÈ¢–b‡F†—2ç7FvRæ—4'—72bbBæ&÷72’°¢‡ÒÖF‚ç&÷VæB†‡¢‡F†—2ç7FvRæVæV×”‡×VÇBÇÂ’“°¢F²ÒÖF‚ç&÷VæB†F²¢F†—2å÷&—6´×VÇB‡F†—2ç7FvRæVæV×”F´×VÇBÇÂ’“°¢FVbÒÖF‚ç&÷VæB†FVb¢F†—2å÷&—6´×VÇB‡F†—2ç7FvRæVæV×”FVd×VÇBÇÂ’“°¢7BÒÖF‚ç&÷VæB‡7B¢F†—2å÷&—6´×VÇB‡F†—2ç7FvRæVæV×•7VVD×VÇBÇÂ’“° ¢–b„ÖF‚ç&æFöÒ‚’Â7FFRæ'—74VÆ—FT6†æ6R‡F†—2ç7FvRæ'—74FWF‚’’°¢VÆ—FRÒG'VS°¢‡ÒÖF‚ç&÷VæB†‡¢%•55ôU…å4”ôåôÄ”U"äTÄ•DUô…ôÕTÅB“°¢F²ÒÖF‚ç&÷VæB†F²¢%•55ôU…å4”ôåôÄ”U"äTÄ•DUôDµôÕTÅB“°¢FVbÒÖF‚ç&÷VæB†FVb¢%•55ôU…å4”ôåôÄ”U"äTÄ•DUôDTeôÕTÅB“°¢6öç7B&Wv&D×VÇBÒ%•55ôU…å4”ôåôÄ”U"äTÄ•DUõ$Ut$EôÕTÅB¢7FFRæ'—74VÆ—FU&Wv&D×VÇB‚“°¢‡ÒÖF‚ç&÷VæB‡‡¢&Wv&D×VÇB“°¢vöÆBÒÖF‚ç&÷VæB†vöÆB¢&Wv&D×VÇB“°¢Ğ¢Ğ ¢6öç7BVæV×’Ò°¢–C¢G·G—WÕòG·F†—2åöæW‡DVæV×”–BÒ‡F†—2åöæW‡DVæV×”–BÇÂ’²ÖÀ¢G—RÂæÖS¢BææÖRÂ&÷73¢Bæ&÷72ÂVÆ—FRÀ¢‡ÂÖ„‡¢‡ÂF²ÂFVbÂ7BÀ¢‡ÂvöÆBÂFVC¢fÇ6RÀ¢vV¶Vã¢çVÆÂÂF÷E7F6·3¢ÂF÷EGW&ç4ÆVgC¢ÂF÷E÷vW#¢Âg&÷¦VåGW&ç3¢À¢Ó°¢–b†VæV×’æ&÷72’°¢òò&÷72’&öf–Æ^ûÈXX>hÈ~zK£yZ®ûÈûÉ®8>8îŠz>k®8:Ş8+88>8*şˆz®KÙ>8ö&GFÆRæ§>8ZèÎXZ8°¢òòYÎKˆûÈ‡&W6öÇfT&÷74•&öf–Æ^8şKˆXˆ~ZHi»N8~8®8NûÈ8.8+ş8*N89î8;Î88zy.i[8¾8(¢òò8+ş8;Î8;>i[8ZHhù¾88(¾8 ¢6öç7B&öf–ÆRÒ&W6öÇfT&÷74•&öf–ÆR‡G—RÂF†—2æ6†FW"òF†—2æ6†FW"æçVÒ¢çVÆÂÂF†—2ç7FvRæ—4'—72“°¢VæV×’æ•†6RÒ°¢VæV×’æ•&öf–ÆRÒ&öf–ÆS°¢–b‡&öf–ÆRç6ÆÒ’VæV×’ç6ÆÕGW&ç2Ò&÷VæG4g&öÕ6V6öæG2„$õ55ô•ôÄ”U"å4ÄÕô”åDU%dÅõ4T2“°¢–b‡&öf–ÆRæ6†&vR’VæV×’æ6†&vUGW&ç2Ò&÷VæG4g&öÕ6V6öæG2„$õ55ô•ôÄ”U"ä4„$tUô”åDU%dÅõ4T2“°¢–b‡&öf–ÆRç&ö¦V7F–ÆR’VæV×’ç&ö¦V7F–ÆUGW&ç2Ò&÷VæG4g&öÕ6V6öæG2„$õ55ô•ôÄ”U"å$ô¤T5D”ÄUô”åDU%dÅõ4T2“°¢–b‡&öf–ÆRç7VÖÖöâ’VæV×’ç7VÖÖöåGW&ç2Ò&÷VæG4g&öÕ6V6öæG2„$õ55ô•ôÄ”U"å5TÔÔôåô”åDU%dÅõ4T2“°¢VæV×’çVæF–æu7V6–ÂÒçVÆÃ²òòK¨XXn8+ş8;Î8;>KŠŞ8îiK¾i(>zŠîXŠ^ûÈXX>hÈ~zK£~yZ®ûÈ¢F†—2æ&÷72ÒVæV×“°¢Ğ¢&WGW&âVæV×“°¢Ğ ¢÷&—6´×VÇB†×VÇB’°¢–b†×VÇBÃÒÇÂF†—2ç7FvRæ—4'—72’&WGW&â×VÇC°¢6öç7B&W6—7E7BÒ7FFRæ'—74ÖöF–f–W%&W6—7E7B‚“°¢&WGW&â²†×VÇBÒ’¢ƒÒ&W6—7E7B“°¢Ğ ¢vWBÆ—fTVæVÖ–W2‚’²&WGW&âF†—2æVæVÖ–W2æf–ÇFW"‚†R’ÓâRæFVB“²Ğ ¢òòÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢òòiÈX«8+88n8;Î8+ş8+ûÈ‡Æ–W"æ'Vfg>8îKˆi˜.8989^8).XøŞiŠ8~8şX
+NûÈ8.˜	®[‹iK¾i(>8;¾88ş8î8;°¢òò88(^8(.8)>8;¶–æ—F–F—f^XŠNZé®8;¾Y¹î˜şXŠNZé®8®8889~8:Î8*N8:N8;Î8î8+88n8;Î8+ş8+8).ŠªŞ8( ¢òòzè~h˜8şXZ8n8>8>8).{XÎyK88(¾ûÈXX>hÈ~zK®ûÉ¤45ôÄ”U.8îKˆ®™™8).[ø^8®Xë>Zè88(¾ûÈ8 ¢òòÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢öVffV7F—fTF²‚’²6öç7B"ÒF†—2çÆ–W"æ'Vfg2æF³²&WGW&âF†—2çÆ–W"æF²¢†"çGW&ç4ÆVgBâò"æ×VÇB¢“²Ğ¢öVffV7F—fTÖr‚’²6öç7B"ÒF†—2çÆ–W"æ'Vfg2æÖs²&WGW&âF†—2çÆ–W"æÖr¢†"çGW&ç4ÆVgBâò"æ×VÇB¢“²Ğ¢öVffV7F—fTFVb‚’²6öç7B"ÒF†—2çÆ–W"æ'Vfg2æFVc²&WGW&âF†—2çÆ–W"æFVb¢†"çGW&ç4ÆVgBâò"æ×VÇB¢“²Ğ¢òò'V–ÆBff—8ÎjÛ¾{y®8ŞûÉ¤…8Î™kîX
+NKº^Kˆ¾8î™i>885N8(.[©^Kˆ®8.88(°¢öVffV7F—fU7B‚’°¢6öç7B"ÒF†—2çÆ–W"æ'Vfg2ç7C°¢ÆWB7BÒF†—2çÆ–W"ç7B¢†"çGW&ç4ÆVgBâò"æ×VÇB¢“°¢7B£Ò²F†—2åöFVF†Æ–æT&öçW2‚w7Br“°¢&WGW&â7C°¢Ğ¢ö‡&F–ò‚’²&WGW&âF†—2çÆ–W"æÖ„‡âòF†—2çÆ–W"æ‡òF†—2çÆ–W"æÖ„‡¢²Ğ¢öFVF†Æ–æT&öçW2‡v†–6‚’°¢ÆWB&öçW2Ò°¢6öç7B‡&F–òÒF†—2åö‡&F–ò‚“°¢f÷"†6öç7BVfböbF†—2åöVffV7G4öb‚w76—fRr’’°¢–b†Vfbæ¶–æBÓÓÒvFVF†Æ–æT&ö÷7Brbb‡&F–òÃÒVfbçF‡&W6†öÆB’&öçW2³ÒVfbç÷vW#°¢Ğ¢&WGW&â&öçW3°¢Ğ¢öVffV7F—fT7&—E7B‚’°¢6öç7B"ÒF†—2çÆ–W"æ'Vfg2æ7&—DFC°¢òò'V–ÆBff—8ÎjÛ¾{y®8ŞûÉ¤…™kîX
+NKº^Kˆ¾8t7&—N8(.[©^Kˆ®8.ûÈ‡W&6VçFvRö–çNhù¾zé~ûÈ¢6öç7BFVF†Æ–æRÒF†—2åöFVF†Æ–æT&öçW2‚v7&—Br’¢°¢&WGW&âÖF‚æÖ–â„45ôÄ”U"ä5$•Eõ5EôÔ‚ÂF†—2çÆ–W"æ7&—E7B²†"çGW&ç4ÆVgBâò"çfÇVR¢’²FVF†Æ–æR“°¢Ğ¢öVffV7F—fTWf6–öâ‚’°¢6öç7B"ÒF†—2çÆ–W"æ'Vfg2æWf6–öäFC°¢&WGW&âÖF‚æÖ–â„45ôÄ”U"äUd4”ôåôÔ‚Â‡F†—2çÆ–W"æWf6–öâÇÂ’²†"çGW&ç4ÆVgBâò"çfÇVR¢’“°¢Ğ¢òò8*.8;Î8:8+®88®8*N88„Ô5DU.8ÎZèÎXZjÚnŠ8^8ŞyJûÉ®iz.ZÙ‡Æ–W"æ&Ö÷%Vî88îKˆi˜.Xªzé~8) ¢òòKˆzè~h˜8~XøŞiŠ88(¾ûÈ˜	®[‹iK¾i(>8;¾88ş8î8;¾88(^8(.8)>8îXZ{XÎ‹zş8Î8>8>8).{XÎyK88(¾ûÈ¢öVffV7F—fT&Ö÷%Vâ‚’°¢&WGW&âÖF‚æÖ–â„45ôÄ”U"ä$Ôõ%õTåôÔ‚Â‡F†—2çÆ–W"æ&Ö÷%VâÇÂ’²‡F†—2å÷FV×&Ö÷%VåGW&ç2âòF†—2å÷FV×&Ö÷%Vä&öçW2¢’“°¢Ğ ¢òò898:88~8*>8;>8Îˆny»î8Ş8;¾Xš>‹¤Ô5DU.8ÎxJ[ø>ijÎ8Ş8;¾[z¾Z[4Ô5DU.8ÎzYîŠ‰~8ŞzØûÉ¤&÷7>K¨XX`¢òòûÈiz.ZÙ‡VæF–æu7V6–ÎûÈ8ÎX{®8n8N8(¾™i>88[Ë~XÉn8^8(Î8(¾h¨8~X[˜	®8~8nKÛş8nXŠNZé ¢ö†47F—fUFVÆVw&‚‚’²&WGW&âF†—2æÆ—fTVæVÖ–W2ç6öÖR‚†R’ÓâRçVæF–æu7V6–Â“²Ğ ¢òòˆz®[{Xø.xZ~ûÈ89~8:Î8*N8:N8;Î8;¾hŠnk8XNûÈ8îiÚK»n8~ZˆX©¾8).Kˆ®K™~8¾88(¾h¨ûÈ[^Y8;¾ZX~Š[.8;°¢òòˆ8Î[èÎ8îKˆi(>8;¾xJ[ø>ijÎ8;¾˜
+>y+h»>8;¾ˆ8ÎkNh»>zØûÈ8ÎX[˜	®8~KÛş8nXŠNZé®8'F&vWNXN8îiÚK»n8ğ¢òòXŠ^˜	E÷F&vWD&öçW5÷vW"‚8~h›8nûÈik8~8Nx«nhX¾y[[‹8+~8+88n8:8~8ş8®8ş8iz.ZÙ8à¢òò89^8:8+8;¾8*¾8*n8;>8+ş8).ŠªŞ8(888î‰hN8N898:¾898;ÎûÈ¢ö6öæF—F–öäÖWB†6"’°¢–b‚6"’&WGW&âfÇ6S°¢7v—F6‚†6"æ6öæF—F–öâ’°¢66RwÆ–W$f—'7Bs¢&WGW&âF†—2åöÆ7EÆ–W$f—'7C°¢66RvWfFVDÆ7E&÷VæBs¢&WGW&âF†—2å÷Æ–W$WfFVDÆ7E&÷VæC°¢66Rvf—'7D÷$WfFVBs¢&WGW&âF†—2åöÆ7EÆ–W$f—'7BÇÂF†—2å÷Æ–W$WfFVDÆ7E&÷VæC°¢66RwFVÆVw&„7F—fRs¢&WGW&âF†—2åö†47F—fUFVÆVw&‚‚“°¢66Rw&Wd7F–öäGF6²s¢&WGW&âF†—2åöÆ7D7F–öåv4GF6³°¢66Rv†–v„Wf6–öâs¢&WGW&âF†—2åöVffV7F—fTWf6–öâ‚’ãÒ†6"æWf6–öåF‡&W6†öÆBÒçVÆÂò6"æWf6–öåF‡&W6†öÆB¢ãR“°¢FVfVÇC¢&WGW&âfÇ6S°¢Ğ¢Ğ ¢òòZûî‹ûÈi[^ûÈXN8îx«nhX¾8~ZˆX©¾8).Kˆ®K™~8¾88(¾h¨ûÈxÉ¾xÚ>KÛş8N8;¾i©~jë®h»>8;¾ZønX^8;°¢òòxºxÉşxè¾zØûÈ8ÎX[˜	®8~KÛş8nXŠNZé®8"vÖ&¶VB~8şxºxÉşxè¾8ÎxºK«®8îXÛ8Ş8ÎX‹¾8( ¢òòVæV×’çgVÆæW&&Æ^ûÈiz.ZÙ‡vV¶Vî8YÎ8[Ú.8î‹ûŞXª89^8*>8;Î8:¾88ûÈ8).Šh¾8(°¢÷F&vWD&öçW5÷vW"‡F"ÂF&vWB’°¢–b‚F"ÇÂF&vWB’&WGW&â°¢7v—F6‚‡F"çv†Vâ’°¢66Rv&÷74÷$VÆ—FRs¢&WGW&â‡F&vWBæ&÷72ÇÂF&vWBæVÆ—FR’òF"ç÷vW"¢°¢66RvÆ÷t‡s¢&WGW&â‡F&vWBæÖ„‡âbbF&vWBæ‡òF&vWBæÖ„‡ÃÒ‡F"æ‡F‡&W6†öÆBÒçVÆÂòF"æ‡F‡&W6†öÆB¢ãR’’òF"ç÷vW"¢°¢66RvFV'VffVBs¢&WGW&â‚‡F&vWBçvV¶Vâbbö&¦V7Bæ¶W—2‡F&vWBçvV¶Vâ’æÆVæwF‚â’ÇÂ‡F&vWBæF÷E7F6·2ÇÂ’â’òF"ç÷vW"¢°¢66RvÖ&¶VBs¢&WGW&â‡F&vWBçgVÆæW&&ÆRbbF&vWBçgVÆæW&&ÆRçGW&ç4ÆVgBâ’òF"ç÷vW"¢°¢FVfVÇC¢&WGW&â°¢Ğ¢Ğ ¢òò3[ÛXˆ>ûÉ®iz.ZÙ8çvV¶VâôFõN8Îjè¾8(¾y»h˜¾888ˆ8Î[èÎ8îKˆi(>8).XznX‰8[Ë~XÉn88(¾8 ¢òòik8~8Nx«nhX¾8şhÈ8ş8®8iz.ZÙ8îZûî‹iÚK»nXŠNZé®8).8Ş8î8î8îKÛş8n8 ¢ö36†F÷tW†V7WF–öå÷vW"‡FV6‚ÂF&vWB’°¢6öç7B'VÆRÒF†—2æ¦ö#òæ36öÖ&C°¢–b‡'VÆSòæ¶–æBÓÒvW†V7WF–öârÇÂ'VÆRæW†V7WF–öå6¶–ÆÄ–G2æ–æ6ÇVFW2‡FV6‚æ–B’’&WGW&â°¢&WGW&âF†—2å÷F&vWD&öçW5÷vW"‡²v†Vã¢vFV'VffVBrÂ÷vW#§'VÆRæ&öçW5÷vW"ÒÂF&vWB“°¢Ğ ¢òòÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢òò888:8;Î8+Šˆzé~ûÈ…"3.8äFÖvR'V6¶WN8).8Ş8î8î8îkXyJ8.ik[Èş8şKÙÎ8(8®8NûÈ¢òòÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢öVffV7G4öb‡G&–vvW"’²&WGW&âF†—2æVffV7G2æf–ÇFW"‚†R’ÓâRçG&–vvW"ÓÓÒG&–vvW"“²Ğ ¢òò6÷W&6T¶–æC¢væ÷&ÖÂwÂw6¶–ÆÂwÂw7VÆÂr8).kŠ888jÚnYš„ff—ûÈ…'BûÈ8à¢òò8Î˜	®[‹iK¾i(2ş88ş8âş88(^8(.8)4FÖvR¾8ŞûÈ†æ÷&ÖÄFÖtFB÷6¶–ÆÄFÖtFBğ¢òò7VÆÄFÖtFNûÈ8î8n8Š›.[Ù>88(¾8(.8î888).‹ûŞXª8~K™~8¾8(¾ûÈyÈyZ^i˜.8şxJŠinûÉĞ¢òòô^XøŞi(>8;¾ˆz®X¹^z.XûzØ8îiz.ZÙYÎ8>X{®8~8şK¸®8î8~˜	®8(®ûÈ¢öÖ–äFÖt×VÇB‡6÷W&6T¶–æB’°¢6öç7B&ÆööD6†Æ–6T×VÇBÒF†—2åö&ÆööD6†Æ–6UGW&ç2âò²F†—2åö&ÆööD6†Æ–6T&öçW2¢°¢6öç7BFV×F´×VÇBÒF†—2å÷FV×FµGW&ç2âò²F†—2å÷FV×F´&öçW2¢°¢òòD¾8989^8÷Æ–W"æ'Vfg2æF¾ûÈ…öVffV7F—fTF²‚ûÈXN8z{¾X¹^8~8ş8ş8(88>8>8~8ğ¢òòXªzé~8~8®8NûÈizv'VfdF´×VÇN8îš^8).8>8>8¾8(™šNXë¾ûÈ8.ZÚnˆTÔ5DU.8ÎZèÎXZŠz>ié8Ş8à¢òòKˆi˜.y¨N8®Kˆî888:8;Î8+Xªzé~888iz.ZÙ8îXªzé~898+88>88ik[Èş8¾8®8(8>8n‹ûŞXª88(¾8 ¢ÆWB×VÇBÒ¢²‡F†—2æv¶Vä×VÇBÒ¢²†&ÆööD6†Æ–6T×VÇBÒ¢²‡FV×F´×VÇBÒ¢²‡F†—2å÷FV×FÖt&öçW5GW&ç2âòF†—2å÷FV×FÖt&öçW2¢“°¢òòö'6W'fVB'&æ6†W2ÓbòåTÄÂ$ôõC¢F†Rf—†VB–FVçF—G’GW&ç2F†R'6Væ6P¢òòöb&V6÷fW'’vV"–çFòöffVç6RâF†—27F—2–ç6–FRF†RW†—7F–ær76—fP¢òòFÖvR'V6¶WC²—BFöW2æ÷BFB6V6öæB&ö2ô÷F–öâ—VÆ–æRà¢6öç7B&VvVä'VfbÒF†—2çÆ–W#òæ'Vfg3òç&VvVäFC°¢6öç7B&V6÷fW'”7F—fRÒF†—2å÷&VvVå÷vW"â ¢ÇÂ‡&VvVä'VfcòçGW&ç4ÆVgBâbb&VvVä'VfbçfÇVRâ¢ÇÂF†—2æVffV7G2ç6öÖR‚†Vfb’Óâ²w&VvVârÂvÆ–fW7FVÂrÂvÆ–fW7FVÄÆ÷t‡rÂv†VÄöä7&—BrÂvwV&F–ä†VÂrÂv†VÄöä¶–ÆÂrÂv†VÄöäwV&BuÒæ–æ6ÇVFW2†Vfbæ¶–æB’“°¢f÷"†6öç7BVfböbF†—2åöVffV7G4öb‚w76—fRr’’°¢–b†Vfbæ¶–æBÓÓÒvæõ&V6÷fW'”FÖt&öçW2rbb&V6÷fW'”7F—fR’×VÇB³ÒVfbç÷vW#°¢VÇ6R–b†Vfbæ¶–æBÓÓÒvFÖt&öçW4FBr’×VÇB³ÒVfbç÷vW#°¢VÇ6R–b‡6÷W&6T¶–æBÓÓÒvæ÷&ÖÂrbbVfbæ¶–æBÓÓÒvæ÷&ÖÄFÖtFBr’×VÇB³ÒVfbç÷vW#°¢VÇ6R–b‡6÷W&6T¶–æBÓÓÒw6¶–ÆÂrbbVfbæ¶–æBÓÓÒw6¶–ÆÄFÖtFBr’×VÇB³ÒVfbç÷vW#°¢VÇ6R–b‡6÷W&6T¶–æBÓÓÒw7VÆÂrbbVfbæ¶–æBÓÓÒw7VÆÄFÖtFBr’×VÇB³ÒVfbç÷vW#°¢òò'V–ÆBff—8Îizi(>88ŞûÉ®8>8î8:8*n8;>88ˆz®Xˆn8ÎXXiK¾8~8n8N8(Î8FÖv^8(.Kˆ®K™~8°¢VÇ6R–b†Vfbæ¶–æBÓÓÒvf—'7E7G&–¶T&öçW2rbbF†—2åöÆ7EÆ–W$f—'7B’×VÇB³ÒVfbç÷vW#°¢Ğ¢&WGW&â×VÇC°¢Ğ ¢ö7&—DFÖvT&ö÷7D×VÇB‚’°¢ÆWB×VÇBÒ°¢f÷"†6öç7BVfböbF†—2åöVffV7G4öb‚w76—fRr’’–b†Vfbæ¶–æBÓÓÒv7&—DFÖvT&ö÷7Br’×VÇB³ÒVfbç÷vW#°¢&WGW&â×VÇC°¢Ğ ¢ö&÷74FÖt×VÇB‡F&vWB’°¢ÆWB&öçW2Ò7FFRæv¶Væ–æt&÷74FÖt×VÇB‚’Ò°¢6öç7BFV'VffVBÒF&vWBbb‚‡F&vWBçvV¶Vâbbö&¦V7Bæ¶W—2‡F&vWBçvV¶Vâ’æÆVæwF‚â’ÇÂ‡F&vWBæF÷E7F6·2ÇÂ’â“°¢f÷"†6öç7BVfböbF†—2åöVffV7G4öb‚w76—fRr’’°¢òò&÷74FÖ~8şiz.ZÙhÉX¹^88®8(¤&÷72ôVÆ—F^KŠik8¾˜yJ88(¾ûÈXX>hÈ~zK®ûÉ®iz.ZÙ8à¢òòXŠNZé®iÚK»n8).ZHi»N8~8®8NûÈ8&VÆ—FTFÖ~8ôff—‹ûŞXªXˆn8tVÆ—F^™™Zé®8¾Kˆ®K™~8¾88(°¢–b†Vfbæ¶–æBÓÓÒv&÷74FÖrr’&öçW2³ÒVfbç÷vW#°¢–b†Vfbæ¶–æBÓÓÒvVÆ—FTFÖrrbbF&vWBbbF&vWBæVÆ—FR’&öçW2³ÒVfbç÷vW#°¢–b†Vfbæ¶–æBÓÓÒvW†V7WF–öæW"rbbF&vWBbbF&vWBæÖ„‡âbbF&vWBæ‡òF&vWBæÖ„‡ÃÒVfbæ‡F‡&W6†öÆB’&öçW2³ÒVfbç÷vW#°¢òòjÚnYš„ff—8Î[Ëjù.i(>8ŞûÉ§vV¶VâôFõN8ÎK™~8>8n8N8(¾y»h˜¾88äFÖvR°¢–b†Vfbæ¶–æBÓÓÒvFV'VffVDFÖrrbbFV'VffVB’&öçW2³ÒVfbç÷vW#°¢òò'V–ÆBff—8Îjù.[ø>8ŞûÉ¤FõN8+8+ş88>8*şi[8¾jùNKè¾8~8dFÖvR°¢–b†Vfbæ¶–æBÓÓÒvF÷E7F6´FÖrrbbF&vWB’&öçW2³ÒVfbç÷vW"¢‡F&vWBæF÷E7F6·2ÇÂ“°¢Ğ¢òòxºK«®8ÎxÚ>xº8(®8ŞûÉ¤&÷72ôVÆ—F^™™Zé®8îKˆi˜.y¨N8®Kˆî888:8;Î8+Xªzép¢–b‡F†—2å÷FV×&÷74FÖuGW&ç2âbbF&vWBbb‡F&vWBæ&÷72ÇÂF&vWBæVÆ—FR’’&öçW2³ÒF†—2å÷FV×&÷74FÖt&öçW3°¢&WGW&â²&öçW3°¢Ğ ¢öVffV7F—fTVæV×•7FB†VæV×’Â7FB’°¢6öç7B&6RÒVæV×•·7FEÓ°¢6öç7BrÒVæV×’çvV¶VâbbVæV×’çvV¶Vå·7FEÓ°¢–b‡rbbrçGW&ç4ÆVgBâ’&WGW&â&6R¢ƒÒrç÷vW"“°¢&WGW&â&6S°¢Ğ ¢òòvV¶Vâö'W&å7F6¾8î˜yJXznyn8)#zè~h˜8¾™¸n{HN88(¾8.Š8^X)Y»®iÈX«iéÎûÈ…öÇ”öæTVffV7NûÈ¢òò8ˆ~jZŞ88ş8î8;¾88(^8(.8)>ûÈ‡6¶–ÆÇ2æ§2÷7VÆÇ2æ§>8çvV¶VâöF÷N89^8*>8;Î8:¾88ûÈ8à¢òò888(8¾8(YÎ88(Î8n8(.8YÎ8†VæV×’çvV¶VâöF÷E7F6·>jx¾˜
+8i»8Ş‹ëÎ8( ¢òòûÈik8~8Nx«nhX¾y[[‹8+~8+88n8:8).Z)~8(N8^8®8iz.ZÙ8îK¹^{XN8ş8YkX8^8¾8(¾ûÈ8 ¢òò8*.8:¾8*¾88¾8+888Î˜ÊÎh‰™š>8Ş8;´Ô5DU.8Î‹:.ˆ^8îŠznZ©.8ŞûÉ®ˆz®Xˆn8Î8¾88(·vV¶VâöF÷N8à¢òòX«iéÎ˜xş8).Kˆi˜.y¨N8¾[©^Kˆ®8.88(¾ûÈ…÷FV×FV'Vfe÷vW$&öçW>ûÈ8.KŠ8:8+Ş88>888).˜	®8(°¢òò{XÎ‹zş888nûÈŠ8^X)Y»®iÈX«iéÎ8;¾Yû®iÊÎˆw6¶–ÆÇ2æ§>8;¾Kˆ®{I®ˆw6¶–ÆÇ2æ§>ûÈ8ˆz®X¹^8~K™~8(°¢òòjÚnYš„ff—8Î[Ëx+yÈ¾zN8î[ø>[é~8ŞûÉ®[ËKÙ>XÉbôFõNK¹Kˆî8îX«iéÎ˜xş8).h.[‹y¨N8¾[©^Kˆ®8.88(°¢öFV'Vfe÷vW$×VÇB‚’°¢6öç7BFV×ÒF†—2å÷FV×FV'Vfe÷vW$&öçW5GW&ç2âòF†—2å÷FV×FV'Vfe÷vW$&öçW2¢°¢&WGW&â²FV×²7VÕ76—fU÷vW"‡F†—2æVffV7G2ÂvFV'Vfe÷vW$FBr“°¢Ğ¢öÇ•vV¶VåFõF&vWB‡F&vWBÂ7FBÂ÷vW"ÂGW&ç4ÆVgB’°¢–b‚F&vWBÇÂF&vWBæFVB’&WGW&ã°¢F&vWBçvV¶VâÒF&vWBçvV¶VâÇÂ·Ó°¢F&vWBçvV¶Vå·7FEÒÒ²÷vW#¢÷vW"¢F†—2åöFV'Vfe÷vW$×VÇB‚’ÂGW&ç4ÆVgBÓ°¢Ğ¢òòjÚnYš„ff—8ÎKë^‰Ù^8Ş8Îz˜Şjù.8ŞûÉ¤FõN8îhÈ{i®8+ş8;Î8;>8;¾iÈZJ~8+8+ş88>8*şi[8).[©^Kˆ®8.88(°¢öF÷DGW&F–öä×VÇB‚’²&WGW&â²7VÕ76—fU÷vW"‡F†—2æVffV7G2ÂvF÷DGW&F–öâr“²Ğ¢öF÷E7F6´6×VÇB‚’²&WGW&â²7VÕ76—fU÷vW"‡F†—2æVffV7G2ÂvF÷E7F6´6r“²Ğ¢öÇ”F÷EFõF&vWB‡F&vWBÂ÷vW"ÂGW&ç4ÆVgBÂÖ…7F6·2Ò“’’°¢–b‚F&vWBÇÂF&vWBæFVB’&WGW&ã°¢6öç7B6ÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB†Ö…7F6·2¢F†—2åöF÷E7F6´6×VÇB‚’’“°¢F&vWBæF÷E7F6·2ÒÖF‚æÖ–â†6Â‡F&vWBæF÷E7F6·2ÇÂ’²“°¢F&vWBæF÷EGW&ç4ÆVgBÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB‡GW&ç4ÆVgB¢F†—2åöF÷DGW&F–öä×VÇB‚’’“°¢F&vWBæF÷E÷vW"Ò÷vW"¢F†—2åöFV'Vfe÷vW$×VÇB‚“°¢Ğ¢òòi‰şŠš8ş8îšÙNZ[>8Îi‰ş‰Ù^8Ş8;¾[›¾Š>[Š¾8Î[›¾Ši®8ŞzØûÉ§vV¶Vî8).˜XŞX‰~ûÈŠH~i[8+88n8;Î8+ş8+ûÈ8~8( ¢òòXÙKˆ8*®89n8+8*~8*ş888~8(.Xù~yn8~8Ş8(¾8(8nKˆˆŠÎXÉn8~8şX[˜	®898:¾898;À¢öÇ•vV¶VäÆ—7B‡F&vWBÂvV¶VâÂ&÷74×VÇF—Æ–W%F&vWB’°¢6öç7BÆ—7BÒ'&’æ—4'&’‡vV¶Vâ’òvV¶Vâ¢·vV¶VåÓ°¢6öç7BÆ–VBÒµÓ°¢f÷"†6öç7BröbÆ—7B’°¢ÆWB7BÒrç7C°¢¶ãÎ-¢G§²ÚîÆ­y×BWfFTWfVçG2ÒF†—2åööåÆ–W$WfFVB†VæV×’“°¢&WGW&â²VæV×”–C¢VæV×’æ–BÂæÖS¢VæV×’ææÖRÂ¶–æC¢vGF6²rÂWfFVC¢G'VRÂWfFTWfVçG2Ó°¢Ğ¢6öç7BFÖrÒF†—2åöVæV×”GF6´FÖvR†VæV×”F²“°¢F†—2çÆ–W"æ‡ÓÒFÖs°¢6öç7B‡W'DWfVçG2ÒF†—2æÇ”VffV7B‚vöä‡W'BrÂ²GF6¶W#¢VæV×’Ò“°¢&WGW&â²VæV×”–C¢VæV×’æ–BÂæÖS¢VæV×’ææÖRÂ¶–æC¢vGF6²rÂFÖvS¢FÖrÂWfFVC¢fÇ6RÂ‡W'DWfVçG2Ó°¢Ğ ¢òòXš>‹®8ÎŠh¾Xˆ~8(®8Ş8;¾h
+®y¹tÔ5DU.8Îˆ8Î[èÎ8îKˆi(>8Ş8;¾[›¾h98îˆ‰îZz´Ô5DU.8ÎZJ.[›¾K›ˆ‰î8ŞûÉ ¢òòY¹î˜şh‰X©ş8).jIÎyú^88(³>zè~h˜ûÈ˜	®[‹i[^8;´&÷7>˜	®[‹iK¾i(>8;´&÷7>x›jè®iK¾i(>ûÈ8~X[˜	®8¾YÎ8`¢ööåÆ–W$WfFVB†GF6¶W"’°¢F†—2å÷Æ–W$WfFVDÆ7E&÷VæBÒG'VS°¢F†—2å÷Æ–W$Wf6–öä6÷VçBÒ‡F†—2å÷Æ–W$Wf6–öä6÷VçBÇÂ’²°¢&WGW&âF†—2æÇ”VffV7B‚vöäWfFRrÂ²GF6¶W"Ò“°¢Ğ ¢÷W&f÷&Ô&÷75GW&â†VæV×’’°¢òò89^8*~8;Î8+£.888*~88>8*şûÈXX>hÈ~zK£yZ®ûÈûÉ¤…S^Kº^Kˆ¾8~[Ë~XÉnx«nhX¾8z{¾ŠÀ¢–b†VæV×’æ•†6RÓÓÒbbVæV×’æ‡òVæV×’æÖ„‡ÃÒ$õ55ô•ôÄ”U"å„4S%ô…õ$D”ò’°¢VæV×’æ•†6RÒ#°¢VæV×’æF²ÒÖF‚ç&÷VæB†VæV×’æF²¢$õ55ô•ôÄ”U"å„4S%ôDµôÕTÅB“°¢–b†VæV×’ç6ÆÕGW&ç2ÒçVÆÂ’VæV×’ç6ÆÕGW&ç2ÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB†VæV×’ç6ÆÕGW&ç2¢$õ55ô•ôÄ”U"å„4S%ôED4µô”åDU%dÅôÕTÅB’“°¢–b†VæV×’æ6†&vUGW&ç2ÒçVÆÂ’VæV×’æ6†&vUGW&ç2ÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB†VæV×’æ6†&vUGW&ç2¢$õ55ô•ôÄ”U"å„4S%ôED4µô”åDU%dÅôÕTÅB’“°¢–b†VæV×’ç&ö¦V7F–ÆUGW&ç2ÒçVÆÂ’VæV×’ç&ö¦V7F–ÆUGW&ç2ÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB†VæV×’ç&ö¦V7F–ÆUGW&ç2¢$õ55ô•ôÄ”U"å„4S%ôED4µô”åDU%dÅôÕTÅB’“°¢–b†VæV×’ç7VÖÖöåGW&ç2ÒçVÆÂ’VæV×’ç7VÖÖöåGW&ç2ÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB†VæV×’ç7VÖÖöåGW&ç2¢$õ55ô•ôÄ”U"å„4S%ôED4µô”åDU%dÅôÕTÅB’“°¢VæV×’åö§W7E†6VBÒG'VS°¢Ğ¢òò8>8î8+ş8;Î8;>8îh˜¾yZ®8Î88îXˆn[)ûÈK¨XXnŠz>k®ûÈşikŠhşK¨XXnûÈşXúÎYi®ûÈş˜	®[‹iK¾i(>ûÈ8¾˜.8)>8~8( ¢òò8Å†6S.8z{¾ŠÎ8~8şy»N[èÎ8îh˜¾yZ®8~8.8(¾8Ş8>88).Kˆ[ªn888:Ş8+8KÉŞ88(8(Î8(¾8(8n8¢òò8>8>8~ŠªŞ8şXùn8>8nXÛ>[ª~8¾kh‹+¾88(¾ûÈXˆn[)8N88¾ŠªŞ8şi»8Ş88(¾88x›jè®iK¾i(>Šz>k®8(@¢òòXúÎYi®8îXˆn[)8~8ş89^8:8+8ÎŠªŞ8î8(Î8®8:®8+¾88>888(.8^8(Î8®8N8î8îjÊY¹îKº^™˜Ş8î˜	®[‹iK¾i(0¢òò8î8~hÈ8‹h®8^8(Î8n8~8î8N8xJ™j.Kø.8®8+ş8;Î8;>8~8ÎjyZÙ8ÎZH8(ş8>8ş8Ş8ŠªN8>8`¢òòŠzK®8^8(Î8(¾KˆŞX[~Y8Î8.8>8şûÈ¢6öç7B§W7E†6VBÒVæV×’åö§W7E†6VC°¢VæV×’åö§W7E†6VBÒfÇ6S° ¢òòK¨XXn8+ş8;Î8;>8îŠz>k®ûÈXX>hÈ~zK£~yZ®ûÉ®X˜Ş8+ş8;Î8;>8~Zê>Šˆ8~8şx›jè®iK¾i(>8ÎZéş™©¾8¾y›®X¹^88(¾ûÈ¢–b†VæV×’çVæF–æu7V6–Â’°¢6öç7B¶–æBÒVæV×’çVæF–æu7V6–Ã°¢VæV×’çVæF–æu7V6–ÂÒçVÆÃ°¢&WGW&âF†—2å÷&W6öÇfT&÷757V6–Â†VæV×’Â¶–æBÂ§W7E†6VB“°¢Ğ ¢òòikŠhş8îx›jè®iK¾i(>8).K¨XXn88(¾ûÈş™¹šÙ®8).XúÎYi®88(¾ûÈş˜	®[‹iK¾i(>88(¾88îXŠNZé®8 ¢òòÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢òò898:8;>8+XhŞ‹È>jÚ>ûÈXX>hÈ~zK®ûÉ¤&÷7>h˜¾yZ®8îXJ®XX[ªnz»nY8¾8(8(·7F'fF–öî™‹.jÚ.ûÈûÉ ¢òòiz~ZéşŠ8^8÷6ÆŞ(i&6†&v^(i'&ö¦V7F–Æ^(i'7VÖÖöî8îšn8¾8Îiz8Nˆ^X¹Ş88Ş8~XŠNZé®8~8`¢òò8®8(®888(Î8³8N8Îˆz®Xˆn8î8*¾8*n8;>8+ş8)#8¾8~8şyêÎ™i>8¾XÛ7&WGW&î8~8n8N8ş8 ¢òò6ÆŞ8ÎiÈyúŞ™i>™©NûÈ{HC.8:8*n8;>88ûÈ8î8ş8(iÈ8(.š¾{˜8¾iÚK»n8).k¨8ş8~88Ş8î[ªn8°¢òò6†&vR÷&ö¦V7F–ÆR÷7VÖÖöîXN8î8*¾8*n8;>8+şXŠNZé®8Ş8î8(.8î8Xznyn8ÎX‹˜N8~8®8ş8®8(°¢òòûÈiziÉ÷&WGW&î8~[èÎ{i®8æ–nih~8ÎZéşŠÎ8^8(Î8®8NûÉŞ[èÎ{i®8îh¨8ş8ÎšnyZ®[è^88~k‰¾8( ¢òò{i®88(¾8Ş888¾8®8(®8#h˜¾yZ®KŠŞ8~8(.k¸^ZI®8¾šnyZ®8ÎY¹î8>8n8>8®8NûÉ®ZéşkŠÎ8p¢òò7VÖÖöî8Ã^zº&÷7>8ã#h˜¾yZ®KŠÓY¹î88>8şûÈ8 ¢òòKúîjÚ>ûÉ®8î8®XZ8n8îh¨8î8*¾8*n8;>8+ş8).jøîY¹î[ø^8®k‰¾zé~8~88Îk©nX)ZèÎK¨bƒÃÓ8Ş8°¢òò8®8>8şh¨8).XZ8n™¸n8(8n8¾8(8y»NX˜Ş8¾KÛş8>8şh¨8).™šNZIn8~8şKˆ®8~K›i[˜h©î88(°¢òòûÈ88(Î8(.k©nX)ZèÎK¨n8~8n8N8®88(Î8˜	®[‹iK¾i(>ûÈ8.˜88(Î8®8¾8>8şk©nX)ZèÎK¨nkˆ8ş8à¢òòh¨8ş8*¾8*n8;>8+ş8).8:®8+¾88>888~8®8NûÉŞjÊ8îXŠNZé®j™şKÉ®8~8(.[É^8Ş{i®8ŞX	Š9Î8¾jè¾8(¾8ş8(8¢òòXùn8(®8>8Î8^8(Î8®8N8.YÎ8h¨8î˜
+>{i®KÛşyJ8(.ûÈK¹n8¾˜h©îˆ*.8Î8.8(¾™™8(®ûÈ˜ş88(¾8 ¢6öç7B†6T×VÇBÒVæV×’æ•†6RÓÓÒ"ò$õ55ô•ôÄ”U"å„4S%ôED4µô”åDU%dÅôÕTÅB¢°¢6öç7B&VG”Ö÷fW2ÒµÓ°¢–b†VæV×’ç6ÆÕGW&ç2ÒçVÆÂ’²VæV×’ç6ÆÕGW&ç2ÒÓ²–b†VæV×’ç6ÆÕGW&ç2ÃÒ’&VG”Ö÷fW2çW6‚‚w6ÆÒr“²Ğ¢–b†VæV×’æ6†&vUGW&ç2ÒçVÆÂ’²VæV×’æ6†&vUGW&ç2ÒÓ²–b†VæV×’æ6†&vUGW&ç2ÃÒ’&VG”Ö÷fW2çW6‚‚v6†&vRr“²Ğ¢–b†VæV×’ç&ö¦V7F–ÆUGW&ç2ÒçVÆÂ’²VæV×’ç&ö¦V7F–ÆUGW&ç2ÒÓ²–b†VæV×’ç&ö¦V7F–ÆUGW&ç2ÃÒ’&VG”Ö÷fW2çW6‚‚w&ö¦V7F–ÆRr“²Ğ¢–b†VæV×’ç7VÖÖöåGW&ç2ÒçVÆÂ’²VæV×’ç7VÖÖöåGW&ç2ÒÓ²–b†VæV×’ç7VÖÖöåGW&ç2ÃÒ’&VG”Ö÷fW2çW6‚‚w7VÖÖöâr“²Ğ¢–b‡&VG”Ö÷fW2æÆVæwF‚â’°¢ÆWB6æF–FFW2Ò&VG”Ö÷fW3°¢–b‡&VG”Ö÷fW2æÆVæwF‚âbbVæV×’åöÆ7DÖ÷fT¶–æB’°¢6öç7Bv—F†÷WDÆ7BÒ&VG”Ö÷fW2æf–ÇFW"‚†²’Óâ²ÓÒVæV×’åöÆ7DÖ÷fT¶–æB“°¢–b‡v—F†÷WDÆ7BæÆVæwF‚â’6æF–FFW2Òv—F†÷WDÆ7C°¢Ğ¢6öç7B6†÷6VâÒ6æF–FFW5´ÖF‚æfÆö÷"„ÖF‚ç&æFöÒ‚’¢6æF–FFW2æÆVæwF‚•Ó°¢VæV×’åöÆ7DÖ÷fT¶–æBÒ6†÷6Vã°¢–b†6†÷6VâÓÓÒw7VÖÖöâr’°¢VæV×’ç7VÖÖöåGW&ç2ÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB‡&÷VæG4g&öÕ6V6öæG2„$õ55ô•ôÄ”U"å5TÔÔôåô”åDU%dÅõ4T2’¢†6T×VÇB’“°¢&WGW&âF†—2åö&÷757VÖÖöâ†VæV×’Â§W7E†6VB“°¢Ğ¢&WGW&âF†—2å÷7F'D&÷75FVÆVw&‚†VæV×’Â6†÷6VâÂ†6T×VÇBÂ§W7E†6VB“°¢Ğ ¢òò˜	®[‹iK¾i(0¢6öç7BVæV×”F²ÒF†—2åöVffV7F—fTVæV×•7FB†VæV×’ÂvF²r“°¢–b„ÖF‚ç&æFöÒ‚’ÂF†—2åöVffV7F—fTWf6–öâ‚’’°¢6öç7BWfFTWfVçG2ÒF†—2åööåÆ–W$WfFVB†VæV×’“°¢&WGW&â²VæV×”–C¢VæV×’æ–BÂæÖS¢VæV×’ææÖRÂ¶–æC¢vGF6²rÂWfFVC¢G'VRÂ†6VC¢§W7E†6VBÂWfFTWfVçG2Ó°¢Ğ¢6öç7BFÖrÒF†—2åöVæV×”GF6´FÖvR†VæV×”F²“°¢F†—2çÆ–W"æ‡ÓÒFÖs°¢6öç7B‡W'DWfVçG2ÒF†—2æÇ”VffV7B‚vöä‡W'BrÂ²GF6¶W#¢VæV×’Ò“°¢&WGW&â²VæV×”–C¢VæV×’æ–BÂæÖS¢VæV×’ææÖRÂ¶–æC¢vGF6²rÂFÖvS¢FÖrÂWfFVC¢fÇ6RÂ‡W'DWfVçG2Â†6VC¢§W7E†6VBÓ°¢Ğ ¢òòK¨XXn8+ş8;Î8;>™h¾Zx¾ûÈXX>hÈ~zK£~8;³8;³3>yZ®ûÉ®[ø^8£8+ş8;Î8;>Xˆn8îZê>Šˆ8).{XÎ8n8¾8(y›®X¹^88(°¢òò8ş8(88:.898*N8:¾8î8+ş88>88i8ŞKÙÎ8~8(.8ÎŠh¾8n8¾8(™‹.[ê8).˜88(¾8ŞŠŠŞŠˆ8).{jŞhÈ88(¾ûÈ¢÷7F'D&÷75FVÆVw&‚†VæV×’Â¶–æBÂ†6T×VÇBÂ§W7E†6VB’°¢VæV×’çVæF–æu7V6–ÂÒ¶–æC°¢6öç7B&W6WEGW&ç2Ò‚’Óâ°¢–b†¶–æBÓÓÒw6ÆÒr’VæV×’ç6ÆÕGW&ç2ÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB‡&÷VæG4g&öÕ6V6öæG2„$õ55ô•ôÄ”U"å4ÄÕô”åDU%dÅõ4T2’¢†6T×VÇB’“°¢–b†¶–æBÓÓÒv6†&vRr’VæV×’æ6†&vUGW&ç2ÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB‡&÷VæG4g&öÕ6V6öæG2„$õ55ô•ôÄ”U"ä4„$tUô”åDU%dÅõ4T2’¢†6T×VÇB’“°¢–b†¶–æBÓÓÒw&ö¦V7F–ÆRr’VæV×’ç&ö¦V7F–ÆUGW&ç2ÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB‡&÷VæG4g&öÕ6V6öæG2„$õ55ô•ôÄ”U"å$ô¤T5D”ÄUô”åDU%dÅõ4T2’¢†6T×VÇB’“°¢Ó°¢&W6WEGW&ç2‚“°¢&WGW&â²VæV×”–C¢VæV×’æ–BÂæÖS¢VæV×’ææÖRÂ¶–æC¢wFVÆVw&‚rÂ7V6–Ä¶–æC¢¶–æBÂ†6VC¢§W7E†6VBÓ°¢Ğ ¢÷&W6öÇfT&÷757V6–Â†VæV×’Â¶–æBÂ§W7E†6VB’°¢6öç7BVæV×”F²ÒF†—2åöVffV7F—fTVæV×•7FB†VæV×’ÂvF²r“°¢6öç7B×VÇD'”¶–æBÒ°¢6ÆÓ¢$õ55ô•ôÄ”U"å4ÄÕôDÔtUôÕTÅBÀ¢6†&vS¢$õ55ô•ôÄ”U"ä4„$tUôDÔtUôÕTÅBÀ¢&ö¦V7F–ÆS¢$õ55ô•ôÄ”U"å$ô¤T5D”ÄUôDÔtUôÕTÅBÀ¢Ó°¢–b„ÖF‚ç&æFöÒ‚’ÂF†—2åöVffV7F—fTWf6–öâ‚’’°¢6öç7BWfFTWfVçG2ÒF†—2åööåÆ–W$WfFVB†VæV×’“°¢&WGW&â²VæV×”–C¢VæV×’æ–BÂæÖS¢VæV×’ææÖRÂ¶–æC¢w7V6–ÂrÂ7V6–Ä¶–æC¢¶–æBÂWfFVC¢G'VRÂ†6VC¢§W7E†6VBÂWfFTWfVçG2Ó°¢Ğ¢6öç7BFÖrÒF†—2åöVæV×”GF6´FÖvR†VæV×”F²Â²×VÇC¢×VÇD'”¶–æE¶¶–æEÒÒ“°¢F†—2çÆ–W"æ‡ÓÒFÖs°¢6öç7B‡W'DWfVçG2ÒF†—2æÇ”VffV7B‚vöä‡W'BrÂ²GF6¶W#¢VæV×’Ò“°¢&WGW&â²VæV×”–C¢VæV×’æ–BÂæÖS¢VæV×’ææÖRÂ¶–æC¢w7V6–ÂrÂ7V6–Ä¶–æC¢¶–æBÂFÖvS¢FÖrÂWfFVC¢fÇ6RÂ‡W'DWfVçG2Â†6VC¢§W7E†6VBÓ°¢Ğ ¢òò&÷728Î™¹šÙ®XúÎYi®8ŞûÈXX>hÈ~zK£~yZ®ûÉ§7VÖÖöîûÈûÉ®xûîYÊ8î˜Ş˜~8+8:¾8;Î89~8h˜¾Kˆ¾8) ¢òò‹ûŞXª88(¾8.Z˜ZÎ8*N8;>89^8:Î8).˜ş88(¾8ş8(‡övöÆN8şKˆî88®8NûÈXX6&GFÆRæ§>8YÎ8ûÈ8 ¢òò898:8;>8+XhŞ‹È>jÚ>ûÉ¤&÷7>h˜¾yZ®8ç7F'fF–öîKúîjÚ>8¾8(8(®88>8(Î8î8~k¸^ZI®8¾˜88(Î8 ¢òò8¾8>8÷7VÖÖöî8ÎZé®iÉşy¨N8¾y›®X¹^88(¾8(8n8¾8®8>8ş8ş8(8™[~[É^8N8ô&÷7>hŠn8~h˜¾Kˆ¾8À¢òò™©¾™™8®8şz˜Ş8şKˆ®8Î8(8®8N8(8nYÎi˜.XúÎYi®i[8îKˆ®™™8).ŠŠŞ88(¾ûÈXX>hÈ~zK®ûÉ£n8	ÃKÙ>ûÈ8 ¢ö&÷757VÖÖöâ†VæV×’Â§W7E†6VB’°¢6öç7BFFVBÒµÓ°¢6öç7BÆ—fTæöä&÷72ÒF†—2æVæVÖ–W2æf–ÇFW"‚†R’ÓâRæFVBbbRæ&÷72’æÆVæwFƒ°¢6öç7B&ööÒÒÖF‚æÖ‚ƒÂ$õ55ô•ôÄ”U"å5TÔÔôåôÔ…ôÄ•dRÒÆ—fTæöä&÷72“°¢6öç7B7vä6÷VçBÒÖF‚æÖ–â„$õ55ô•ôÄ”U"å5TÔÔôåô4õTåBÂ&ööÒ“°¢f÷"†ÆWB’Ò²’Â7vä6÷VçC²’²²’°¢6öç7B‡ÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB†VæV×’æÖ„‡¢ãR’“°¢6öç7B7VÖÖöâÒ°¢–C¢G¶VæV×’æ–GÕ÷7VÖÖöåòG·F†—2åöæW‡DVæV×”–BÒ‡F†—2åöæW‡DVæV×”–BÇÂ’²ÖÀ¢G—S¢uõö&÷75÷7VÖÖöåõòrÂæÖS¢G¶VæV×’ææÖWŞ8îh˜¾Kˆ¶Â&÷73¢fÇ6RÂVÆ—FS¢fÇ6RÀ¢‡ÂÖ„‡¢‡ÂF³¢ÖF‚æÖ‚ƒÂÖF‚ç&÷VæB†VæV×’æF²¢ã2’’ÂFVc¢ÖF‚ç&÷VæB†VæV×’æFVb¢ãB’Â7C¢SÀ¢‡¢ÂvöÆC¢ÂFVC¢fÇ6RÂvV¶Vã¢çVÆÂÂF÷E7F6·3¢ÂF÷EGW&ç4ÆVgC¢Âg&÷¦VåGW&ç3¢À¢Ó°¢F†—2æVæVÖ–W2çW6‚‡7VÖÖöâ“°¢FFVBçW6‚‡7VÖÖöâææÖR“°¢F†—2çF÷FÅFôFVfVB²³²òòXúÎYi®8^8(Î8şh˜¾Kˆ¾8(.8ÎX	.888Şi[^8Ş8î{xşi[8¾Xª88(¾ûÈjè¾8(®ŠzK®8îi[NYh
+~ûÈ¢Ğ¢òòKˆ®™™8¾˜N8~8n8N8cKÙ>8(.XúÎYi®8~8Ş8®8¾8>8şZNY8ş8XúÎYi®8).Ššn8ş8ş8ÎZ)~hûN8À¢òò™i>8¾Y8(ş8®8¾8>8ş888N8nKÙ>Š88¾88(¾ûÈ„&GFÆTÆö~XN8vFFVN8Îz›®8îXˆn[)8).yJhHşûÈ¢&WGW&â²VæV×”–C¢VæV×’æ–BÂæÖS¢VæV×’ææÖRÂ¶–æC¢w7VÖÖöârÂFFVBÂ6VC¢7vä6÷VçBÓÓÒÂ†6VC¢§W7E†6VBÓ°¢Ğ ¢òòÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢òò8:8*n8;>88˜.ŠÎûÈ†Gfæ6UGW&îûÈûÉ®XXiK²ş[èÎiK¾8îk®Zé®(i.89~8:Î8*N8:N8;ÎŠÎX¹^(i.i[^8îh˜¾yZ®(i ¢òò8:8*n8;>88{X.K¨nXznynûÈ„FõN8;¾8989Rş88~8989^8î8+ş8;Î8;>{XÎ˜î8;¾hŠn™y{X.K¨nXŠNZé®ûÈ¢òòXX>hÈ~zK£^yZ®ûÉ¦–æ—F–F—fRÒ7B²[ş8^8®K›i[88~8+~8;>89~8:¾8¾XXiK²ş[èÎiK¾8).k®8(8(¾8 ¢òòÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢Gfæ6UGW&â†6öÖÖæB’°¢6öç7BWfVçG2ÒµÓ°¢F†—2ç&÷VæB²³°¢òòh
+®y¹tÔ5DU.8Îˆ8Î[èÎ8îKˆi(>8ŞzØûÉ®y»NX˜Ş8îi[^h˜¾yZ®8îY¹î˜şXŠNZé®8şjøî8:8*n8;>88hÈ8‹h®8^8®8@¢òòûÈ8>8î8:8*n8;>888îi[^h˜¾yZ®8~8î8şz¸¾8ny»N8(¾8'Æ–W$f—'7N8¾88n8¾8~8ÎX˜Ş8:8*n8;>888Ğ¢òò8ÎYÎ8:8*n8;>888Ş8N8®8(Î8îY¹î˜ş8(.h»î88(¾8(8n8>8>8~8:®8+¾88>8888(¾ûÈ¢F†—2å÷Æ–W$WfFVDÆ7E&÷VæBÒfÇ6S° ¢òòik8~8N˜Ş˜~8+8:¾8;Î89~8ÎX{®xûî8~8ş8:8*n8;>888ş8i[^8Î8î8hê^Šzn‹yŞ™º.8î8~z{¾X¹^8~8n8ş8(°¢òò8Î™i>Y8N8Ş8¾y»[Ù>8~88>8ã8:8*n8;>88888şi[^8îh˜¾yZ®8).y›®yIş8^8¾8®8NûÈZéşi˜.™i>x˜8~8( ¢òòvf^X{®xûîy»N[èÎ8şi[^8Îhê^Šzn‹yŞ™º.8î8~jÚ8N8n8ş8(¾8î8~8î8+ş8*N8:8:8+8Î8.8(®8X{®xûî8~8ğ¢òòyêÎ™i>8¾[ø^8®Š*¾[Ëî88(¾8(ş88~8ş8®8¾8>8ş8.XX>hÈ~zK£yZ®8~Zéşi˜.™i>8îi˜.™i>[zîkš~8Ş8ğ¢òò[¸>jÚ.8~8ş8Î88>8î8ÎX{®xûîy»N[èÎ8îxËnK¨8Ş8î8~ZK8n88ŠH~i[8+8:¾8;Î89~8Î˜
+>{i®88(°¢òò8+88n8;Î8+8~Š*¾[Ëî8Îz˜Ş8şKˆ®8Î8(®88î8niz.ZÙ8äTäTÕ•õ44Ä”ä~‹È>jÚ>8¾8(K™n™º.88(¾8ş8(8¢òò8+8:¾8;Î89~XÙKØŞ8~8>8îxËnK¨88jè¾8ûÈ¢–b‡F†—2æÆ—fTVæVÖ–W2æÆVæwF‚ÓÓÒ’°¢6öç7B7F'DWfVçBÒF†—2æ&Vv–äæW‡DVæ6÷VçFW"‚“°¢–b‡7F'DWfVçB’WfVçG2çW6‚‡7F'DWfVçB“°¢VÇ6R²F†—2åöf–æ—6„&GFÆR‡G'VRÂfÇ6R“²&WGW&â²WfVçG2Â÷fW#¢G'VRÂ&W7VÇC¢F†—2æf–æÅ&W7VÇBÓ²Ğ¢Ğ¢òòFW‡D&GFÆU67&VVî8ÎŠzK®8î8ş8(8¾K¨¾X˜Ş8¶&Vv–äæW‡DVæ6÷VçFW"‚8).YÎ8)>8~8N8ğ¢òòZNY8(.Y
+¾8(88>8î8+8:¾8;Î89~8î8ÎX{®xûîy»N[èÎ8îxËnK¨8:8*n8;>888Ş89^8:8+8).8>8>8~kh‹+¾88(°¢6öç7Bg&W6„Væ6÷VçFW"ÒF†—2åög&W6„w&÷WVæF–æs°¢F†—2åög&W6„w&÷WVæF–ærÒfÇ6S° ¢òò8¾8.8(¾8;¾88ş8î8*ş8;Î8:¾888*n8;>Xˆ~8(ÎzØ8şŠÎX¹^˜h©î8Ş8î8(.8î8®8î8~8˜	®[‹8à¢òòXXiK²ş[èÎiK¾Šˆzé~8).8+8*Ş88>89~8~8n8(8N8+>89î8;>888¾8(XX8¾Xznyn88(°¢–b†6öÖÖæBçG—RÓÓÒvfÆVRr’°¢6öç7BfÆVU&W7VÇBÒF†—2å÷Æ–W$fÆVR‚“°¢WfVçG2çW6‚‡²G—S¢wÆ–W$7F–öârÂ&W7VÇC¢fÆVU&W7VÇBÒ“°¢–b†fÆVU&W7VÇBç7V66W72’²F†—2åöf–æ—6„&GFÆR†fÇ6RÂG'VR“²&WGW&â²WfVçG2Â÷fW#¢G'VRÂ&W7VÇC¢F†—2æf–æÅ&W7VÇBÓ²Ğ¢–b†fÆVU&W7VÇBæ&Æö6¶VB’&WGW&â²WfVçG2Â÷fW#¢fÇ6RÓ°¢òòZKiY~8~8şZNY8ó8:8*n8;>88kh‹+¾8~8i[^8ş8Ş8î8î8îŠÎX¹^88(¾ûÈ8ş88~X{®xûîy»N[èÎ8à¢òòxËnK¨8:8*n8;>888~8şi[^8ş8î8X¹^8¾8®8NûÈ¢–b‚g&W6„Væ6÷VçFW"’°¢6öç7BVæV×”WfVçG2ÒF†—2å÷'VäVæV×•†6R‚“°¢WfVçG2çW6‚‚ââæVæV×”WfVçG2“°¢Ğ¢6öç7BVæBÒF†—2åögFW%&÷VæD6†V6·2‚“°¢WfVçG2çW6‚‚ââæVæBæWfVçG2“°¢&WGW&â²WfVçG2Â÷fW#¢VæBæ÷fW"Â&W7VÇC¢F†—2æf–æÅ&W7VÇBÓ°¢Ğ ¢òò88ş8î8;¾88(^8(.8)>8ş8ÕKˆŞ‹k2ş8*ş8;Î8:¾888*n8;>KŠÒşiÊ®{ù.[é~8~ZéşŠÎ8Ş8î8(.8î8À¢òòh‰z¸¾8~8®8NZNY88¾8.8(¾8ä&÷7>KˆŞXúşXŠNZé®8YÎ88ş8ÎŠÎX¹^˜h©îˆz®KÙ>8ÎxJX«8Ğ¢òò88~8nh›8N88:8*n8;>888).kh‹+¾8~8®8NûÈXX>hÈ~zK®ûÉ¤ÕKˆŞ‹k>8îZNY8ş8+ş8;Î8;>8) ¢òòkh‹+¾8~8®8NK¹^jy8).hêZZûÈ8.ZéşŠÎ8~8Ş8(¾ZNY8ş8Kˆ¾8îXXiK²ş[èÎiK¾8:Ş8+88>8*ş8°¢òò8Ş8î8î8îYkX8^8¾8(¾ûÈ‡W&f÷&ÕÆ–W$7F–öî(i%÷Æ–W%FV6†æ—VR‚8À¢òòZéş™©¾8îkh‹+¾8;¾X«iéÎ˜yJ8).ŠÎ8nûÈ8 ¢ÆWB&U&W6öÇfVEÆ–W%&W7VÇBÒçVÆÃ°¢–b†6öÖÖæBçG—RÓÓÒw6¶–ÆÂrÇÂ6öÖÖæBçG—RÓÓÒw7VÆÂr’°¢6öç7B&ö&RÒF†—2å÷&ö&UFV6†æ—VR†6öÖÖæBçG—RÂ6öÖÖæBçFV6„–B“°¢–b‚&ö&Ræö²’°¢6öç7B&W7VÇBÒ²7F–öã¢6öÖÖæBçG—RÂ&Æö6¶VC¢G'VRÂ&V6öã¢&ö&Rç&V6öâÓ°¢WfVçG2çW6‚‡²G—S¢wÆ–W$7F–öârÂ&W7VÇBÒ“°¢&WGW&â²WfVçG2Â÷fW#¢fÇ6RÓ°¢Ğ¢òò8*Î8;Î888XZ8şYÎ8ynyK8~8ˆz®[{Zûî‹8æ'Vfb÷WF–Æ—Gh¨ûÈhÉy›®8;¾KˆŞ[8îjx¾88;°¢òòXù~8kX8~8;¾ŠhZîXÉn8;¾šÙNX©¾™¸nKŠŞ8;¾›É>ˆ‰î8îjØÎzØûÈ8ş8XXiK²ş[èÎiK¾8îXŠNZé®{YiéÎ8°¢òò™j.8(ş8(8®8>8î8:8*n8;>888îi[^ŠÎX¹^Šz>k®8(8(®X˜Ş8¾ZéşŠÎ8~8n8®8ş[ø^Šh8Î8.8(¾8 ¢òò8~8®88(Î88i[^8ÎXXiK¾8îZN™Ú.8~8Î™‹.[ê{;¾88ş8î8).˜8)>88î8¾YÎ88:8*n8;>888à¢òòi[^iK¾i(>8).™‹.8.8®8N8Ş88N8n88Î8n8î8(~8~iz.8¾KúîjÚ>kˆ8ş8î898+8YÎ8YXşšÎ8À¢òòXù~8kX8~8;¾ŠhZîXÉnzØ8~8(.XhŞy›®88(¾ûÈZéşkŠÎûÉ¦wV&FVDFÖv^8Î‹»Şk‰¾8^8(Î8®8@¢òòKˆŞX[~Y88~8ny›®Ši®ûÈ8 ¢–b‡&ö&RçFV6‚çF&vWBÓÓÒw6VÆbrbb‡&ö&RçFV6‚çG—RÓÓÒv'VfbrÇÂ&ö&RçFV6‚çG—RÓÓÒwWF–Æ—G’r’’°¢&U&W6öÇfVEÆ–W%&W7VÇBÒF†—2çW&f÷&ÕÆ–W$7F–öâ†6öÖÖæB“°¢WfVçG2çW6‚‡²G—S¢wÆ–W$7F–öârÂ&W7VÇC¢&U&W6öÇfVEÆ–W%&W7VÇBÒ“°¢Ğ¢Ğ ¢òò8*Î8;Î888ş8Î8>8î8:8*n8;>888¾š9¾8)>8~8ş8(¾i[^8îiK¾i(>8).‹»Şk‰¾88(¾8Ş8ş8(8î8+>89î8;>888®8î8~8¢òòXXiK²ş[èÎiK¾8îXŠNZé®{YiéÎ8¾™j.8(ş8(8®88>8î8:8*n8;>888îi[^ŠÎX¹^Šz>k®8(8(®X˜Ş8¾iÈX«XÉn8~8n8®8ğ¢òò[ø^Šh8Î8.8(¾8.iz~ZéşŠ8^8~8÷W&f÷&ÕÆ–W$7F–öî{XÎyK8å÷Æ–W$wV&B‚8~8~8°¢òòwV&F–æs×G'V^8¾8~8n8®8(8®8i[^8ÎXXiK¾ûÈ89~8:Î8*N8:N8;Î8(8(¥5N8ÎKØî8NZN™Ú.ûÈ8îZNY8°¢òò8Î8*Î8;Î888).˜8)>88î8¾YÎ88:8*n8;>888îi[^iK¾i(>8).™‹.8.8®8N8Ş898+8Î8.8>8ğ¢òòûÈƒ>zº8çFæ¾{;¾i[^8~8îjIÎŠ‹Î8~y›®Ši®ûÈ8 ¢–b†6öÖÖæBçG—RÓÓÒvwV&Br’F†—2çÆ–W"æwV&F–ærÒG'VS° ¢6öç7BÆ–W$–æ—F–F—fRÒF†—2åöVffV7F—fU7B‚’²F†—2åö†7FT–æ—F–F—fT&öçW2²&æBƒÂ‚“°¢6öç7BÆ—fRÒF†—2æÆ—fTVæVÖ–W3°¢6öç7BVæV×”–æ—F–F—fRÒ†Æ—fRç&VGV6R‚‡2ÂR’Óâ2²Rç7BÂ’òÖF‚æÖ‚ƒÂÆ—fRæÆVæwF‚’’²&æBƒÂ‚“°¢6öç7BÆ–W$f—'7BÒÆ–W$–æ—F–F—fRãÒVæV×”–æ—F–F—fS°¢òòXš>‹®8Î[^Y8Ş8;¾ZønX^8ÎZX~Š[.8ŞzØûÉ®8>8î8:8*n8;>88XXiK¾8~8ş8¾8).h¨Šz>k®XN8¾8(ŠªŞ8(8(¾8(8n8¾88(°¢F†—2åöÆ7EÆ–W$f—'7BÒÆ–W$f—'7C° ¢6öç7B'VåÆ–W"Ò‚’Óâ°¢–b‡&U&W6öÇfVEÆ–W%&W7VÇB’&WGW&â&U&W6öÇfVEÆ–W%&W7VÇC²òòiz.8¾ZéşŠÎkˆ8şûÈK¨Î˜xŞZéşŠÎ™‹.jÚ.ûÈ¢6öç7B&W7VÇBÒF†—2çW&f÷&ÕÆ–W$7F–öâ†6öÖÖæB“°¢WfVçG2çW6‚‡²G—S¢wÆ–W$7F–öârÂ&W7VÇBÒ“°¢&WGW&â&W7VÇC°¢Ó°¢6öç7B'VäVæVÖ–W2Ò‚’Óâ²WfVçG2çW6‚‚ââçF†—2å÷'VäVæV×•†6R‚’“²Ó° ¢–b†g&W6„Væ6÷VçFW"’°¢òòX{®xûîy»N[èÎ8îxËnK¨8:8*n8;>88ûÉ®89~8:Î8*N8:N8;Î8ş˜	®[‹˜	®8(®ŠÎX¹^8~8Ş8(¾8Î8i[^8ş8î8 ¢òò™i>Y8N8¾XZ^8>8n8N8®8N8ş8(h˜¾yZ®8).y›®yIş8^8¾8®8@¢'VåÆ–W"‚“°¢ÒVÇ6R–b‡Æ–W$f—'7B’²'VåÆ–W"‚“²–b‡F†—2çÆ–W"æ‡â’'VäVæVÖ–W2‚“²Ğ¢VÇ6R²'VäVæVÖ–W2‚“²–b‡F†—2çÆ–W"æ‡â’'VåÆ–W"‚“²Ğ ¢6öç7BVæBÒF†—2åögFW%&÷VæD6†V6·2‚“°¢WfVçG2çW6‚‚ââæVæBæWfVçG2“°¢&WGW&â²WfVçG2Â÷fW#¢VæBæ÷fW"Â&W7VÇC¢F†—2æf–æÅ&W7VÇBÂÆ–W$f—'7BÓ°¢Ğ ¢òòXX>hÈ~zK£^8;³~yZ®8îZéşi˜.™i>x˜8şŠ*¾[Ëî[èÃãzy.8îxJi[^i˜.™i>8Î8.8(®8i[^8îš
+Şi[8¾™j.8(ş8(8 ¢òò8ÎYŠˆ8~Šh¾8(¾88¾8ÃKÙ>8n8)>8Ş8î89®8;Î8+8~8~8¾Š*¾[Ëî8~8®8¾8>8şûÈ…"3.8à¢òòTäTÕ•õ44Ä”ä~8;¾i[TD¾8ş8>8îX˜Şhù8~‹È>jÚ>kˆ8şûÈ8.8+ş8;Î8;>X‹n8~i[^XZY:8Îjøî8:8*n8;>88¢òòiK¾i(>88(¾8š
+Şi[8îZI®8Gvf^8¾8˜îX›8¾yy¾8ş8®8(¾8ş8(8™Ùä&÷7>i[^8ó8:8*n8;>888°¢òò8N8ÔÔ…ôäõ$ÔÅôED4´U%5õU%õ$õTäNKÙ>888Î8:8;>888:8¾˜88(Î8niK¾i(>88(°¢òòûÈiz.ZÙ8äTäTÕ•õ44Ä”ä~8;¾i[TD¾ˆz®KÙ>8şKˆXˆ~ZHi»N8~8®8NûÈ8$&÷7>8şZûî‹ZIn8p¢òò[‹8¾ŠÎX¹^88(¾8 ¢÷'VäVæV×•†6R‚’°¢6öç7BWfVçG2ÒµÓ°¢6öç7BÆ—fRÒF†—2æVæVÖ–W2æf–ÇFW"‚†R’ÓâRæFVB“°¢6öç7B&÷76W2ÒÆ—fRæf–ÇFW"‚†R’ÓâRæ&÷72“°¢6öç7Bæ÷&ÖÇ2ÒÆ—fRæf–ÇFW"‚†R’ÓâRæ&÷72“°¢6öç7B6‡VffÆVBÒ²ââææ÷&ÖÇ5Òç6÷'B‚‚’ÓâÖF‚ç&æFöÒ‚’ÒãR“°¢6öç7B6ÒDU…Eô$EDÄUôÄ”U"äÔ…ôäõ$ÔÅôED4´U%5õU%õ$õTäC°¢6öç7B7F–ærÒ6‡VffÆVBç6Æ–6RƒÂ6“°¢6öç7Bv—F–ærÒ6‡VffÆVBç6Æ–6R†6“° ¢f÷"†6öç7BVæV×’öb²ââæ&÷76W2Âââæ7F–æuÒ’°¢–b†VæV×’æFVBÇÂF†—2çÆ–W"æ‡ÃÒ’6öçF–çVS°¢6öç7B&W7VÇBÒF†—2çW&f÷&ÔVæV×•GW&â†VæV×’“°¢–b‡&W7VÇB’WfVçG2çW6‚‡²G—S¢vVæV×”7F–öârÂ&W7VÇBÒ“°¢Ğ¢f÷"†6öç7BVæV×’öbv—F–ær’°¢WfVçG2çW6‚‡²G—S¢vVæV×•v—BrÂVæV×”–C¢VæV×’æ–BÂæÖS¢VæV×’ææÖRÒ“°¢Ğ¢&WGW&âWfVçG3°¢Ğ ¢òòFõN8;¾8+ş8;Î8;>{XÎ˜îXznyn8;¾hŠn™y{X.K¨nXŠNZé®ûÈXX>hÈ~zK£>yZ®8äFõN˜¾yJ8).8+ş8;Î8;>X‹n8¾Y8(ş8¾8(¾ûÉ ¢òò8:8*n8;>888¾8N8ÓY¹î88n8*>88>8*ş88(¾ûÈ¢ögFW%&÷VæD6†V6·2‚’°¢6öç7BWfVçG2ÒµÓ°¢f÷"†6öç7BVæV×’öbF†—2æVæVÖ–W2’°¢–b†VæV×’æFVB’6öçF–çVS°¢–b†VæV×’çvV¶Vâ’°¢f÷"†6öç7B7FB–âVæV×’çvV¶Vâ’°¢VæV×’çvV¶Vå·7FEÒçGW&ç4ÆVgBÒÓ°¢–b†VæV×’çvV¶Vå·7FEÒçGW&ç4ÆVgBÃÒ’FVÆWFRVæV×’çvV¶Vå·7FEÓ°¢Ğ¢Ğ¢òòxºxÉşxè¾8ÎxºK«®8îXÛ8ŞûÉ®iz.ZÙ‡vV¶Vî8YÎ8‡GW&ç>zêyn8î89î8;Î8*ğ¢–b†VæV×’çgVÆæW&&ÆRbbVæV×’çgVÆæW&&ÆRçGW&ç4ÆVgBâ’°¢VæV×’çgVÆæW&&ÆRçGW&ç4ÆVgBÒÓ°¢–b†VæV×’çgVÆæW&&ÆRçGW&ç4ÆVgBÃÒ’VæV×’çgVÆæW&&ÆRÒçVÆÃ°¢Ğ¢–b†VæV×’æF÷E7F6·2âbbVæV×’æF÷EGW&ç4ÆVgBâ’°¢òòjÚnYš„ff—8Îjù.h˜¾8ŞûÉ¤FõBFÖvR°¢6öç7BF÷DFÖt×VÇBÒ²7VÕ76—fU÷vW"‡F†—2æVffV7G2ÂvF÷DFÖrr“°¢6öç7BFÖrÒÖF‚æÖ‚ƒÂÖF‚ç&÷VæB‡F†—2çÆ–W"æF²¢VæV×’æF÷E÷vW"¢VæV×’æF÷E7F6·2¢F÷DFÖt×VÇB’“°¢òò6†DuN8:Î89>8:^8;ÎhÈ~iƒ.yZ®ûÉ¤FõNi(>zN8(.K¹n8î{XÎ‹zş8YÎ8X[˜	®Xznyn8{[Kˆ88(°¢6öç7B¶–ÆÂÒF†—2åöÇ•&tFÖvTæE&Wv&B†VæV×’ÂFÖr“°¢WfVçG2çW6‚‡²G—S¢vF÷EF–6²rÂVæV×”–C¢VæV×’æ–BÂæÖS¢VæV×’ææÖRÂÖ÷VçC¢FÖrÂF&vWDFVC¢VæV×’æFVBÂ¶–ÆÂÒ“°¢VæV×’æF÷EGW&ç4ÆVgBÒÓ°¢–b†VæV×’æF÷EGW&ç4ÆVgBÃÒ’VæV×’æF÷E7F6·2Ò°¢Ğ¢Ğ¢òòÆ–W"æ'Vfg>8îkîyJjx¾˜
+ûÈXX>hÈ~zK®ûÉ®88n8~8n8(.[ø^Šh8®kîyJ‡7FGW>jx¾˜
+ûÈûÉ ¢òò8+88n8;Î8+ş8+8N88¾xºÎz¸¾8~8ş8+ş8;Î8;>{XÎ˜î8.izv'VfdF´×VÇBö'VfdFVd×VÇBğ¢òò'VfeGW&ç>ûÈ„D¾8;´DTn8ÃiÊÎ8î8+ş8*N89î8;Î8~˜
+>X¹^8~8n8N8şûÈ8ş8>8(Î8¾{[Y8~8ş8 ¢f÷"†6öç7B¶W’öbö&¦V7Bæ¶W—2‡F†—2çÆ–W"æ'Vfg2’’°¢6öç7B"ÒF†—2çÆ–W"æ'Vfg5¶¶W•Ó°¢–b†"çGW&ç4ÆVgBâ’°¢"çGW&ç4ÆVgBÒÓ°¢–b†"çGW&ç4ÆVgBÃÒ’²"æ×VÇBÒ²"çfÇVRÒ²Ğ¢Ğ¢Ğ¢–b‡F†—2çÆ–W"æwV&D÷fW'&–FUGW&ç2â’°¢F†—2çÆ–W"æwV&D÷fW'&–FUGW&ç2ÒÓ°¢–b‡F†—2çÆ–W"æwV&D÷fW'&–FUGW&ç2ÃÒ’F†—2çÆ–W"æwV&D÷fW'&–FT×VÇBÒçVÆÃ°¢Ğ¢–b‡F†—2åö&ÆööD6†Æ–6UGW&ç2â’F†—2åö&ÆööD6†Æ–6UGW&ç2ÒÓ°¢–b‡F†—2å÷FV×FµGW&ç2â’F†—2å÷FV×FµGW&ç2ÒÓ°¢–b‡F†—2åö†7FT–æ—F–F—fUGW&ç2â’²F†—2åö†7FT–æ—F–F—fUGW&ç2ÒÓ²–b‡F†—2åö†7FT–æ—F–F—fUGW&ç2ÃÒ’F†—2åö†7FT–æ—F–F—fT&öçW2Ò²Ğ¢–b‡F†—2å÷FV×vöÆD&öçW5GW&ç2â’F†—2å÷FV×vöÆD&öçW5GW&ç2ÒÓ°¢–b‡F†—2å÷FV×&÷74FÖuGW&ç2â’F†—2å÷FV×&÷74FÖuGW&ç2ÒÓ°¢–b‡F†—2å÷FV×FÖt&öçW5GW&ç2â’F†—2å÷FV×FÖt&öçW5GW&ç2ÒÓ°¢òòKˆ®{I®ˆ~Y	88¾‹ûŞXª8~8şKˆi˜.89Î8;Î88®8+YNzŠî8î8+ş8;Î8;>{XÎ˜îûÈiz.ZÙ898+ş8;Î8;>8YÎYè¾ûÈ¢–b‡F†—2å÷FV×vöÆD6÷7E&VGV6UGW&ç2â’F†—2å÷FV×vöÆD6÷7E&VGV6UGW&ç2ÒÓ°¢–b‡F†—2å÷FV×G&÷&FT&öçW5GW&ç2â’F†—2å÷FV×G&÷&FT&öçW5GW&ç2ÒÓ°¢–b‡F†—2å÷FV×FV'Vfe÷vW$&öçW5GW&ç2â’F†—2å÷FV×FV'Vfe÷vW$&öçW5GW&ç2ÒÓ°¢–b‡F†—2å÷FV×W‡&öçW5GW&ç2â’F†—2å÷FV×W‡&öçW5GW&ç2ÒÓ°¢–b‡F†—2å÷FV×&Ö÷%VåGW&ç2â’F†—2å÷FV×&Ö÷%VåGW&ç2ÒÓ°¢–b‡F†—2å÷FV×‡–'&–DÖuGW&ç2â’F†—2å÷FV×‡–'&–DÖuGW&ç2ÒÓ°¢òòšÙN[îh¨[Š¾8Îˆz®X¹^z.Xû8ŞûÉ®8:8*n8;>88{X.K¨ni˜.8³Y¹î88ˆz®X¹^8~‹ûŞi(>88(¾ûÈiz.ZÙ8à¢òò6Æ7VÆFTFÖvRõöÇ•&tFÖvTæE&Wv&N8).8Ş8î8î8îYÎ8n888î‹»Ş˜x÷F–6¾8 ¢òòFõBF–6¾zØ8YÎjy8öä†—Bööä7&—N8şy›®x¾8^8¾8®8NûÉŞ8ÎYŞKŠŞ8Ş8~8ş8®8şŠŠŞ{Úîxš8à¢òòˆz®X¹^yØ[Ëî88N8nh›8N8¾8~8n8.8(¾ûÈ¢–b‡F†—2çÆ–W"æWFõGW'&WBbbF†—2çÆ–W"æWFõGW'&WBçGW&ç4ÆVgBâbbF†—2æÆ—fTVæVÖ–W2æÆVæwF‚â’°¢6öç7BF&vWBÒF†—2æÆ—fTVæVÖ–W5³Ó°¢6öç7BFµfÇVRÒF†—2åöVffV7F—fTÖr‚’¢F†—2çÆ–W"æWFõGW'&WBç÷vW"¢F†—2åöÖ–äFÖt×VÇB‚“°¢6öç7B²FÖvRÂ7&—F–6ÂÒÒF†—2æ6Æ7VÆFTFÖvR†FµfÇVRÂF&vWB“°¢6öç7B¶–ÆÂÒF†—2åöÇ•&tFÖvTæE&Wv&B‡F&vWBÂFÖvR“°¢WfVçG2çW6‚‡²G—S¢vWFõGW'&WBrÂF&vWD–C¢F&vWBæ–BÂF&vWDæÖS¢F&vWBææÖRÂFÖvRÂ7&—F–6ÂÂF&vWDFVC¢F&vWBæFVBÂ¶–ÆÂÒ“°¢F†—2çÆ–W"æWFõGW'&WBçGW&ç4ÆVgBÒÓ°¢–b‡F†—2çÆ–W"æWFõGW'&WBçGW&ç4ÆVgBÃÒ’F†—2çÆ–W"æWFõGW'&WBÒçVÆÃ°¢Ğ¢f÷"†6öç7B¶W’–âF†—2ç6¶–ÆÄ6ööÆF÷vç2’°¢–b‡F†—2å÷6¶–ÆÄ6ööÆF÷vç56WEF†—5&÷VæBæ†2†¶W’’’6öçF–çVS°¢–b‡F†—2ç6¶–ÆÄ6ööÆF÷vç5¶¶W•Òâ’F†—2ç6¶–ÆÄ6ööÆF÷vç5¶¶W•ÒÒÓ°¢Ğ¢F†—2å÷6¶–ÆÄ6ööÆF÷vç56WEF†—5&÷VæBæ6ÆV"‚“°¢òòZJ~[z^8ÎXøŞi(>8ŞzØ8h¨8ÎKˆi˜.y¨N8¾K¹Kˆî8~8ööä†—Bööä7&—Bööä‡W'Bööä¶–ÆÎX«iéÎ8îiÉş™™Xˆ~8(ÎXzny`¢F†—2æVffV7G2ÒF†—2æVffV7G2æf–ÇFW"‚†R’Óâ°¢–b†Råõ÷FV×GW&ç4ÆVgBÓÒçVÆÂ’&WGW&âG'VS°¢Råõ÷FV×GW&ç4ÆVgBÒÓ°¢&WGW&âRåõ÷FV×GW&ç4ÆVgBâ°¢Ò“°¢F†—2å÷WFFU76—fTVffV7G2‚“°¢òò6†DuN8:Î89>8:^8;ÎhÈ~iƒNyZ®ûÉ¥÷&VvVå÷vW.8şûÈ„45ôÄ”U"å$TtTåõ5EõU%õ4T5ôÔ8( ¢òòY
+¾8(8nûÈ8Ãzy.8.8ş8(®8Ş8îX›.Y8î8î8îKùŞhÈ8~8n8N8(¾8#8:8*n8;>88¢òòûÉÕDU…Eô$EDÄUôÄ”U"å4T4ôäE5õU%õ$õTäNzy.y»[Ù>8®8î8~88:8*n8;>888³Y¹î8~8°¢òò˜yJ8~8®8N8>8>8~8şzy.8.8ş8(®8îX
+N8).8Ş8î8î8îKÛş8n8[ËKÙ>XÉn88(¾ûÈKè¾ûÉ ¢òòRşzy.8î8ş8®8ÃRş8:8*n8;>888¾8®8>8n8~8î8N8iÊÎiÚ^8ãõ4T4ôäE5õU%õ$õTäN8°¢òòk‰¾8>8n8~8î8nûÈ8%4T4ôäE5õU%õ$õTäN8).hé¾88n8Ã8:8*n8;>888.8ş8(®8Ş8îX›.Y8°¢òòhù¾zé~8~8n8¾8(˜yJ88(¾8 ¢–b‡F†—2å÷&VvVå÷vW"â’°¢F†—2çÆ–W"æ‡ÒÖF‚æÖ–â‡F†—2çÆ–W"æÖ„‡ÂF†—2çÆ–W"æ‡²F†—2çÆ–W"æÖ„‡¢F†—2å÷&VvVå÷vW"¢DU…Eô$EDÄUôÄ”U"å4T4ôäE5õU%õ$õTäB“°¢Ğ¢F†—2çÆ–W"æwV&F–ærÒfÇ6S²òò8*Î8;Î888ş8ÎjÊ8îˆz®Xˆn8î8+ş8;Î8;>8î8~8ŞûÉŞ8>8îi˜.x+8~8:®8+¾88>88€ ¢6öç7BVæBÒF†—2æ6†V6´&GFÆTVæB‚“°¢&WGW&â²WfVçG2Â÷fW#¢VæBæ÷fW"Ó°¢Ğ ¢÷WFFU76—fTVffV7G2‚’°¢6öç7B‡&F–òÒF†—2çÆ–W"æÖ„‡âòF†—2çÆ–W"æ‡òF†—2çÆ–W"æÖ„‡¢°¢6öç7B76—fW2ÒF†—2åöVffV7G4öb‚w76—fRr“°¢6öç7Bv¶VâÒ76—fW2æf–æB‚†R’ÓâRæ¶–æBÓÓÒvFÖvT&ö÷7Br“°¢ÆWB×VÇBÒ°¢–b†v¶Vâbb‡&F–òÃÒv¶VâçF‡&W6†öÆB’×VÇB³Òv¶Vâç÷vW#°¢×VÇB³Ò7FFRæ¦ö$Ö7FW$Æ÷t‡FÖvT&öçW2†‡&F–ò“°¢ÆWB&VvVå÷vW"Ò°¢ÆWBF÷V&ÆTGF6²ÒfÇ6S°¢f÷"†6öç7BVfböb76—fW2’°¢–b†Vfbæ¶–æBÓÓÒvvÆ746ææöârbbVfbæFÖt×VÇB’×VÇB³ÒVfbæFÖt×VÇC°¢–b†Vfbæ¶–æBÓÓÒw&VvVâr’&VvVå÷vW"³ÒVfbç÷vW#°¢òò‹º.yIş˜®xš8Îx¸.hŠnZ:¾8î[ø>ˆy>8ŞûÉ®Zéşi˜.™i>8îiK¾i(>™i>™©NyúŞ{Šî8ş8+ş8;Î8;>X‹n8¾hHşY>8Î8®8N8ş8(¢òò[¸>jÚ.88(¾8Î88Ä…KˆZé®X›.YKº^Kˆ¾8s.Y¹îiK¾i(>8Ş88N8nj[ø>8îhÉX¹^8ş{jŞhÈ88(°¢–b†Vfbæ¶–æBÓÓÒv&W'6W&¶W"rbb‡&F–òÃÒVfbçF‡&W6†öÆB’F÷V&ÆTGF6²ÒG'VS°¢Ğ¢òòX:~Kën8ÎzX8(®8Ş8;¾Y	ş˜®ŠšK«®8Îy™.8~8îix¾[è¾8ŞûÉ®Kˆi˜.y¨N8§&VvVî89Î8;Î88®8+8(.YÎ8€¢òò8Îjøîzy"^8Ş8îhHşY>8~Yzé~8~8iz.ZÙ8ä45ôÄ”U.Kˆ®™™8).8Ş8î8î8î˜yJ88(°¢–b‡F†—2çÆ–W"æ'Vfg2ç&VvVäFBçGW&ç4ÆVgBâ’&VvVå÷vW"³ÒF†—2çÆ–W"æ'Vfg2ç&VvVäFBçfÇVS°¢F†—2æv¶Vä×VÇBÒ×VÇC°¢F†—2å÷&VvVå÷vW"ÒÖF‚æÖ–â„45ôÄ”U"å$TtTåõ5EõU%õ4T5ôÔ‚Â&VvVå÷vW"“°¢F†—2åö&W'6W&¶W$F÷V&ÆTGF6²ÒF÷V&ÆTGF6³°¢Ğ ¢òòÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢òòhŠn™y{X.K¨nXŠNZé®8;¾{X.K¨nXzny`¢òòÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒÒĞ¢6†V6´&GFÆTVæB‚’°¢–b‡F†—2æ÷fW"’&WGW&â²÷fW#¢G'VRÓ°¢–b‡F†—2çÆ–W"æ‡ÃÒ’°¢òòk{k{^8î‰ˆ~yIşûÈiz.ZÙ8;¾8(8(®[Ë~X©¾8£S^‰ˆ~yIşûÈ8).XJ®XX8~88Ş8(Î8ÎKÛş88®8NZNY8°¢òò8î8ş‹ë.k	Ô5DU.8Îy›îZy>šØ.8Ş8).XŠNZé®88(¾ûÈ˜xŞŠH~8:¾8;Î8:¾ûÉ®k{k{^‰ˆ~yIş8ÎiÈXJ®XXûÈ¢–b‡F†—2ç7FvRæ—4'—72bbF†—2åö'—75&Wf—fUW6VBbb7FFRæ†4'—75&Wf—fR‚’’°¢F†—2åö'—75&Wf—fUW6VBÒG'VS°¢F†—2çÆ–W"æ‡ÒÖF‚ç&÷VæB‡F†—2çÆ–W"æÖ„‡¢ãR“°¢&WGW&â²÷fW#¢fÇ6RÂ&Wf—fVC¢G'VRÓ°¢Ğ¢–b‡7FFRæ7W'&VçD¦ö$–BÓÓÒvf&ÖW"rbb7FFRæ—4Ö7FW&VB‚vf&ÖW"r’bbF†—2åöf&ÖW%7W'f—fUW6VB’°¢F†—2åöf&ÖW%7W'f—fUW6VBÒG'VS°¢–b„ÖF‚ç&æFöÒ‚’Âd$ÔU%õ5U%d•dUô4„ä4R’°¢F†—2çÆ–W"æ‡Ò°¢&WGW&â²÷fW#¢fÇ6RÂ&Wf—fVC¢G'VRÂf&ÖW%7W'f—fS¢G'VRÓ°¢Ğ¢Ğ¢òò898:88~8*>8;4Ô5DU.8ÎKˆŞ‰Ş8îŠ©>8N8ŞûÉ®h¨8).KÛş8>8n‹[~X¹^8~8n8N8şZNY8î8ş8¢òòhŠcY¹î88ˆ{NjÛ¾888:8;Î8+8).ˆ	88(¾ûÈk{k{^‰ˆ~yIş(i.y›îZy>šØ.(i.8>8îšn8~XŠNZé®88(°¢òò8>88~8iz.ZÙ8îjÛ¾KªY¹î˜ş{;¾8˜xŞŠH~8~8n8(.K¨Î˜xŞy›®X¹^8~8®8NûÈ¢–b‡F†—2å÷ÆF–äFVF„wV&D&ÖVBbbF†—2å÷ÆF–å7W'f—fUW6VB’°¢F†—2å÷ÆF–å7W'f—fUW6VBÒG'VS°¢F†—2å÷ÆF–äFVF„wV&D&ÖVBÒfÇ6S°¢F†—2çÆ–W"æ‡Ò°¢&WGW&â²÷fW#¢fÇ6RÂ&Wf—fVC¢G'VRÂÆF–äwV&C¢G'VRÓ°¢Ğ¢F†—2åöf–æ—6„&GFÆR†fÇ6RÂfÇ6R“°¢&WGW&â²÷fW#¢G'VRÓ°¢Ğ¢–b‚F†—2æ†4Ö÷&TVæ6÷VçFW'2‚’’°¢F†—2åöf–æ—6„&GFÆR‡G'VRÂfÇ6R“°¢&WGW&â²÷fW#¢G'VRÓ°¢Ğ¢&WGW&â²÷fW#¢fÇ6RÓ°¢Ğ ¢òòyK¾™Ú.Kˆ®˜:8î)É^89Î8+ş8;>ûÈizv&GFÆRæ§>8ç&WG&VD'FîûÈyJûÉ®h‰X©şxè~XŠNZé®8).hÉş8(8Î8¾8.8(¾8Ğ¢òò8+>89î8;>88ûÈ…÷Æ–W$fÆV^8XX>hÈ~zK£~yZ®ûÈ88şXŠ^xš8î8xJiÚK»n8;¾XÛ>i˜.8î™º.ˆK8 ¢òòizv&GFÆRæ§>8æF†—2åöVæE'Vâ†fÇ6RÂG'VR–8YÎ88ş[ø^8®h‰X©ş8~88:8*n8;>888( ¢òòkh‹+¾8~8®8NûÈ8Ş8(Î8î8~8¾[é~8÷'VäW‡÷'VävöÆB÷'Vä—FV×>8ş8Ş8î8î8î{YiéÎ8¾jè¾8(¾ûÈ8 ¢f÷&6U&WG&VB‚’°¢–b‡F†—2æ÷fW"’&WGW&âF†—2æf–æÅ&W7VÇC°¢F†—2åöf–æ—6„&GFÆR†fÇ6RÂG'VR“°¢&WGW&âF†—2æf–æÅ&W7VÇC°¢Ğ ¢òòhŠn™y{X.K¨ni˜.8îZ˜ZÎ8;¾8+¾8;Î89nXznynûÈizv&GFÆRæ§2öVæE'Vâ‚8YÎKˆ8ç7FF^YÎ8>X{®8~ûÈ¢öf–æ—6„&GFÆR†6ÆV&VBÂ&WG&VFVB’°¢–b‡F†—2æ÷fW"’&WGW&ã°¢F†—2æ÷fW"ÒG'VS°¢ÆWBf—'7D6ÆV"ÒfÇ6S°¢ÆWB&öçW4—FVÒÒçVÆÃ°¢ÆWB7FvTW‡Ò°¢ÆWB7FvTvöÆBÒ°¢G'’°¢–b†6ÆV&VB’°¢7FvTW‡ÒÖF‚ç&÷VæB‡F†—2ç7FvRç&Wv&G2æW‡¢F†—2åöW‡×VÇB‚’“°¢7FvTvöÆBÒÖF‚ç&÷VæB‡F†—2ç7FvRç&Wv&G2ævöÆB¢F†—2åövöÆD×VÇB‚’“°¢7FFRæv–äW‡‡7FvTW‡“°¢7FFRæv–ävöÆB‡7FvTvöÆB“°¢òò888:Î8+8:>8;Î88ş8;>8+ş8;Î8Îy›®hé8Ş8;¾ZJ~YXnK«®8Î[ˆ.ZNiJş˜XŞ8ŞûÉ®hŠn™y8*ş8:®8*.i˜.8³Y¹î88¢òò‹ûŞXªZ˜ZÎ8).XŠNZé®88(¾8.iz.ZÙ‡'VävöÆN8¾Zûî88(¾X›.Y89Î8;Î88®8+8î8ş8;°¢òòiz.ZÙ…÷&öÆÄG&÷‚ûÈ8+88n8;Î8+8æG&÷F&Æ^8î8şûÈ8~8¾KÛş8(ş8®8N8ş8(8¢òò&÷7>Y»®iÈjÚnYš8;¾X‰ŞY¹î8*ş8:®8*.Z˜ZÎûÈXŠ^{XÎ‹zşûÈ8şZûî‹ZInûÉŞxJ™™Z)~jén8~8®8@¢–b‡F†—2åö&GFÆTVæD&öçW5&Wv&B’°¢6öç7B&öçW2ÒF†—2åö&GFÆTVæD&öçW5&Wv&C°¢F†—2åö&GFÆTVæD&öçW5&Wv&BÒçVÆÃ°¢–b†&öçW2ævöÆE7BbbF†—2ç'VävöÆBâ’°¢6öç7B&öçW4vöÆBÒÖF‚ç&÷VæB‡F†—2ç'VävöÆB¢&öçW2ævöÆE7B“°¢–b†&öçW4vöÆBâ’²7FFRæv–ävöÆB†&öçW4vöÆB“²F†—2ç'VävöÆB³Ò&öçW4vöÆC²Ğ¢Ğ¢–b†&öçW2æG&÷6†æ6RbbÖF‚ç&æFöÒ‚’Â&öçW2æG&÷6†æ6R’F†—2å÷&öÆÄG&÷‚“°¢Ğ¢–b‡F†—2ç7FvRæ—4'—72’°¢7FFRç&V6÷&D'—746ÆV"‡F†—2ç7FvRæ'—74FWF‚“°¢ÒVÇ6R°¢6öç7B&W2Ò7FFRç&V6÷&E7FvU&W7VÇB‡F†—2ç7FvRæ–BÂG'VR“°¢f—'7D6ÆV"Ò&W2çv4f—'7D6ÆV#°¢–b†f—'7D6ÆV"bbF†—2ç7FvRæf—'7D6ÆV"bbF†—2ç7FvRæf—'7D6ÆV"æ—FVÔ–B’°¢7FFRæFD—FVÒ‡F†—2ç7FvRæf—'7D6ÆV"æ—FVÔ–BÂ“°¢&öçW4—FVÒÒF†—2ç7FvRæf—'7D6ÆV"æ—FVÔ–C°¢Ğ¢Ğ¢ÒVÇ6R–b‚&WG&VFVB’°¢–b‚F†—2ç7FvRæ—4'—72’7FFRç&V6÷&E7FvU&W7VÇB‡F†—2ç7FvRæ–BÂfÇ6R“°¢Ğ¢Ò6F6‚†W'"’°¢6öç6öÆRæW'&÷"‚t&GFÆTVæv–æRåöf–æ—6„&GFÆR&Wv&B÷6fRW'&÷"‡&V6÷fW&VB“¢rÂW'"“°¢Ğ¢6öç7B—FV×2Ò²ââçF†—2ç'Vä—FV×5Ó°¢–b†&öçW4—FVÒ’—FV×2çW6‚†&öçW4—FVÒ“°¢F†—2æf–æÅ&W7VÇBÒ°¢6ÆV&VBÂ&WG&VFVBÀ¢W‡v–æVC¢6ÆV&VBòF†—2ç'VäW‡²7FvTW‡¢F†—2ç'VäW‡À¢vöÆDv–æVC¢6ÆV&VBòF†—2ç'VävöÆB²7FvTvöÆB¢F†—2ç'VävöÆBÀ¢—FV×2Âf—'7D6ÆV"À¢Ó°¢Ğ§Ğ

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { allJobs } from '../js/data/jobs.js';
 import { ALL_FUSION_JOBS } from '../js/data/jobFusion.js';
+import { BattleEngine } from '../js/battleEngine.js';
 import {
   C1_JOB_IDENTITIES,
   C1_LEGACY_JOB_MIGRATION,
@@ -70,4 +71,24 @@ test('C1 Vanguard defines a bounded combat-only Pressure loop', () => {
 test('C1 Elementalist defines a combat-only alternate-element MP cycle', () => {
   const elementalist = C1_RUNTIME_JOBS.find((job) => job.id === 'c1_elementalist');
   assert.deepEqual(elementalist.c1Combat, { kind:'elementCycle', mpRefundPct:0.25 });
+});
+
+test('C1 Shadow defines an affliction-to-execution combat loop', () => {
+  const shadow = C1_RUNTIME_JOBS.find((job) => job.id === 'c1_shadow');
+  assert.deepEqual(shadow.c1Combat, {
+    kind:'execution', bonusPower:3,
+    setupSkillIds:['thief_dark_slash','thief_poison_blade','ninja_poison_star','ninja_pin'],
+    executionSkillIds:['phantomthief_backstab'],
+  });
+});
+
+test('C1 Shadow execution reads the canonical weaken and DoT state without affecting legacy jobs', () => {
+  const engine = Object.create(BattleEngine.prototype);
+  engine.job = C1_RUNTIME_JOBS.find((job) => job.id === 'c1_shadow');
+  const execution = { id:'phantomthief_backstab' };
+  assert.equal(engine._c1ShadowExecutionPower(execution, { weaken:{ atk:{ power:0.2, turnsLeft:2 } }, dotStacks:0 }), 3);
+  assert.equal(engine._c1ShadowExecutionPower(execution, { weaken:null, dotStacks:1 }), 3);
+  assert.equal(engine._c1ShadowExecutionPower(execution, { weaken:null, dotStacks:0 }), 0);
+  engine.job = { id:'phantomthief', c1Combat:null };
+  assert.equal(engine._c1ShadowExecutionPower(execution, { dotStacks:1 }), 0);
 });
