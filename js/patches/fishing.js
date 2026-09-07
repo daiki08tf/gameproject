@@ -10,7 +10,7 @@
 import { state } from '../state.js';
 import {
   FISHING_SPOTS, FISH_SPECIES, getFishingSpot, isFishingSpotUnlocked,
-  pickFishForSpot, rollFishingCue, resolveFishingRound, fishingDifficultyProfile,
+  pickFishForSpot, rollFishingCue, resolveFishingRound, fishingDifficultyProfile, computeFishingReward,
 } from '../data/fishing.js';
 
 const META_KEY = '__settlement3';
@@ -73,8 +73,12 @@ state.fishingAction = function fishingAction(action) {
   entry.seen = true;
   entry.caught = (entry.caught || 0) + 1;
   m.codex[fish.id] = entry;
-  const gained = first ? (state.addSettlementMaterials?.(fish.reward || {}) || {}) : {};
-  if (!first && fish.reward?.gold) state.data.gold = Math.max(0, (Number(state.data.gold) || 0) + Math.round((fish.reward.gold || 0) * 0.3));
+  const reward = computeFishingReward(fish, first);
+  const gained = Object.keys(reward.materials).length ? (state.addSettlementMaterials?.(reward.materials) || {}) : {};
+  if (reward.gold > 0) {
+    state.data.gold = Math.max(0, (Number(state.data.gold) || 0) + reward.gold);
+    gained.gold = reward.gold;
+  }
   state.save();
   return { ok: true, outcome: 'caught', fish, first, gained, caught: entry.caught, spotId };
 };

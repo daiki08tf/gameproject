@@ -146,3 +146,19 @@ export function resolveFishingRound({ fish, progress = 0, misses = 0, correctAct
   if (nextMisses >= profile.maxMisses) return { progress: nextProgress, misses: nextMisses, hit, outcome: 'escaped' };
   return { progress: nextProgress, misses: nextMisses, hit, outcome: 'ongoing' };
 }
+
+// A landed catch's reward, split into `materials` (wood/ore/hide/veilstone --
+// handed to the existing state.addSettlementMaterials) and `gold` (only the
+// master fish carry it; addSettlementMaterials does not understand a `gold`
+// key, so the runtime must apply it separately, or it is silently dropped).
+// First catch = the full reward; a repeat catch of a fish already seen only
+// grants a 30% gold trickle (regular fish have no gold reward at all, so a
+// repeat catch of them currently only advances the Codex "caught" count).
+export function computeFishingReward(fish, first) {
+  const materials = {};
+  for (const key of ['wood', 'ore', 'hide', 'veilstone']) {
+    if (first && fish.reward?.[key]) materials[key] = fish.reward[key];
+  }
+  const gold = fish.reward?.gold ? Math.round(fish.reward.gold * (first ? 1 : 0.3)) : 0;
+  return { materials, gold };
+}

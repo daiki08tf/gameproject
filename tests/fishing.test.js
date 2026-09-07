@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import {
   FISHING_SPOTS, FISH_SPECIES, isFishingSpotUnlocked, pickFishForSpot,
   resolveFishingRound, fishingDifficultyProfile, FISHING_ACTIONS, FISHING_ACTION_LABELS,
+  computeFishingReward,
 } from '../js/data/fishing.js';
 import { WORLD3_REGIONS } from '../js/data/world3Regions.js';
 
@@ -78,6 +79,19 @@ test('Exactly the three roadmap-named commands exist, each with a Japanese label
   assert.equal(FISHING_ACTION_LABELS.hook, '合わせる');
   assert.equal(FISHING_ACTION_LABELS.wait, '待つ');
   assert.equal(FISHING_ACTION_LABELS.slack, '糸を緩める');
+});
+
+test('computeFishingReward: first catch grants the full reward including gold (regression: addSettlementMaterials silently drops gold)', () => {
+  const master = FISH_SPECIES.find((f) => f.master && f.regionId === 'frontier'); // { veilstone:2, gold:100 }
+  const first = computeFishingReward(master, true);
+  assert.deepEqual(first.materials, { veilstone: 2 });
+  assert.equal(first.gold, 100, 'the full gold reward must not be lost on the first, full-reward catch');
+  const repeat = computeFishingReward(master, false);
+  assert.deepEqual(repeat.materials, {}, 'repeat catches grant no materials (matches settlementExploration.js revisit precedent)');
+  assert.equal(repeat.gold, 30, 'repeat catches of a master fish trickle 30% of its gold reward');
+
+  const common = FISH_SPECIES.find((f) => f.id === 'silver_carp'); // no gold field
+  assert.equal(computeFishingReward(common, false).gold, 0, 'a fish with no gold reward yields no gold on repeat catches either');
 });
 
 test('No new currency: every fish reward is only existing materials/gold', () => {
