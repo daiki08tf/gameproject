@@ -114,6 +114,7 @@ export class BattleEngine {
     this.job = state.currentJob;
     // C1 先陣: 戦闘中だけ保持するPressure。保存・育成authorityには触れない。
     this._c1Pressure = 0;
+    this._c1LastElement = null;
     this.effects = state.getEquippedEffects();
     for (const eff of this.effects) {
       if (eff.kind === 'glassCannon' && eff.hpMult) {
@@ -678,6 +679,18 @@ export class BattleEngine {
     return 1 + stacks * rule.damagePerStack;
   }
 
+  _c1ElementCycle(result, tech, kind) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'elementCycle' || kind !== 'spell' || !tech.element || tech.element === 'random') return;
+    const previous = this._c1LastElement;
+    const switched = previous && previous !== tech.element;
+    this._c1LastElement = tech.element;
+    if (!switched) return;
+    const refunded = Math.round(this._effectiveMpCost(tech) * rule.mpRefundPct);
+    this.player.mp = Math.min(this.player.maxMp, this.player.mp + refunded);
+    result.elementCycle = { from:previous, to:tech.element, mpRestored:refunded };
+  }
+
   // 習得済み（かつpassiveではない＝コマンドとして選択可能な）技一覧
   availableSkills() { return (this.job.skills || []).filter((t) => this._isTechniqueLearned(t) && !t.passive); }
   availableSpells() { return (this.job.spells || []).filter((t) => this._isTechniqueLearned(t) && !t.passive); }
@@ -785,6 +798,7 @@ export class BattleEngine {
       }
     };
     dispatchTechnique();
+    this._c1ElementCycle(result, tech, kind);
     if (tech.type === 'damage') this._c1VanguardGain(result, tech.id);
     // 賢者MASTER「連続詠唱」：直前に予約されていれば、次に唱えたspell1回に
     // 限り2回発動させる（MPは2回分消費、不足していれば1回のみで諦める＝
