@@ -105,3 +105,16 @@ test('C1 Maestro turns an existing active buff into a dance finale without new s
   engine.job = { c1Combat:null };
   assert.equal(engine._c1MaestroChorusPower({ id:'dancer_blade_dance' }), 0);
 });
+
+test('C1 Chaplain turns a guarded heal into the established regeneration buff', () => {
+  const chaplain = C1_RUNTIME_JOBS.find((job) => job.id === 'c1_chaplain');
+  assert.deepEqual(chaplain.c1Combat, { kind:'sanctuary', regenAdd:0.02, regenTurns:2, healSpellIds:['priest_heal','priest_full_heal'] });
+  const engine = Object.create(BattleEngine.prototype);
+  engine.job = chaplain;
+  engine.player = { buffs:{ def:{ turnsLeft:2 } } };
+  engine._applyBuffPayload = (buff) => { engine.applied = buff; };
+  const result = {};
+  engine._c1ChaplainSanctuary(result, { id:'priest_heal' });
+  assert.deepEqual(engine.applied, { regenAdd:0.02, turns:2 });
+  assert.deepEqual(result.sanctuary, { regenAdd:0.02, turns:2 });
+});
