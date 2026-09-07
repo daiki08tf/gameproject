@@ -112,6 +112,8 @@ export class BattleEngine {
     }
 
     this.job = state.currentJob;
+    // C1 先陣: 戦闘中だけ保持するPressure。保存・育成authorityには触れない。
+    this._c1Pressure = 0;
     this.effects = state.getEquippedEffects();
     for (const eff of this.effects) {
       if (eff.kind === 'glassCannon' && eff.hpMult) {
@@ -642,6 +644,7 @@ export class BattleEngine {
       critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, berserkerDoubled,
     };
     this._actionTypesUsed.add('attack');
+    this._c1VanguardGain(result);
     this._lastActionWasAttack = true; // 拳聖「連環拳」：直前の行動が攻撃系だったかの判定に使う
     this._checkActionDiversityBurst(result);
     return result;
@@ -657,6 +660,22 @@ export class BattleEngine {
   _isTechniqueLearned(tech) {
     if (tech.learnLevel === 'master') return state.isMastered(state.currentJobId);
     return state.currentLevel >= tech.learnLevel;
+  }
+
+  _c1VanguardGain(result, techId = null) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'pressure' || (techId && !rule.gainSkillIds.includes(techId))) return;
+    const before = this._c1Pressure;
+    this._c1Pressure = Math.min(rule.maxStacks, this._c1Pressure + 1);
+    if (this._c1Pressure > before) result.pressure = { stacks:this._c1Pressure, gained:true };
+  }
+
+  _c1VanguardSpend(tech) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'pressure' || !rule.spendSkillIds.includes(tech.id) || this._c1Pressure <= 0) return 1;
+    const stacks = this._c1Pressure;
+    this._c1Pressure = 0;
+    return 1 + stacks * rule.damagePerStack;
   }
 
   // 習得済み（かつpassiveではない＝コマンドとして選択可能な）技一覧
@@ -766,6 +785,7 @@ export class BattleEngine {
       }
     };
     dispatchTechnique();
+    if (tech.type === 'damage') this._c1VanguardGain(result, tech.id);
     // 賢者MASTER「連続詠唱」：直前に予約されていれば、次に唱えたspell1回に
     // 限り2回発動させる（MPは2回分消費、不足していれば1回のみで諦める＝
     // ラウンド自体はすでに成立しているので失敗にはしない）。連続詠唱自身の
@@ -799,6 +819,7 @@ export class BattleEngine {
     const statValue = tech.hybrid ? (this._effectiveAtk() + this._effectiveMag()) / 2
       : (tech.magic ? this._effectiveMag() : this._effectiveAtk());
     const hits = tech.hits || 1;
+    const pressureMult = this._c1VanguardSpend(tech);
     const targets = this._resolveTargets(tech, targetId);
     if (targets.length === 0) { result.noTarget = true; return; }
     const opts = {};
@@ -835,7 +856,7 @@ export class BattleEngine {
       for (let i = 0; i < hits; i++) {
         if (target.dead) break;
         const power = tech.power + conditionBonusPower + targetBonusPower;
-        const atkValue = statValue * power * this._mainDmgMult(kind);
+        const atkValue = statValue * power * pressureMult * this._mainDmgMult(kind);
         const { damage, critical } = this.calculateDamage(atkValue, target, opts);
         if (critical) criticalCount++;
         hitsLanded++;
@@ -867,6 +888,7 @@ export class BattleEngine {
     }
     // プリマ・ディーヴァ「剣の舞曲」等：攻撃と同時に自分へバフをかける
     if (tech.selfBuff) this._applyBuffPayload(tech.selfBuff, result);
+    if (pressureMult > 1) result.pressure = { spent:true, mult:pressureMult };
   }
 
   // 星詠みの魔女「流星」専用：固定hit数ぶん、毎回独立してランダムな生存中の

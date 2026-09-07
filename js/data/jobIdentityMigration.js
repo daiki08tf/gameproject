@@ -90,6 +90,11 @@ export const C1_RUNTIME_JOBS = Object.freeze(C1_JOB_IDENTITIES.map((identity) =>
     weapon: primary.weapon, profile:{ ...primary.profile }, passive: primary.passive,
     skills: kits.flatMap((job) => job.skills || []), spells: kits.flatMap((job) => job.spells || []),
     c1:true, c1Identity:identity,
+    c1Combat: identity.id === 'c1_vanguard' ? Object.freeze({
+      kind:'pressure', maxStacks:3, damagePerStack:0.12,
+      gainSkillIds:Object.freeze(['fighter_flurry','battlemaster_rapid_break']),
+      spendSkillIds:Object.freeze(['fighter_straight_punch','battlemaster_armor_breaker','battlemaster_peerless']),
+    }) : null,
   });
 }));
 const C1_RUNTIME_BY_ID = new Map(C1_RUNTIME_JOBS.map((job) => [job.id, job]));

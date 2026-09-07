@@ -57,3 +57,12 @@ test('C1 starter combat loops reuse the established guard, mark and detonation a
   assert.deepEqual([...skillIds('c1_ranger')].filter((id) => ['huntking_mark','huntking_followup'].includes(id)), ['huntking_followup','huntking_mark']);
   assert.deepEqual([...skillIds('c1_alchemist')].filter((id) => ['alchemist_poison_potion','alchemist_detonate'].includes(id)), ['alchemist_poison_potion','alchemist_detonate']);
 });
+
+test('C1 Vanguard defines a bounded combat-only Pressure loop', () => {
+  const vanguard = C1_RUNTIME_JOBS.find((job) => job.id === 'c1_vanguard');
+  assert.deepEqual(vanguard.c1Combat, {
+    kind:'pressure', maxStacks:3, damagePerStack:0.12,
+    gainSkillIds:['fighter_flurry','battlemaster_rapid_break'],
+    spendSkillIds:['fighter_straight_punch','battlemaster_armor_breaker','battlemaster_peerless'],
+  });
+});
