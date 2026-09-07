@@ -118,3 +118,19 @@ test('C1 Chaplain turns a guarded heal into the established regeneration buff', 
   assert.deepEqual(engine.applied, { regenAdd:0.02, turns:2 });
   assert.deepEqual(result.sanctuary, { regenAdd:0.02, turns:2 });
 });
+
+test('C1 Quartermaster refunds MP only after an existing Gold payment', () => {
+  const quartermaster = C1_RUNTIME_JOBS.find((job) => job.id === 'c1_quartermaster');
+  assert.deepEqual(quartermaster.c1Combat, { kind:'supply', mpRefundPct:0.25 });
+  const engine = Object.create(BattleEngine.prototype);
+  engine.job = quartermaster;
+  engine.player = { mp:10, maxMp:20 };
+  engine._effectiveMpCost = () => 8;
+  const result = { goldSpent:15 };
+  engine._c1QuartermasterSupply(result, { id:'guildmaster_supply' });
+  assert.equal(engine.player.mp, 12);
+  assert.deepEqual(result.supply, { mpRestored:2 });
+  engine.player.mp = 10;
+  engine._c1QuartermasterSupply({ goldSpent:0 }, { id:'merchant_coin_toss' });
+  assert.equal(engine.player.mp, 10);
+});

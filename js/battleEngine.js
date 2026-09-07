@@ -406,6 +406,15 @@ export class BattleEngine {
     result.sanctuary = { regenAdd:rule.regenAdd, turns:rule.regenTurns };
   }
 
+  // C1補給官：既存Gold消費技の実MPコストだけを戦闘中に還元する。
+  _c1QuartermasterSupply(result, tech) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'supply' || result.goldSpent <= 0) return;
+    const restored = Math.round(this._effectiveMpCost(tech) * rule.mpRefundPct);
+    this.player.mp = Math.min(this.player.maxMp, this.player.mp + restored);
+    result.supply = { mpRestored:restored };
+  }
+
   // ---------------------------------------------------------
   // ダメージ計算（PR#2のDamage Bucketをそのまま流用。新式は作らない）
   // ---------------------------------------------------------
@@ -823,6 +832,7 @@ export class BattleEngine {
     dispatchTechnique();
     this._c1ElementCycle(result, tech, kind);
     this._c1ChaplainSanctuary(result, tech);
+    this._c1QuartermasterSupply(result, tech);
     if (tech.type === 'damage') this._c1VanguardGain(result, tech.id);
     // 賢者MASTER「連続詠唱」：直前に予約されていれば、次に唱えたspell1回に
     // 限り2回発動させる（MPは2回分消費、不足していれば1回のみで諦める＝
