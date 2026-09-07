@@ -151,7 +151,7 @@ test('fishCodexBonuses: sums every fish\'s own contribution; a realistic mid-gam
     return { ...f, caught: 0 };
   });
   const mid = fishCodexBonuses(midList);
-  assert.ok(mid.bonusPct >= 20, 'a realistic focused investment should read as a real, noticeable bonus, not a token +1-3%');
+  assert.ok(mid.bonusPct >= 40, 'a realistic focused investment should read as a real, noticeable bonus');
   assert.equal(mid.cappedCount, 3);
 });
 
@@ -162,7 +162,7 @@ test('Fish Codex bonus is chained onto getStats()/getStatBreakdown() the same wa
   // Grant a focused investment (one maxed master) directly through the same __settlement3 meta the runtime itself owns.
   const meta = (state.data.settlementBuildings ??= {})['__settlement3'] ??= {};
   meta.fishing = { codex: { frontier_nushi: { seen: true, caught: 20 } } };
-  assert.ok(state.fishCodexStatMult() > 1.09 && state.fishCodexStatMult() < 1.11, 'one maxed master fish alone should be a clearly noticeable ~+10% bonus');
+  assert.ok(state.fishCodexStatMult() > 1.19 && state.fishCodexStatMult() < 1.21, 'one maxed master fish alone should be a clearly noticeable ~+20% bonus');
   assert.ok(state.getStats().hp > baselineHp, 'the bonus must actually raise stats through the real getStats() pipeline');
   const breakdown = state.getStatBreakdown('hp');
   assert.ok('fish' in breakdown, 'getStatBreakdown must report a separate fish component, like it already does for codex/rune');

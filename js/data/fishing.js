@@ -171,10 +171,10 @@ export function computeFishingReward(fish, first) {
 // (they are also drawn far less often), similar in spirit to how Rune 2.0's
 // rarer runes have a lower dropRate but a stronger per-mark effect.
 export const FISH_STAT_BONUS_BY_RARITY = Object.freeze({
-  common: { perCatch: 0.0006, cap: 100 },   // +0.06%/catch, max +6% per fish
-  uncommon: { perCatch: 0.0012, cap: 80 },  // +0.12%/catch, max +9.6% per fish
-  rare: { perCatch: 0.0025, cap: 50 },      // +0.25%/catch, max +12.5% per fish
-  master: { perCatch: 0.005, cap: 20 },     // +0.5%/catch, max +10% per fish (ヌシ are drawn far less often, so the cap is much lower)
+  common: { perCatch: 0.0012, cap: 100 },  // +0.12%/catch, max +12% per fish
+  uncommon: { perCatch: 0.0024, cap: 80 }, // +0.24%/catch, max +19.2% per fish
+  rare: { perCatch: 0.005, cap: 50 },      // +0.5%/catch, max +25% per fish
+  master: { perCatch: 0.01, cap: 20 },     // +1.0%/catch, max +20% per fish (ヌシ are drawn far less often, so the cap is much lower)
 });
 
 // One fish's own contribution, and how close it is to its own cap (for UI).
