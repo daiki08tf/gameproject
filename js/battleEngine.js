@@ -415,6 +415,13 @@ export class BattleEngine {
     result.supply = { mpRestored:restored };
   }
 
+  // C1神託師：既存の会心buff中だけ、星術の会心率を上げる。
+  _c1OracleOmenCritBonus(tech) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'omen' || !rule.attackSpellIds.includes(tech.id)) return 0;
+    return this.player.buffs.critAdd?.turnsLeft > 0 ? rule.critBonus : 0;
+  }
+
   // ---------------------------------------------------------
   // ダメージ計算（PR#2のDamage Bucketをそのまま流用。新式は作らない）
   // ---------------------------------------------------------
@@ -874,6 +881,8 @@ export class BattleEngine {
     if (tech.armorPenBonus) opts.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, this._effectiveArmorPen() + tech.armorPenBonus);
     // critBonus：魔法剣士「雷鳴斬」・急所突き等、この技の一撃だけ会心率に加算する
     if (tech.critBonus) opts.critPct = Math.min(CAPS_LAYER.CRIT_PCT_MAX, this._effectiveCritPct() + tech.critBonus);
+    const omenCritBonus = this._c1OracleOmenCritBonus(tech);
+    if (omenCritBonus) opts.critPct = Math.min(CAPS_LAYER.CRIT_PCT_MAX, (opts.critPct ?? this._effectiveCritPct()) + omenCritBonus);
     // 自己参照の条件付き威力ボーナス（先攻/回避直後/Boss予兆中/直前の行動/
     // 背水/回避回数）。対象ごとには変わらないため先に1回だけ計算する
     let conditionBonusPower = 0;
@@ -941,6 +950,7 @@ export class BattleEngine {
     // プリマ・ディーヴァ「剣の舞曲」等：攻撃と同時に自分へバフをかける
     if (tech.selfBuff) this._applyBuffPayload(tech.selfBuff, result);
     if (pressureMult > 1) result.pressure = { spent:true, mult:pressureMult };
+    if (omenCritBonus) result.omen = { critBonus:omenCritBonus };
   }
 
   // 星詠みの魔女「流星」専用：固定hit数ぶん、毎回独立してランダムな生存中の
