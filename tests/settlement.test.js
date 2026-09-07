@@ -1,4 +1,17 @@
 import test from 'node:test';
+
+test('C2 tavern reflects notebook resolution without mutating discovery progress',()=>{
+ const entry={id:'rumor:bell',name:'噂：鐘',hint:'斜面の記録',rumorState:'tracking'};
+ const before=JSON.stringify(entry);
+ assert.ok(buildTavernRumors({rumorNotebook:[entry]}).some(r=>r.title==='鐘'));
+ assert.equal(JSON.stringify(entry),before);
+ const resolved={...entry,rumorState:'resolved',resolvedAt:2,hint:'調査を完了した'};
+ const result=buildTavernRumors({rumorNotebook:[resolved,{...resolved,id:'older',resolvedAt:1}]});
+ assert.equal(result.filter(r=>r.kind==='notebook').length,1);
+ assert.equal(result[0].title,'解決の記録：鐘');
+ assert.equal(result[0].text,'調査を完了した');
+ assert.equal(resolved.rumorState,'resolved');
+});
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { SETTLEMENT_AREA_GROUPS,SETTLEMENT_BUILDINGS,SETTLEMENT_ERAS,SETTLEMENT_MAX_LEVEL,SETTLEMENT_RESIDENTS,SETTLEMENT_RESIDENT_ROLES,settlementCost,settlementEffectiveLevels,settlementEraAtMilestone,settlementEraForLevel,settlementMaterialYield,settlementReachedEras,settlementResidentEligible,settlementResidentRole } from '../js/data/settlement.js';
