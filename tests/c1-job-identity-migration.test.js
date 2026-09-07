@@ -49,3 +49,11 @@ test('C1 save migration keeps legacy records while activating one non-colliding 
   assert.deepEqual(migrated.job3LegacySlots, ['c1_bastion','c1_vanguard']);
   assert.equal(C1_RUNTIME_JOBS.length, 10);
 });
+
+test('C1 starter combat loops reuse the established guard, mark and detonation authority', () => {
+  const byId = new Map(C1_RUNTIME_JOBS.map((job) => [job.id, job]));
+  const skillIds = (id) => new Set(byId.get(id).skills.map((skill) => skill.id));
+  assert.deepEqual([...skillIds('c1_bastion')].filter((id) => ['craftsman_parry','craftsman_counter'].includes(id)), ['craftsman_parry','craftsman_counter']);
+  assert.deepEqual([...skillIds('c1_ranger')].filter((id) => ['huntking_mark','huntking_followup'].includes(id)), ['huntking_followup','huntking_mark']);
+  assert.deepEqual([...skillIds('c1_alchemist')].filter((id) => ['alchemist_poison_potion','alchemist_detonate'].includes(id)), ['alchemist_poison_potion','alchemist_detonate']);
+});

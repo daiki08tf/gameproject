@@ -40,3 +40,11 @@ For a fusion, the mapping is deterministic from its recorded parents and documen
 6. Remove the 105-fusion UI and parent-MASTER unlock rule only after the above migration runs before the first state-dependent calculation.
 
 The accompanying test (`tests/c1-job-identity-migration.test.js`) proves coverage for all current job IDs. The next implementation slice wires this registry into loading and the Jobs screen, then adds save-fixture tests for active, levelled, MASTERed and Job 3-configured legacy saves.
+
+## First combat connections
+
+The runtime roster deliberately reuses the existing BattleEngine authority instead of creating a C1-specific combat layer. The first three C1 loops are available through their retained skills:
+
+- `c1_bastion`: `受け流し` applies the existing guard override; `反撃` adds the existing temporary `onHurt` counter effect.
+- `c1_ranger`: `狩人の印` uses existing `enemy.vulnerable`; `追撃` uses the existing critical follow-up resolver.
+- `c1_alchemist`: `毒薬` uses existing DoT stacks; `起爆` consumes those stacks through the existing burst resolver.
