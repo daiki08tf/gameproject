@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { allJobs } from '../js/data/jobs.js';
 import { ALL_FUSION_JOBS } from '../js/data/jobFusion.js';
 import { BattleEngine } from '../js/battleEngine.js';
+import { readFileSync } from 'node:fs';
 import {
   C1_JOB_IDENTITIES,
   C1_LEGACY_JOB_MIGRATION,
@@ -144,4 +145,10 @@ test('C1 Oracle reads the existing crit buff to strengthen star spells', () => {
   assert.equal(engine._c1OracleOmenCritBonus({ id:'astromancer_star_bullet' }), 15);
   engine.player.buffs.critAdd.turnsLeft = 0;
   assert.equal(engine._c1OracleOmenCritBonus({ id:'astromancer_star_bullet' }), 0);
+});
+
+test('C1 boot keeps legacy fusion data migratable but does not activate its combat runtime', () => {
+  const main = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(main, /fusionCombatRuntime|fusionBattleIntegration|fusionBattleUi/);
+  assert.equal(C1_RUNTIME_JOBS.length, 10);
 });
