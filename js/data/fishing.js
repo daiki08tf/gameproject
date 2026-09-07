@@ -162,3 +162,29 @@ export function computeFishingReward(fish, first) {
   const gold = fish.reward?.gold ? Math.round(fish.reward.gold * (first ? 1 : 0.3)) : 0;
   return { materials, gold };
 }
+
+// Small, permanent Fish Codex completion bonus -- same design philosophy as
+// js/data/codex.js's codexBonuses(): a modest permanent-growth/collection
+// reward, deliberately NOT a large multiplier source like Rune 2.0. Two
+// independent tracks so partial progress is never all-or-nothing:
+//   - species discovered (any of the 29): +0.5% all stats per 25% bucket,
+//     capped at +2% for full discovery;
+//   - master fish (ヌシ) actually landed: +0.25% all stats each, capped at
+//     +1% once all 4 are caught.
+// Combined (multiplicatively, matching how Codex/Rune stack) that is at
+// most ~+3.02% all stats at full completion -- comparable in scale to
+// Monster Codex's own +2% cap, not a new power ladder.
+export function fishCodexBonuses(summary = {}) {
+  const total = Math.max(0, Number(summary.total) || 0);
+  const seen = Math.max(0, Math.min(total, Number(summary.seen) || 0));
+  const pct = total ? (seen / total) * 100 : 0;
+  const speciesMult = 1 + (pct >= 25 ? 0.005 : 0) + (pct >= 50 ? 0.005 : 0) + (pct >= 75 ? 0.005 : 0) + (pct >= 100 ? 0.005 : 0);
+  const mastersTotal = Math.max(0, Number(summary.mastersTotal) || 0);
+  const mastersSeen = Math.max(0, Math.min(mastersTotal, Number(summary.mastersSeen) || 0));
+  const masterMult = 1 + mastersSeen * 0.0025;
+  return {
+    allStatMult: speciesMult * masterMult,
+    pct: Math.round(pct * 10) / 10,
+    complete: total > 0 && seen >= total && mastersSeen >= mastersTotal,
+  };
+}

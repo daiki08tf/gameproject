@@ -4,9 +4,11 @@ import fs from 'node:fs';
 import {
   FISHING_SPOTS, FISH_SPECIES, isFishingSpotUnlocked, pickFishForSpot,
   resolveFishingRound, fishingDifficultyProfile, FISHING_ACTIONS, FISHING_ACTION_LABELS,
-  computeFishingReward,
+  computeFishingReward, fishCodexBonuses,
 } from '../js/data/fishing.js';
 import { WORLD3_REGIONS } from '../js/data/world3Regions.js';
+import { state } from '../js/state.js';
+import '../js/patches/fishing.js';
 
 test('C3 Fishing: several regions ship in this first slice, each with a spot and a named master fish', () => {
   assert.equal(FISHING_SPOTS.length, 4);
@@ -122,6 +124,34 @@ test('Fishing UI lives inside the existing Settlement/Monster-Codex screens (no 
   // idempotent-append DOM safety pattern (no unconditional rewrite inside the observed subtree)
   assert.match(ui, /querySelector\(['"]\[data-fishing\]['"]\)/);
   assert.match(codexUi, /querySelector\(['"]\[data-fish-codex\]['"]\)/);
+});
+
+test('fishCodexBonuses: modest, capped, two independent tracks (species % and masters caught)', () => {
+  const none = fishCodexBonuses({ seen: 0, total: 29, mastersSeen: 0, mastersTotal: 4 });
+  assert.equal(none.allStatMult, 1);
+  const quarter = fishCodexBonuses({ seen: 8, total: 29, mastersSeen: 0, mastersTotal: 4 }); // 27.6% -> crosses the 25% bucket
+  assert.ok(quarter.allStatMult > 1 && quarter.allStatMult < 1.01, 'crossing the 25% bucket should be a small bump, not a big one');
+  const allMasters = fishCodexBonuses({ seen: 0, total: 29, mastersSeen: 4, mastersTotal: 4 });
+  assert.equal(Math.round((allMasters.allStatMult - 1) * 10000) / 10000, 0.01, 'all 4 masters caught alone should be exactly +1%');
+  const full = fishCodexBonuses({ seen: 29, total: 29, mastersSeen: 4, mastersTotal: 4 });
+  assert.ok(full.complete);
+  assert.ok(full.allStatMult < 1.04, 'full completion must stay a modest bonus, not a big power source (Monster Codex caps at +2%; this should be comparable, not larger)');
+});
+
+test('Fish Codex completion is chained onto getStats()/getStatBreakdown() the same way Rune 2.0 chains onto Codex', () => {
+  // Fresh state: no bonus yet.
+  assert.equal(state.fishCodexStatMult(), 1);
+  const baselineHp = state.getStats().hp;
+  // Grant full completion directly through the same __settlement3 meta the runtime itself owns.
+  const meta = (state.data.settlementBuildings ??= {})['__settlement3'] ??= {};
+  meta.fishing = { codex: Object.fromEntries(FISH_SPECIES.map((f) => [f.id, { seen: true, caught: 1 }])) };
+  assert.equal(state.fishCodexSummary().seen, FISH_SPECIES.length);
+  assert.ok(state.fishCodexStatMult() > 1.03 && state.fishCodexStatMult() < 1.031);
+  assert.ok(state.getStats().hp >= baselineHp, 'full Fish Codex completion must never lower a stat');
+  const breakdown = state.getStatBreakdown('hp');
+  assert.ok('fish' in breakdown, 'getStatBreakdown must report a separate fish component, like it already does for codex/rune');
+  // clean up so this test does not leak state into other tests in the same process
+  meta.fishing = { codex: {} };
 });
 
 test('No platform emoji introduced by the Fishing feature', () => {

@@ -8,9 +8,11 @@
    OUTCOME of a catch (Codex entry + materials) is saved.
    ============================================================ */
 import { state } from '../state.js';
+import './rune2Core.js'; // guarantees getStats()/getStatBreakdown() already include the codex+rune layers before we chain fish on top
+import { chainMethod } from './patchUtils.js';
 import {
   FISHING_SPOTS, FISH_SPECIES, getFishingSpot, isFishingSpotUnlocked,
-  pickFishForSpot, rollFishingCue, resolveFishingRound, fishingDifficultyProfile, computeFishingReward,
+  pickFishForSpot, rollFishingCue, resolveFishingRound, fishingDifficultyProfile, computeFishingReward, fishCodexBonuses,
 } from '../data/fishing.js';
 
 const META_KEY = '__settlement3';
@@ -90,4 +92,33 @@ state.fishCodex = function fishCodex() {
 state.fishCodexSummary = function fishCodexSummary() {
   const list = this.fishCodex();
   return { seen: list.filter((f) => f.seen).length, total: list.length, mastersSeen: list.filter((f) => f.master && f.seen).length, mastersTotal: list.filter((f) => f.master).length };
+};
+state.fishCodexBonuses = function () { return fishCodexBonuses(this.fishCodexSummary()); };
+state.fishCodexStatMult = function () { return this.fishCodexBonuses().allStatMult; };
+
+// Small permanent all-stat bonus from Fish Codex completion, chained onto
+// the existing getStats()/getStatBreakdown() the exact same way Rune 2.0
+// chains onto Codex (js/patches/rune2Core.js) -- see fishCodexBonuses() in
+// js/data/fishing.js for why this stays deliberately small.
+function applyFishBonus(stats, stateRef) {
+  const out = { ...stats };
+  const mult = stateRef.fishCodexStatMult();
+  for (const key of ['hp', 'mp', 'atk', 'def', 'mag', 'spd']) {
+    if (key === 'spd') out[key] = Math.round((Number(out[key] || 0) * mult) * 10) / 10;
+    else out[key] = Math.round(Number(out[key] || 0) * mult);
+  }
+  return out;
+}
+const inheritanceBreakdown = state.getStatBreakdown.bind(state);
+let inheritanceGetStats;
+chainMethod(state, 'getStats', (previous) => {
+  inheritanceGetStats = previous;
+  return function getStatsWithFishing() { return applyFishBonus(inheritanceGetStats(), this); };
+});
+state.getStatBreakdown = function getStatBreakdownWithFishing(stat) {
+  const lower = inheritanceBreakdown(stat);
+  const lowerTotal = Number(inheritanceGetStats()?.[stat] ?? 0);
+  const total = Number(this.getStats()?.[stat] ?? lowerTotal);
+  const fish = Math.round((total - lowerTotal) * 10) / 10;
+  return { ...lower, fish, total };
 };
