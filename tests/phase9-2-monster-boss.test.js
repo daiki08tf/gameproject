@@ -41,7 +41,7 @@ test('all five outer-world bosses have bespoke multi-phase encounter profiles',(
     assert.ok(profile.guardDefMult>=1.8,`ch${ch} guard pressure`);
     assert.ok(profile.counterHint?.length>10,`ch${ch} counter hint`);
     assert.ok(profile.dangerTags?.length>=3,`ch${ch} danger tags`);
-    assert.ok(profile.phases.some(p=>p.breakGaugePct),`ch${ch} Break window`);
+    assert.ok(profile.phases.some(p=>p.accelerateBossAI),`ch${ch} escalating final phase`);
     for(let i=1;i<profile.phases.length;i++)assert.ok(profile.phases[i].ratio<profile.phases[i-1].ratio,`ch${ch} phase ordering`);
   }
   assert.equal(new Set(ids).size,5);
@@ -52,13 +52,14 @@ test('Boundary King is the most elaborate Phase 9.2 story boss',()=>{
   assert.equal(final.phases.length,4);
   assert.equal(final.phases.at(-1).name,'境界王座崩壊');
   assert.ok(final.phases.at(-1).atkMult>=1.4);
-  assert.ok(final.phases.at(-1).breakGaugePct<=.3);
 });
 
-test('boss runtime implements non-healing Break windows and exposes counterplay metadata',()=>{
+// Break/stagger gauge removed (user decision 2026-09-08): boss phase escalation
+// (stat multipliers, escort spawns, AI acceleration) is unconditional and does
+// not depend on a shrinking gauge. This guards against reintroducing it.
+test('boss runtime exposes counterplay metadata without a Break gauge',()=>{
   const src=fs.readFileSync(new URL('../js/patches/combat3BossEncounter.js',import.meta.url),'utf8');
-  assert.match(src,/Math\.min\(before,target\)/);
   assert.match(src,/bossCounterHint/);
   assert.match(src,/bossDangerTags/);
-  assert.match(src,/breakWindow/);
+  assert.doesNotMatch(src,/breakGauge|breakWindow|breakMax/);
 });
