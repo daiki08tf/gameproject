@@ -33,39 +33,44 @@ export const FISHING_SPOTS = Object.freeze([
 
 // rarity is purely a Codex/collection label; it does not gate anything by
 // itself -- weight and the region's stage-clear gate do the actual gating.
+// statTarget: which of the 6 stats this fish's own catch-count bonus feeds
+// (see fishStatBonus/fishStatBonusesByStat below) -- like Rune 2.0's basic
+// stat runes each targeting one stat instead of all of them, different fish
+// specialize a build differently instead of every fish being an "all stats"
+// clone of every other fish.
 export const FISH_SPECIES = Object.freeze([
-  { id: 'silver_carp', regionId: 'frontier', name: '銀鯉', rarity: 'common', weight: 10, difficulty: 1, reward: { wood: 3, hide: 1 }, flavor: 'どこの水辺にもいる、開拓地でよく見る魚。' },
-  { id: 'mud_loach', regionId: 'frontier', name: '泥鰌', rarity: 'common', weight: 10, difficulty: 1, reward: { hide: 2, ore: 1 }, flavor: '泥の中に潜って隠れるのが得意。' },
-  { id: 'river_shrimp', regionId: 'frontier', name: '川蝦', rarity: 'common', weight: 10, difficulty: 1, reward: { hide: 1, wood: 1 }, flavor: '数は多いが、身は小さい。' },
-  { id: 'striped_crucian', regionId: 'frontier', name: '縞鮒', rarity: 'common', weight: 8, difficulty: 1, reward: { wood: 2, ore: 1 }, flavor: '縞模様が浅瀬でよく目立つ。' },
-  { id: 'stonefin_char', regionId: 'frontier', name: '岩魚', rarity: 'uncommon', weight: 5, difficulty: 2, reward: { ore: 3, hide: 1 }, flavor: '流れの速い場所を好む、警戒心の強い魚。' },
-  { id: 'bigjaw_catfish', regionId: 'frontier', name: '大顎鯰', rarity: 'rare', weight: 2, difficulty: 3, reward: { ore: 5, hide: 2 }, flavor: '顎の力が強く、糸を切られることも多いという。' },
-  { id: 'frontier_nushi', regionId: 'frontier', name: 'ヌシ・苔髭の主', rarity: 'master', weight: 1, difficulty: 4, reward: { veilstone: 2, gold: 100 }, master: true, flavor: '開拓が始まる前からこの川にいる、と老いた住民は言う。' },
+  { id: 'silver_carp', regionId: 'frontier', name: '銀鯉', rarity: 'common', weight: 10, difficulty: 1, reward: { wood: 3, hide: 1 }, statTarget: 'hp', flavor: 'どこの水辺にもいる、開拓地でよく見る魚。' },
+  { id: 'mud_loach', regionId: 'frontier', name: '泥鰌', rarity: 'common', weight: 10, difficulty: 1, reward: { hide: 2, ore: 1 }, statTarget: 'def', flavor: '泥の中に潜って隠れるのが得意。' },
+  { id: 'river_shrimp', regionId: 'frontier', name: '川蝦', rarity: 'common', weight: 10, difficulty: 1, reward: { hide: 1, wood: 1 }, statTarget: 'mp', flavor: '数は多いが、身は小さい。' },
+  { id: 'striped_crucian', regionId: 'frontier', name: '縞鮒', rarity: 'common', weight: 8, difficulty: 1, reward: { wood: 2, ore: 1 }, statTarget: 'atk', flavor: '縞模様が浅瀬でよく目立つ。' },
+  { id: 'stonefin_char', regionId: 'frontier', name: '岩魚', rarity: 'uncommon', weight: 5, difficulty: 2, reward: { ore: 3, hide: 1 }, statTarget: 'def', flavor: '流れの速い場所を好む、警戒心の強い魚。' },
+  { id: 'bigjaw_catfish', regionId: 'frontier', name: '大顎鯰', rarity: 'rare', weight: 2, difficulty: 3, reward: { ore: 5, hide: 2 }, statTarget: 'atk', flavor: '顎の力が強く、糸を切られることも多いという。' },
+  { id: 'frontier_nushi', regionId: 'frontier', name: 'ヌシ・苔髭の主', rarity: 'master', weight: 1, difficulty: 4, reward: { veilstone: 2, gold: 100 }, master: true, statTarget: 'hp', flavor: '開拓が始まる前からこの川にいる、と老いた住民は言う。' },
 
-  { id: 'crimson_scale', regionId: 'elemental', name: '紅鱗魚', rarity: 'common', weight: 10, difficulty: 1, reward: { wood: 3, ore: 2 }, flavor: '鱗が炎の照り返しで紅く見える。' },
-  { id: 'iceclear_fish', regionId: 'elemental', name: '氷透魚', rarity: 'common', weight: 10, difficulty: 2, reward: { hide: 3, veilstone: 1 }, flavor: '体がわずかに透けて見える、冷たい水を好む魚。' },
-  { id: 'hotspring_killifish', regionId: 'elemental', name: '温泉目高', rarity: 'common', weight: 10, difficulty: 1, reward: { hide: 2 }, flavor: '湯気の立つ浅瀬に群れている。' },
-  { id: 'windfin_fish', regionId: 'elemental', name: '風鰭魚', rarity: 'common', weight: 8, difficulty: 2, reward: { wood: 3 }, flavor: '大きな鰭で風を受けて泳ぐように見える。' },
-  { id: 'sulfur_sweetfish', regionId: 'elemental', name: '硫黄鮎', rarity: 'uncommon', weight: 5, difficulty: 2, reward: { ore: 4 }, flavor: '硫黄の匂いのする湧水でしか見かけない。' },
-  { id: 'runemarked_carp', regionId: 'elemental', name: '魔紋鯉', rarity: 'rare', weight: 2, difficulty: 3, reward: { veilstone: 2, ore: 2 }, flavor: '鱗に紋様のような模様が浮かぶ。' },
-  { id: 'elemental_nushi', regionId: 'elemental', name: 'ヌシ・四色の主', rarity: 'master', weight: 1, difficulty: 5, reward: { veilstone: 3, gold: 150 }, master: true, flavor: '見る角度で鱗の色が違って見える、と噂される一匹。' },
+  { id: 'crimson_scale', regionId: 'elemental', name: '紅鱗魚', rarity: 'common', weight: 10, difficulty: 1, reward: { wood: 3, ore: 2 }, statTarget: 'atk', flavor: '鱗が炎の照り返しで紅く見える。' },
+  { id: 'iceclear_fish', regionId: 'elemental', name: '氷透魚', rarity: 'common', weight: 10, difficulty: 2, reward: { hide: 3, veilstone: 1 }, statTarget: 'def', flavor: '体がわずかに透けて見える、冷たい水を好む魚。' },
+  { id: 'hotspring_killifish', regionId: 'elemental', name: '温泉目高', rarity: 'common', weight: 10, difficulty: 1, reward: { hide: 2 }, statTarget: 'hp', flavor: '湯気の立つ浅瀬に群れている。' },
+  { id: 'windfin_fish', regionId: 'elemental', name: '風鰭魚', rarity: 'common', weight: 8, difficulty: 2, reward: { wood: 3 }, statTarget: 'spd', flavor: '大きな鰭で風を受けて泳ぐように見える。' },
+  { id: 'sulfur_sweetfish', regionId: 'elemental', name: '硫黄鮎', rarity: 'uncommon', weight: 5, difficulty: 2, reward: { ore: 4 }, statTarget: 'mag', flavor: '硫黄の匂いのする湧水でしか見かけない。' },
+  { id: 'runemarked_carp', regionId: 'elemental', name: '魔紋鯉', rarity: 'rare', weight: 2, difficulty: 3, reward: { veilstone: 2, ore: 2 }, statTarget: 'mag', flavor: '鱗に紋様のような模様が浮かぶ。' },
+  { id: 'elemental_nushi', regionId: 'elemental', name: 'ヌシ・四色の主', rarity: 'master', weight: 1, difficulty: 5, reward: { veilstone: 3, gold: 150 }, master: true, statTarget: 'mag', flavor: '見る角度で鱗の色が違って見える、と噂される一匹。' },
 
-  { id: 'riftseam_fish', regionId: 'fracture', name: '裂目魚', rarity: 'common', weight: 10, difficulty: 2, reward: { ore: 4, veilstone: 1 }, flavor: '体の側面に、裂け目のような模様が走る。' },
-  { id: 'fissure_goby', regionId: 'fracture', name: '亀裂ハゼ', rarity: 'common', weight: 9, difficulty: 2, reward: { ore: 2, hide: 1 }, flavor: '岩の亀裂に潜んで様子をうかがう。' },
-  { id: 'battlefield_catfish', regionId: 'fracture', name: '古戦場鯰', rarity: 'uncommon', weight: 6, difficulty: 3, reward: { hide: 4, ore: 2 }, flavor: '古戦場跡の底で動かずじっとしている。' },
-  { id: 'warped_trout', regionId: 'fracture', name: '歪み鱒', rarity: 'uncommon', weight: 5, difficulty: 3, reward: { veilstone: 2 }, flavor: '泳ぐ軌跡がわずかに歪んで見える。' },
-  { id: 'echo_fish', regionId: 'fracture', name: '残響魚', rarity: 'uncommon', weight: 5, difficulty: 3, reward: { veilstone: 1, wood: 2 }, flavor: '跳ねる音が、少し遅れてもう一度聞こえる気がする。' },
-  { id: 'phantom_eel', regionId: 'fracture', name: '虚影ウナギ', rarity: 'rare', weight: 2, difficulty: 4, reward: { veilstone: 3 }, flavor: '姿を捉えたと思っても、次の瞬間には輪郭が揺らいでいる。' },
-  { id: 'fracture_nushi', regionId: 'fracture', name: 'ヌシ・裂域の主', rarity: 'master', weight: 1, difficulty: 5, reward: { veilstone: 4, gold: 200 }, master: true, flavor: '境界裂域の水場だけに現れる、姿の定まらない大物。' },
+  { id: 'riftseam_fish', regionId: 'fracture', name: '裂目魚', rarity: 'common', weight: 10, difficulty: 2, reward: { ore: 4, veilstone: 1 }, statTarget: 'def', flavor: '体の側面に、裂け目のような模様が走る。' },
+  { id: 'fissure_goby', regionId: 'fracture', name: '亀裂ハゼ', rarity: 'common', weight: 9, difficulty: 2, reward: { ore: 2, hide: 1 }, statTarget: 'spd', flavor: '岩の亀裂に潜んで様子をうかがう。' },
+  { id: 'battlefield_catfish', regionId: 'fracture', name: '古戦場鯰', rarity: 'uncommon', weight: 6, difficulty: 3, reward: { hide: 4, ore: 2 }, statTarget: 'atk', flavor: '古戦場跡の底で動かずじっとしている。' },
+  { id: 'warped_trout', regionId: 'fracture', name: '歪み鱒', rarity: 'uncommon', weight: 5, difficulty: 3, reward: { veilstone: 2 }, statTarget: 'mag', flavor: '泳ぐ軌跡がわずかに歪んで見える。' },
+  { id: 'echo_fish', regionId: 'fracture', name: '残響魚', rarity: 'uncommon', weight: 5, difficulty: 3, reward: { veilstone: 1, wood: 2 }, statTarget: 'mp', flavor: '跳ねる音が、少し遅れてもう一度聞こえる気がする。' },
+  { id: 'phantom_eel', regionId: 'fracture', name: '虚影ウナギ', rarity: 'rare', weight: 2, difficulty: 4, reward: { veilstone: 3 }, statTarget: 'spd', flavor: '姿を捉えたと思っても、次の瞬間には輪郭が揺らいでいる。' },
+  { id: 'fracture_nushi', regionId: 'fracture', name: 'ヌシ・裂域の主', rarity: 'master', weight: 1, difficulty: 5, reward: { veilstone: 4, gold: 200 }, master: true, statTarget: 'def', flavor: '境界裂域の水場だけに現れる、姿の定まらない大物。' },
 
-  { id: 'depth_smelt', regionId: 'last-mortal', name: '深淵ワカサギ', rarity: 'common', weight: 8, difficulty: 2, reward: { hide: 2, ore: 1 }, flavor: '深い淵でも群れで泳ぐ、数少ない小魚。' },
-  { id: 'azure_crystal_fish', regionId: 'last-mortal', name: '蒼晶魚', rarity: 'uncommon', weight: 6, difficulty: 3, reward: { ore: 5, veilstone: 2 }, flavor: '蒼晶深層の冷気に馴染んだ、透き通る魚。' },
-  { id: 'rotrealm_eel', regionId: 'last-mortal', name: '腐界ウナギ', rarity: 'uncommon', weight: 6, difficulty: 3, reward: { hide: 5 }, flavor: '腐緑の樹海に近い水場でしか釣れない。' },
-  { id: 'deep_char', regionId: 'last-mortal', name: '深層イワナ', rarity: 'uncommon', weight: 5, difficulty: 3, reward: { ore: 4 }, flavor: '光の届かない深みを好む。' },
-  { id: 'machinebone_fish', regionId: 'last-mortal', name: '機骸魚', rarity: 'uncommon', weight: 5, difficulty: 3, reward: { ore: 3, veilstone: 1 }, flavor: '骨格の一部が金属質に見える、黒鉄機城近くの魚。' },
-  { id: 'blackiron_shark', regionId: 'last-mortal', name: '黒鉄鮫', rarity: 'rare', weight: 3, difficulty: 4, reward: { ore: 6, veilstone: 2 }, flavor: '黒鉄機城の近くの淵に潜む、小柄だが凶暴な魚。' },
-  { id: 'eclipse_fish', regionId: 'last-mortal', name: '蝕月魚', rarity: 'rare', weight: 2, difficulty: 5, reward: { veilstone: 4, gold: 50 }, flavor: '月のない夜にだけ、淵の底から浮かび上がってくる。' },
-  { id: 'last_mortal_nushi', regionId: 'last-mortal', name: 'ヌシ・人界最奥の主', rarity: 'master', weight: 1, difficulty: 6, reward: { veilstone: 5, gold: 300 }, master: true, flavor: '人の世で最も深いこの淵の、誰も釣り上げたことのない主。' },
+  { id: 'depth_smelt', regionId: 'last-mortal', name: '深淵ワカサギ', rarity: 'common', weight: 8, difficulty: 2, reward: { hide: 2, ore: 1 }, statTarget: 'hp', flavor: '深い淵でも群れで泳ぐ、数少ない小魚。' },
+  { id: 'azure_crystal_fish', regionId: 'last-mortal', name: '蒼晶魚', rarity: 'uncommon', weight: 6, difficulty: 3, reward: { ore: 5, veilstone: 2 }, statTarget: 'mag', flavor: '蒼晶深層の冷気に馴染んだ、透き通る魚。' },
+  { id: 'rotrealm_eel', regionId: 'last-mortal', name: '腐界ウナギ', rarity: 'uncommon', weight: 6, difficulty: 3, reward: { hide: 5 }, statTarget: 'atk', flavor: '腐緑の樹海に近い水場でしか釣れない。' },
+  { id: 'deep_char', regionId: 'last-mortal', name: '深層イワナ', rarity: 'uncommon', weight: 5, difficulty: 3, reward: { ore: 4 }, statTarget: 'def', flavor: '光の届かない深みを好む。' },
+  { id: 'machinebone_fish', regionId: 'last-mortal', name: '機骸魚', rarity: 'uncommon', weight: 5, difficulty: 3, reward: { ore: 3, veilstone: 1 }, statTarget: 'def', flavor: '骨格の一部が金属質に見える、黒鉄機城近くの魚。' },
+  { id: 'blackiron_shark', regionId: 'last-mortal', name: '黒鉄鮫', rarity: 'rare', weight: 3, difficulty: 4, reward: { ore: 6, veilstone: 2 }, statTarget: 'atk', flavor: '黒鉄機城の近くの淵に潜む、小柄だが凶暴な魚。' },
+  { id: 'eclipse_fish', regionId: 'last-mortal', name: '蝕月魚', rarity: 'rare', weight: 2, difficulty: 5, reward: { veilstone: 4, gold: 50 }, statTarget: 'mag', flavor: '月のない夜にだけ、淵の底から浮かび上がってくる。' },
+  { id: 'last_mortal_nushi', regionId: 'last-mortal', name: 'ヌシ・人界最奥の主', rarity: 'master', weight: 1, difficulty: 6, reward: { veilstone: 5, gold: 300 }, master: true, statTarget: 'hp', flavor: '人の世で最も深いこの淵の、誰も釣り上げたことのない主。' },
 ]);
 
 const SPOT_INDEX = new Map(FISHING_SPOTS.map((s) => [s.id, s]));
@@ -165,42 +170,49 @@ export function computeFishingReward(fish, first) {
 
 // Permanent stat bonus that grows with how many of each fish you've actually
 // landed -- catching the same fish over and over is the point, not just
-// first discovery (user direction: repeat fishing should keep paying off,
-// and the ceiling should be meaningfully higher than a Monster-Codex-style
-// discovery checklist). Rarer fish are worth more per catch but cap sooner
-// (they are also drawn far less often), similar in spirit to how Rune 2.0's
-// rarer runes have a lower dropRate but a stronger per-mark effect.
+// first discovery, and it never caps (user direction: no ceiling -- like
+// Rune 2.0's own basic stat runes, which have no cap on accumulated marks
+// either). Rarer fish are worth more per catch, similar in spirit to how
+// Rune 2.0's rarer runes have a lower dropRate but a stronger per-mark
+// effect. Each fish also only feeds ONE specific stat (fish.statTarget),
+// not all six uniformly -- different fish specialize a build differently,
+// the same way Rune 2.0's basic stat runes each target one stat.
 export const FISH_STAT_BONUS_BY_RARITY = Object.freeze({
-  common: { perCatch: 0.0012, cap: 100 },  // +0.12%/catch, max +12% per fish
-  uncommon: { perCatch: 0.0024, cap: 80 }, // +0.24%/catch, max +19.2% per fish
-  rare: { perCatch: 0.005, cap: 50 },      // +0.5%/catch, max +25% per fish
-  master: { perCatch: 0.01, cap: 20 },     // +1.0%/catch, max +20% per fish (ヌシ are drawn far less often, so the cap is much lower)
+  common: { perCatch: 0.0012 },  // +0.12% (to its one target stat) per catch
+  uncommon: { perCatch: 0.0024 }, // +0.24%/catch
+  rare: { perCatch: 0.005 },      // +0.5%/catch
+  master: { perCatch: 0.01 },     // +1.0%/catch
 });
 
-// One fish's own contribution, and how close it is to its own cap (for UI).
+const STAT_KEYS = Object.freeze(['hp', 'mp', 'atk', 'def', 'mag', 'spd']);
+
+// One fish's own uncapped contribution (in percentage points, to its own statTarget).
 export function fishStatBonus(fish, caught) {
   const tier = FISH_STAT_BONUS_BY_RARITY[fish.rarity] || FISH_STAT_BONUS_BY_RARITY.common;
-  const effective = Math.max(0, Math.min(tier.cap, Math.floor(Number(caught) || 0)));
-  return { bonusPct: tier.perCatch * effective * 100, effective, cap: tier.cap, capped: effective >= tier.cap };
+  const effective = Math.max(0, Math.floor(Number(caught) || 0));
+  return { bonusPct: tier.perCatch * effective * 100, effective, stat: fish.statTarget || 'hp' };
 }
 
 // fishList: the array state.fishCodex() already returns (each entry carries
-// its own rarity + caught count) -- summed across all 29 species into one
-// multiplier. No per-region/global cap beyond each individual fish's own;
-// the realistic mid-game bonus comes from investing in a handful of
-// favorites, not maxing all 29 species at once.
-export function fishCodexBonuses(fishList = []) {
-  let bonusPct = 0;
-  let cappedCount = 0;
+// its own rarity/statTarget/caught count). Returns each stat's own bonus
+// percentage separately -- a fish never contributes to a stat it doesn't
+// target, so specializing in "ATK fish" builds a different character than
+// specializing in "DEF fish".
+export function fishStatBonusesByStat(fishList = []) {
+  const byStat = Object.fromEntries(STAT_KEYS.map((k) => [k, 0]));
   for (const fish of fishList) {
-    const { bonusPct: p, capped } = fishStatBonus(fish, fish.caught);
-    bonusPct += p;
-    if (capped) cappedCount++;
+    const { bonusPct, stat } = fishStatBonus(fish, fish.caught);
+    if (!(stat in byStat)) continue;
+    byStat[stat] += bonusPct;
   }
+  return byStat;
+}
+
+export function fishCodexBonuses(fishList = []) {
+  const byStat = fishStatBonusesByStat(fishList);
+  const totalPct = Math.round(STAT_KEYS.reduce((sum, k) => sum + byStat[k], 0) * 100) / 100;
   return {
-    allStatMult: 1 + bonusPct / 100,
-    bonusPct: Math.round(bonusPct * 100) / 100,
-    cappedCount,
-    complete: fishList.length > 0 && cappedCount >= fishList.length,
+    byStat: Object.fromEntries(STAT_KEYS.map((k) => [k, Math.round(byStat[k] * 100) / 100])),
+    totalPct,
   };
 }

@@ -12,7 +12,8 @@ import './rune2Core.js'; // guarantees getStats()/getStatBreakdown() already inc
 import { chainMethod } from './patchUtils.js';
 import {
   FISHING_SPOTS, FISH_SPECIES, getFishingSpot, isFishingSpotUnlocked,
-  pickFishForSpot, rollFishingCue, resolveFishingRound, fishingDifficultyProfile, computeFishingReward, fishCodexBonuses,
+  pickFishForSpot, rollFishingCue, resolveFishingRound, fishingDifficultyProfile, computeFishingReward,
+  fishCodexBonuses, fishStatBonusesByStat,
 } from '../data/fishing.js';
 
 const META_KEY = '__settlement3';
@@ -94,16 +95,20 @@ state.fishCodexSummary = function fishCodexSummary() {
   return { seen: list.filter((f) => f.seen).length, total: list.length, mastersSeen: list.filter((f) => f.master && f.seen).length, mastersTotal: list.filter((f) => f.master).length };
 };
 state.fishCodexBonuses = function () { return fishCodexBonuses(this.fishCodex()); };
-state.fishCodexStatMult = function () { return this.fishCodexBonuses().allStatMult; };
+state.fishStatBonusesByStat = function () { return fishStatBonusesByStat(this.fishCodex()); };
 
-// Small permanent all-stat bonus from Fish Codex completion, chained onto
-// the existing getStats()/getStatBreakdown() the exact same way Rune 2.0
-// chains onto Codex (js/patches/rune2Core.js) -- see fishCodexBonuses() in
-// js/data/fishing.js for why this stays deliberately small.
+// Permanent, uncapped per-stat bonus from repeat catches, chained onto the
+// existing getStats()/getStatBreakdown() the exact same way Rune 2.0 chains
+// onto Codex (js/patches/rune2Core.js) -- but per-stat like applyRunes(),
+// not a single all-stat multiplier: each fish only feeds its own
+// fish.statTarget (see js/data/fishing.js).
 function applyFishBonus(stats, stateRef) {
   const out = { ...stats };
-  const mult = stateRef.fishCodexStatMult();
+  const byStat = stateRef.fishStatBonusesByStat();
   for (const key of ['hp', 'mp', 'atk', 'def', 'mag', 'spd']) {
+    const pct = byStat[key] || 0;
+    if (!pct) continue;
+    const mult = 1 + pct / 100;
     if (key === 'spd') out[key] = Math.round((Number(out[key] || 0) * mult) * 10) / 10;
     else out[key] = Math.round(Number(out[key] || 0) * mult);
   }

@@ -126,46 +126,58 @@ test('Fishing UI lives inside the existing Settlement/Monster-Codex screens (no 
   assert.match(codexUi, /querySelector\(['"]\[data-fish-codex\]['"]\)/);
 });
 
-test('fishStatBonus: grows with repeat catches of the SAME fish and caps per fish (user direction: farming one favorite should keep paying off)', () => {
+test('fishStatBonus: grows with repeat catches of the SAME fish, never caps, and only feeds its own statTarget (user direction: no ceiling, different fish should buff different stats)', () => {
   const master = FISH_SPECIES.find((f) => f.id === 'frontier_nushi');
   const zero = fishStatBonus(master, 0);
   assert.equal(zero.bonusPct, 0);
   const five = fishStatBonus(master, 5);
   const ten = fishStatBonus(master, 10);
   assert.ok(ten.bonusPct > five.bonusPct, 'more catches of the same fish must keep increasing its bonus');
-  const atCap = fishStatBonus(master, master.rarity === 'master' ? 20 : 999);
-  assert.ok(atCap.capped);
-  const overCap = fishStatBonus(master, 999);
-  assert.equal(overCap.bonusPct, atCap.bonusPct, 'going past the cap must not keep growing (each fish caps on its own)');
+  const huge = fishStatBonus(master, 5000);
+  assert.ok(huge.bonusPct > ten.bonusPct * 100, 'there must be no cap -- an extreme catch count keeps paying off proportionally');
+  assert.equal(fishStatBonus(master, 20).stat, master.statTarget);
   // Rarer fish are worth more per catch.
   const common = FISH_SPECIES.find((f) => f.id === 'silver_carp');
   assert.ok(fishStatBonus(master, 1).bonusPct > fishStatBonus(common, 1).bonusPct);
 });
 
-test('fishCodexBonuses: sums every fish\'s own contribution; a realistic mid-game investment (one maxed ヌシ + two maxed common fish) is a meaningfully large, noticeable bonus', () => {
+test('Every one of the 6 stats has real fish coverage, and fish are not all the same stat', () => {
+  const stats = new Set(FISH_SPECIES.map((f) => f.statTarget));
+  assert.deepEqual([...stats].sort(), ['atk', 'def', 'hp', 'mag', 'mp', 'spd']);
+  for (const stat of stats) assert.ok(FISH_SPECIES.filter((f) => f.statTarget === stat).length >= 2, `${stat} should have more than one fish feeding it`);
+});
+
+test('fishCodexBonuses: sums every fish\'s own contribution PER STAT (a fish never buffs a stat it does not target); a realistic mid-game investment is a meaningfully large, noticeable bonus', () => {
   const zeroList = FISH_SPECIES.map((f) => ({ ...f, caught: 0 }));
-  assert.equal(fishCodexBonuses(zeroList).allStatMult, 1);
+  const zero = fishCodexBonuses(zeroList);
+  assert.equal(zero.totalPct, 0);
+  for (const stat of Object.keys(zero.byStat)) assert.equal(zero.byStat[stat], 0);
   const midList = FISH_SPECIES.map((f) => {
-    if (f.id === 'frontier_nushi') return { ...f, caught: 20 }; // capped
-    if (f.id === 'silver_carp' || f.id === 'mud_loach') return { ...f, caught: 100 }; // capped
+    if (f.id === 'frontier_nushi') return { ...f, caught: 20 }; // hp
+    if (f.id === 'silver_carp' || f.id === 'mud_loach') return { ...f, caught: 100 }; // hp, def
     return { ...f, caught: 0 };
   });
   const mid = fishCodexBonuses(midList);
-  assert.ok(mid.bonusPct >= 40, 'a realistic focused investment should read as a real, noticeable bonus');
-  assert.equal(mid.cappedCount, 3);
+  assert.ok(mid.totalPct >= 40, 'a realistic focused investment should read as a real, noticeable bonus');
+  assert.ok(mid.byStat.hp > 0 && mid.byStat.def > 0, 'the bonus must land on the specific stats those fish target');
+  assert.equal(mid.byStat.atk, 0, 'a fish must not contribute to a stat it does not target');
 });
 
-test('Fish Codex bonus is chained onto getStats()/getStatBreakdown() the same way Rune 2.0 chains onto Codex', () => {
+test('Fish Codex bonus is chained onto getStats()/getStatBreakdown() the same way Rune 2.0 chains onto Codex, uncapped', () => {
   // Fresh state: no bonus yet.
-  assert.equal(state.fishCodexStatMult(), 1);
+  assert.deepEqual(Object.values(state.fishStatBonusesByStat()), [0, 0, 0, 0, 0, 0]);
   const baselineHp = state.getStats().hp;
-  // Grant a focused investment (one maxed master) directly through the same __settlement3 meta the runtime itself owns.
+  // Grant a focused investment (one maxed master, targets hp) directly through the same __settlement3 meta the runtime itself owns.
   const meta = (state.data.settlementBuildings ??= {})['__settlement3'] ??= {};
   meta.fishing = { codex: { frontier_nushi: { seen: true, caught: 20 } } };
-  assert.ok(state.fishCodexStatMult() > 1.19 && state.fishCodexStatMult() < 1.21, 'one maxed master fish alone should be a clearly noticeable ~+20% bonus');
+  assert.ok(state.fishStatBonusesByStat().hp > 19 && state.fishStatBonusesByStat().hp < 21, 'one maxed master fish alone should be a clearly noticeable ~+20% bonus to its own stat');
+  assert.equal(state.fishStatBonusesByStat().atk, 0, 'a hp-targeting fish must not touch atk');
   assert.ok(state.getStats().hp > baselineHp, 'the bonus must actually raise stats through the real getStats() pipeline');
   const breakdown = state.getStatBreakdown('hp');
   assert.ok('fish' in breakdown, 'getStatBreakdown must report a separate fish component, like it already does for codex/rune');
+  // No cap: a very large catch count keeps growing.
+  meta.fishing = { codex: { frontier_nushi: { seen: true, caught: 2000 } } };
+  assert.ok(state.fishStatBonusesByStat().hp > 100, 'no ceiling -- an extreme catch count keeps paying off (like Rune 2.0 has no cap on marks)');
   // clean up so this test does not leak state into other tests in the same process
   meta.fishing = { codex: {} };
 });
