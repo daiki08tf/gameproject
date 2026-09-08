@@ -3,7 +3,7 @@
    死亡してもリセットされない：レベル・職業・装備・所持品を保持
    ============================================================ */
 import { getJob, computeStats, isUnlocked, TIERS } from './data/jobsPhase8.js';
-import { c1MigrationTargetForLegacyJob, migrateC1JobSave } from './data/jobIdentityMigration.js';
+import { migrateC1JobSaveBack } from './data/jobIdentityMigration.js';
 import { getItem, baseItemId, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, WEAPON_MASTERY_THRESHOLD, rarityIndex, RARITY_ORDER } from './data/equipment.js';
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
@@ -22,8 +22,8 @@ function defaultSave() {
   return {
     gold: 50,
     manastone: 0,
-    currentJobId: 'c1_bastion',
-    jobs: { c1_bastion: { level: 1, exp: 0 } },
+    currentJobId: 'warrior',
+    jobs: { warrior: { level: 1, exp: 0 } },
     mastered: [],
     inventory: {},
     equipped: { weapon: 'wp_sword_n', shield: null, head: null, body: null, accessory1: null, accessory2: null },
@@ -69,7 +69,7 @@ class StateManager {
   _load() {
     try {
       const raw = localStorage.getItem(SAVE_KEY);
-      if (raw) return { ...defaultSave(), ...migrateC1JobSave(JSON.parse(raw)) };
+      if (raw) return { ...defaultSave(), ...migrateC1JobSaveBack(JSON.parse(raw)) };
     } catch (e) { /* ignore corrupt save */ }
     return defaultSave();
   }
@@ -731,8 +731,6 @@ class StateManager {
   masteredJobs() {
     const list = [];
     for (const jobId of this.data.mastered) {
-      const target = c1MigrationTargetForLegacyJob(jobId);
-      if (target && target !== jobId) continue;
       const job = getJob(jobId);
       if (job) list.push(job);
     }
