@@ -14,9 +14,9 @@ test('Official Phase 10-E exposes at least one real raid descriptor', () => {
   assert.ok(raid.recLevel >= 3000);
   assert.ok(raid.itemPowerTarget > 0);
   assert.ok(raid.requiredAbyssDepth > 0);
-  assert.ok(raid.dangerTags.includes('Break'));
-  assert.match(raid.mechanic, /Break/);
-  assert.match(raid.counterHint, /Break/);
+  assert.ok(raid.dangerTags.includes('Phase'));
+  assert.match(raid.mechanic, /位相反転/);
+  assert.match(raid.counterHint, /守護機/);
 });
 
 test('raid unlock is tied to Abyss progress without a new currency', () => {
@@ -57,14 +57,14 @@ test('raid enemy is a moderate numeric step, not an HP-only sponge', () => {
   assert.ok(raid.def > base.def);
 });
 
-test('raid boss profile has escorts, multiple phases and shrinking Break windows', () => {
+test('raid boss profile has escorts, multiple phases and escalating late-phase pressure', () => {
   const profile = bossEncounterProfile('raid_archeon');
   assert.ok(profile);
   assert.ok(profile.startEscorts.some(escort => escort.guard));
   assert.ok(profile.phases.length >= 4);
-  const breakWindows = profile.phases.map(phase => phase.breakGaugePct).filter(Number.isFinite);
-  assert.ok(breakWindows.length >= 3);
-  assert.ok(breakWindows.at(-1) < breakWindows[0]);
+  const atkMults = profile.phases.map(phase => phase.atkMult).filter(Number.isFinite);
+  assert.ok(atkMults.length >= 3);
+  assert.ok(atkMults.at(-1) > atkMults[0]);
 });
 
 test('raid UI lives inside endgame flow and exposes preparation detail', () => {

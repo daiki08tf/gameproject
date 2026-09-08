@@ -1,7 +1,7 @@
 import { ALL_FUSION_JOBS } from './jobFusion.js';
 
 const PARENT = Object.freeze({
- warrior:{verb:'守勢',gain:'被弾・防御',command:'ブレイク斬り',effect:'break'}, fighter:{verb:'連撃',gain:'連続攻撃',command:'連環撃',effect:'combo'},
+ warrior:{verb:'守勢',gain:'被弾・防御',command:'守勢の構え',effect:'guard'}, fighter:{verb:'連撃',gain:'連続攻撃',command:'連環撃',effect:'combo'},
  mage:{verb:'魔力',gain:'属性攻撃',command:'魔力解放',effect:'element'}, priest:{verb:'信仰',gain:'回復・防御',command:'聖域',effect:'heal'},
  thief:{verb:'好機',gain:'会心・弱点',command:'急所狙い',effect:'crit'}, merchant:{verb:'補給',gain:'Gold獲得・消費',command:'戦場補給',effect:'supply'},
  hunter:{verb:'標的',gain:'同一敵への攻撃',command:'マーキング',effect:'mark'}, ninja:{verb:'影',gain:'回避・状態異常',command:'影縫い',effect:'status'},
@@ -17,7 +17,7 @@ function build(job){
   jobId:job.id,
   gauge:Object.freeze({id:`fusion_gauge_${a}_${b}`,name:`${A.verb}×${B.verb}`,max:100,start:0,gain:[A.gain,B.gain]}),
   trait:Object.freeze({id:job.fusionTrait.id,name:`${job.name}の真髄`,description:`${A.verb}と${B.verb}を循環させる。ゲージ50以上で両親職系統の効果+15%、100でFusion Commandを解禁。`}),
-  command:Object.freeze({id:`fusion_command_${a}_${b}`,name:`${A.command}・${B.command}`,cost:100,effects:[A.effect,B.effect],power:1.35,breakMult:1.25}),
+  command:Object.freeze({id:`fusion_command_${a}_${b}`,name:`${A.command}・${B.command}`,cost:100,effects:[A.effect,B.effect],power:1.35}),
   mastery:Object.freeze({id:`fusion_master_${a}_${b}`,name:`${job.name} MASTER`,level:50,passive:`${A.verb}/${B.verb}ゲージ獲得+20%、Fusion Command使用後に25ゲージ残る。`}),
  });
 }

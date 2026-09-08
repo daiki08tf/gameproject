@@ -40,7 +40,9 @@ test('Phase 12.13 registers a real apex Secret Realm at the Lv99999/IP10000 ceil
   assert.equal(stage.itemPowerTarget,10000);
   assert.ok(stage.waves.some(w=>w.type==='phase12_apex_boss'));
   assert.equal(PHASE12_APEX_BOSS_PROFILE.phases.length,4);
-  assert.ok(PHASE12_APEX_BOSS_PROFILE.phases.filter(x=>Number.isFinite(x.breakGaugePct)).length>=3);
+  const atkMults=PHASE12_APEX_BOSS_PROFILE.phases.map(x=>x.atkMult).filter(Number.isFinite);
+  assert.ok(atkMults.length>=2);
+  assert.ok(atkMults.at(-1)>atkMults[0]);
 });
 
 test('Apex unlock is gated by five horizontal clears rather than Abyss depth alone',()=>{
