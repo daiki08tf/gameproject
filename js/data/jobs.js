@@ -430,21 +430,101 @@ const ADVANCED_RAW = [
 // ---------------------------------------------------------
 // 特級職 10種（必要上級職2つ。プロファイル/スキルは自動生成）
 // ---------------------------------------------------------
+// 特級職：手作りの技4つ（Lv1/10/20/MASTER、実体はskills.js・spells.js側）と、
+// 上級職と同じ3種類の既存masterAbility条件（weaponMatch/lowHp/always）から
+// 各職の物語に合わせて選んだ固有の組み合わせを持つ（新しい条件種別は作らない）。
 const SPECIAL_RAW = [
-  { id: 'greatsage', name: '大賢者', requires: ['sage', 'archmage'] },
-  { id: 'swordsaint', name: '剣聖', requires: ['battlemaster', 'swordsaint2'] },
-  { id: 'fistemperor', name: '拳帝', requires: ['fistsaint', 'assassinfist'] },
-  { id: 'pope', name: '教皇', requires: ['paladin', 'miko'] },
-  { id: 'thiefking', name: '盗賊王', requires: ['phantomthief', 'treasurehunter'] },
-  { id: 'divaqueen', name: '歌姫女王', requires: ['primadiva', 'enchantdancer'] },
-  { id: 'grandalchemist', name: '大錬金術師', requires: ['arcanist', 'artificer'] },
-  { id: 'merchantking', name: '商業王', requires: ['merchantlord', 'guildmaster'] },
-  { id: 'spiritking', name: '精霊王', requires: ['huntking', 'forestbard'] },
-  { id: 'oracle', name: '星降る予言者', requires: ['astromancer', 'miko'] },
+  { id: 'greatsage', name: '大賢者', requires: ['sage', 'archmage'],
+    spells: [
+      { id: 'greatsage_wisdom_bolt', learnLevel: 1 },
+      { id: 'greatsage_all_seeing', learnLevel: 10 },
+      { id: 'greatsage_twin_truth', learnLevel: 20 },
+      { id: 'greatsage_absolute_wisdom', learnLevel: 'master' },
+    ], skills: [],
+    masterAbility: { condition: 'always', effect: { stat: 'cooldown', pct: -0.04 } } },
+  { id: 'swordsaint', name: '剣聖', requires: ['battlemaster', 'swordsaint2'],
+    skills: [
+      { id: 'swordsaint_kensei_stance', learnLevel: 1 },
+      { id: 'swordsaint_single_flash', learnLevel: 10 },
+      { id: 'swordsaint_thousand_blades', learnLevel: 20 },
+      { id: 'swordsaint_mumyo', learnLevel: 'master' },
+    ], spells: [],
+    masterAbility: { condition: 'weaponMatch', effect: { stat: 'crit', pct: 0.05 } } },
+  { id: 'fistemperor', name: '拳帝', requires: ['fistsaint', 'assassinfist'],
+    skills: [
+      { id: 'fistemperor_emperor_fist', learnLevel: 1 },
+      { id: 'fistemperor_collapse_fist', learnLevel: 10 },
+      { id: 'fistemperor_emperor_stride', learnLevel: 20 },
+      { id: 'fistemperor_overlord_break', learnLevel: 'master' },
+    ], spells: [],
+    masterAbility: { condition: 'lowHp', threshold: 0.5, effect: { stat: 'dmg', pct: 0.06 } } },
+  { id: 'pope', name: '教皇', requires: ['paladin', 'miko'],
+    skills: [
+      { id: 'pope_prayer', learnLevel: 1 },
+      { id: 'pope_sanctuary_decree', learnLevel: 10 },
+      { id: 'pope_divine_punishment', learnLevel: 20 },
+      { id: 'pope_final_judgment', learnLevel: 'master' },
+    ], spells: [],
+    masterAbility: { condition: 'always', effect: { stat: 'cooldown', pct: -0.04 } } },
+  { id: 'thiefking', name: '盗賊王', requires: ['phantomthief', 'treasurehunter'],
+    skills: [
+      { id: 'thiefking_kings_eye', learnLevel: 1 },
+      { id: 'thiefking_grand_heist', learnLevel: 10 },
+      { id: 'thiefking_shadow_throne', learnLevel: 20 },
+      { id: 'thiefking_kings_flash', learnLevel: 'master' },
+    ], spells: [],
+    masterAbility: { condition: 'weaponMatch', effect: { stat: 'crit', pct: 0.05 } } },
+  { id: 'divaqueen', name: '歌姫女王', requires: ['primadiva', 'enchantdancer'],
+    skills: [
+      { id: 'divaqueen_queens_chant', learnLevel: 1 },
+      { id: 'divaqueen_enchanting_dance', learnLevel: 10 },
+      { id: 'divaqueen_waltz_of_blades', learnLevel: 20 },
+      { id: 'divaqueen_grand_ovation', learnLevel: 'master' },
+    ], spells: [],
+    masterAbility: { condition: 'always', effect: { stat: 'cooldown', pct: -0.04 } } },
+  { id: 'grandalchemist', name: '大錬金術師', requires: ['arcanist', 'artificer'],
+    skills: [
+      { id: 'grandalchemist_catalyst_strike', learnLevel: 1 },
+      { id: 'grandalchemist_grand_alchemy', learnLevel: 10 },
+      { id: 'grandalchemist_philosophers_stone', learnLevel: 20 },
+      { id: 'grandalchemist_universal_solvent', learnLevel: 'master' },
+    ], spells: [],
+    masterAbility: { condition: 'lowHp', threshold: 0.5, effect: { stat: 'dmg', pct: 0.06 } } },
+  { id: 'merchantking', name: '商業王', requires: ['merchantlord', 'guildmaster'],
+    skills: [
+      { id: 'merchantking_kings_order', learnLevel: 1 },
+      { id: 'merchantking_market_monopoly', learnLevel: 10 },
+      { id: 'merchantking_golden_blade', learnLevel: 20 },
+      { id: 'merchantking_economic_sanction', learnLevel: 'master' },
+    ], spells: [],
+    masterAbility: { condition: 'always', effect: { stat: 'cooldown', pct: -0.04 } } },
+  { id: 'spiritking', name: '精霊王', requires: ['huntking', 'forestbard'],
+    skills: [
+      { id: 'spiritking_arrow', learnLevel: 1 },
+      { id: 'spiritking_natures_blessing', learnLevel: 10 },
+      { id: 'spiritking_beast_command', learnLevel: 20 },
+      { id: 'spiritking_volley', learnLevel: 'master' },
+    ], spells: [],
+    masterAbility: { condition: 'weaponMatch', effect: { stat: 'crit', pct: 0.05 } } },
+  { id: 'oracle', name: '星降る予言者', requires: ['astromancer', 'miko'],
+    spells: [
+      { id: 'oracle_falling_star', learnLevel: 1 },
+      { id: 'oracle_book_of_fate', learnLevel: 10 },
+      { id: 'oracle_prophecy', learnLevel: 20 },
+      { id: 'oracle_falling_star_prophecy', learnLevel: 'master' },
+    ], skills: [],
+    masterAbility: { condition: 'lowHp', threshold: 0.5, effect: { stat: 'dmg', pct: 0.06 } } },
 ];
 
-// 勇者：特級職を3つ以上マスターで解放（固定ペアではなく本数条件）
-const HERO_RAW = { id: 'hero', name: '勇者', requiresCount: { tier: 'special', count: 3 } };
+// 勇者：特級職を3つ以上マスターで解放（固定ペアではなく本数条件）。
+// hero tierはmasteryLvがnullでマスター自体が発生しないため、masterAbilityは持たない。
+const HERO_RAW = { id: 'hero', name: '勇者', requiresCount: { tier: 'special', count: 3 },
+  skills: [
+    { id: 'hero_strike', learnLevel: 1 },
+    { id: 'hero_indomitable_heart', learnLevel: 10 },
+    { id: 'hero_rallying_cry', learnLevel: 20 },
+    { id: 'hero_blade_of_light', learnLevel: 'master' },
+  ], spells: [] };
 
 // ---------------------------------------------------------
 // レジストリ構築（依存順に計算）
@@ -531,8 +611,15 @@ for (const raw of SPECIAL_RAW) {
   const profile = mergeProfiles(reqJobs.map((j) => j.profile));
   const job = { ...raw, tier: 'special', profile, weapon: reqJobs[0].weapon };
   job.skill = autoSkillFor(job);
-  job.masterAbility = autoMasterAbilityFor(job);
-  wrapAutoSkillAsTechniques(job);
+  // 手作りのmasterAbilityが定義されていればそれを使う（未定義の場合だけ
+  // 従来どおり自動割り振りへフォールバックする、ADVANCED_RAWと同じ構造）
+  job.masterAbility = raw.masterAbility || autoMasterAbilityFor(job);
+  if (raw.skills?.length || raw.spells?.length) {
+    job.skills = resolveTechRefs(raw.skills, getSkill, 'skill');
+    job.spells = resolveTechRefs(raw.spells, getSpell, 'spell');
+  } else {
+    wrapAutoSkillAsTechniques(job);
+  }
   JOBS.set(raw.id, job);
 }
 {
@@ -541,7 +628,12 @@ for (const raw of SPECIAL_RAW) {
   const job = { ...HERO_RAW, tier: 'hero', requires: [], profile, weapon: 'sword' };
   job.skill = autoSkillFor(job);
   job.skill.name = '勇者の光';
-  wrapAutoSkillAsTechniques(job);
+  if (HERO_RAW.skills?.length || HERO_RAW.spells?.length) {
+    job.skills = resolveTechRefs(HERO_RAW.skills, getSkill, 'skill');
+    job.spells = resolveTechRefs(HERO_RAW.spells, getSpell, 'spell');
+  } else {
+    wrapAutoSkillAsTechniques(job);
+  }
   JOBS.set(HERO_RAW.id, job);
 }
 
