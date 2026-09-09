@@ -56,6 +56,7 @@ import './monsterRanchUi.js';
 import './monsterRanch2FacilitiesUi.js';
 import './monsterRanch2CompleteUi.js';
 import './settlementRanch3Ui.js';
+import './settlementCompactUi.js';
 import './companionBondUi.js';
 import './uiFoundationBootstrap.js';
 import './equipmentCompactUi.js';
