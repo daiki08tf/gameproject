@@ -1,0 +1,15 @@
+/* Blade Vale — Monster Codex Compact UI (tabbed navigation for #monsterCodexContent) */
+#monsterCodexContent[data-codex-compact='true']{display:flex;flex-direction:column}
+#monsterCodexContent .codex-compact-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;padding-bottom:2px}
+#monsterCodexContent .codex-compact-nav::-webkit-scrollbar{display:none}
+#monsterCodexContent .codex-compact-tab{flex:0 0 auto;min-height:44px;padding:7px 12px;border:1px solid var(--dc-iron-500, rgba(255,255,255,.16));border-radius:999px;background:var(--dc-ink-800, rgba(255,255,255,.05));color:var(--dc-ash-300);font-size:12px;font-weight:750}
+#monsterCodexContent .codex-compact-tab.active{color:var(--dc-brass-300, #d4bd7a);border-color:rgba(214,183,106,.62);background:rgba(214,183,106,.1)}
+/* Hide every tagged section by default; the four rules below re-show only
+   the active tab's group. Same specificity, so source order decides --
+   this rule must stay first. */
+#monsterCodexContent[data-codex-compact='true'] > [data-codex-tab-group]{display:none}
+#monsterCodexContent[data-codex-tab='base'] > [data-codex-tab-group='base']{display:block}
+#monsterCodexContent[data-codex-tab='tactics'] > [data-codex-tab-group='tactics']{display:block}
+#monsterCodexContent[data-codex-tab='rumors'] > [data-codex-tab-group='rumors']{display:block}
+#monsterCodexContent[data-codex-tab='fish'] > [data-codex-tab-group='fish']{display:block}
+@media(max-width:390px){#monsterCodexContent .codex-compact-tab{padding:6px 10px;font-size:11px}}

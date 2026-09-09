@@ -72,6 +72,7 @@ import './contentPackIIE.js';
 import './contentPackIIIA.js';
 import './contentPackIIIB.js';
 import './contentPackIVA.js';
+import './monsterCodexCompactUi.js';
 import { enhanceHome } from './finalIntegrationUi.js';
 import { applyHomePixelIcons } from '../ui/pixelIcons.js';
 
