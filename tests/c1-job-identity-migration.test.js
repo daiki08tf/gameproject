@@ -8,10 +8,14 @@ import {
   C1_JOB_IDENTITIES,
   C1_LEGACY_JOB_MIGRATION,
   C1_RUNTIME_JOBS,
+  C1_TO_LEGACY_HOST,
   c1MigrationAudit,
   c1MigrationTargetForLegacyJob,
+  legacyHostForC1Job,
   migrateC1JobSave,
+  migrateC1JobSaveBack,
 } from '../js/data/jobIdentityMigration.js';
+import { allJobs as jobsPhase8AllJobs, getJob as jobsPhase8GetJob } from '../js/data/jobsPhase8.js';
 
 test('C1 keeps ten tactical identities, each with a concrete loop', () => {
   assert.equal(C1_JOB_IDENTITIES.length, 10);
@@ -151,4 +155,48 @@ test('C1 boot keeps legacy fusion data migratable but does not activate its comb
   const main = readFileSync(new URL('../js/main.js', import.meta.url), 'utf8');
   assert.doesNotMatch(main, /fusionCombatRuntime|fusionBattleIntegration|fusionBattleUi/);
   assert.equal(C1_RUNTIME_JOBS.length, 10);
+});
+
+// Restored 2026-09-08 (user decision): the C1 flat 10-job roster is retired
+// from the active/selectable list in favor of the tiered/fusion roster it
+// replaced. Every C1 identity still resolves to exactly one restored advanced
+// job, and the 7 identities with a real c1Combat loop hand it to that job.
+test('every C1 identity has exactly one restored legacy host job', () => {
+  assert.equal(Object.keys(C1_TO_LEGACY_HOST).length, 10);
+  for (const identity of C1_JOB_IDENTITIES) {
+    const hostId = legacyHostForC1Job(identity.id);
+    assert.ok(hostId, identity.id);
+    const host = jobsPhase8GetJob(hostId);
+    assert.ok(host, `host job ${hostId} for ${identity.id} must exist in the restored roster`);
+    assert.equal(host.tier, 'advanced', `${hostId} should be a restored advanced-tier job`);
+    const c1Job = C1_RUNTIME_JOBS.find((job) => job.id === identity.id);
+    if (c1Job.c1Combat) assert.deepEqual(host.c1Combat, c1Job.c1Combat, `${hostId} should carry ${identity.id}'s loop`);
+  }
+});
+
+test('restored roster excludes the flat C1 ids and the 75 auto-generated Fusion pairs', () => {
+  const ids = new Set(jobsPhase8AllJobs().map((job) => job.id));
+  for (const identity of C1_JOB_IDENTITIES) assert.ok(!ids.has(identity.id), identity.id);
+  assert.equal(jobsPhase8AllJobs().length, 56);
+});
+
+test('migrateC1JobSaveBack folds a save made during the C1 window back onto its legacy host', () => {
+  const migrated = migrateC1JobSaveBack({
+    currentJobId: 'c1_vanguard',
+    jobs: { c1_vanguard: { level: 12, exp: 5 }, warrior: { level: 3, exp: 0 } },
+    mastered: ['c1_vanguard'],
+  });
+  assert.equal(migrated.currentJobId, 'battlemaster');
+  assert.deepEqual(migrated.jobs.battlemaster, { level: 12, exp: 5 });
+  assert.equal(migrated.jobs.c1_vanguard, undefined);
+  assert.ok(migrated.mastered.includes('battlemaster'));
+  assert.ok(!migrated.mastered.includes('c1_vanguard'));
+});
+
+test('migrateC1JobSaveBack leaves an already-legacy save untouched', () => {
+  const data = { currentJobId: 'archmage', jobs: { archmage: { level: 7, exp: 2 } }, mastered: ['sage'] };
+  const migrated = migrateC1JobSaveBack(data);
+  assert.equal(migrated.currentJobId, 'archmage');
+  assert.deepEqual(migrated.jobs.archmage, { level: 7, exp: 2 });
+  assert.deepEqual(migrated.mastered, ['sage']);
 });

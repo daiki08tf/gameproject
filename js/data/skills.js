@@ -1155,6 +1155,206 @@ export const SKILLS = {
     buff: { defPct: 0.15, turns: 3 },
     lowHpBonus: { atkPct: 0.25, turns: 3, guardOverride: { mult: 0.4, turns: 3 } },
   },
+
+  // ---------------------------------------------------------
+  // 特級職・勇者：上級職2種を極めた到達点。既存フィールドのみで
+  // 構成し（新規メカニクスは追加しない）、両親の系統が伝わる技構成にする。
+  // ---------------------------------------------------------
+
+  // 剣聖（battlemaster+swordsaint2）：剛の型と居合の型を併せ持つ剣豪の極致。
+  swordsaint_kensei_stance: {
+    id: 'swordsaint_kensei_stance', name: '剣聖の構え', type: 'buff', target: 'self',
+    mpCost: 8, cooldownTurns: 1,
+    buff: { atkPct: 0.18, critAdd: 0.06, turns: 3 },
+  },
+  swordsaint_single_flash: {
+    id: 'swordsaint_single_flash', name: '一閃', type: 'damage', target: 'enemy',
+    power: 5.6, mpCost: 9, cooldownTurns: 0,
+  },
+  swordsaint_thousand_blades: {
+    id: 'swordsaint_thousand_blades', name: '千剣乱舞', type: 'damage', target: 'enemy',
+    power: 1.9, hits: 4, mpCost: 16, cooldownTurns: 2,
+  },
+  swordsaint_mumyo: {
+    // 無明：会心が乗るほど伸びる、剣聖奥義。先攻していれば威力上昇（居合の系譜）
+    id: 'swordsaint_mumyo', name: '無明', type: 'damage', target: 'enemy',
+    power: 8.4, mpCost: 20, cooldownTurns: 3,
+    conditionBonus: { condition: 'firstOrEvaded', power: 4 },
+    selfBuff: { critAdd: 0.08, turns: 2 },
+  },
+
+  // 拳帝（fistsaint+assassinfist）：速さで崩し、確殺で仕留める拳の頂点。
+  fistemperor_emperor_fist: {
+    id: 'fistemperor_emperor_fist', name: '帝拳', type: 'damage', target: 'enemy',
+    power: 5.4, mpCost: 8, cooldownTurns: 0,
+  },
+  fistemperor_collapse_fist: {
+    id: 'fistemperor_collapse_fist', name: '崩拳', type: 'damage', target: 'enemy',
+    power: 4.2, mpCost: 10, cooldownTurns: 1,
+    weaken: { stat: 'def', pct: 0.22, turns: 3 },
+  },
+  fistemperor_emperor_stride: {
+    id: 'fistemperor_emperor_stride', name: '皇帝の歩', type: 'buff', target: 'self',
+    mpCost: 10, cooldownTurns: 2,
+    buff: { spdPct: 0.30, evasionAdd: 0.15, turns: 3 },
+  },
+  fistemperor_overlord_break: {
+    // HP低下時ほど威力を増す、拳帝の切り札（暗殺拳系の背水の系譜）
+    id: 'fistemperor_overlord_break', name: '覇王断', type: 'damage', target: 'enemy',
+    power: 8.6, mpCost: 20, cooldownTurns: 3,
+    lowHpThreshold: 0.4,
+    lowHpBonus: { atkPct: 0.30, turns: 1 },
+  },
+
+  // 教皇（paladin+miko）：守りと祈りで戦線を支える聖職の頂点。
+  pope_prayer: {
+    id: 'pope_prayer', name: '教皇の祈り', type: 'heal', target: 'self',
+    healPct: 0.30, mpCost: 10, cooldownTurns: 1,
+    buff: { regenAdd: 0.03, turns: 3 },
+  },
+  pope_sanctuary_decree: {
+    id: 'pope_sanctuary_decree', name: '聖域宣告', type: 'buff', target: 'self',
+    mpCost: 9, cooldownTurns: 1,
+    buff: { defPct: 0.24, turns: 3 },
+    telegraphBonus: { buff: { defPct: 0.24, turns: 2 }, guardOverride: { mult: 0.45, turns: 2 } },
+  },
+  pope_divine_punishment: {
+    id: 'pope_divine_punishment', name: '神罰', type: 'damage', target: 'enemy',
+    hybrid: true, power: 7.2, mpCost: 14, cooldownTurns: 1,
+  },
+  pope_final_judgment: {
+    // 教皇の切り札：不落の誓いと同じdeathGuardを、より高い防御と共に起動する
+    id: 'pope_final_judgment', name: '最後の審判', type: 'utility', target: 'self',
+    mpCost: 18, cooldownTurns: 4,
+    buff: { defPct: 0.32, turns: 3 },
+    deathGuard: true,
+  },
+
+  // 盗賊王（怪盗+トレジャーハンター）：奪う技と斬る技、どちらも頂点。
+  thiefking_kings_eye: {
+    id: 'thiefking_kings_eye', name: '王の目利き', type: 'buff', target: 'self',
+    mpCost: 6, cooldownTurns: 1,
+    buff: { critAdd: 0.06, evasionAdd: 0.10, turns: 3 },
+  },
+  thiefking_grand_heist: {
+    id: 'thiefking_grand_heist', name: '大強奪', type: 'steal', target: 'enemy',
+    mpCost: 10, cooldownTurns: 2, stealGoldMult: 3.0, stealDropChance: 0.50,
+  },
+  thiefking_shadow_throne: {
+    id: 'thiefking_shadow_throne', name: '影の玉座', type: 'buff', target: 'self',
+    mpCost: 10, cooldownTurns: 2,
+    buff: { critAdd: 0.10, evasionAdd: 0.20, turns: 3 },
+  },
+  thiefking_kings_flash: {
+    id: 'thiefking_kings_flash', name: '盗賊王の一閃', type: 'damage', target: 'enemy',
+    power: 9.8, mpCost: 15, cooldownTurns: 2,
+    conditionBonus: { condition: 'firstOrEvaded', power: 6 },
+    selfBuff: { evasionAdd: 0.20, turns: 2 },
+  },
+
+  // 歌姫女王（プリマ・ディーヴァ+幻惑の舞姫）：癒しの歌と幻惑の舞、両方を極めた舞台の頂点。
+  divaqueen_queens_chant: {
+    id: 'divaqueen_queens_chant', name: '女王の詠唱', type: 'heal', target: 'self',
+    healPct: 0.26, mpCost: 10, cooldownTurns: 1,
+    buff: { regenAdd: 0.03, turns: 3 },
+  },
+  divaqueen_enchanting_dance: {
+    id: 'divaqueen_enchanting_dance', name: '幻惑の舞', type: 'debuff', target: 'enemy',
+    mpCost: 9, cooldownTurns: 2,
+    weaken: { stat: 'atk', pct: 0.22, turns: 3 },
+  },
+  divaqueen_waltz_of_blades: {
+    id: 'divaqueen_waltz_of_blades', name: '剣舞円舞曲', type: 'damage', target: 'enemy',
+    power: 6.2, mpCost: 12, cooldownTurns: 1,
+  },
+  divaqueen_grand_ovation: {
+    id: 'divaqueen_grand_ovation', name: '女王の万雷', type: 'damage', target: 'allEnemies',
+    power: 5.0, mpCost: 18, cooldownTurns: 2,
+    selfBuff: { evasionAdd: 0.15, regenAdd: 0.03, turns: 3 },
+  },
+
+  // 大錬金術師（アルカニスト+魔導技師）：試薬と機工、両方を極めた研究の頂点。
+  grandalchemist_catalyst_strike: {
+    id: 'grandalchemist_catalyst_strike', name: '触媒撃', type: 'damage', target: 'enemy',
+    power: 5.2, mpCost: 9, cooldownTurns: 0,
+  },
+  grandalchemist_grand_alchemy: {
+    id: 'grandalchemist_grand_alchemy', name: '大錬成', type: 'buff', target: 'self',
+    mpCost: 11, cooldownTurns: 2,
+    buff: { atkPct: 0.16, magPct: 0.16, turns: 3 },
+  },
+  grandalchemist_philosophers_stone: {
+    id: 'grandalchemist_philosophers_stone', name: '賢者の石', type: 'heal', target: 'self',
+    healPct: 0.22, mpRestorePct: 0.20, mpCost: 4, cooldownTurns: 2,
+  },
+  grandalchemist_universal_solvent: {
+    id: 'grandalchemist_universal_solvent', name: '万能溶媒', type: 'damage', target: 'enemy',
+    power: 6.6, mpCost: 16, cooldownTurns: 2,
+    weaken: { stat: 'def', pct: 0.26, turns: 3 },
+  },
+
+  // 商業王（大商人+ギルドマスター）：資金力と統率力を戦場に持ち込む経済の頂点。
+  merchantking_kings_order: {
+    id: 'merchantking_kings_order', name: '商業王の号令', type: 'buff', target: 'self',
+    mpCost: 8, cooldownTurns: 1,
+    buff: { atkPct: 0.14, defPct: 0.14, turns: 3 },
+  },
+  merchantking_market_monopoly: {
+    id: 'merchantking_market_monopoly', name: '独占市場', type: 'utility', target: 'self',
+    mpCost: 6, cooldownTurns: 2,
+    bonusRewardArm: true,
+  },
+  merchantking_golden_blade: {
+    id: 'merchantking_golden_blade', name: '黄金の剣', type: 'damage', target: 'enemy',
+    power: 6.0, mpCost: 12, cooldownTurns: 1,
+  },
+  merchantking_economic_sanction: {
+    id: 'merchantking_economic_sanction', name: '経済制裁', type: 'damage', target: 'enemy',
+    power: 5.0, mpCost: 16, cooldownTurns: 2,
+    weaken: { stat: 'atk', pct: 0.24, turns: 3 },
+  },
+
+  // 精霊王（狩猟王+森の吟遊詩人）：狩人の技と精霊の加護、両方を束ねる森の王。
+  spiritking_arrow: {
+    id: 'spiritking_arrow', name: '精霊王の矢', type: 'damage', target: 'enemy',
+    power: 5.8, mpCost: 8, cooldownTurns: 0,
+  },
+  spiritking_natures_blessing: {
+    id: 'spiritking_natures_blessing', name: '森羅の加護', type: 'buff', target: 'self',
+    mpCost: 9, cooldownTurns: 2,
+    buff: { defPct: 0.16, regenAdd: 0.03, turns: 3 },
+  },
+  spiritking_beast_command: {
+    id: 'spiritking_beast_command', name: '百獣の号令', type: 'debuff', target: 'enemy',
+    mpCost: 10, cooldownTurns: 2,
+    vulnerable: { pct: 0.16, turns: 3, bossEliteOnly: true },
+  },
+  spiritking_volley: {
+    id: 'spiritking_volley', name: '精霊王の乱れ矢', type: 'damage', target: 'enemy',
+    power: 2.1, hits: 4, mpCost: 17, cooldownTurns: 2,
+    targetBonus: { when: 'marked', power: 3 },
+  },
+
+  // 勇者：特級職を3つ極めた者だけが辿り着く、最後の職。
+  hero_strike: {
+    id: 'hero_strike', name: '勇者の一撃', type: 'damage', target: 'enemy',
+    power: 6.4, mpCost: 8, cooldownTurns: 0,
+  },
+  hero_indomitable_heart: {
+    id: 'hero_indomitable_heart', name: '不屈の心', type: 'buff', target: 'self',
+    mpCost: 10, cooldownTurns: 2,
+    buff: { defPct: 0.20, regenAdd: 0.03, turns: 3 },
+    deathGuard: true,
+  },
+  hero_rallying_cry: {
+    id: 'hero_rallying_cry', name: '勇者の号令', type: 'buff', target: 'self',
+    mpCost: 10, cooldownTurns: 2,
+    buff: { atkPct: 0.20, critAdd: 0.06, turns: 3 },
+  },
+  hero_blade_of_light: {
+    id: 'hero_blade_of_light', name: '光の剣', type: 'damage', target: 'enemy',
+    power: 9.6, mpCost: 22, cooldownTurns: 3,
+  },
 };
 
 export function getSkill(id) { return SKILLS[id] || null; }

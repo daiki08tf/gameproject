@@ -11,6 +11,6 @@ test('Fusion battle commands are executable-shaped for every job',()=>{
  }
 });
 test('all generated effect tags belong to battle integration vocabulary',()=>{
- const supported=new Set(['break','combo','element','heal','crit','supply','mark','status','buff','evade','reaction','analysis','regen','fortify','fate']);
+ const supported=new Set(['guard','combo','element','heal','crit','supply','mark','status','buff','evade','reaction','analysis','regen','fortify','fate']);
  for(const x of FUSION_COMBAT_IDENTITIES) for(const e of x.command.effects) assert.ok(supported.has(e),`${x.jobId}:${e}`);
 });
