@@ -39,8 +39,8 @@ assert.doesNotMatch(
 );
 assert.match(
   runeUiSource,
-  /所持総数 \$\{totalOwned\.toLocaleString\(\)\}/,
-  'Rune 2.0 dashboard must show aggregate owned marks once the tab is opened',
+  /総Lv \$\{totalOwned\.toLocaleString\(\)\}/,
+  'Rune 2.1 dashboard must show aggregate Blacksmith levels once the tab is opened',
 );
 
 console.log('Rune 2.0 blacksmith entry tests passed');

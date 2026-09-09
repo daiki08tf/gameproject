@@ -151,3 +151,46 @@ export function migrateC1JobSave(data = {}) {
     currentJobId:c1MigrationTargetForLegacyJob(data.currentJobId) || data.currentJobId,
   };
 }
+
+/* ============================================================
+   Restoring the tiered/fusion roster (user decision 2026-09-08): the flat
+   10-identity C1 roster is retired from the active job list -- see
+   jobsPhase8.js, which now exposes the hand-authored 56 tiered jobs again
+   and grafts each surviving c1Combat loop onto its nearest advanced job
+   below. Any save written during the brief window C1 was active (including
+   this session's own test saves) needs the opposite migration: fold a
+   c1_* job id back onto that same host job instead of orphaning it.
+   ============================================================ */
+export const C1_TO_LEGACY_HOST = Object.freeze({
+  c1_vanguard:'battlemaster', c1_bastion:'armsknight', c1_elementalist:'archmage',
+  c1_chaplain:'paladin', c1_shadow:'phantomthief', c1_ranger:'huntking',
+  c1_maestro:'primadiva', c1_alchemist:'arcanist', c1_quartermaster:'guildmaster',
+  c1_oracle:'astromancer',
+});
+
+export function legacyHostForC1Job(jobId) {
+  return C1_TO_LEGACY_HOST[jobId] || null;
+}
+
+export function migrateC1JobSaveBack(data = {}) {
+  const jobs = { ...(data.jobs || {}) };
+  const bestByTarget = new Map();
+  for (const [sourceId, progress] of Object.entries(jobs)) {
+    const target = legacyHostForC1Job(sourceId);
+    if (!target) continue;
+    bestByTarget.set(target, betterProgress(bestByTarget.get(target) || jobs[target], progress || {}));
+    delete jobs[sourceId];
+  }
+  for (const [target, progress] of bestByTarget) jobs[target] = { level:Math.max(1, progress.level || 1), exp:Math.max(0, progress.exp || 0) };
+  const mastered = new Set((Array.isArray(data.mastered) ? data.mastered : []).map((id) => legacyHostForC1Job(id) || id));
+  const selected = {};
+  for (const [sourceId, routeId] of Object.entries(data.job3Specializations || {})) {
+    const target = legacyHostForC1Job(sourceId) || sourceId;
+    if (selected[target] == null) selected[target] = routeId;
+  }
+  const slots = [...new Set((data.job3LegacySlots || []).map((id) => legacyHostForC1Job(id) || id))];
+  return {
+    ...data, jobs, mastered:[...mastered], job3Specializations:selected, job3LegacySlots:slots,
+    currentJobId:legacyHostForC1Job(data.currentJobId) || data.currentJobId,
+  };
+}

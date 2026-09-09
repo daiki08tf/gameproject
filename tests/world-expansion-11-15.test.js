@@ -38,16 +38,12 @@ test('chapter 11-15 recommended levels continue upward from chapter 10', () => {
 });
 
 test('new chapters provide long-term rune hunting destinations', () => {
-  // Rune 2.0 drops are keyed to a World 3.0 travel region (any stage in the
-  // region's chapters is eligible), not one specific stage id — chapters
-  // 9-12 share the 境界裂域(fracture) region and 13-15 share 人界最奥
-  // (last-mortal), so every stage in those chapters is a valid destination.
-  assert.ok(runesForStage('11-3').some(r=>r.id==='spirit'));
-  assert.ok(runesForStage('12-3').some(r=>r.id==='hawkeye'));
-  assert.ok(runesForStage('13-3').some(r=>r.id==='illusion'));
-  assert.ok(runesForStage('14-B').some(r=>r.id==='bless'));
-  assert.ok(runesForStage('15-5').some(r=>r.id==='illusion'));
-  assert.ok(runesForStage('15-B').some(r=>r.id==='bless'));
+  assert.equal(runesForStage('11-3')[0]?.id,'greed');
+  assert.equal(runesForStage('12-3')[0]?.id,'gold');
+  assert.equal(runesForStage('13-3')[0]?.id,'challenge');
+  assert.equal(runesForStage('14-B')[0]?.id,'observe');
+  assert.equal(runesForStage('15-5')[0]?.id,'bastion');
+  assert.equal(runesForStage('15-B')[0]?.id,'bastion');
 });
 
 test('five new recruit species have valid combat data and skills', () => {

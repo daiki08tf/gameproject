@@ -24,11 +24,11 @@ export const PHASE12_APEX={
     discoverDepth:2997,clueDepth:2998,fragmentSources:[2998,2999,3000],fragmentsRequired:3,
     inspectText:['五つの異界で得た座標が、一点だけ同じ空白を指している。','空白は新しい世界ではなく、複数の異界を同時に観測する中継層らしい。','五つの異界主を越えた記録が揃えば、観測孔を逆向きに辿れる。'],
     unlockedText:'五つの異界記録が重なり、観測する側へ向かう逆流路が開いた。',
-    realm:{id:'secret-convergence-observatory',recLevel:abyssRecommendedLevel(3000),itemPowerTarget:abyssTargetItemPower(3000),rule:'五異界複合 / 4段階Boss / 短Break窓',rewardHint:'Phase 12横断制覇のApex戦。既存最高IP帯の装備を狙える。'},
+    realm:{id:'secret-convergence-observatory',recLevel:abyssRecommendedLevel(3000),itemPowerTarget:abyssTargetItemPower(3000),rule:'五異界複合 / 4段階Boss',rewardHint:'Phase 12横断制覇のApex戦。既存最高IP帯の装備を狙える。'},
   },
-  baseDepth:3000,dropMult:1.78,goldMult:1.55,expMult:1.52,setPrefix:'set_abyss_',tags:['apex','analysis','break','dark','light'],
+  baseDepth:3000,dropMult:1.78,goldMult:1.55,expMult:1.52,setPrefix:'set_abyss_',tags:['apex','analysis','dark','light'],
   trace:'五つの異界は孤立した例外ではなく、同じ観測網から枝分かれした試験区画だった可能性がある。',
-  modifier:{id:'realm_convergence',name:'五界収束',desc:'五異界の戦闘特性が収束 ／ 短Break窓 ／ 最高IP帯'},
+  modifier:{id:'realm_convergence',name:'五界収束',desc:'五異界の戦闘特性が収束 ／ 最高IP帯'},
   enemyArchetypes:{
     phase12_apex_guard:{source:'tank',name:'収束守衛',hpMult:1.16,defMult:1.20,role:'guardian'},
     phase12_apex_wisp:{source:'fast',name:'観測残光',atkMult:1.18,speedMult:1.22,role:'controller'},
@@ -39,13 +39,13 @@ export const PHASE12_APEX={
 };
 
 export const PHASE12_APEX_BOSS_PROFILE=Object.freeze({
-  id:'five-realm-observer-pentarch',dangerTags:['guard','analysis','break','phase'],counterHint:'収束守衛を落とし、観測位相が切り替わるたびに短く開くBreak窓を逃さない。',
+  id:'five-realm-observer-pentarch',dangerTags:['guard','analysis','phase'],counterHint:'収束守衛を落とし、観測位相が切り替わるたびに加速する猛攻に食らいつく。',
   startEscorts:[{type:'phase12_apex_guard',count:2,guard:true},{type:'phase12_apex_wisp',count:1}],guardDefMult:2.12,
   phases:[
     {ratio:.82,name:'第一観測・王墓',defMult:1.18,spawn:[{type:'phase12_apex_guard',count:1,guard:true}]},
-    {ratio:.58,name:'第二観測・幻獣',spdMult:1.18,breakGaugePct:.58,spawn:[{type:'phase12_apex_wisp',count:1}]},
-    {ratio:.33,name:'第三観測・反転',atkMult:1.28,breakGaugePct:.36,accelerateBossAI:.58},
-    {ratio:.10,name:'五界同時観測',atkMult:1.42,spdMult:1.20,breakGaugePct:.18,accelerateBossAI:.40},
+    {ratio:.58,name:'第二観測・幻獣',spdMult:1.18,spawn:[{type:'phase12_apex_wisp',count:1}]},
+    {ratio:.33,name:'第三観測・反転',atkMult:1.28,accelerateBossAI:.58},
+    {ratio:.10,name:'五界同時観測',atkMult:1.42,spdMult:1.20,accelerateBossAI:.40},
   ],
 });
 
