@@ -79,26 +79,14 @@ test('M5 unique Branch rewards resolve through the existing Unique/Fixed Identit
   }
 });
 
-test('M5 adds Rune 2.0 statMult defs routed through existing Branch Stage IDs, not a new drop authority', () => {
+test('M5 Branch identities are equipment abilities, not extra stat-mult Rune authority', () => {
   const m5Ids = ['ob_verdant', 'ob_rootsong', 'ob_boundary', 'ob_echo'];
-  for (const id of m5Ids) {
-    const def = RUNE2_DEFS.find(r => r.id === id);
-    assert.ok(def, `${id} must be defined in the shared RUNE2_DEFS table`);
-    assert.equal(def.kind, 'statMult', 'M5 runes must use the existing statMult kind, not a new kind');
-    assert.equal(def.stageIds.length, 1);
-    // The stage id must be a real, resolvable Observed Branch stage, and
-    // buildObservedBranchStage()'s returned stage.id must be the exact same
-    // string runesForStage() filters on, so the existing rollRune2DropForStage()
-    // pipeline actually reaches these Branch stages.
-    const stageId = def.stageIds[0];
-    const stage = buildObservedBranchStage(stageId);
-    assert.ok(stage, `${id} must reference a real Branch stage`);
-    assert.equal(stage.id, stageId);
-    assert.ok(runesForStage(stageId).some(r => r.id === id));
-  }
-  // Boss stages intentionally carry no M5 Rune 2.0 def (roadmap only routes the two non-boss stages per Branch).
+  for (const id of m5Ids) assert.equal(RUNE2_DEFS.some(r => r.id === id), false);
   for (const branchId of [TREE_ID, ABSENCE_ID]) {
-    const boss = observedBranchById(branchId).bossStageId;
-    assert.ok(!runesForStage(boss).some(r => m5Ids.includes(r.id)));
+    const branch = observedBranchById(branchId);
+    for (const stageId of [...branch.stageIds, branch.bossStageId]) {
+      assert.ok(buildObservedBranchStage(stageId));
+      assert.deepEqual(runesForStage(stageId), []);
+    }
   }
 });

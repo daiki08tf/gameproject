@@ -2,24 +2,30 @@
    Progression 2.0 Phase 5 — Rune 2.0 Core
    ============================================================ */
 import { state } from '../state.js';
-import { RUNE2_DEFS, getRune2, runesForStage } from '../data/runes2.js';
+import { RUNE2_DEFS, getRune2, runesForStage, effectiveRuneMarks, rune2ForgeCost } from '../data/runes2.js';
 import { chainMethod } from './patchUtils.js';
 
 function ensureRune2Data(){
   if(!state.data.rune2Owned||typeof state.data.rune2Owned!=='object')state.data.rune2Owned={};
   if(!state.data.rune2Active||typeof state.data.rune2Active!=='object')state.data.rune2Active={};
   if(!state.data.rune2Discovered||typeof state.data.rune2Discovered!=='object')state.data.rune2Discovered={};
-  for(const r of RUNE2_DEFS){state.data.rune2Owned[r.id]=Math.max(0,Math.floor(Number(state.data.rune2Owned[r.id])||0));state.data.rune2Active[r.id]=Math.max(0,Math.floor(Number(state.data.rune2Active[r.id])||0));}
+  for(const r of RUNE2_DEFS){
+    state.data.rune2Owned[r.id]=Math.max(0,Math.floor(Number(state.data.rune2Owned[r.id])||0));
+    state.data.rune2Active[r.id]=Math.max(0,Math.floor(Number(state.data.rune2Active[r.id])||0));
+    if(state.data.rune2Owned[r.id]>0)state.data.rune2Discovered[r.id]=true;
+  }
 }
 ensureRune2Data();
 state.rune2Capacity=function rune2Capacity(){return Math.min(99999,Math.max(1,Math.floor(Number(this.highestCharacterLevel)||1)));};
-state.rune2ActiveTotal=function rune2ActiveTotal(){ensureRune2Data();return Object.values(this.data.rune2Active).reduce((s,v)=>s+(Number(v)||0),0);};
-state.rune2OwnedMarks=function rune2OwnedMarks(id){ensureRune2Data();return Math.max(0,Math.floor(Number(this.data.rune2Owned[id])||0));};
-state.rune2ActiveMarks=function rune2ActiveMarks(id){ensureRune2Data();return Math.max(0,Math.floor(Number(this.data.rune2Active[id])||0));};
+state.rune2ActiveTotal=function rune2ActiveTotal(){ensureRune2Data();return RUNE2_DEFS.reduce((sum,r)=>sum+this.rune2ActiveMarks(r.id),0);};
+state.rune2OwnedMarks=function rune2OwnedMarks(id){ensureRune2Data();return effectiveRuneMarks(id,this.data.rune2Owned[id]);};
+state.rune2ActiveMarks=function rune2ActiveMarks(id){ensureRune2Data();return Math.min(this.rune2OwnedMarks(id),effectiveRuneMarks(id,this.data.rune2Active[id]));};
 state.setRune2ActiveMarks=function setRune2ActiveMarks(id,requested){ensureRune2Data();const rune=getRune2(id);if(!rune)return false;const owned=this.rune2OwnedMarks(id),current=this.rune2ActiveMarks(id),other=this.rune2ActiveTotal()-current,capacityLeft=Math.max(0,this.rune2Capacity()-other),next=Math.max(0,Math.min(owned,capacityLeft,Math.floor(Number(requested)||0)));this.data.rune2Active[id]=next;this.save();return true;};
-state.addRune2Marks=function addRune2Marks(id,amount=1){ensureRune2Data();const rune=getRune2(id);if(!rune)return 0;const add=Math.max(0,Math.floor(Number(amount)||0));if(!add)return 0;this.data.rune2Owned[id]=this.rune2OwnedMarks(id)+add;this.data.rune2Discovered[id]=true;this.save();return add;};
+state.addRune2Marks=function addRune2Marks(id,amount=1){ensureRune2Data();const rune=getRune2(id);if(!rune)return 0;const before=this.rune2OwnedMarks(id),add=Math.min(Math.max(0,Math.floor(Number(amount)||0)),rune.maxMarks-before);if(!add)return 0;this.data.rune2Owned[id]=before+add;this.data.rune2Discovered[id]=true;this.save();return add;};
 state.rune2Starred=function rune2Starred(id){const rune=getRune2(id);return!!(rune?.starAt&&this.rune2OwnedMarks(id)>=rune.starAt);};
-state.rollRune2DropForStage=function rollRune2DropForStage(stageId,random=Math.random){ensureRune2Data();const results=[];for(const rune of runesForStage(stageId)){if(random()<rune.dropRate){this.addRune2Marks(rune.id,1);results.push({id:rune.id,amount:1,owned:this.rune2OwnedMarks(rune.id)});}}return results;};
+state.rune2ForgeCost=function rune2ForgeCostForState(id,amount=1){ensureRune2Data();return rune2ForgeCost(id,this.rune2OwnedMarks(id),amount);};
+state.forgeRune2=function forgeRune2(id,amount=1){ensureRune2Data();const rune=getRune2(id);if(!rune||!this.data.rune2Discovered[id])return false;const cost=this.rune2ForgeCost(id,amount);if(!cost.levels||this.data.gold<cost.gold||this.data.manastone<cost.manastone)return false;this.data.gold-=cost.gold;this.data.manastone-=cost.manastone;this.data.rune2Owned[id]=this.rune2OwnedMarks(id)+cost.levels;this.save();return cost;};
+state.rollRune2DropForStage=function rollRune2DropForStage(stageId,random=Math.random){ensureRune2Data();const results=[];for(const rune of runesForStage(stageId)){if(this.data.rune2Discovered[rune.id])continue;if(random()<rune.dropRate){this.addRune2Marks(rune.id,1);results.push({id:rune.id,amount:1,owned:this.rune2OwnedMarks(rune.id)});}}return results;};
 state.getRuneSockets=function rune2LegacySocketsDisabled(){return[];};
 
 const inheritanceBreakdown=state.getStatBreakdown.bind(state);
