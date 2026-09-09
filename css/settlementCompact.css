@@ -1,0 +1,18 @@
+/* Blade Vale — Settlement Compact UI (tabbed navigation for #settlementContent) */
+#settlementContent[data-settlement-compact='true']{display:flex;flex-direction:column}
+#settlementContent .settlement-compact-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;padding-bottom:2px}
+#settlementContent .settlement-compact-nav::-webkit-scrollbar{display:none}
+#settlementContent .settlement-compact-tab{flex:0 0 auto;min-height:44px;padding:7px 12px;border:1px solid var(--dc-iron-500, rgba(255,255,255,.16));border-radius:999px;background:var(--dc-ink-800, rgba(255,255,255,.05));color:var(--dc-ash-300);font-size:12px;font-weight:750}
+#settlementContent .settlement-compact-tab.active{color:var(--dc-brass-300, #d4bd7a);border-color:rgba(214,183,106,.62);background:rgba(214,183,106,.1)}
+/* Hide every tagged section by default; the two rules below re-show only
+   the active tab's group. Same specificity, so source order decides --
+   this rule must stay first. Anything without a data-settlement-tab-group
+   (not yet mapped by settlementCompactUi.js) is left alone and always shows. */
+#settlementContent[data-settlement-compact='true'] > [data-settlement-tab-group]{display:none}
+#settlementContent[data-settlement-tab='base'] > [data-settlement-tab-group='base']{display:block}
+#settlementContent[data-settlement-tab='life'] > [data-settlement-tab-group='life']{display:block}
+#settlementContent[data-settlement-tab='explore'] > [data-settlement-tab-group='explore']{display:block}
+#settlementContent[data-settlement-tab='defense'] > [data-settlement-tab-group='defense']{display:block}
+#settlementContent[data-settlement-tab='expedition'] > [data-settlement-tab-group='expedition']{display:block}
+#settlementContent[data-settlement-tab='record'] > [data-settlement-tab-group='record']{display:block}
+@media(max-width:390px){#settlementContent .settlement-compact-tab{padding:6px 10px;font-size:11px}}

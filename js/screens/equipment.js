@@ -4,6 +4,7 @@ import { WEAPON_SERIES } from '../data/weapons.js';
 import { AFFIX_RARITY_COLOR } from '../data/affixes.js';
 import { equipment3Presentation, equipment3MetaText, equipment3SpecialLines } from '../data/equipment3Presentation.js';
 import { Audio_ } from '../audio.js';
+import { bindOverlayDialog } from '../patches/overlayA11y.js';
 
 const ELEMENT_LABEL = {
   fire: '炎', ice: '氷', lightning: '雷', wind: '風',
@@ -274,15 +275,62 @@ function equipment3Block(id, item) {
     + smartLine;
 }
 
+// Dark Chronicle equipment "record card" — a single item's full stat sheet as
+// one stacked, dense panel (user reference: an ARPG item tooltip, but kept to
+// the existing restrained ink/iron/brass palette and existing forge-card/
+// section-heading/affix-line classes -- no new icon assets, no neon color,
+// no data this screen doesn't already compute). Reuses statLine/equipment3Block/
+// compareLine verbatim; this is a presentation surface only, no new authority.
+const SLOT_CATEGORY_LABEL = { weapon: '武器', shield: '盾', head: '頭防具', body: '胴防具', accessory: 'アクセサリー' };
+function showItemCard(id, compareId = null) {
+  document.getElementById('equipItemCardOverlay')?.remove();
+  const item = getItem(id);
+  if (!item) return;
+  const rarity = RARITY[item.rarity];
+  const statHtml = statLine(item, id).split(' / ').filter(Boolean).join('<br>');
+  const eq3Html = equipment3Block(id, item);
+  const diffHtml = compareId && compareId !== id ? compareLine(item, getItem(compareId), id, compareId) : '';
+  const overlay = document.createElement('div');
+  overlay.id = 'equipItemCardOverlay';
+  Object.assign(overlay.style, {
+    position: 'fixed', inset: '0', zIndex: '9997', background: 'rgba(0,0,0,.76)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px',
+  });
+  overlay.innerHTML = `<div class="forge-card" style="max-width:380px;width:100%;max-height:82vh;overflow-y:auto;">
+    <div style="text-align:center;padding-bottom:10px;border-bottom:1px solid var(--dc-iron-500);margin-bottom:10px;">
+      <div style="font-size:10px;letter-spacing:.14em;color:${rarity.color};opacity:.85;">[${rarity.label}]</div>
+      <div class="forge-card-name" style="font-size:18px;color:${rarity.color};">${displayName(id, item)}</div>
+      <div class="forge-card-sub" style="margin:2px 0 0;">${SLOT_CATEGORY_LABEL[item.slot] || item.slot}</div>
+    </div>
+    <div class="section-heading">性能</div>
+    <div class="forge-card-sub">${statHtml}</div>
+    ${eq3Html ? `<div class="section-heading">強化・特性</div>${eq3Html}` : ''}
+    ${diffHtml ? `<div class="section-heading">現在装備との差分</div>${diffHtml}` : ''}
+    <button class="forge-card-btn" id="equipItemCardClose" style="margin-top:12px;">閉じる</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  const closeCard = () => { restoreCardFocus(); overlay.remove(); };
+  const restoreCardFocus = bindOverlayDialog(overlay, overlay.querySelector('.forge-card'), closeCard);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeCard(); });
+  document.getElementById('equipItemCardClose')?.addEventListener('click', closeCard);
+}
+
 function favoriteLockBadges(itemId) {
   let s = '';
   if (state.isItemFavorite(itemId)) s += ' ★';
   if (state.isItemLocked(itemId)) s += ' [LOCK]';
   return s;
 }
-function appendFavLockButtons(row, itemId) {
+function appendFavLockButtons(row, itemId, compareId = null) {
   const wrap = document.createElement('div');
   wrap.className = 'equip-inline-actions';
+  // Labeled "カード" rather than "詳細" -- the loot-filter row already has an
+  // unrelated "詳細" (advanced-filter) toggle on this same screen; a second,
+  // differently-scoped button with the same label would read as ambiguous.
+  const detailBtn = document.createElement('button');
+  detailBtn.className = 'inline-btn';
+  detailBtn.textContent = 'カード';
+  detailBtn.addEventListener('click', () => { Audio_.tap(); showItemCard(itemId, compareId); });
   const favBtn = document.createElement('button');
   favBtn.className = 'inline-btn';
   favBtn.textContent = state.isItemFavorite(itemId) ? '★お気に入り解除' : '☆お気に入り登録';
@@ -291,7 +339,7 @@ function appendFavLockButtons(row, itemId) {
   lockBtn.className = 'inline-btn';
   lockBtn.textContent = state.isItemLocked(itemId) ? 'ロック解除' : 'ロックする';
   lockBtn.addEventListener('click', () => { state.toggleItemLocked(itemId); Audio_.tap(); renderEquipment(); });
-  wrap.append(favBtn, lockBtn);
+  wrap.append(detailBtn, favBtn, lockBtn);
   row.appendChild(wrap);
 }
 
@@ -363,7 +411,7 @@ export function renderEquipment() {
       + `<div class="item-stats">${statLine(item, c.id)}${lockReason ? `<br>${lockReason}` : ''}</div>${equipment3Block(c.id, item)}${compareLine(item, currentItemForCompare, c.id, currentId)}</div>`
       + `<button data-action="equip" ${locked ? 'disabled' : ''}>装備</button>`;
     if (!locked) row.querySelector('[data-action="equip"]').addEventListener('click', () => { state.equipItem(selectedSlot, c.id); Audio_.tap(); renderEquipment(); });
-    appendFavLockButtons(row, c.id);
+    appendFavLockButtons(row, c.id, currentId);
     picker.appendChild(row);
   }
 

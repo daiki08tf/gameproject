@@ -15,4 +15,22 @@ export function renderEnemy3CodexAnalysis(){
   const section=document.createElement('div');section.id='enemy3CodexAnalysis';section.innerHTML=`<h3>Enemy 3.0 戦術解析</h3><div class="hint" style="margin-bottom:8px">Elite Affix / Rare Behavior / Boss Phaseを実戦観測。図鑑完成度には追加加点しない。</div>${cards.length?cards.join(''):'<div class="hint">Enemy 3.0の特殊行動を観測すると、ここに戦術記録が蓄積される。</div>'}`;root.appendChild(section);
 }
 
-document.getElementById('goMonsterCodexBtn')?.addEventListener('click',()=>renderEnemy3CodexAnalysis());
+// Bug found auditing Monster Codex structure for the compact-UI retrofit:
+// this file is imported (via battle2RoadmapComplete.js -> enemy3Targeting.js)
+// BEFORE codexUi.js, which is the file that actually creates #goMonsterCodexBtn
+// (ensureUi() in codexUi.js). document.getElementById('goMonsterCodexBtn')
+// at this file's own load time therefore returned null every single time --
+// the click listener was never attached at all, and the Enemy 3.0 tactical
+// analysis section had never once been visible to a player.
+// Delegating to a click listener on `document` (which always exists) sidesteps
+// the "does the button exist yet" ordering problem entirely -- it matches
+// on the click target at CLICK time, long after codexUi.js has created the
+// button. It also solves the second-order hazard for free: a delegated
+// listener on an ancestor fires during the bubble phase, strictly after
+// every listener attached directly to the button itself (codexUi.js's own
+// listener, which does root.innerHTML=... as a full rewrite) has already run
+// -- so this never risks being wiped by that rewrite the way a
+// directly-attached listener registered before codexUi.js's would.
+document.addEventListener('click',(event)=>{
+  if(event.target?.closest?.('#goMonsterCodexBtn'))renderEnemy3CodexAnalysis();
+});

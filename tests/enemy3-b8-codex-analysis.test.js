@@ -33,6 +33,12 @@ test('B8 tactical panel is loaded through the Enemy 3 bridge',()=>{
   assert.match(ui,/Boss Phase/);
 });
 
+test('B8 regression: the click listener is delegated to document, not attached directly to #goMonsterCodexBtn (that button does not exist yet at this file\'s own load time -- it is created later by codexUi.js -- so a direct getElementById(...).addEventListener() silently registered nothing, and #enemy3CodexAnalysis had never once been visible to a player)', () => {
+  assert.doesNotMatch(ui, /document\.getElementById\('goMonsterCodexBtn'\)\?\.addEventListener/);
+  assert.match(ui, /document\.addEventListener\('click'/);
+  assert.match(ui, /event\.target\?\.closest\?\.\('#goMonsterCodexBtn'\)/);
+});
+
 test('B8 does not alter Codex completion milestones or permanent rewards',()=>{
   assert.match(codex,/CODEX_MILESTONES/);
   assert.doesNotMatch(runtime,/CODEX_MILESTONES|codexBonuses|rareEncounterMult|allStatMult|dropMult|expMult/);
