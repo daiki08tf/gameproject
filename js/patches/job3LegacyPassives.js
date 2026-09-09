@@ -6,7 +6,7 @@
    untouched. A Job never inherits its own node while it is the active Job.
    ============================================================ */
 import { state } from '../state.js';
-import { getJob } from '../data/jobs.js';
+import { getJob } from '../data/jobsPhase8.js';
 import { CAPS_LAYER } from '../data/balance.js';
 import { chainMethod } from './patchUtils.js';
 

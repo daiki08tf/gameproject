@@ -102,17 +102,26 @@ For each phase:
 1. inspect current main and open PRs;
 2. reproduce/audit live behavior;
 3. keep the diff phase-scoped;
-4. add focused behavior regression tests;
-5. run focused tests;
-6. run npm test;
-7. run npm run test:syntax;
-8. rebuild and run live-browser smoke flows;
-9. capture/check required mobile viewports;
+4. run `npm run test:syntax` (cheap, catches real breakage — every commit, no exceptions);
+5. for UI/behavior-class changes, verify by actually exercising the flow (live-browser/gameplay check), per the testing policy below;
+6. add a new regression test only when the change touches an important data authority or a hard architecture constraint (see "Testing policy" below) — not reflexively for every fix;
+7. run the full `npm test` suite before a PR/merge checkpoint, not after every small commit (see "Testing policy");
+8. rebuild and run live-browser smoke flows for anything UI-facing;
+9. capture/check required mobile viewports for UI-facing work;
 10. open a PR;
 11. merge only with Blade Vale Tests green and mergeable state clean (the duplicate Phase 8 Validation workflow was removed in #409);
 12. squash merge and record the SHA.
 
-Do not weaken tests, add skips, use .only, swallow errors or use hard-coded exceptions merely to obtain green CI.
+Do not weaken or delete an EXISTING test, add skips, use .only, swallow errors or use hard-coded exceptions merely to obtain green CI. The testing policy below is about not reflexively adding MORE tests — it does not license loosening coverage that already exists.
+
+## Testing policy (personal-project scale, agreed with the user 2026-09-06)
+
+This is a solo hobby project, not a team/commercial codebase, and the full regression suite had grown large enough to become a real cost: 344 files / ~18,900 lines, ~14s per run, almost entirely static `assert.match(source, /pattern/)` checks against raw file text — no jsdom, no real DOM/runtime execution. It does not catch UI/runtime-behavior bugs: two real bugs found this session (a dead-UI race in the Blacksmith Rune tab, and a rune-drop coverage gap for chapters 16–36) were both found by actually playing the game, not by any of the then-1655 existing tests. Given that mismatch between cost and actual bug-catching power for this class of bug, testing rigor here is intentionally scaled down:
+
+- `npm run test:syntax` stays mandatory every commit — cheap, and it does catch real syntax breakage.
+- `npm test` (the full suite) runs before a PR/merge checkpoint, not after every small commit.
+- Add a new regression test only when the change touches an important data authority or one of the "Hard architecture constraints" above (e.g. a cross-file wiring contract that's easy to silently break, a guarantee like "no new currency") — not reflexively for every UI tweak or minor fix.
+- Verify UI/behavior-class changes by actually exercising the flow (live-browser/gameplay check) rather than adding a new static regex assertion that would not have caught the bug in the first place.
 
 ## Required completion report
 
@@ -122,7 +131,7 @@ Report:
 - files changed;
 - implementation change versus test/documentation change;
 - authority reused;
-- focused/full/syntax/live-browser results;
+- syntax/full(if run)/live-browser results;
 - CI results;
 - merge SHA;
 - known remaining debt.

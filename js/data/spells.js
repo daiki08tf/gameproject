@@ -309,6 +309,51 @@ export const SPELLS = {
     id: 'healerfolk_miracle', name: '村人の奇跡', type: 'heal', target: 'self',
     healPct: 0.60, mpCost: 18, cooldownTurns: 3, oncePerBattle: true,
   },
+
+  // ---------------------------------------------------------
+  // 特級職：詠唱系上級職2種を極めた到達点。既存フィールドのみで構成する。
+  // ---------------------------------------------------------
+
+  // 大賢者（賢者+大魔導士）：癒しと破壊、両方の理を極めた叡智の頂点。
+  greatsage_wisdom_bolt: {
+    id: 'greatsage_wisdom_bolt', name: '智の一撃', type: 'damage', target: 'enemy', magic: true,
+    power: 5.8, mpCost: 9, cooldownTurns: 0,
+  },
+  greatsage_all_seeing: {
+    id: 'greatsage_all_seeing', name: '全てを見通す瞳', type: 'buff', target: 'self',
+    mpCost: 8, cooldownTurns: 2,
+    buff: { magPct: 0.20, critAdd: 0.05, turns: 3 },
+  },
+  greatsage_twin_truth: {
+    id: 'greatsage_twin_truth', name: '陰陽の理', type: 'damage', target: 'allEnemies', magic: true,
+    power: 6.8, mpCost: 15, cooldownTurns: 1,
+  },
+  greatsage_absolute_wisdom: {
+    // 大賢者の切り札：破壊の一撃と同時に自らも癒す（既存selfBuff+healの併用のみ、新機構なし）
+    id: 'greatsage_absolute_wisdom', name: '絶対智', type: 'damage', target: 'enemy', magic: true,
+    power: 9.4, mpCost: 22, cooldownTurns: 2,
+    selfBuff: { regenAdd: 0.06, defPct: 0.15, turns: 3 },
+  },
+
+  // 星降る予言者（星詠みの魔女+巫女）：星を読み、運命を捻じ曲げる予言の頂点。
+  oracle_falling_star: {
+    id: 'oracle_falling_star', name: '星降る一矢', type: 'damage', target: 'enemy', magic: true,
+    power: 6.0, mpCost: 10, cooldownTurns: 0,
+  },
+  oracle_book_of_fate: {
+    id: 'oracle_book_of_fate', name: '運命の書', type: 'buff', target: 'self',
+    mpCost: 9, cooldownTurns: 2,
+    buff: { critAdd: 0.08, evasionAdd: 0.10, turns: 3 },
+  },
+  oracle_prophecy: {
+    id: 'oracle_prophecy', name: '予言', type: 'debuff', target: 'enemy',
+    mpCost: 10, cooldownTurns: 2,
+    weaken: { stat: 'def', pct: 0.24, turns: 3 },
+  },
+  oracle_falling_star_prophecy: {
+    id: 'oracle_falling_star_prophecy', name: '星降る予言', type: 'damage', target: 'allEnemies', magic: true,
+    power: 7.4, mpCost: 20, cooldownTurns: 2,
+  },
 };
 
 export function getSpell(id) { return SPELLS[id] || null; }
