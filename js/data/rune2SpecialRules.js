@@ -16,21 +16,6 @@ export function challengeExpMult(level) { return 1 + Math.max(0, level) * 0.10; 
 export function challengeGoldMult(level) { return 1 + Math.max(0, level) * 0.05; }
 export function challengeRuneChanceMult(level) { return 1 + Math.max(0, level) * 0.02; }
 
-export function challengeRuneAmountRange(level) {
-  const lv = Math.max(0, Math.min(CHALLENGE_MAX_LEVEL, Math.floor(Number(level) || 0)));
-  if (lv >= 15) return [3, 10];
-  if (lv >= 10) return [2, 5];
-  if (lv >= 5) return [1, 3];
-  if (lv >= 1) return [1, 2];
-  return [1, 1];
-}
-
-export function rollChallengeRuneAmount(level, random = Math.random) {
-  const [min, max] = challengeRuneAmountRange(level);
-  if (min === max) return min;
-  return min + Math.floor(Math.max(0, Math.min(0.999999999, random())) * (max - min + 1));
-}
-
 export function greedRemovedRarityTiers(marks) {
   return Math.max(0, Math.floor((Number(marks) || 0) / 50));
 }

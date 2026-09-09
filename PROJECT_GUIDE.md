@@ -164,13 +164,14 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 
 ---
 
-### Rune 2.0
+### Rune 2.1
 
 **Authority**
 - `js/data/runes2.js`
 - `js/patches/rune2Core.js`
 - owned: `state.data.rune2Owned`
 - active: `state.data.rune2Active`
+- locked acquisition/effect contract: `RUNE_2_1_SPEC.md`
 
 **Adventure Integration**
 - active marks を `adventureWorld4FieldActions.js` で探索能力へ翻訳
@@ -179,6 +180,8 @@ Unknown → Rumor → Trace → Clue → Discovery → Research
 **Deprecated / 禁止**
 - 旧 equipment socket / Rune socket architecture を復活させない。
 - `rune2Core.js` の `getRuneSockets()` は legacy sockets disabled を明示している。
+- Chapter clear / Region discovery だけでRuneを解放しない。各章の実戦闘後Dropが必須。
+- 新Rune通貨・save root・別Drop authorityを作らない。
 
 ---
 

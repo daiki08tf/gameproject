@@ -243,6 +243,7 @@ export function describeRound(events) {
         lines.push(`${ev.name}は炎に焼かれている！ ${ev.amount}のダメージ！`);
         if (ev.targetDead && ev.kill) lines.push(...describeKill(ev.kill, ev.name));
         break;
+      case 'runeRegen': lines.push(`再生の刻印が脈動し、HPを${ev.amount}回復した！`); break;
       case 'autoTurret': {
         const critTag = ev.critical ? '会心の一撃！ ' : '';
         lines.push(`自動砲台が着弾！ ${critTag}${ev.targetName}に${ev.damage}のダメージ！`);

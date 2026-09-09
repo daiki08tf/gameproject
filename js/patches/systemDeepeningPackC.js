@@ -127,9 +127,18 @@ if(state.rollWorld2ClearRewards&&!state.rollWorld2ClearRewards.__packC){
 }
 
 function escapeHtml(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
+// Rumor Threads (Living World & Discovery C2) attach an .entries history --
+// past testimony/field/return/followup lines that accumulated on the SAME
+// rumor over time. Older Phase12/secret-chain rumors have no .entries, so
+// this stays a no-op for them and their single-line rendering is unchanged.
+function entryHistoryHtml(r){
+  if(!Array.isArray(r.entries)||r.entries.length<2)return'';
+  const rows=r.entries.map(e=>`<div class="forge-card-sub" style="margin:4px 0"><b>${escapeHtml(e.source||'')}</b>：${escapeHtml(e.text||'')}</div>`).join('');
+  return `<details class="ui-detail-disclosure" style="margin-top:6px"><summary>これまでの経緯 ${r.entries.length}件</summary><div class="ui-detail-body">${rows}</div></details>`;
+}
 function rumorGroup(title,items){
   if(!items.length)return'';
-  return `<details class="ui-detail-disclosure packc-rumor-group" ${title==='追跡中'?'open':''}><summary>${title} ${items.length}</summary><div class="ui-detail-body">${items.map(r=>`<div class="forge-card" style="margin:6px 0"><div class="forge-card-name">${escapeHtml(r.name?.replace(/^噂：/,''))}</div><div class="forge-card-sub">${escapeHtml(r.hint||'')}</div>${r.regionKnowledge?`<div class="hint">土地勘 Lv.${r.regionKnowledge}</div>`:''}</div>`).join('')}</div></details>`;
+  return `<details class="ui-detail-disclosure packc-rumor-group" ${title==='追跡中'?'open':''}><summary>${title} ${items.length}</summary><div class="ui-detail-body">${items.map(r=>`<div class="forge-card" style="margin:6px 0"><div class="forge-card-name">${escapeHtml(r.name?.replace(/^噂：/,''))}</div><div class="forge-card-sub">${escapeHtml(r.hint||'')}</div>${r.regionKnowledge?`<div class="hint">土地勘 Lv.${r.regionKnowledge}</div>`:''}${entryHistoryHtml(r)}</div>`).join('')}</div></details>`;
 }
 function appendRumorNotebook(){
   const root=document.getElementById('monsterCodexContent');if(!root)return;

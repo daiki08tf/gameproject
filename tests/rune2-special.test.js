@@ -7,7 +7,7 @@ import {
   challengeEnemyAtkMult,
   challengeExpMult,
   challengeGoldMult,
-  challengeRuneAmountRange,
+  challengeRuneChanceMult,
   greedRemovedRarityTiers,
   swiftInitiativeMult,
   fistsAttackIntervalMult,
@@ -27,8 +27,8 @@ test('Challenge Lv10 matches intended enemy and reward multipliers', () => {
   assert.equal(challengeEnemyAtkMult(10), 1.5);
   assert.equal(challengeExpMult(10), 2);
   assert.equal(challengeGoldMult(10), 1.5);
-  assert.deepEqual(challengeRuneAmountRange(10), [2, 5]);
-  assert.deepEqual(challengeRuneAmountRange(15), [3, 10]);
+  assert.equal(challengeRuneChanceMult(10), 1.2);
+  assert.equal(challengeRuneChanceMult(20), 1.4);
 });
 
 test('Greed advances one rarity tier per 50 active marks', () => {
