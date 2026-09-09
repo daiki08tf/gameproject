@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {
   FISHING_SPOTS, FISH_SPECIES, isFishingSpotUnlocked, pickFishForSpot,
   resolveFishingRound, fishingDifficultyProfile, FISHING_ACTIONS, FISHING_ACTION_LABELS,
-  computeFishingReward, fishCodexBonuses, fishStatBonus,
+  computeFishingReward, fishCodexBonuses, fishStatBonus, FISHING_CUE_GUIDE,
 } from '../js/data/fishing.js';
 import { WORLD3_REGIONS } from '../js/data/world3Regions.js';
 import { state } from '../js/state.js';
@@ -180,6 +180,52 @@ test('Fish Codex bonus is chained onto getStats()/getStatBreakdown() the same wa
   assert.ok(state.fishStatBonusesByStat().hp > 100, 'no ceiling -- an extreme catch count keeps paying off (like Rune 2.0 has no cap on marks)');
   // clean up so this test does not leak state into other tests in the same process
   meta.fishing = { codex: {} };
+});
+
+test('FISHING_CUE_GUIDE: one legend entry per action, matching FISHING_ACTIONS/FISHING_ACTION_LABELS exactly (so a UI legend built from it can never drift out of sync)', () => {
+  assert.deepEqual(FISHING_CUE_GUIDE.map((g) => g.action), [...FISHING_ACTIONS]);
+  for (const g of FISHING_CUE_GUIDE) {
+    assert.equal(g.label, FISHING_ACTION_LABELS[g.action]);
+    assert.ok(g.cueText && g.cueText.length > 0, `${g.action} must carry real cue text`);
+  }
+});
+
+test('startFishing rejects starting a second rod while one is already in flight (regression: activeSession was a single unkeyed slot that a second start silently overwrote, desyncing whichever spot card was already mid-round)', () => {
+  state.resetAll();
+  state.data.stageProgress ??= {};
+  state.data.stageProgress['1-1'] = true; // unlocks frontier
+  state.data.stageProgress['5-1'] = true; // unlocks elemental
+  const first = state.startFishing('frontier_riverbank');
+  assert.ok(first.ok, 'first rod should start cleanly');
+
+  // Same spot, mid-round: must not silently reset progress/pick a new fish.
+  const sameSpotAgain = state.startFishing('frontier_riverbank');
+  assert.equal(sameSpotAgain.ok, false);
+  assert.equal(sameSpotAgain.reason, 'busy');
+  assert.equal(sameSpotAgain.spotId, 'frontier_riverbank');
+
+  // A different spot, while the first rod is still out: must not clobber it either.
+  const otherSpot = state.startFishing('elemental_hotspring');
+  assert.equal(otherSpot.ok, false);
+  assert.equal(otherSpot.reason, 'busy');
+  assert.equal(otherSpot.spotId, 'frontier_riverbank', 'the busy reason must name the spot that actually owns the in-flight round');
+
+  // Resolve the in-flight round (force misses until it escapes) so state
+  // does not leak into later tests, then confirm the slot frees up.
+  let outcome = 'ongoing';
+  for (let i = 0; i < 20 && outcome === 'ongoing'; i++) {
+    const wrongAction = FISHING_ACTIONS.find((a) => a !== 'hook'); // never guaranteed correct -> forces misses/escape eventually
+    outcome = state.fishingAction(wrongAction).outcome;
+  }
+  assert.notEqual(outcome, 'ongoing', 'the round must actually resolve within a bounded number of attempts');
+  const afterResolve = state.startFishing('elemental_hotspring');
+  assert.ok(afterResolve.ok, 'once the first round resolves, a new rod can be cast');
+  // Clean up the second rod too.
+  let outcome2 = 'ongoing';
+  for (let i = 0; i < 20 && outcome2 === 'ongoing'; i++) {
+    const wrongAction = FISHING_ACTIONS.find((a) => a !== 'hook');
+    outcome2 = state.fishingAction(wrongAction).outcome;
+  }
 });
 
 test('No platform emoji introduced by the Fishing feature', () => {

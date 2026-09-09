@@ -42,6 +42,14 @@ state.fishingSpots = function fishingSpots() {
 let activeSession = null;
 
 state.startFishing = function startFishing(spotId) {
+  // activeSession is a single module-level slot (by design -- one rod out
+  // at a time). Without this guard, starting a second spot (or re-clicking
+  // the same spot's "糸を垂らす" mid-round) silently overwrote it: the
+  // original spot's session card kept showing its old cue/progress, but its
+  // buttons now drove a DIFFERENT fish underneath. Reject instead of
+  // clobbering; the UI also disables the start buttons while a round is
+  // in flight, so this is mainly a defense-in-depth backstop.
+  if (activeSession) return { ok: false, reason: 'busy', spotId: activeSession.spotId };
   const spot = getFishingSpot(spotId);
   if (!spot) return { ok: false, reason: 'unknown' };
   if (!isFishingSpotUnlocked(spot, ctx())) return { ok: false, reason: 'locked' };

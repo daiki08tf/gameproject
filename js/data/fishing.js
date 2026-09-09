@@ -116,6 +116,15 @@ const CUE_TEXT = Object.freeze({
   slack: '急に走り出しそうな気配がする。',
 });
 
+// Each cue text maps 1:1 to exactly one correct action -- it is a readable
+// puzzle, not a random guess (see rollFishingCue). Derived from the same
+// FISHING_ACTIONS/FISHING_ACTION_LABELS/CUE_TEXT the actual round logic
+// uses, so a UI legend built from this can never drift out of sync with
+// what rollFishingCue/resolveFishingRound actually do.
+export const FISHING_CUE_GUIDE = Object.freeze(
+  FISHING_ACTIONS.map((action) => Object.freeze({ action, label: FISHING_ACTION_LABELS[action], cueText: CUE_TEXT[action] })),
+);
+
 // difficulty -> how many correct actions are needed to land the fish, and
 // how many misses are tolerated before it gets away. Kept as an explicit,
 // readable table rather than a formula.
