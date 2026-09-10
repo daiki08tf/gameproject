@@ -4,8 +4,9 @@
    #monsterCodexContent is built by codexUi.js's own base renderer
    (a full innerHTML rewrite -- completion/bonuses/ecology/monster
    list, all as one flat run of siblings, not individually tagged)
-   plus four add-on files that each append one further top-level
+   plus five add-on files that each append one further top-level
    section: fishingCodexUi.js ([data-fish-codex]),
+   archaeologyCodexUi.js ([data-archaeology-codex]),
    systemDeepeningPackC.js's rumor notebook ([data-packc-rumors]),
    enemy3CodexUi.js's tactical analysis (#enemy3CodexAnalysis) and
    phase12FinaleRuntime.js's horizontal ecology summary
@@ -16,7 +17,7 @@
 
    Unlike Settlement, codexUi.js's own output isn't already wrapped
    in named sections -- rather than touch that render function just
-   to add wrapper tags, everything NOT claimed by one of the four
+   to add wrapper tags, everything NOT claimed by one of the five
    known add-on selectors is tagged into the 図鑑 (base) tab as a
    catch-all. That keeps this file a zero-touch overlay, matching
    settlementCompactUi.js's own scope discipline.
@@ -40,6 +41,7 @@ const SELECTOR_TAB = [
   ['#enemy3CodexAnalysis', 'tactics'],
   ['[data-phase12-codex]', 'tactics'],
   ['[data-packc-rumors]', 'rumors'],
+  ['[data-archaeology-codex]', 'rumors'],
   ['[data-fish-codex]', 'fish'],
 ];
 

@@ -49,7 +49,7 @@ test('homeNavigation.js imports settlementCompactUi.js after every settlementCon
     'settlementUi.js', 'settlementExplorationUi.js', 'settlementSecretsUi.js', 'settlementDefenseUi.js',
     'settlementSeasonsUi.js', 'settlementIdentityUi.js', 'settlementExpeditionsUi.js', 'settlementEndgameNetworkUi.js',
     'settlementArenaUi.js', 'settlementChronicleUi.js', 'settlementCapitalUi.js', 'settlementUi4.js',
-    'settlementFortuneTellingUi.js', 'fishingUi.js', 'settlementRanch3Ui.js',
+    'settlementFortuneTellingUi.js', 'fishingUi.js', 'archaeologyUi.js', 'settlementRanch3Ui.js',
   ];
   const indexOf = (name) => nav.indexOf(`import './${name}';`);
   const compactIndex = indexOf('settlementCompactUi.js');
@@ -66,13 +66,13 @@ test('Every data-settlement-*/data-fishing root marker actually rendered by the 
     'settlementUi.js', 'settlementExplorationUi.js', 'settlementSecretsUi.js', 'settlementDefenseUi.js',
     'settlementSeasonsUi.js', 'settlementIdentityUi.js', 'settlementExpeditionsUi.js', 'settlementEndgameNetworkUi.js',
     'settlementArenaUi.js', 'settlementChronicleUi.js', 'settlementCapitalUi.js', 'settlementUi4.js',
-    'settlementFortuneTellingUi.js', 'fishingUi.js', 'settlementRanch3Ui.js', 'ch1RumorThreadsCampfireUi.js',
+    'settlementFortuneTellingUi.js', 'fishingUi.js', 'archaeologyUi.js', 'settlementRanch3Ui.js', 'ch1RumorThreadsCampfireUi.js',
   ];
-  const markerPattern = /dataset\.(settlement[A-Za-z]+|fishing|ch1Campfire)\s*=\s*['"]true['"]|data-settlement-area=|data-fishing-session-for=/g;
+  const markerPattern = /dataset\.(settlement[A-Za-z]+|fishing|archaeology|ch1Campfire)\s*=\s*['"]true['"]|data-settlement-area=|data-fishing-session-for=/g;
   const found = new Set();
   for (const file of writerFiles) {
     const source = read(`js/patches/${file}`);
-    for (const m of source.matchAll(/dataset\.(settlement[A-Za-z]+|fishing|ch1Campfire)\s*=\s*['"]true['"]/g)) found.add(m[1]);
+    for (const m of source.matchAll(/dataset\.(settlement[A-Za-z]+|fishing|archaeology|ch1Campfire)\s*=\s*['"]true['"]/g)) found.add(m[1]);
     if (/data-settlement-area=/.test(source)) found.add('settlementArea');
   }
   // Sanity: the scan itself must have found a realistic number of markers
@@ -82,6 +82,7 @@ test('Every data-settlement-*/data-fishing root marker actually rendered by the 
   // Every marker found must appear as a selector inside settlementCompactUi.js's SELECTOR_TAB.
   for (const camel of found) {
     if (camel === 'fishing') { assert.match(src, /\[data-fishing\]/, 'data-fishing must be in SELECTOR_TAB'); continue; }
+    if (camel === 'archaeology') { assert.match(src, /\[data-archaeology\]/, 'data-archaeology must be in SELECTOR_TAB'); continue; }
     if (camel === 'ch1Campfire') { assert.match(src, /\[data-ch1-campfire\]/, 'data-ch1-campfire must be in SELECTOR_TAB'); continue; }
     const kebab = camel.replace(/^settlement/, '').replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '');
     const attr = `data-settlement-${kebab}`;
