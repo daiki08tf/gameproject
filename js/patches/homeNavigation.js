@@ -69,6 +69,7 @@ import './companionBondUi.js';
 import './uiFoundationBootstrap.js';
 import './equipmentCompactUi.js';
 import './monsterRanchCompactUi.js';
+import './ranchCollectionUi.js';
 import './endgameGuidanceUi.js';
 import './buildLoadoutsUi.js';
 import './systemDeepeningPackA.js';

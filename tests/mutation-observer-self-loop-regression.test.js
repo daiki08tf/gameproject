@@ -106,3 +106,27 @@ test('adventureWorld4HiddenRouteUi.js: observer only reinserts the shortcuts box
   assert.match(src, /ensureInserted\(\(\)=>document\.querySelector\('\[data-adventure4-shortcuts\]'\),render\)/);
   assert.doesNotMatch(src, /new MutationObserver\(\(\)=>queueMicrotask\(render\)\)/);
 });
+
+// ranchCollectionUi.js (C6-6) re-runs render() from inside its own toggle
+// click handler AND from its own {childList:true} observer on the same
+// root it writes species headers into -- a shape with two independent
+// re-entry paths into the same idempotency requirement, not just one.
+test('ranchCollectionUi.js: species headers are only inserted once per species (ensureInserted), their content is only rewritten when it changed (setHtmlIfChanged), and the toggle listener is only rebound when that rewrite actually happened', () => {
+  const src = read('js/patches/ranchCollectionUi.js');
+  assert.ok(importsFromDomSafety(src, 'ensureInserted'), 'must import ensureInserted from domSafety.js');
+  assert.ok(importsFromDomSafety(src, 'setHtmlIfChanged'), 'must import setHtmlIfChanged from domSafety.js');
+  assert.match(src, /ensureInserted\(\s*\n?\s*\(\)\s*=>\s*!!root\.querySelector\(selector\)/);
+  // The listener must be attached INSIDE the setHtmlIfChanged(...) truthy
+  // branch, not unconditionally after it -- otherwise an idempotent
+  // re-render (content unchanged, button element untouched) would stack a
+  // second listener on the same still-live button every pass.
+  assert.match(src, /if\s*\(setHtmlIfChanged\(header,\s*headerBodyHtml\(speciesId,\s*cards\)\)\)\s*\{\s*\n\s*header\.querySelector\('\.ranch-species-toggle'\)\?\.addEventListener/);
+  // classList.toggle(token, force) is self-guarding per domSafety.js's own
+  // note -- confirms this file relies on that instead of an unconditional
+  // add/remove pair.
+  assert.match(src, /classList\.toggle\('hidden', !isOpen\)/);
+  // The scheduling guard on the observer itself (collapse a burst of
+  // mutation records into one queued render(), not one call per record).
+  assert.match(src, /let scheduled = false;/);
+  assert.doesNotMatch(src, /new MutationObserver\(\(\)=>queueMicrotask\(render\)\)/);
+});
