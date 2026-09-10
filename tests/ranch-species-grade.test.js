@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { SPECIES_GRADE_THRESHOLDS, speciesGrade, speciesGradeProgress, RANCH_RESEARCH_MILESTONES } from '../js/data/monsterRanch.js';
+import { SPECIES_GRADE_THRESHOLDS, speciesGrade, speciesGradeProgress, speciesGradeTraitMult, SPECIES_GRADE_TRAIT_MULT, RANCH_RESEARCH_MILESTONES } from '../js/data/monsterRanch.js';
 import { COMPANION_RARITY, COMPANION_RARITY_LABEL } from '../js/data/companions.js';
 import { state } from '../js/state.js';
 // Deliberately NOT importing companionFoundation.js: it installs DOM UI
@@ -110,7 +110,55 @@ test('No new save root: species grade is computed on the fly from the existing r
 
 test('No platform emoji introduced by the species grade feature', () => {
   const PICTOGRAPH = /\p{Extended_Pictographic}/u;
-  for (const file of ['js/patches/ranchSpeciesGrade.js']) {
+  for (const file of ['js/patches/ranchSpeciesGrade.js', 'js/patches/ranchCollectionUi.js']) {
     assert.doesNotMatch(read(file), PICTOGRAPH, `${file} must not introduce platform emoji`);
   }
+});
+
+// ---- C6-5: what species grade mechanically unlocks ----------------------
+// Deliberately NOT a flat stat ladder: grade scales the POWER of the
+// species' own already-authored combat trait (read every battle by
+// companionBattle.js's traitEffect()) instead of adding a new stat line.
+// Normal/Rare/Epic keep the trait at authored strength -- duplicate
+// recruitment below Legendary stays about collection identity (C6-4), not
+// power, matching the roadmap's own warning against "another uncapped
+// vertical power ladder".
+
+test('C6-5: speciesGradeTraitMult only rises at Legendary/Mythic -- Normal/Rare/Epic keep the authored trait strength unchanged', () => {
+  assert.equal(speciesGradeTraitMult('normal'), 1);
+  assert.equal(speciesGradeTraitMult('rare'), 1);
+  assert.equal(speciesGradeTraitMult('epic'), 1);
+  assert.ok(speciesGradeTraitMult('legendary') > 1);
+  assert.ok(speciesGradeTraitMult('mythic') > speciesGradeTraitMult('legendary'), 'Mythic must be the strongest grade, not tied with Legendary');
+  assert.equal(speciesGradeTraitMult('not-a-real-grade'), 1, 'an unknown grade must fall back to no change, never throw or 0x');
+  assert.deepEqual(Object.keys(SPECIES_GRADE_TRAIT_MULT), SPECIES_GRADE_THRESHOLDS.map((t) => t.grade), 'every real grade must have an entry, in the same order as SPECIES_GRADE_THRESHOLDS');
+});
+
+test('Runtime: state.ranchSpeciesGrade().traitMult is the single source of truth -- it is 1 below Legendary and rises exactly at the Legendary threshold (50 recruits)', () => {
+  state.resetAll();
+  const speciesId = 'goblin';
+  for (let i = 0; i < 49; i++) state.recordRanchRecruit(speciesId);
+  assert.equal(state.ranchSpeciesGrade(speciesId).grade, 'epic');
+  assert.equal(state.ranchSpeciesGrade(speciesId).traitMult, 1);
+  state.recordRanchRecruit(speciesId); // 50th -- crosses into legendary
+  const graded = state.ranchSpeciesGrade(speciesId);
+  assert.equal(graded.grade, 'legendary');
+  assert.equal(graded.traitMult, speciesGradeTraitMult('legendary'));
+  assert.ok(graded.traitMult > 1);
+});
+
+test('C6-5: companionBattle.js scales an existing trait\'s power by the owning species\' current grade, via state.ranchSpeciesGrade -- no new trait data, no new battle authority', () => {
+  const text = read('js/patches/companionBattle.js');
+  assert.match(text, /import \{ speciesGradeTraitMult \}|state\.ranchSpeciesGrade\?\.\(companion\.speciesId\)/, 'traitEffect must consult the species\' grade, not a hardcoded number');
+  assert.match(text, /traitMult/);
+  assert.match(text, /power:effect\.power\*mult/, 'must scale the existing effect\'s power field rather than introduce a parallel damage/mitigation system');
+});
+
+test('C6-5: Ranch and collection UI show the trait-power bonus so grade stays deterministic and inspectable, not a hidden multiplier', () => {
+  const ui = read('js/patches/monsterRanchUi.js');
+  assert.match(ui, /特性威力/);
+  assert.match(ui, /grade\.traitMult/);
+  const collectionUi = read('js/patches/ranchCollectionUi.js');
+  assert.match(collectionUi, /特性威力/);
+  assert.match(collectionUi, /grade\.traitMult/);
 });

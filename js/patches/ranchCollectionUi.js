@@ -58,7 +58,7 @@ function headerBodyHtml(speciesId, cards) {
   const grade = state.ranchSpeciesGrade?.(speciesId);
   const activeSlot = cards.some((c) => /編成\d/.test(c.querySelector('.forge-card-sub')?.textContent || ''));
   const traits = (species.traits || []).map(companionTraitLabel).join('・') || 'なし';
-  const gradeText = grade ? `${esc(grade.label)}${grade.nextLabel ? `（あと${grade.remaining}体で${esc(grade.nextLabel)}）` : '（最高グレード）'}` : '';
+  const gradeText = grade ? `${esc(grade.label)}${grade.grade === 'mythic' ? ' ✦' : ''}${grade.nextLabel ? `（あと${grade.remaining}体で${esc(grade.nextLabel)}）` : '（最高グレード）'}${grade.traitMult > 1 ? ` / 特性威力 ×${grade.traitMult}` : ''}` : '';
   const isOpen = expandedSpecies.has(speciesId) || cards.length === 1;
   return `<div class="forge-card-top"><div class="forge-card-name">${esc(species.name)}${activeSlot ? ' <span class="hint">編成中</span>' : ''}</div><strong>${cards.length}体所有</strong></div>
     <div class="forge-card-sub">種族グレード: ${gradeText} / 生息地: ${esc(species.regionName || '不明')}${species.roleName ? ` / 役割: ${esc(species.roleName)}` : ''}</div>

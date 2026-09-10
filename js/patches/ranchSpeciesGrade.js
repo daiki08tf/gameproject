@@ -18,13 +18,18 @@
    (C6-5) is a deliberately separate, later step.
    ============================================================ */
 import { state } from '../state.js';
-import { speciesGrade, speciesGradeProgress } from '../data/monsterRanch.js';
+import { speciesGrade, speciesGradeProgress, speciesGradeTraitMult } from '../data/monsterRanch.js';
 import { COMPANION_RARITY_LABEL, getCompanionSpecies } from '../data/companions.js';
 
 // Reuses the exact same label vocabulary already shown for individual
 // instance rarity (ノーマル/レア/エピック/レジェンダリー/ミシック) so a
 // species grade never reads as a different scale from what the player
 // already knows.
+//
+// C6-5: `traitMult` is the single source of truth for what grade
+// mechanically unlocks -- companionBattle.js's traitEffect() reads it via
+// this same function so the battle-applied number and the number shown in
+// the Ranch/collection UI can never drift apart.
 state.ranchSpeciesGrade = function ranchSpeciesGrade(speciesId) {
   const recruited = this.ranchResearch?.(speciesId)?.recruited || 0;
   const progress = speciesGradeProgress(recruited);
@@ -33,6 +38,7 @@ state.ranchSpeciesGrade = function ranchSpeciesGrade(speciesId) {
     label: COMPANION_RARITY_LABEL[progress.grade] || progress.grade,
     nextLabel: progress.next ? (COMPANION_RARITY_LABEL[progress.next] || progress.next) : null,
     remaining: progress.nextCount != null ? Math.max(0, progress.nextCount - recruited) : 0,
+    traitMult: speciesGradeTraitMult(progress.grade),
   };
 };
 
