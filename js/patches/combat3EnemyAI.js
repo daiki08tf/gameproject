@@ -19,7 +19,7 @@ proto._spawnEnemy=function(type){
   const e=originalSpawn.call(this,type); const profile=enemyCombatProfile(type),role=enemyRole(type);
   if(!e.boss){
     e.combat3Role=role;e.combat3Skill=profile.skill;e.combat3SkillCd=0;e.combat3Buffs={def:{mult:1,turns:0},spd:{mult:1,turns:0}};
-    const known=state.data?.monsterCodex?.[type];if(known?.roleKnown||known?.analyzed)e.name=`${role.icon}${e.name}`;
+    const known=state.data?.monsterCodex?.[type];if(known?.roleKnown||known?.analyzed)e.name=`【${role.name}】${e.name}`;
     // System Deepening SD-8: reserve the next tactical action now. The UI reads
     // this reservation, so an intent never promises a skill and then silently
     // performs a different random roll on the same turn.

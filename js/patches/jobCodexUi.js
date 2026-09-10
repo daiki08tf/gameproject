@@ -14,7 +14,7 @@ function discovered(job){
 }
 function visibleName(job){ return job.secret&&!discovered(job)?'？？？？？':job.name; }
 function masteryLevel(job){ return TIERS[job.tier]?.masteryLv ?? null; }
-function pctBar(value,max){ const p=max?Math.min(100,value/max*100):100; return `<div style="height:6px;background:#242735;border-radius:99px;overflow:hidden;margin-top:5px"><div style="width:${p}%;height:100%;background:#d7b35c"></div></div>`; }
+function pctBar(value,max){ const p=max?Math.min(100,value/max*100):100; return `<div style="height:6px;background:var(--dc-ink-900, #242735);border-radius:99px;overflow:hidden;margin-top:5px"><div style="width:${p}%;height:100%;background:var(--dc-brass-300, #d7b35c)"></div></div>`; }
 function growthStars(values,key){
   const nums=Object.values(values).filter(v=>Number.isFinite(v)); const max=Math.max(...nums,1); const n=Math.max(1,Math.min(5,Math.round((values[key]||0)/max*5))); return '★'.repeat(n)+'☆'.repeat(5-n);
 }
@@ -75,7 +75,7 @@ function openCodex(){ document.querySelectorAll('.screen').forEach(s=>s.classLis
 function backToJobs(){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('jobsScreen').classList.add('active'); }
 function install(){
   const jobs=document.getElementById('jobsScreen'); if(!jobs||document.getElementById('jobCodexScreen'))return;
-  const header=jobs.querySelector('.subbar'); const btn=document.createElement('button'); btn.id='jobCodexBtn';btn.className='btn-sub';btn.textContent='📖 図鑑';header.appendChild(btn);btn.addEventListener('click',()=>{Audio_.tap();openCodex();});
+  const header=jobs.querySelector('.subbar'); const btn=document.createElement('button'); btn.id='jobCodexBtn';btn.className='btn-sub';btn.textContent='図鑑';header.appendChild(btn);btn.addEventListener('click',()=>{Audio_.tap();openCodex();});
   const screen=document.createElement('section');screen.id='jobCodexScreen';screen.className='screen';screen.innerHTML='<header class="subbar"><button class="btn-back" id="jobCodexBackBtn">←</button><h2>職業図鑑</h2></header><div id="jobCodexContent" class="blacksmith-content"></div>';document.body.appendChild(screen);
   document.getElementById('jobCodexBackBtn').addEventListener('click',()=>{Audio_.tap();backToJobs();});
 }

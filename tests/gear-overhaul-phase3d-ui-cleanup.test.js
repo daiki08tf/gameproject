@@ -24,5 +24,6 @@ test('Legendary package is presented as fixed identity management', () => {
 
 test('legacy Affix-facing empty-state wording is replaced for the player', () => {
   assert.match(source, /Optionなし/);
-  assert.match(source, /⚒️ Option鍛造/);
+  assert.match(source, /Option鍛造/);
+  assert.doesNotMatch(source, /\p{Extended_Pictographic}/u);
 });

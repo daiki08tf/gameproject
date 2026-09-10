@@ -1,4 +1,6 @@
 /* Bounty Unique Equipment — Affix厳選とは別の、戦い方を変える固定効果装備 */
+import { OBSERVED_BRANCH_ORIGINS } from './observedBranchEquipment.js';
+
 export const BOUNTY_UNIQUES = [
   { id:'uq_bloodfang_gram', bountyId:'bounty-redfang-varg', name:'血牙グラム', slot:'weapon', weaponType:'sword', rarity:'legendary', stats:{atk:42,crit:4}, unique:true, unique2IdentityId:'u2_sword_firstblood', effects:[{trigger:'passive',kind:'highHpDoubleAttack',threshold:0.5},{trigger:'passive',kind:'defPenalty',power:0.25}], lore:'赤牙の血を吸い、獲物が弱る前に二度噛みつく魔剣。' },
   { id:'uq_ash_knight_shield', bountyId:'bounty-ash-knight', name:'灰騎士の大盾', slot:'shield', rarity:'legendary', stats:{def:62,hp:90,spd:-8}, unique:true, effects:[{trigger:'onGuard',kind:'guardNextAtkBuff',power:0.8}], lore:'受け止めた衝撃を灰の中へ蓄え、次の一撃へ返す大盾。' },
@@ -36,6 +38,18 @@ export const BOUNTY_UNIQUES = [
   {id:'uq_u2_alka',bountyId:null,name:'連星拳アルカ',slot:'weapon',weaponType:'knuckle',rarity:'mythic',stats:{atk:268,spd:68,crit:10},unique:true,phase8:true,distributionPending:true,unique2IdentityId:'u2_knuckle_chain',effects:[{trigger:'onCrit',kind:'critExtraAttack',chance:.18,power:.50,perActionCap:1}],lore:'会心の衝撃だけが次の拳を呼び、星座のように打撃点を繋いでいく拳甲。'},
   {id:'uq_u2_cadenza',bountyId:null,name:'戦律器カデンツァ',slot:'weapon',weaponType:'instrument',rarity:'mythic',stats:{atk:145,mag:245,spd:82},unique:true,phase8:true,distributionPending:true,unique2IdentityId:'u2_instrument_crescendo',effects:[{trigger:'passive',kind:'actionDiversityBuff',power:.22,turns:3}],lore:'同じ小節を嫌う戦律器。異なる行動を繋ぐほど旋律が厚くなり、戦場のテンポを奪う。'},
   {id:'uq_u2_seraphim',bountyId:null,name:'反照錫セラフィム',slot:'weapon',weaponType:'rod',rarity:'mythic',stats:{mag:272,def:96,mp:150},unique:true,phase8:true,distributionPending:true,unique2IdentityId:'u2_rod_sanctuary',effects:[{trigger:'onGuard',kind:'guardNextAtkBuff',power:.58}],lore:'受けた災いを祈りの中へ留め、次の審判へ反射する錫杖。守るほど攻める理由が増える。'},
+
+  // Observed Branches M6 — 深緑消失域 initial Fixed Unique reward.
+  {id:'uq_observed_null_root',bountyId:null,sourceStageId:'observedbranch-deepgreen-absence-boss',name:'無根刃・NULL ROOT',slot:'weapon',weaponType:'sword',rarity:'legendary',stats:{atk:19.4,crit:3,spd:2},unique:true,observedBranch:true,branchOrigin:OBSERVED_BRANCH_ORIGINS['deep-green-absence'],unique2IdentityId:'u2_sword_null_root',effects:[{trigger:'passive',kind:'noRecoveryDmgBonus',power:.22}],lore:'森が存在しなかった履歴から切り出された残響刃。回復や再生へ接続しない時だけ、欠落した根系の輪郭が攻撃へ重なる。'},
+
+  // Observed Branches M9 — 炎帝領・灼熱の火山 initial Fixed Unique reward.
+  {id:'uq_observed_ember_throne',bountyId:null,sourceStageId:'observedbranch-flame-king-boss',name:'戴冠斧・EMBER THRONE',slot:'weapon',weaponType:'axe',rarity:'legendary',stats:{atk:20.2,crit:3.5,def:2},unique:true,observedBranch:true,branchOrigin:OBSERVED_BRANCH_ORIGINS['flame-king-volcano'],unique2IdentityId:'u2_axe_ember_throne',effects:[{trigger:'onHit',kind:'burnDamage',power:.30,chance:.25}],lore:'討たれなかった炎帝が戴冠した歴史から持ち出された王家の斧。刃が触れるたび、王家の熔鉱が対象を炎で灼き続ける。'},
+
+  // Observed Branches M9 continuation (Branch Cluster 3) — 全権域・機界監査層 initial Fixed Unique reward.
+  {id:'uq_observed_sole_auditor',bountyId:null,sourceStageId:'observedbranch-mother-authority-boss',name:'全権監査杖・SOLE AUDITOR',slot:'weapon',weaponType:'staff',rarity:'legendary',stats:{mag:19.5,mp:20,crit:2.5},unique:true,observedBranch:true,branchOrigin:OBSERVED_BRANCH_ORIGINS['mother-full-authority'],unique2IdentityId:'u2_staff_sole_auditor',effects:[{trigger:'onSkill',kind:'spellEcho',chance:.15,spellOnly:true}],lore:'全権を掌握した監査史から持ち出された杖。詠唱するたびに行動そのものが監査記録として複製され、稀にもう一度発動する。個の判断は排されても、記録だけは律儀に繰り返される。'},
+
+  // Observed Branches M9 continuation (Branch Cluster 4) — 不断領・月蝕の境界 initial Fixed Unique reward.
+  {id:'uq_observed_unbroken_sovereign',bountyId:null,sourceStageId:'observedbranch-unbroken-veil-boss',name:'不断の鏡刃・UNBROKEN SOVEREIGN',slot:'weapon',weaponType:'dagger',rarity:'legendary',stats:{atk:14.5,spd:5.5,crit:4},unique:true,observedBranch:true,branchOrigin:OBSERVED_BRANCH_ORIGINS['unbroken-veil'],unique2IdentityId:'u2_dagger_unbroken_sovereign',effects:[{trigger:'onCrit',kind:'critExtraAttack',chance:.20,power:.55,perActionCap:1}],lore:'一度も破断しなかったThe Veilの歴史から持ち出された鏡刃。会心の一撃は鏡像として複製され、同じ軌跡をもう一度なぞる。'},
 ];
 export function uniqueForBounty(bountyId){ return BOUNTY_UNIQUES.find(x=>x.bountyId===bountyId)||null; }
 export function bountyUniqueById(id){ return BOUNTY_UNIQUES.find(x=>x.id===id)||null; }

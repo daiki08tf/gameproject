@@ -3,6 +3,8 @@
 > **Current:** Core/Foundation ✅ / Content Pack III ✅ / Stage-first Core Loop Rework CLR-12–21 ✅ / Automated RC baseline ✅
 >
 > **NEXT / ACTIVE:** **UI OVERHAUL (UIX) — Dark Chronicle identity, emoji-free interface, mobile information architecture and live playability.**
+>
+> **ADOPTED NEXT ERA:** **Living World & Discovery (C0–C16)** — simplification first, then Town/Rumor/Discovery/Companion convergence. See `LIVING_WORLD_DISCOVERY_ROADMAP.md`.
 
 Blade Vale is a personal evolving text-command hack-and-slash RPG.
 
@@ -28,6 +30,7 @@ Preferred rhythm:
 14. Gear Overhaul keeps seven Option rarities and adds **Option Lv1–100** with deterministic duplicate-fusion progress.
 15. High difficulty must preserve **No Single Correct Build**: intended builds can clear efficiently, while extreme raw investment may brute-force most soft checks.
 16. Rendered application UI uses no platform emoji; meaning comes from language, hierarchy and restrained labeled monochrome icons.
+17. Rune 2.1 uses one Rune per Story Chapter, unlocked only by a real battle drop in that chapter; growth then uses existing Gold and Manastone. See `RUNE_2_1_SPEC.md`.
 
 ### System-sprawl guardrails
 
@@ -35,6 +38,42 @@ Preferred rhythm:
 - **Avoid new Home buttons.** Add content inside existing Adventure / World / Codex / Ranch / Equipment / Job / Settlement surfaces first.
 - Prefer **systems talking to each other** over parallel one-off systems.
 - Keep these as practical development guardrails, not release bureaucracy.
+
+## Adopted next era — Living World & Discovery
+
+The strategic next-era plan is defined in `LIVING_WORLD_DISCOVERY_ROADMAP.md`. It is **adopted design / implementation pending** and does not silently replace the currently active UI work.
+
+The key shift is to reclaim complexity from systems that are not producing enough play, then spend that complexity on a world that is more worth revisiting.
+
+| Phase | Direction |
+|---|---|
+| C0 | Simplification Audit — remove BREAK / GUARD / ANALYSIS as universal systems; audit Job overlap |
+| C1 | Job Identity Rework — consolidate around genuinely different tactical loops |
+| C2 | Living Settlement / Rumor 3.0 — Town becomes the inter-run living-world hub |
+| C3 | Fishing — regional fish, conditions, Codex, master fish and Rumor integration |
+| C4 | Archaeology — ruins, artifacts, reconstruction, Lore and Secrets |
+| C5 | Treasure Hunt 2.0 — multi-step clues, maps, Codex and Region exploration |
+| C6 | Companion / Ranch Rework — auto recruitment and deterministic duplicate-species progression |
+| C7 | Settlement Incidents |
+| C8 | Region Identity 2.0 |
+| C9 | Codex 3.0 / Field Research |
+| C10 | Hidden Discovery / Secret 2.0 |
+| C11 | Boss Identity 2.0 |
+| C12 | Nemesis 4.0 / Rival System |
+| C13 | Build Identity 2.0 without a replacement BREAK-style taxonomy |
+| C14 | Endgame Purpose Rework |
+| C15 | Observed Branches Wave II |
+| C16 | Story Expansion III |
+
+Companion direction is locked at roadmap level:
+
+- successful recruitment **auto-joins**; remove the “仲間になりたそう” accept/decline interruption;
+- first acquisition establishes species ownership;
+- duplicate recruitment feeds the same species' persistent progress instead of creating mandatory roster clutter;
+- existing `Normal → Rare → Epic → Legendary → Mythic` vocabulary becomes deterministic species-grade progression rather than primarily random per-instance rarity;
+- existing Ranch recruitment counts should be reused/extended as the authority where possible; `種族EXP` is display/progress, not a new spendable currency;
+- legacy rarity, duplicates, Nature/Talent/Mutation and breeding value require explicit migration before implementation;
+- Ranch remains companion progression authority and Codex remains ecology/knowledge authority.
 
 ## Completed foundation
 
@@ -147,7 +186,9 @@ Completed:
 - `GEAR_OVERHAUL_ROADMAP.md` — active Gear Overhaul design, phases and non-negotiable rules
 - `GEAR_OVERHAUL_AUDIT.md` — live equipment/Affix/weapon-job audit and migration decisions
 - `UI_OVERHAUL_ROADMAP.md` — active UIX visual direction, phases, architecture guardrails and acceptance gates
+- `LIVING_WORLD_DISCOVERY_ROADMAP.md` — adopted next-era C0–C16 convergence plan, including Fishing / Archaeology / Treasure Hunt and Companion/Ranch rework
 - `CLAUDE.md` — current AI/Claude Code execution handoff
+- `RUNE_2_1_SPEC.md` — chapter-by-chapter Rune acquisition, growth, caps and effect authority
 
 Exact numeric stats remain in code.
 
@@ -250,6 +291,8 @@ LOOT / BUILD PLAYTEST & TUNE
       ↓
 DEEP SURVEY / ENDGAME RETURN
       ↓
+LIVING WORLD & DISCOVERY C0..C16
+      ↓
 NEXT STORY EXPANSION WHEN EARNED
 ```
 
@@ -261,11 +304,12 @@ For a new ChatGPT / Claude Code session:
 2. read `PROJECT_GUIDE.md`;
 3. read this file;
 4. read `UI_OVERHAUL_ROADMAP.md`;
-5. read `RELEASE_CANDIDATE_AUDIT.md` and `docs/MUTATION_OBSERVER_SAFETY.md`;
-6. active default work is **UIX**, starting from the first incomplete UIX phase;
-7. at roadmap creation, the next task is UIX-0 audit only — do not begin a global CSS rewrite;
-8. preserve Stage-first Home → Adventure → Chapter → Stage → Story/Hunt;
-9. preserve max-3 Options, seven Option rarities, Option Lv1–100 and existing Gear authorities;
-10. preserve Lv99,999, save compatibility, mobile command safety, startup dependency guards and MutationObserver idempotence;
-11. do not add emoji replacements through another pictograph set or a broad generic icon library;
-12. merge only after full tests, syntax, live-browser checks and both CI workflows are green.
+5. read `LIVING_WORLD_DISCOVERY_ROADMAP.md` before changing BREAK/GUARD/ANALYSIS, Jobs, Settlement/Rumor, Fishing/Archaeology/Treasure, Ranch/Companions or next-era convergence work;
+6. read `RELEASE_CANDIDATE_AUDIT.md` and `docs/MUTATION_OBSERVER_SAFETY.md`;
+7. active default work is **UIX**, starting from the first incomplete UIX phase;
+8. at roadmap creation, the next task is UIX-0 audit only — do not begin a global CSS rewrite;
+9. preserve Stage-first Home → Adventure → Chapter → Stage → Story/Hunt;
+10. preserve max-3 Options, seven Option rarities, Option Lv1–100 and existing Gear authorities;
+11. preserve Lv99,999, save compatibility, mobile command safety, startup dependency guards and MutationObserver idempotence;
+12. do not add emoji replacements through another pictograph set or a broad generic icon library;
+13. merge only after full tests, syntax, live-browser checks and both CI workflows are green.

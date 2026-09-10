@@ -20,10 +20,9 @@ export function renderClr17LootIdentity(){
   if(!profile){panel?.remove();return false;}
   if(!panel){
     panel=document.createElement('div');panel.id='clr17LootIdentity';panel.className='clr17-loot-identity';
-    panel.style.cssText='display:grid;gap:4px;margin:10px 0;padding:10px 12px;text-align:left;border:1px solid rgba(242,201,76,.3);border-radius:10px;background:rgba(242,201,76,.06);';
     hunt.parentElement?.before(panel);
   }
-  panel.innerHTML=`<strong>🎯 狙い目：${profile.label}</strong><span style="font-size:.86rem;line-height:1.45;">${profile.summary}</span><small style="opacity:.68;line-height:1.4;">Elite / Bossまで進むほど通常の戦闘報酬機会も増える。Item Power・rarity・Unique取得条件は既存ルールのまま。</small>`;
+  panel.innerHTML=`<strong>狙い目：${profile.label}</strong><span>${profile.summary}</span><small>Elite / Bossまで進むほど通常の戦闘報酬機会も増える。Item Power・rarity・Unique取得条件は既存ルールのまま。</small>`;
   return true;
 }
 

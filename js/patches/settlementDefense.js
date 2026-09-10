@@ -1,4 +1,6 @@
 import { state } from '../state.js';
+import { CHAPTERS } from '../data/stages.js';
+import { BOUNTIES } from '../data/bounties.js';
 import { SETTLEMENT_DEFENSE_PROJECTS,SETTLEMENT_INVASIONS,settlementDefenseIncidentEligible } from '../data/settlementDefense.js';
 
 const META_KEY='__settlement3';
@@ -18,16 +20,74 @@ function context(){
  const codex=Object.values(state.data.monsterCodex||{});
  const bossKills=codex.reduce((n,x)=>n+((x?.boss||x?.isBoss)?Number(x?.kills||0):0),0);
  const secret=state.settlementSecretQuests?.()||[];
- return{hall:state.settlementLevel?.('hall')||0,watch:state.settlementLevel?.('watch')||0,market:state.settlementLevel?.('market')||0,bossKills,completedSecrets:secret.filter(x=>x.completed).length};
+ return{hall:state.settlementLevel?.('hall')||0,watch:state.settlementLevel?.('watch')||0,market:state.settlementLevel?.('market')||0,bossKills,completedSecrets:secret.filter(x=>x.completed).length,hasActiveNemesis:Number(state.activeBountyNemesis?.()?.level||0)>0};
 }
 function project(id){return SETTLEMENT_DEFENSE_PROJECTS.find(x=>x.id===id)||null;}
 function invasion(id){return SETTLEMENT_INVASIONS.find(x=>x.id===id)||null;}
 
+// 既存のBounty/Nemesis3システムをそのまま流用する（新しい成長式・敵権威は作らない）。
+// 育っていないと拠点には来ない：settlementDefenseIncidentEligibleのrequiresActiveNemesisで判定。
+function defenseChapter(){
+ let ch=CHAPTERS.find(x=>x.id==='settlement_defense');
+ if(!ch){ch={id:'settlement_defense',num:998,name:'Settlement防衛戦',hidden:true,stages:[]};CHAPTERS.push(ch);}
+ return ch;
+}
+function registerDefenseStage(stage){
+ if(!stage)return null;
+ const ch=defenseChapter(),i=ch.stages.findIndex(x=>x.id===stage.id);
+ if(i>=0)ch.stages[i]=stage;else ch.stages.push(stage);
+ return stage;
+}
+function nemesisRaidStage(){
+ const active=state.activeBountyNemesis?.();
+ if(!active||(active.level||0)<1)return null;
+ const bounty=BOUNTIES.find(b=>b.id===active.id);
+ if(!bounty)return null;
+ return{
+  id:`settlement-defense:nemesisRaid:${bounty.id}`,
+  name:`拠点急襲：${state.bountyNemesisTitle?.(bounty.id)||''}${bounty.name}`,
+  recLevel:bounty.recLevel,
+  bounty:true,bounty2:true,bountyBaseId:bounty.id,
+  settlementDefenseIncidentId:'nemesisRaid',
+  rewards:{...bounty.rewards},
+  waves:[{type:bounty.enemyType,count:1,interval:0}],
+  dropTable:[],
+ };
+}
+function defenseStageFor(id){
+ if(id==='nemesisRaid')return nemesisRaidStage();
+ const i=invasion(id);
+ if(!i||!Array.isArray(i.waves)||!i.waves.length)return null;
+ return{
+  id:`settlement-defense:${id}`,
+  name:i.name,
+  recLevel:i.recLevel||10,
+  settlementDefenseIncidentId:id,
+  rewards:{...(i.rewards||{gold:0,exp:0})},
+  waves:i.waves.map(w=>({...w})),
+  dropTable:[],
+ };
+}
+state.settlementDefenseNemesisPreview=function(){
+ const active=this.activeBountyNemesis?.();
+ if(!active||(active.level||0)<1)return null;
+ const bounty=BOUNTIES.find(b=>b.id===active.id);
+ if(!bounty)return null;
+ return{name:`${this.bountyNemesisTitle?.(bounty.id)||''}${bounty.name}`,level:active.level};
+};
+
 state.settlementDefenseProjects=function(){const meta=ensureMeta();return SETTLEMENT_DEFENSE_PROJECTS.map(p=>({...p,level:Math.max(0,Math.min(p.maxLevel,Math.floor(Number(meta.projects[p.id]||0))))}));};
 state.canUpgradeSettlementDefense=function(id){const meta=ensureMeta(),p=project(id);if(!p)return{ok:false,reason:'unknown'};const level=Math.max(0,Math.floor(Number(meta.projects[id]||0)));if(level>=p.maxLevel)return{ok:false,reason:'max'};const cost=p.costs[level];for(const [k,v] of Object.entries(cost||{}))if((this.data.settlementMaterials?.[k]||0)<v)return{ok:false,reason:'materials',cost,level};return{ok:true,cost,level,next:level+1};};
 state.upgradeSettlementDefense=function(id){const check=this.canUpgradeSettlementDefense(id);if(!check.ok)return check;for(const [k,v] of Object.entries(check.cost))this.data.settlementMaterials[k]-=v;const meta=ensureMeta();meta.projects[id]=check.next;this.recordSettlementFactionActivity?.('adventurers',1);this.save();return{ok:true,id,level:check.next};};
-state.settlementDefenseIncidents=function(){const meta=ensureMeta(),ctx=context(),favored=this.settlementPolicyBias?.('defense')===1;return SETTLEMENT_INVASIONS.map(i=>({...i,available:settlementDefenseIncidentEligible(i,ctx),cleared:meta.cleared.includes(i.id),attempts:Number(meta.attempts[i.id]||0),pending:meta.pending===i.id,policyFavored:favored})).sort((a,b)=>favored?Number(b.pending)-Number(a.pending)||Number(b.available)-Number(a.available)||Number(a.cleared)-Number(b.cleared):0);};
+state.settlementDefenseIncidents=function(){const meta=ensureMeta(),ctx=context(),favored=this.settlementPolicyBias?.('defense')===1;return SETTLEMENT_INVASIONS.map(i=>({...i,available:settlementDefenseIncidentEligible(i,ctx),cleared:meta.cleared.includes(i.id),attempts:Number(meta.attempts[i.id]||0),pending:meta.pending===i.id,policyFavored:favored,nemesisPreview:i.requiresActiveNemesis?this.settlementDefenseNemesisPreview():null})).sort((a,b)=>favored?Number(b.pending)-Number(a.pending)||Number(b.available)-Number(a.available)||Number(a.cleared)-Number(b.cleared):0);};
 state.settlementDefenseSummary=function(){const projects=this.settlementDefenseProjects(),incidents=this.settlementDefenseIncidents();return{projectLevels:projects.reduce((n,p)=>n+p.level,0),maxProjectLevels:projects.reduce((n,p)=>n+p.maxLevel,0),available:incidents.filter(x=>x.available).length,cleared:incidents.filter(x=>x.cleared).length,total:incidents.length,pending:incidents.find(x=>x.pending)?.id||null};};
 state.startSettlementDefense=function(id){const meta=ensureMeta(),i=invasion(id);if(!i)return{ok:false,reason:'unknown'};if(!settlementDefenseIncidentEligible(i,context()))return{ok:false,reason:'locked'};if(meta.pending)return{ok:false,reason:'pending'};meta.pending=id;meta.attempts[id]=Number(meta.attempts[id]||0)+1;this.save();return{ok:true,incident:i,encounter:{...i.encounter,defenseProjects:Object.fromEntries(this.settlementDefenseProjects().map(p=>[p.id,p.level]))}};};
 state.resolveSettlementDefense=function(id,cleared){const meta=ensureMeta(),i=invasion(id);if(!i||meta.pending!==id)return{ok:false,reason:'noPending'};meta.pending=null;if(!cleared){this.save();return{ok:true,cleared:false,incident:i,buildingLoss:false};}const first=!meta.cleared.includes(id);if(first)meta.cleared.push(id);const gained=first?(this.addSettlementMaterials?.(i.firstReward||{})||{}):{};if(cleared)this.recordSettlementFactionActivity?.('adventurers',1);this.save();return{ok:true,cleared:true,first,incident:i,gained,buildingLoss:false};};
 state.settlementDefenseEncounter=function(){const meta=ensureMeta();const i=invasion(meta.pending);return i?{...i.encounter,incidentId:i.id}:null;};
+state.prepareSettlementDefenseBattle=function(id){
+ const stage=defenseStageFor(id);
+ if(!stage)return null;
+ const check=this.startSettlementDefense(id);
+ if(!check.ok)return null;
+ return registerDefenseStage(stage);
+};

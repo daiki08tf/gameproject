@@ -130,6 +130,12 @@ Those require a deliberate future story reveal.
 
 ## Current development direction
 
-**Content Pack III — Observation Reflux.**
+Content Pack III (Observation Reflux) and Content Pack IV are both complete. Observed Branches M0–M12 are now all complete, including M9's full continuation, and Ch36 (Arc VI opening) has shipped. 王樹領・深緑の森 and 深緑消失域 (Ch2), 炎帝領・灼熱の火山 (Ch5), 全権域・機界監査層 (Ch28), and 不断領・月蝕の境界 (Ch19) are all live, playable Branches. See `CONTENT_PACK_III_ROADMAP.md`, `CONTENT_PACK_IV_ROADMAP.md`, `CORE_LOOP_CLR21_IMPLEMENTATION.md`, and `OBSERVED_BRANCHES_M12_AUDIT.md` for the M0–M12 closeout, and `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md`'s Decision log for the M9 continuation (Clusters 3/4) shipped after that audit.
 
-Use Ch30's returned observation to create new reasons to revisit old regions through existing Rumor / Codex / Secret / Ranch / battle surfaces. See `CONTENT_PACK_III_ROADMAP.md`, `WORLD_LORE_BIBLE.md` and `GAME_CONTENT_CATALOG.md`.
+**The M6 → M9's first pick → M7 → Ch36 sequence, and M9's full continuation (Cluster 3 全権域・機界監査層, Cluster 4 不断領・月蝕の境界), are both complete.** No Observed Branches milestone remains queued; any further horizontal content (additional Branch Clusters, deeper per-Branch gear) is a new decision, not a carried-over item.
+
+1. M6 — 深緑消失域, the second, contrasting Branch of the same Ch2 forest. **Shipped.**
+2. M9's first new Prime Region — 灼熱の火山・炎帝領. **Shipped.**
+3. M7's comparative Codex/Chronicle record across Prime/王樹領/深緑消失域 became the direct lead-in to Ch36, opening Arc VI, using the two Branches' accumulated records to partially recover the "missing observation interval" (`WORLD_LORE_BIBLE.md` open mysteries #8/#9) without resolving the larger external-civilization mysteries (#1/#2). **Shipped.**
+
+See `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md`'s "Decision log" for the full rationale. This reused the existing Observed Branch / Adventure / Codex / Chronicle authorities throughout — no new parallel progression layer was invented.

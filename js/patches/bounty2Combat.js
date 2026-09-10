@@ -1,8 +1,16 @@
 import { state } from '../state.js';
 import { BattleEngine } from '../battleEngine.js';
 import { bountyBaseIdForStage } from '../data/bounty2.js';
+import { BOUNTIES } from '../data/bounties.js';
 import { abyssCombatScale } from '../data/abyssEndgame.js';
-import { nemesisHuntBonus,nemesisTraitsFor,nemesisWeaknessBonus } from '../data/nemesis3.js';
+import { nemesisHuntBonus,nemesisTraitsFor,nemesisWeaknessBonus,nemesisBranchResonanceBonus } from '../data/nemesis3.js';
+import { knownObservedBranchesForPrimeRegion } from '../data/observedBranchDiscovery.js';
+
+function bountyHasDivergentRecord(baseId){
+  const chapterId=BOUNTIES.find(b=>b.id===baseId)?.chapterId;
+  if(!chapterId)return false;
+  return knownObservedBranchesForPrimeRegion({chapterId},{discoveries:state.data.world2?.discoveries||{}}).length>0;
+}
 
 const BASE_SCALE={
   'bounty-redfang-varg':{hp:1.45,atk:1.25,def:1.10,spd:1.10},
@@ -74,8 +82,10 @@ BattleEngine.prototype._finishBattle=function bounty2Finish(cleared,retreated){
   const tier=stage.bounty2Tier;
   const baseMarks=tier==='ex'?8:tier==='variant'?3:1;
   const hunt=nemesisHuntBonus(win?.huntMode),intel=nemesisWeaknessBonus(win?.intel),traitReward=nemesisTraitsFor({traits:win?.traits}).reduce((m,t)=>m*(t.reward||1),1);
-  const rewardMult=(hunt.reward||1)*(intel.reward||1)*traitReward;
+  const hasDivergentRecord=bountyHasDivergentRecord(baseId);
+  const branchResonance=nemesisBranchResonanceBonus(hasDivergentRecord);
+  const rewardMult=(hunt.reward||1)*(intel.reward||1)*traitReward*(branchResonance.reward||1);
   const marks=Math.max(1,Math.round((baseMarks+(win?.bonusLevel||nemBefore)*2)*rewardMult));
   state.addBountyMarks(marks);
-  if(this.finalResult)this.finalResult.bounty2={baseId,tier:tier||'normal',marks,nemesisDefeated:(win?.bonusLevel||0)>0,totalMarks:state.bountyMarks(),nemesisLevel:win?.bonusLevel||0,nemesisTraits:(win?.traits||[]),huntMode:win?.huntMode||null,rewardMult};
+  if(this.finalResult)this.finalResult.bounty2={baseId,tier:tier||'normal',marks,nemesisDefeated:(win?.bonusLevel||0)>0,totalMarks:state.bountyMarks(),nemesisLevel:win?.bonusLevel||0,nemesisTraits:(win?.traits||[]),huntMode:win?.huntMode||null,rewardMult,branchResonance:hasDivergentRecord};
 };

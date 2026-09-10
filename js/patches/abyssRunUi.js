@@ -1,5 +1,6 @@
 /* Abyss Run Build — lightweight choice overlay */
 import { state } from '../state.js';
+import { bindOverlayDialog } from './overlayA11y.js';
 
 function remove(){document.getElementById('abyssRunChoiceOverlay')?.remove();}
 
@@ -13,10 +14,16 @@ export function showAbyssRunChoice(depth,onDone){
   panel.innerHTML=`<h2 style="text-align:center;">深淵の残響</h2><p class="sub" style="text-align:center;">${run.clears}階踏破。今回の潜行だけ有効な力を1つ選ぶ。</p><div id="abyssRunChoiceList" style="display:grid;gap:8px;margin-top:14px;"></div>`;
   const list=panel.querySelector('#abyssRunChoiceList');
   for(const boon of choices){
-    const rank=(run.ranks[boon.id]||0)+1;const btn=document.createElement('button');btn.className='menu-card';btn.style.textAlign='left';btn.innerHTML=`<strong>${boon.icon} ${boon.name}　Rank ${rank}</strong><br><span class="hint">${boon.desc}</span>`;
-    btn.addEventListener('click',()=>{const picked=state.abyssRunPick(boon.id);if(!picked)return;const unlocked=(picked.synergies||[]).filter(s=>!currentSyn.has(s.id));remove();onDone?.({picked,unlocked});});list.appendChild(btn);
+    const rank=(run.ranks[boon.id]||0)+1;const btn=document.createElement('button');btn.className='menu-card';btn.style.textAlign='left';btn.innerHTML=`<strong>${boon.name}　Rank ${rank}</strong><br><span class="hint">${boon.desc}</span>`;
+    btn.addEventListener('click',()=>{const picked=state.abyssRunPick(boon.id);if(!picked)return;const unlocked=(picked.synergies||[]).filter(s=>!currentSyn.has(s.id));restoreFocus();remove();onDone?.({picked,unlocked});});list.appendChild(btn);
   }
   overlay.appendChild(panel);document.body.appendChild(overlay);
+  // No Escape-to-close here on purpose: picking a boon is mandatory (there
+  // is no decline path in the UI), so bindOverlayDialog is called without a
+  // closeFn — Escape is swallowed rather than skipping the choice. Focus
+  // still moves into the panel, and restoreFocus() runs when a boon is
+  // actually picked, right before the overlay is removed.
+  const restoreFocus=bindOverlayDialog(overlay,panel);
   // .panelは共通CSSでmax-height/overflow-y:autoを持つためスクロールは可能だが、
   // モバイルは常時スクロールバーが出ないため、選択肢が画面に収まらない時に
   // 気づかれず選べないと誤解されやすい（他のpanel系オーバーレイと同じ対策）。

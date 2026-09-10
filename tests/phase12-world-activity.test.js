@@ -13,7 +13,7 @@ test('Phase 12.7 gives all five horizontal bosses bespoke multi-phase counterpla
     assert.ok(p.phases.length>=3);
     assert.ok(p.dangerTags?.length>=3);
     assert.ok(p.counterHint?.length>10);
-    assert.ok(p.phases.some(x=>Number.isFinite(x.breakGaugePct)));
+    assert.ok(p.phases.some(x=>x.accelerateBossAI));
   }
   assert.equal(bossEncounterProfile('phase12_moon_deity').phases.length,4);
 });

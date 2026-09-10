@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { allJobs, fusionJobs, getJob, isUnlocked, unlockRequirementText } from '../js/data/jobsPhase8.js';
 
-test('Phase 8 unified registry exposes all 105 fusion jobs',()=>{
+test('the retired 75 auto-generated Fusion pairs stay available for save/id compatibility only',()=>{
   assert.equal(fusionJobs().length,105);
   assert.equal(allJobs().filter(j=>j.tier==='basic').length,15);
   assert.equal(new Set(allJobs().map(j=>j.id)).size,allJobs().length);

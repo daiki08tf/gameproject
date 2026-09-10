@@ -2,7 +2,8 @@
    永続プレイヤーステート（localStorage保存）
    死亡してもリセットされない：レベル・職業・装備・所持品を保持
    ============================================================ */
-import { getJob, computeStats, isUnlocked, TIERS } from './data/jobs.js';
+import { getJob, computeStats, isUnlocked, TIERS } from './data/jobsPhase8.js';
+import { migrateC1JobSaveBack } from './data/jobIdentityMigration.js';
 import { getItem, baseItemId, powerScore, SLOTS, weaponAffinityBonus, slotsForEnhanceLevel, WEAPON_MASTERY_THRESHOLD, rarityIndex, RARITY_ORDER } from './data/equipment.js';
 import { getRune } from './data/runes.js';
 import { EFFECTS } from './data/chapters.js';
@@ -68,7 +69,7 @@ class StateManager {
   _load() {
     try {
       const raw = localStorage.getItem(SAVE_KEY);
-      if (raw) return { ...defaultSave(), ...JSON.parse(raw) };
+      if (raw) return { ...defaultSave(), ...migrateC1JobSaveBack(JSON.parse(raw)) };
     } catch (e) { /* ignore corrupt save */ }
     return defaultSave();
   }

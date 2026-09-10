@@ -37,11 +37,29 @@ button { font-family: inherit; }
 .screen {
   position: fixed;
   inset: 0;
-  display: none;
+  display: flex;
   flex-direction: column;
   padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  visibility: hidden;
+  pointer-events: none;
 }
-.screen.active { display: flex; }
+.screen.active {
+  visibility: visible;
+  pointer-events: auto;
+  animation: dc-screen-in var(--dc-motion-base, 160ms) var(--dc-ease, ease-out);
+}
+/* display can't be transitioned, so screens use visibility (an instant
+   step, not animated) to disappear immediately when .active is removed —
+   no cross-fade, no double-exposure with the incoming screen. Only the
+   entrance gets a short fade-in. pointer-events/visibility both apply the
+   instant a screen becomes .active, before the animation finishes, so a
+   repeated action (e.g. attacking into the next Stage) is never blocked
+   waiting on this animation. Respects the app-wide
+   prefers-reduced-motion override in darkChronicle.css. */
+@keyframes dc-screen-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 /* ---------------------------------------------------------
    共通パーツ
@@ -72,6 +90,26 @@ button { font-family: inherit; }
 }
 .panel h1.over { font-size: 28px; }
 .panel .sub { opacity: 0.85; margin-bottom: 18px; line-height: 1.6; }
+
+/* リザルト：勝敗を左枠アクセントでも示す（テキスト自体が既にSTAGE CLEAR /
+   DEFEATED... / RETREAT等を明示しているので、色だけに依存しない補強） */
+#resultScreen .panel {
+  position: relative;
+  border: 1px solid var(--dc-iron-500);
+  border-top: 2px solid var(--dc-iron-400);
+}
+#resultScreen .panel::before {
+  display: block;
+  margin-bottom: var(--dc-space-3, 12px);
+  color: var(--dc-ash-300);
+  content: "BATTLE RECORD";
+  font: 10px/1.4 var(--dc-font-number);
+  letter-spacing: .18em;
+}
+#resultScreen .panel[data-tone="success"] { border-top-color: var(--dc-brass-500); }
+#resultScreen .panel[data-tone="danger"] { border-top-color: var(--dc-danger-500); }
+#resultScreen .panel[data-tone="neutral"] { border-top-color: var(--dc-iron-400); }
+#resultScreen .panel h1.over { text-shadow: none; letter-spacing: .1em; }
 
 /* パネル内スクロールが必要な時（結果画面のドロップが多い/仲間勧誘の文章が
    長い等）に「まだ下に続きがある」ことを視覚的に示す。overflow-y:autoは
@@ -215,27 +253,124 @@ button { font-family: inherit; }
 --------------------------------------------------------- */
 .stage-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; padding-bottom: 12px; }
 .stage-card {
-  background: var(--card-bg);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 10px;
+  background: var(--dc-ink-800, var(--card-bg));
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.12));
+  border-left: 2px solid var(--dc-iron-400, rgba(255,255,255,0.12));
+  border-radius: var(--dc-radius-panel, 10px);
   padding: 14px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--dc-space-3, 12px);
   cursor: pointer;
+  transition: border-color var(--dc-motion-fast, 90ms) var(--dc-ease, ease), background var(--dc-motion-fast, 90ms) var(--dc-ease, ease);
 }
-.stage-card.boss { border-color: rgba(230,66,90,0.5); background: rgba(230,66,90,0.08); }
-.stage-card.locked { opacity: 0.4; cursor: default; }
-.stage-card.branch { border-color: rgba(176,110,242,0.5); background: rgba(176,110,242,0.08); }
-.stage-card .name { font-weight: bold; }
-.stage-card .rec { font-size: 12px; opacity: 0.7; }
-.stage-card .cleared { color: var(--xp-color); font-size: 20px; }
+.stage-card > *:first-child { flex: 1; min-width: 0; }
+.stage-card .cleared { flex-shrink: 0; }
+.stage-card:active { background: var(--dc-ink-700, rgba(255,255,255,0.04)); }
+.stage-card.boss { border-left-color: var(--dc-danger-500, rgba(230,66,90,0.5)); background: linear-gradient(180deg, rgba(168,71,80,.1), var(--dc-ink-800, rgba(230,66,90,0.08))); }
+.stage-card.locked { opacity: 0.55; cursor: default; }
+.stage-card.branch { border-left-color: var(--dc-observe-400, rgba(176,110,242,0.5)); background: linear-gradient(180deg, rgba(98,168,173,.1), var(--dc-ink-800, rgba(176,110,242,0.08))); }
+.stage-card .name { font-weight: 700; font-family: var(--dc-font-display, inherit); letter-spacing: .01em; }
+.stage-card .rec { font-size: 12px; color: var(--dc-ash-300); opacity: 0.85; }
+.stage-card .cleared {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 3px 8px;
+  border: 1px solid var(--dc-iron-500);
+  border-radius: var(--dc-radius-control, 4px);
+  color: var(--dc-brass-300, var(--xp-color));
+  background: rgba(5, 8, 11, .4);
+  font: 700 11px/1.4 var(--dc-font-number, inherit);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  text-align: center;
+}
+.stage-card .cleared:empty { display: none; padding: 0; border: 0; background: none; min-width: 0; }
+.stage-card.locked .cleared { color: var(--dc-ash-300); border-color: var(--dc-iron-500); opacity: .8; }
+.stage-card.boss .cleared { color: var(--dc-danger-300); border-color: var(--dc-danger-500); }
+.stage-card.branch .cleared { color: var(--dc-observe-400); border-color: var(--dc-observe-400); }
+
+.world3-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  margin-left: 6px;
+  border: 1px solid var(--dc-iron-500);
+  border-radius: var(--dc-radius-control, 4px);
+  color: var(--dc-brass-300);
+  font: 10px/1.4 var(--dc-font-number, inherit);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.accent-note { color: var(--dc-brass-300, var(--accent)); }
+
+.clr17-loot-identity {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0;
+  padding: 10px 12px;
+  text-align: left;
+  border: 1px solid var(--dc-iron-500);
+  border-left: 2px solid var(--dc-brass-500);
+  border-radius: var(--dc-radius-panel, 10px);
+  background: rgba(13, 18, 24, .92);
+  color: var(--dc-ash-100);
+}
+.clr17-loot-identity strong { font-family: var(--dc-font-display, inherit); color: var(--dc-brass-300); }
+.clr17-loot-identity span { font-size: .86rem; line-height: 1.45; }
+.clr17-loot-identity small { color: var(--dc-ash-300); line-height: 1.4; }
 
 /* ---------------------------------------------------------
    リザルト
 --------------------------------------------------------- */
 .result-items { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 16px; }
-.result-item-chip { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 6px 10px; font-size: 12px; }
+.result-drop-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.result-loot-headline {
+  font: 700 11px/1.4 var(--dc-font-number, inherit);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--dc-brass-300);
+}
+.result-item-chip {
+  background: var(--dc-ink-800, var(--card-bg));
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.15));
+  border-radius: var(--dc-radius-control, 8px);
+  padding: 6px 10px;
+  font-size: 12px;
+  text-align: center;
+}
+.result-drop-wrap.eq3-special .result-item-chip { border-color: var(--dc-brass-500); }
+/* UIX-7 Phase 3: loot feedback. Each chip is a freshly-created DOM node
+   every time renderResult() runs (itemsEl.innerHTML='' + rebuild), so a
+   plain CSS animation on the class replays automatically on every Result
+   — no JS retrigger needed. The whole #resultScreen already fades in via
+   UIX-7 Phase 2's dc-screen-in; this adds a second, complementary beat
+   specifically on the loot itself arriving, short and opacity/transform
+   only (no glow/particles, per the Dark Chronicle "avoid excessive glow"
+   direction), and is covered by the same app-wide reduced-motion override. */
+.result-loot-headline,
+.result-item-chip {
+  animation: dc-result-in var(--dc-motion-base, 160ms) var(--dc-ease, ease-out) both;
+}
+@keyframes dc-result-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* A jackpot/special drop already gets a text headline
+   (equipment3DropHeadline); give its chip a matching restrained border/
+   background tint so the two reinforce each other at a glance instead of
+   every drop reading with equal visual weight. */
+.result-drop-wrap.eq3-jackpot .result-item-chip {
+  border-color: var(--dc-brass-300);
+  background: linear-gradient(180deg, rgba(212, 189, 122, .16), var(--dc-ink-800, var(--card-bg)));
+}
+.result-drop-wrap.eq3-special .result-item-chip {
+  background: linear-gradient(180deg, rgba(169, 139, 79, .1), var(--dc-ink-800, var(--card-bg)));
+}
 
 /* ---------------------------------------------------------
    装備
@@ -243,17 +378,18 @@ button { font-family: inherit; }
 .equip-layout { display: flex; flex-direction: column; gap: 14px; overflow-y: auto; padding-bottom: 12px; flex: 1; }
 .paperdoll { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .equip-slot {
-  background: var(--card-bg);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 10px;
+  background: var(--dc-ink-800, var(--card-bg));
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.15));
+  border-radius: var(--dc-radius-panel, 10px);
   padding: 10px 12px;
   cursor: pointer;
   text-align: left;
+  transition: border-color var(--dc-motion-fast, 90ms) var(--dc-ease, ease);
 }
-.equip-slot .slot-label { font-size: 11px; opacity: 0.65; }
-.equip-slot .slot-item { font-weight: bold; font-size: 14px; }
-.equip-slot .slot-empty { opacity: 0.4; font-size: 13px; }
-.equip-slot.selected { border-color: var(--accent); }
+.equip-slot .slot-label { font-size: 11px; color: var(--dc-ash-300); opacity: 1; }
+.equip-slot .slot-item { font-weight: 700; font-size: 14px; font-family: var(--dc-font-display, inherit); }
+.equip-slot .slot-empty { color: var(--dc-ash-300); opacity: .7; font-size: 13px; }
+.equip-slot.selected { border-color: var(--dc-brass-500, var(--accent)); }
 
 .equip-picker { display: flex; flex-direction: column; gap: 8px; }
 .equip-picker .hint { opacity: 0.6; font-size: 13px; text-align: center; }
@@ -263,46 +399,48 @@ button { font-family: inherit; }
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  background: var(--card-bg);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 8px;
+  background: var(--dc-ink-800, var(--card-bg));
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.12));
+  border-left: 2px solid var(--dc-iron-400, transparent);
+  border-radius: var(--dc-radius-panel, 8px);
   padding: 10px 12px;
 }
 /* 情報ブロックが十分な幅を持てるよう最小幅を確保し、収まらない時は
    お気に入り/ロック等のアクションボタン群を次行へ折り返す（崩れ修正） */
 .pick-row .pick-main { flex: 1 1 200px; min-width: 0; }
-.pick-row .item-name { font-weight: bold; font-size: 14px; }
-.pick-row .item-stats { font-size: 11px; opacity: 0.7; }
+.pick-row .item-name { font-weight: 700; font-size: 14px; font-family: var(--dc-font-display, inherit); }
+.pick-row .item-stats { font-size: 11px; color: var(--dc-ash-300); opacity: 1; }
 .pick-row button {
-  background: rgba(255,255,255,0.14);
-  border: none;
-  color: #fff;
+  background: var(--dc-ink-700, rgba(255,255,255,0.14));
+  border: 1px solid var(--dc-iron-500, transparent);
+  color: var(--dc-ash-100, #fff);
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: var(--dc-radius-control, 6px);
   font-size: 12px;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .equip-inline-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-.pick-row.equipped button { background: rgba(230,66,90,0.4); }
-.pick-row button[disabled] { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); cursor: default; }
+.pick-row.equipped { border-left-color: var(--dc-brass-500); }
+.pick-row.equipped button { background: rgba(169,139,79,0.18); border-color: var(--dc-brass-500); }
+.pick-row button[disabled] { background: var(--dc-ink-900, rgba(255,255,255,0.06)); color: var(--dc-ash-300, rgba(255,255,255,0.35)); border-color: var(--dc-iron-500); cursor: default; }
 .compare-line { font-size: 11px; margin-top: 2px; }
 .compare-score { font-weight: bold; }
-.stat-up { color: #5fd97a; }
-.stat-down { color: #e6425a; }
+.stat-up { color: var(--dc-success-400, #5fd97a); }
+.stat-down { color: var(--dc-danger-300, #e6425a); }
 
 /* 加護（Blessing、深淵拡張）：stageConfirmScreenの3択カード */
 .blessing-row { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; text-align: left; }
-.blessing-row .pick-row.selected { border-color: var(--accent); background: rgba(242,201,76,0.12); }
+.blessing-row .pick-row.selected { border-left-color: var(--dc-brass-500); background: rgba(169,139,79,0.1); }
 
 /* お気に入り・ロック（Blade Vale 2.1）：装備一覧カード内の小さなトグルボタン */
 .inline-btn {
-  background: rgba(255,255,255,0.1);
-  border: none;
-  color: #fff;
+  background: var(--dc-ink-700, rgba(255,255,255,0.1));
+  border: 1px solid var(--dc-iron-500, transparent);
+  color: var(--dc-ash-100, #fff);
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--dc-radius-control, 6px);
   font-size: 11px;
   cursor: pointer;
   white-space: nowrap;
@@ -325,7 +463,7 @@ button { font-family: inherit; }
 .job-card.locked { opacity: 0.45; }
 .job-card-top { display: flex; justify-content: space-between; align-items: center; }
 .job-card-name { font-weight: bold; }
-.mastered-badge { color: var(--xp-color); margin-left: 4px; }
+.mastered-badge { color: var(--dc-brass-300, var(--xp-color)); margin-left: 4px; }
 .job-card-lv { font-size: 12px; opacity: 0.8; }
 .job-card .bar { margin-top: 6px; }
 .job-card-req { font-size: 11px; opacity: 0.65; margin-top: 4px; }
@@ -375,46 +513,48 @@ button { font-family: inherit; }
 .blacksmith-content { overflow-y: auto; flex: 1; padding-bottom: 12px; }
 
 .forge-card {
-  background: var(--card-bg);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 10px;
+  background: var(--dc-ink-800, var(--card-bg));
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.12));
+  border-left: 2px solid var(--dc-iron-400, transparent);
+  border-radius: var(--dc-radius-panel, 10px);
   padding: 12px 14px;
   margin-bottom: 10px;
 }
 .forge-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.forge-card-name { font-weight: bold; }
-.forge-card-sub { font-size: 12px; opacity: 0.7; margin-bottom: 8px; }
+.forge-card-name { font-weight: 700; font-family: var(--dc-font-display, inherit); }
+.forge-card-sub { font-size: 12px; color: var(--dc-ash-300); opacity: 1; margin-bottom: 8px; }
 .forge-card-btn {
   width: 100%;
-  background: var(--accent);
-  color: #1a1a1a;
+  background: linear-gradient(180deg, var(--dc-brass-300, var(--accent)), var(--dc-brass-500, var(--accent)));
+  color: var(--dc-ink-900, #1a1a1a);
   border: none;
   padding: 9px;
-  border-radius: 6px;
+  border-radius: var(--dc-radius-control, 6px);
   font-weight: bold;
   cursor: pointer;
 }
-.forge-card-btn[disabled] { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.4); cursor: default; }
+.forge-card-btn[disabled] { background: var(--dc-ink-700, rgba(255,255,255,0.15)); color: var(--dc-ash-300, rgba(255,255,255,0.4)); cursor: default; }
 
 .rune-slots { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
 .rune-slot {
   width: 56px; height: 56px;
-  border-radius: 8px;
-  background: rgba(0,0,0,0.35);
-  border: 1px dashed rgba(255,255,255,0.3);
+  border-radius: var(--dc-radius-control, 8px);
+  background: var(--dc-ink-900, rgba(0,0,0,0.35));
+  border: 1px dashed var(--dc-iron-500, rgba(255,255,255,0.3));
   display: flex; align-items: center; justify-content: center;
+  color: var(--dc-ash-300);
   font-size: 20px;
   cursor: pointer;
   text-align: center;
 }
-.rune-slot.filled { border-style: solid; border-color: var(--accent); background: rgba(242,201,76,0.12); }
+.rune-slot.filled { border-style: solid; border-color: var(--dc-brass-500, var(--accent)); background: rgba(169,139,79,0.12); color: var(--dc-brass-300); }
 .rune-slot.locked { opacity: 0.4; cursor: default; }
 
-.section-heading { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; margin: 16px 0 8px; }
+.section-heading { font: 700 11px/1.4 var(--dc-font-number, inherit); text-transform: uppercase; letter-spacing: .14em; color: var(--dc-ash-300); opacity: 1; margin: 16px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--dc-iron-500); }
 
 .rebirth-panel { text-align: center; padding: 24px 12px; }
-.rebirth-count { font-size: 40px; font-weight: bold; color: var(--accent); }
-.rebirth-bonus { opacity: 0.85; margin-bottom: 18px; }
+.rebirth-count { font-size: 40px; font-weight: bold; color: var(--dc-brass-300, var(--accent)); font-family: var(--dc-font-number, inherit); }
+.rebirth-bonus { color: var(--dc-ash-300); opacity: 1; margin-bottom: 18px; }
 
 /* ---------------------------------------------------------
    ふっかつのじゅもん
@@ -440,10 +580,11 @@ button { font-family: inherit; }
    モバイル縦持ち・大きめタップ領域・読みやすいログを優先する。
 --------------------------------------------------------- */
 #textBattleScreen { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+#textBattleScreen .bar { background: var(--dc-ink-900, rgba(0,0,0,0.55)); border-color: var(--dc-iron-500, rgba(255,255,255,0.2)); }
 
 .tb-hud { flex-shrink: 0; }
 .tb-topline { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 6px; }
-.tb-topline .name { font-weight: bold; font-size: 15px; }
+.tb-topline .name { font-weight: 700; font-size: 15px; font-family: var(--dc-font-display, inherit); }
 .tb-mp-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
 .tb-mp-row .bar { flex: 1; }
 .tb-mp-label { font-size: 11px; opacity: 0.75; width: 28px; }
@@ -460,15 +601,17 @@ button { font-family: inherit; }
   flex-direction: column;
   gap: 3px;
   padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: var(--card-bg);
+  border-radius: var(--dc-radius-panel, 8px);
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.15));
+  border-left: 2px solid var(--dc-iron-400, transparent);
+  background: var(--dc-ink-800, var(--card-bg));
   cursor: pointer;
+  transition: border-color var(--dc-motion-fast, 90ms) var(--dc-ease, ease);
 }
-.tb-enemy-card.selected { border-color: var(--accent); background: rgba(242,201,76,0.12); }
+.tb-enemy-card.selected { border-left-color: var(--dc-brass-500); background: rgba(169,139,79,0.12); }
 .tb-enemy-card.dead { opacity: 0.35; text-decoration: line-through; cursor: default; }
-.tb-enemy-card.boss { border-color: rgba(230,66,90,0.6); background: rgba(230,66,90,0.1); }
-.tb-enemy-card.telegraph { border-color: #ff9a4d; box-shadow: 0 0 10px rgba(255,154,77,0.5); }
+.tb-enemy-card.boss { border-left-color: var(--dc-danger-500); background: linear-gradient(180deg, rgba(168,71,80,.1), var(--dc-ink-800)); }
+.tb-enemy-card.telegraph { border-left-color: var(--dc-danger-300); box-shadow: 0 0 8px rgba(212,119,126,0.35); }
 .tb-enemy-name-row { display: flex; justify-content: space-between; font-size: 13px; }
 .tb-enemy-name-row .tag { font-size: 11px; opacity: 0.8; }
 
@@ -476,16 +619,16 @@ button { font-family: inherit; }
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  background: rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 8px;
+  background: var(--dc-ink-900, rgba(0,0,0,0.4));
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.15));
+  border-radius: var(--dc-radius-panel, 8px);
   padding: 10px 12px;
   font-size: 13px;
   line-height: 1.7;
 }
 .tb-log p { margin: 0 0 4px; }
-.tb-log p.tb-log-highlight { color: var(--accent); font-weight: bold; }
-.tb-log p.tb-log-danger { color: #ff8a94; }
+.tb-log p.tb-log-highlight { color: var(--dc-brass-300, var(--accent)); font-weight: bold; }
+.tb-log p.tb-log-danger { color: var(--dc-danger-300, #ff8a94); }
 
 .tb-command-grid {
   flex-shrink: 0;
@@ -496,18 +639,19 @@ button { font-family: inherit; }
 }
 .tb-cmd-btn {
   padding: 16px 6px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.08);
-  color: #f0f0f5;
+  border-radius: var(--dc-radius-control, 10px);
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.2));
+  background: var(--dc-ink-800, rgba(255,255,255,0.08));
+  color: var(--dc-ash-100, #f0f0f5);
   font-size: 15px;
   font-weight: bold;
   cursor: pointer;
+  transition: border-color var(--dc-motion-fast, 90ms) var(--dc-ease, ease), background var(--dc-motion-fast, 90ms) var(--dc-ease, ease);
 }
 .tb-cmd-btn:active { transform: scale(0.96); }
 .tb-cmd-btn[disabled] { opacity: 0.35; cursor: default; }
-.tb-cmd-btn.tb-cmd-guard { background: rgba(74,194,232,0.15); }
-.tb-cmd-btn.tb-cmd-flee { background: rgba(255,255,255,0.05); }
+.tb-cmd-btn.tb-cmd-guard { border-color: var(--dc-observe-400); background: rgba(98,168,173,0.12); }
+.tb-cmd-btn.tb-cmd-flee { background: var(--dc-ink-700, rgba(255,255,255,0.05)); }
 
 /* とくぎ・じゅもんの技一覧サブメニュー */
 .tb-tech-menu {
@@ -519,7 +663,7 @@ button { font-family: inherit; }
   max-height: 260px;
 }
 .tb-tech-menu-header { display: flex; align-items: center; gap: 10px; }
-.tb-tech-menu-header span { font-weight: bold; font-size: 15px; }
+.tb-tech-menu-header span { font-weight: 700; font-size: 15px; font-family: var(--dc-font-display, inherit); }
 .tb-tech-list {
   display: flex;
   flex-direction: column;
@@ -531,10 +675,10 @@ button { font-family: inherit; }
   justify-content: space-between;
   align-items: center;
   padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.08);
-  color: #f0f0f5;
+  border-radius: var(--dc-radius-control, 10px);
+  border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.2));
+  background: var(--dc-ink-800, rgba(255,255,255,0.08));
+  color: var(--dc-ash-100, #f0f0f5);
   font-size: 14px;
   cursor: pointer;
 }
@@ -543,18 +687,39 @@ button { font-family: inherit; }
 .tb-tech-item .tb-tech-cost { font-size: 12px; opacity: 0.8; }
 .tb-tech-empty { padding: 14px; text-align: center; opacity: 0.6; font-size: 13px; }
 
+/* Phase 8 Fusion command panel（fusionBattleUi.js）— コマンドグリッドと
+   同じDark Chronicleトーンで、観測色を職業ゲージの識別に使う */
+.tb-fusion-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--dc-iron-500);
+  border-left: 2px solid var(--dc-observe-400);
+  border-radius: var(--dc-radius-panel, 8px);
+  background: rgba(13, 18, 24, .92);
+}
+.tb-fusion-label { font-size: 12px; color: var(--dc-ash-300); }
+.tb-fusion-bar { height: 8px; }
+.tb-fusion-bar .fill { background: linear-gradient(90deg, var(--dc-observe-400), var(--dc-brass-300)); }
+.tb-fusion-command { width: 100%; }
+
+/* Combat 2.0 skill-modifier badge（combat2SkillModifierUi.js） */
+.combat2-modifier-btn { margin-left: 8px; padding: 3px 7px; font-size: 11px; }
+
 /* 武器ランダムAffix（Part A）：装備画面・武器詳細でのAffix一覧表示 */
 .affix-block { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
-.affix-line { padding: 3px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; font-size: 11px; }
+.affix-line { padding: 3px 8px; background: var(--dc-ink-900, rgba(255,255,255,0.05)); border-radius: var(--dc-radius-control, 4px); font-size: 11px; }
 .affix-rarity { font-weight: bold; }
-.affix-name { font-weight: bold; opacity: 0.95; }
-.affix-desc { opacity: 0.75; }
+.affix-name { font-weight: bold; color: var(--dc-ash-100); opacity: 1; }
+.affix-desc { color: var(--dc-ash-300); opacity: 1; }
 
 /* 詳細ステータス画面（Part B） */
 .status-section { margin: 10px 0; }
 .status-section h3 {
-  font-size: 13px; opacity: 0.7; margin: 0 0 6px; padding-bottom: 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.12);
+  font: 700 13px/1.4 var(--dc-font-display, inherit); color: var(--dc-ash-300); opacity: 1; margin: 0 0 6px; padding-bottom: 4px;
+  border-bottom: 1px solid var(--dc-iron-500, rgba(255,255,255,0.12));
 }
 .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
 .status-row {
@@ -562,18 +727,18 @@ button { font-family: inherit; }
   font-size: 13px; padding: 4px 0; cursor: default;
 }
 .status-row.tappable { cursor: pointer; }
-.status-row .status-label { opacity: 0.7; }
-.status-row .status-value { font-weight: bold; }
-.status-row .status-cap { font-size: 11px; opacity: 0.55; margin-left: 4px; }
-.status-row .status-cap.maxed { color: #f2c94c; }
+.status-row .status-label { color: var(--dc-ash-300); opacity: 1; }
+.status-row .status-value { font-weight: bold; font-family: var(--dc-font-number, inherit); }
+.status-row .status-cap { font-size: 11px; color: var(--dc-ash-300); opacity: .8; margin-left: 4px; }
+.status-row .status-cap.maxed { color: var(--dc-brass-300, #f2c94c); }
 .status-breakdown {
-  font-size: 11px; opacity: 0.75; margin: 2px 0 8px; padding: 6px 10px;
-  background: rgba(255,255,255,0.05); border-radius: 6px; display: none;
+  font-size: 11px; color: var(--dc-ash-300); opacity: 1; margin: 2px 0 8px; padding: 6px 10px;
+  background: var(--dc-ink-900, rgba(255,255,255,0.05)); border-radius: var(--dc-radius-control, 6px); display: none;
 }
 .status-breakdown.open { display: block; }
 .status-breakdown .bd-line { display: flex; justify-content: space-between; }
 .status-equip-card {
   display: flex; justify-content: space-between; align-items: center;
-  background: var(--card-bg); border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 8px; padding: 10px 12px; margin-top: 6px;
+  background: var(--dc-ink-800, var(--card-bg)); border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.12));
+  border-radius: var(--dc-radius-panel, 8px); padding: 10px 12px; margin-top: 6px;
 }

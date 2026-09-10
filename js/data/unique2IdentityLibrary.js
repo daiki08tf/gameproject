@@ -30,6 +30,9 @@ export const UNIQUE2_WEAPON_IDENTITIES = Object.freeze({
       {trigger:'passive',kind:'highHpDoubleAttack',threshold:.60},
       {trigger:'passive',kind:'defPenalty',power:.10},
     ],['high-hp','tempo']),
+    U('u2_sword_null_root','sword','無根の不在','回復・再生の装備効果が働かない構成で、欠落そのものを与ダメージへ転換する。',['sword_crit_balance'],[
+      {trigger:'passive',kind:'noRecoveryDmgBonus',power:.22},
+    ],['absence','anti-recovery','observed-branch']),
   ]),
 
   axe:Object.freeze([
@@ -40,6 +43,9 @@ export const UNIQUE2_WEAPON_IDENTITIES = Object.freeze({
       {trigger:'passive',kind:'bossDmg',power:.30},
       {trigger:'passive',kind:'normalEnemyDmgPenalty',power:.12},
     ],['boss','tradeoff']),
+    U('u2_axe_ember_throne','axe','戴冠の火勢','一撃ごとに王家の熔鉱が刃へ伝い、通常攻撃を継続的な炎ダメージへ変える。',['axe_breaker'],[
+      {trigger:'onHit',kind:'burnDamage',power:.30,chance:.25},
+    ],['fire','observed-branch']),
   ]),
 
   staff:Object.freeze([
@@ -49,6 +55,9 @@ export const UNIQUE2_WEAPON_IDENTITIES = Object.freeze({
     U('u2_staff_stararm','staff','星装詠唱','詠唱を次の打撃へ残し、魔法と攻撃を往復する。',['staff_spellpower'],[
       {trigger:'passive',kind:'spellArmsStarStrike',magRatio:.72},
     ],['spell','hybrid']),
+    U('u2_staff_sole_auditor','staff','全権監査の反響','MOTHERが全権を掌握した史脈で育つ監査反響。詠唱のたびに行動が記録として複製され、稀にもう一度発動する。',['staff_spellpower'],[
+      {trigger:'onSkill',kind:'spellEcho',chance:.15,spellOnly:true},
+    ],['analysis','observed-branch']),
   ]),
 
   bow:Object.freeze([
@@ -68,6 +77,15 @@ export const UNIQUE2_WEAPON_IDENTITIES = Object.freeze({
     U('u2_dagger_finish','dagger','終幕線','瀕死域に入った瞬間、暗殺の価値を跳ね上げる。',['dagger_execution'],[
       {trigger:'passive',kind:'executioner',power:.24,hpThreshold:.25},
     ],['execution','assassin']),
+    U('u2_dagger_verdant_fang','dagger','生脈の狩り','撃破のたびに使い手を癒す、生存し続けた史脈の狩猟ループ。',['dagger_venom'],[
+      {trigger:'onKill',kind:'healOnKill',power:.04},
+    ],['sustain','observed-branch']),
+    U('u2_dagger_null_fang','dagger','不在の刃','回復・再生と接続しない間だけ、欠落そのものを攻撃力へ変える。',['dagger_execution'],[
+      {trigger:'passive',kind:'noRecoveryDmgBonus',power:.20},
+    ],['absence','anti-recovery','observed-branch']),
+    U('u2_dagger_unbroken_sovereign','dagger','不断の鏡像','一度も破断しなかった史脈で育つ鏡像連撃。会心の軌跡を複製し、同じ一撃をもう一度重ねる。',['dagger_trigger'],[
+      {trigger:'onCrit',kind:'critExtraAttack',chance:.20,power:.55,perActionCap:1},
+    ],['mirror','observed-branch']),
   ]),
 
   knuckle:Object.freeze([

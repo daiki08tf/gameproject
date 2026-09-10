@@ -1,5 +1,12 @@
 import { state } from '../state.js';
-import { computeStats, getJob, TIERS } from '../data/jobs.js';
+// C1 Job Identity Rework note: the raw legacy registry in data/jobs.js has no
+// entries for c1_* job ids (the default currentJobId on every fresh save), so
+// computeStats()/getJob() must come from the Phase 8 wrapper, which already
+// checks the C1 runtime jobs first and only falls back to the legacy registry
+// for pre-rework job ids. Importing straight from data/jobs.js here made
+// EVERY getStats() call (battle entry, status screen, etc.) throw
+// "Cannot read properties of undefined (reading 'tier')" for a c1_* job.
+import { computeStats, getJob, TIERS } from '../data/jobsPhase8.js';
 import { PROGRESSION3_BASE, JOB_EXP_SHARE_BY_TIER, growthForJob, activeJobModifier, jobExpRewardCap } from '../data/progression3.js';
 import { chainMethod } from './patchUtils.js';
 

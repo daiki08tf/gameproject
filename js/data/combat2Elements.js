@@ -57,5 +57,5 @@ export function resolveRandomElement(key = 0) {
 
 export function elementLabel(element) {
   const def = COMBAT2_ELEMENTS[element];
-  return def ? `${def.icon}${def.name}` : '';
+  return def ? def.name : '';
 }

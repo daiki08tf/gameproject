@@ -8,10 +8,10 @@
    is safe under the MutationObserver instances every one of those systems
    already installs on #settlementContent. */
 const CATEGORIES=[
-  {key:'exploration',label:'🧭 探索・秘密施設',anchor:'[data-settlement-exploration]'},
-  {key:'defense',label:'🛡️ 防衛・季節・政策',anchor:'[data-settlement-defense]'},
-  {key:'expeditions',label:'🚩 遠征・終端ネットワーク',anchor:'[data-settlement-expeditions]'},
-  {key:'arena',label:'🏛️ 訓練・記録・首都',anchor:'[data-settlement-arena]'},
+  {key:'exploration',label:'探索・秘密施設',anchor:'[data-settlement-exploration]'},
+  {key:'defense',label:'防衛・季節・政策',anchor:'[data-settlement-defense]'},
+  {key:'expeditions',label:'遠征・終端ネットワーク',anchor:'[data-settlement-expeditions]'},
+  {key:'arena',label:'訓練・記録・首都',anchor:'[data-settlement-arena]'},
 ];
 function render(){
   const host=document.getElementById('settlementContent');if(!host)return;

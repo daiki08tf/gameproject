@@ -17,7 +17,6 @@ function gaugeGainFor(command, events=[]) {
   if (/heal|回復|regen/i.test(text)) gain += 10;
   if (/status|poison|burn|freeze|shock|weaken|毒|炎上|凍結|感電/i.test(text)) gain += 10;
   if (/evade|回避/i.test(text)) gain += 8;
-  if (/break|stagger/i.test(text)) gain += 10;
   return Math.min(35, gain);
 }
 

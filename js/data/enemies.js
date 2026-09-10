@@ -1,7 +1,7 @@
 /* ============================================================
    敵データ定義
    第1章は既存のまま。第2章以降は chapter metadata から
-   normal/fast/tank/boss を自動生成。16〜35章はmidbossも生成する。
+   normal/fast/tank/boss を自動生成。16章以降はmidbossも生成する。
    Enemy 2.0 E4 adds attacker/caster/trickster/support/rare identities.
    Enemy 2.0 E5 registers only the Ch1 Global Species pilot types.
    ============================================================ */
@@ -15,7 +15,10 @@ import { CHAPTER_EXPANSION_32 } from './chapters32.js';
 import { CHAPTER_EXPANSION_33 } from './chapters33.js';
 import { CHAPTER_EXPANSION_34 } from './chapters34.js';
 import { CHAPTER_EXPANSION_35 } from './chapters35.js';
+import { CHAPTER_EXPANSION_36 } from './chapters36.js';
 import { REGIONAL_ENEMY_EXPANSION, REGIONAL_ENEMY_ROLES } from './regionalEnemies2.js';
+import { OBSERVED_BRANCH_ECOLOGY, OBSERVED_BRANCH_ECOLOGY_ROLES } from './observedBranchEcology.js';
+import { OBSERVED_BRANCHES } from './observedBranches.js';
 import { materializeGlobalSpecies } from './globalEnemySpecies.js';
 import { ENEMY_SCALING, chapterScaleMult } from './balance.js';
 
@@ -37,7 +40,7 @@ const BRANCH_BASE={hp:150,atk:20,def:9,speed:70,radius:26,color:'#d68b3a',xp:40,
 const E4_ROLE_BASES=Object.freeze({attacker:ATTACKER_BASE,caster:CASTER_BASE,trickster:TRICKSTER_BASE,support:SUPPORT_BASE,rare:RARE_BASE});
 function scale(base,name,num,meta={}){const isBoss=!!base.boss;return{...base,...meta,name,hp:Math.round(base.hp*(isBoss?bossHpMult(num):hpMult(num))),atk:Math.round(base.atk*atkMult(num)),def:Math.round(base.def*defMult(num)),xp:Math.round(base.xp*chapterMult(num)),gold:Math.round(base.gold*chapterMult(num))};}
 export const ENEMY_TYPES={grunt:scale(NORMAL_BASE,'ゴブリン',1),fast:scale(FAST_BASE,'コウモリ',1),tank:scale(TANK_BASE,'オーガ',1),boss_orcking:scale(BOSS_BASE,'オークキング',1),branch_goblin_chief:scale(BRANCH_BASE,'ゴブリンの頭目',1)};
-export const ALL_CHAPTER_SPECS=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_21_25,...CHAPTER_EXPANSION_26_29,...CHAPTER_EXPANSION_30,...CHAPTER_EXPANSION_31,...CHAPTER_EXPANSION_32,...CHAPTER_EXPANSION_33,...CHAPTER_EXPANSION_34,...CHAPTER_EXPANSION_35];
+export const ALL_CHAPTER_SPECS=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_21_25,...CHAPTER_EXPANSION_26_29,...CHAPTER_EXPANSION_30,...CHAPTER_EXPANSION_31,...CHAPTER_EXPANSION_32,...CHAPTER_EXPANSION_33,...CHAPTER_EXPANSION_34,...CHAPTER_EXPANSION_35,...CHAPTER_EXPANSION_36];
 for(const ch of ALL_CHAPTER_SPECS){
  ENEMY_TYPES[`${ch.id}_normal`]=scale(NORMAL_BASE,ch.enemies.normal,ch.num,{role:'normal',chapterId:ch.id});
  ENEMY_TYPES[`${ch.id}_fast`]=scale(FAST_BASE,ch.enemies.fast,ch.num,{role:'fast',chapterId:ch.id});
@@ -59,6 +62,46 @@ for(const [chapterId,set] of Object.entries(REGIONAL_ENEMY_EXPANSION)){
    behaviorTags:[...(def.behaviorTags||[])],rareIdentity:role==='rare',
   });
  }
+}
+
+// Observed Branches M10 — each Branch gets its own regional Enemy 2.0
+// identity (attacker/caster/trickster/support/rare) instead of silently
+// inheriting its Prime Chapter's, plus a Branch-flavored Boss with a
+// distinct stat silhouette (not a stat-identical reskin of the Prime boss).
+// Stat scaling still reuses the Prime Chapter's own num via chapterMult/
+// hpMult/atkMult/defMult/bossHpMult -- no new scaling authority.
+const BRANCH_BOSS_NAMES=Object.freeze({
+ 'tree-sovereign-deep-green':'生存せし大樹霊',
+ 'deep-green-absence':'根無き森核・NULL CANOPY',
+ 'flame-king-volcano':'戴冠せし神王・EMBER THRONE',
+ 'mother-full-authority':'全権掌握せし監査体・SOLE AUDITOR',
+ 'unbroken-veil':'閉ざされ続けた鏡界王・UNBROKEN SOVEREIGN',
+});
+const BRANCH_BOSS_STAT_MODS=Object.freeze({
+ 'tree-sovereign-deep-green':{hp:1.15,speed:.85}, // entrenched ruler: tankier, slower
+ 'deep-green-absence':{speed:1.20,def:.85}, // unstable absence-core: faster, fragile
+ 'flame-king-volcano':{atk:1.10,def:1.10,hp:.95}, // armored aggressor: glass-cannon trade
+ 'mother-full-authority':{hp:1.10,def:1.15,speed:.90}, // total-authority automation: disciplined, slower, harder to break
+ 'unbroken-veil':{hp:1.05,def:1.20,speed:.85}, // never-opened guardian: entrenched, near-impervious, slow
+});
+for(const branch of OBSERVED_BRANCHES){
+ const num=branch.primeRegionRef?.chapterNum;
+ if(!num)continue;
+ const set=OBSERVED_BRANCH_ECOLOGY[branch.id];
+ if(set){
+  for(const role of OBSERVED_BRANCH_ECOLOGY_ROLES){
+   const def=set[role],base=E4_ROLE_BASES[role];
+   if(!def||!base)continue;
+   ENEMY_TYPES[`${branch.id}_${role}`]=scale(base,def.name,num,{
+    role,branchId:branch.id,speciesId:`observedBranch:${branch.id}:${role}`,regional:true,observedBranch:true,
+    behaviorTags:[...(def.behaviorTags||[])],rareIdentity:role==='rare',
+   });
+  }
+ }
+ const boss=scale(BOSS_BASE,BRANCH_BOSS_NAMES[branch.id]||branch.name,num,{role:'boss',branchId:branch.id,observedBranch:true});
+ const mods=BRANCH_BOSS_STAT_MODS[branch.id];
+ if(mods)for(const[stat,mult]of Object.entries(mods))if(boss[stat]!=null)boss[stat]=Math.round(boss[stat]*mult);
+ ENEMY_TYPES[`${branch.id}_boss`]=boss;
 }
 
 Object.assign(ENEMY_TYPES.grunt,{role:'normal',chapterId:'ch1',speciesId:'regional:ch1:normal'});

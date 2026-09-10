@@ -42,3 +42,14 @@ export function nemesisWeaknessBonus(intel=[]){
   const set=new Set(intel||[]);
   return{enemyDef:set.has('weakness')?.90:1,enemySpd:set.has('witness')?.94:1,reward:set.has('mutation')?1.08:1};
 }
+
+// Observed Branches M10 — optional pilot: a Branch-derived Nemesis modifier.
+// STORY_CANON.md already defines Nemesis as "an enemy carrying a combat
+// imprint / resonance from the player's defeat"; this extends that in-world
+// meaning to a resonance with a divergent history observed in the same Prime
+// Region, using the existing Nemesis reward-multiplier shape (see
+// nemesisHuntBonus/nemesisWeaknessBonus above) instead of a second Nemesis
+// ownership/save root or a new combat-scaling axis.
+export function nemesisBranchResonanceBonus(hasDivergentRecord){
+  return{reward:hasDivergentRecord?1.05:1};
+}

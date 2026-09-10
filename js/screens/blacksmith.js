@@ -1,21 +1,20 @@
 import { state } from '../state.js';
 import { getItem, RARITY, WEAPON_TYPES, WEAPON_MASTERY_THRESHOLD } from '../data/equipment.js';
-import { getRune, craftableRunes } from '../data/runes.js';
 import { jobsByTier } from '../data/jobs.js';
 import { Audio_ } from '../audio.js';
+import { showToast } from '../patches/toastFeedback.js';
 import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER, WEAPON_CODEX_LAYER } from '../data/balance.js';
+import { renderRune2Dashboard } from '../patches/rune2Ui.js';
 
 const AFFIX_STAT_LABEL = { atk: 'ATK', def: 'DEF', hp: 'HP', mag: 'MAG', spd: 'SPD', crit: 'CRIT' };
 
 let activeTab = 'enhance';
-let selectedRuneSlot = null;
 
 export function initBlacksmithTabs() {
   document.querySelectorAll('#blacksmithScreen .tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       Audio_.tap();
       activeTab = btn.dataset.tab;
-      selectedRuneSlot = null;
       renderBlacksmith();
     });
   });
@@ -28,8 +27,11 @@ export function renderBlacksmith() {
   });
   const content = document.getElementById('blacksmithContent');
   content.innerHTML = '';
+  // "rune" タブは旧武器ソケット式Runeを完全に廃止し、Rune 2.0ダッシュボードへ
+  // 直接委譲する（以前はここでrenderRuneTab()が廃止済みソケットUI/craftRune()
+  // を描画し、rune2Ui.jsのsetTimeout(...,0)が後追いで上書きする競合構造だった）。
   if (activeTab === 'enhance') renderEnhanceTab(content);
-  else if (activeTab === 'rune') renderRuneTab(content);
+  else if (activeTab === 'rune') renderRune2Dashboard();
   else if (activeTab === 'awakenitem') renderAwakenedItemTab(content);
   else if (activeTab === 'dispose') renderDisposeTab(content);
   else renderMasteryTab(content);
@@ -76,9 +78,9 @@ function renderEnhanceTab(content) {
       <div class="forge-card-sub">強化ボーナス +${level * 5}%　／　素材(同じ武器)所持: ${spare}個 ／ 次の強化に必要: ${maxed ? '-' : `${need}個`}
         ／ 武器の欠片所持: ${state.data.weaponEssence}個 ／ 欠片で必要: ${maxed ? '-' : `${essenceNeed}個`}</div>
       <button class="forge-card-btn" data-mode="copy" ${maxed || !canDo ? 'disabled' : ''}>
-        ${maxed ? 'MAX' : `合成強化する（素材×${need} + 💰${cost}）`}
+        ${maxed ? 'MAX' : `合成強化する（素材×${need} + Gold${cost}）`}
       </button>
-      ${maxed ? '' : `<button class="forge-card-btn" data-mode="essence" ${canDoEssence ? '' : 'disabled'} style="margin-top:6px;">武器の欠片で強化する（欠片×${essenceNeed} + 💰${cost}）</button>`}
+      ${maxed ? '' : `<button class="forge-card-btn" data-mode="essence" ${canDoEssence ? '' : 'disabled'} style="margin-top:6px;">武器の欠片で強化する（欠片×${essenceNeed} + Gold${cost}）</button>`}
     `;
     card.querySelector('[data-mode="copy"]').addEventListener('click', () => {
       if (state.enhanceWeapon(id)) { Audio_.pickup(); renderBlacksmith(); }
@@ -117,11 +119,11 @@ function renderAwakenWeaponCard(id, item) {
     <div class="forge-card-sub">目覚めボーナス +${Math.round(rank * AWAKENED_EQUIP_LAYER.BONUS_PER_RANK * 100)}%（強化ボーナスとは別枠で加算）
       ${needAwakening ? '<br>※覚醒の祭壇で1回以上「覚醒」すると目覚めさせられるようになります' : ''}</div>
     <button class="forge-card-btn" ${maxed || !canDo ? 'disabled' : ''}>
-      ${maxed ? 'MAX' : `目覚めさせる（💎${cost}）`}
+      ${maxed ? 'MAX' : `目覚めさせる（魔石${cost}）`}
     </button>
   `;
   card.querySelector('button').addEventListener('click', () => {
-    if (state.awakenWeapon(id)) { Audio_.jobMastered(); renderBlacksmith(); }
+    if (state.awakenWeapon(id)) { Audio_.jobMastered(); showToast(`${item.name} が目覚めた！`); renderBlacksmith(); }
   });
   return card;
 }
@@ -141,116 +143,19 @@ function renderAffixCard(id, item) {
       ? `現在の付与効果：${AFFIX_STAT_LABEL[affix.stat] || affix.stat}+${Math.round(affix.pct * 1000) / 10}%（再抽選すると上書きされます）`
       : 'まだ極Affixは付与されていません'}</div>
     <button class="forge-card-btn" ${canDo ? '' : 'disabled'}>
-      ${affix ? '再抽選する' : '極める'}（💰${EXTREME_AFFIX_LAYER.ROLL_COST_GOLD} + 💎${EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE}）
+      ${affix ? '再抽選する' : '極める'}（Gold${EXTREME_AFFIX_LAYER.ROLL_COST_GOLD} + 魔石${EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE}）
     </button>
   `;
   card.querySelector('button').addEventListener('click', () => {
-    if (state.rollAffix(id)) { Audio_.jobMastered(); renderBlacksmith(); }
+    if (state.rollAffix(id)) { Audio_.jobMastered(); showToast(`${item.name} に極Affixを付与した！`); renderBlacksmith(); }
   });
   return card;
 }
 
 // ---------------------------------------------------------
-// ルーンタブ
+// ルーンタブ（旧武器ソケット式Runeは廃止済み。Rune 2.0ダッシュボードは
+// renderBlacksmith()からrenderRune2Dashboard()へ直接委譲する）
 // ---------------------------------------------------------
-function renderRuneTab(content) {
-  const weaponId = state.data.equipped.weapon;
-  if (!weaponId) {
-    content.innerHTML = '<p class="hint">武器を装備するとルーンをセットできます</p>';
-    renderCraftSection(content);
-    return;
-  }
-  const item = getItem(weaponId);
-  const sockets = state.getRuneSockets(weaponId);
-
-  const head = document.createElement('div');
-  head.className = 'forge-card';
-  head.innerHTML = `
-    <div class="forge-card-top">
-      <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name}</div>
-      <div>強化Lv.${state.weaponEnhanceLevel(weaponId)}</div>
-    </div>
-    <div class="forge-card-sub">ルーンスロット ${sockets.length}個</div>
-    <div class="rune-slots" id="runeSlotsRow"></div>
-  `;
-  content.appendChild(head);
-
-  const row = head.querySelector('#runeSlotsRow');
-  sockets.forEach((runeId, idx) => {
-    const rune = runeId ? getRune(runeId) : null;
-    const slot = document.createElement('div');
-    slot.className = 'rune-slot' + (rune ? ' filled' : '');
-    slot.textContent = rune ? '✨' : '+';
-    slot.title = rune ? rune.name : '空きスロット';
-    slot.addEventListener('click', () => {
-      Audio_.tap();
-      selectedRuneSlot = selectedRuneSlot === idx ? null : idx;
-      renderBlacksmith();
-    });
-    row.appendChild(slot);
-  });
-
-  if (selectedRuneSlot !== null && selectedRuneSlot < sockets.length) {
-    const picker = document.createElement('div');
-    picker.className = 'forge-card';
-    const currentRuneId = sockets[selectedRuneSlot];
-    let rows = '';
-    if (currentRuneId) {
-      const r = getRune(currentRuneId);
-      rows += `<div class="pick-row equipped"><div><div class="item-name">${r.name}</div><div class="item-stats">${r.desc || (r.stat ? `${r.stat.toUpperCase()}+${r.value}` : '')}</div></div><button data-act="unset">外す</button></div>`;
-    }
-    const owned = Object.keys(state.data.inventory).filter((id) => getRune(id));
-    if (owned.length === 0 && !currentRuneId) rows += '<p class="hint">所持しているルーンがありません</p>';
-    for (const id of owned) {
-      const r = getRune(id);
-      const qty = state.data.inventory[id];
-      rows += `<div class="pick-row" data-set="${id}"><div><div class="item-name">${r.name} ×${qty}</div><div class="item-stats">${r.desc || (r.stat ? `${r.stat.toUpperCase()}+${r.value}` : '')}</div></div><button>セット</button></div>`;
-    }
-    picker.innerHTML = `<div class="forge-card-sub">スロット${selectedRuneSlot + 1}にセットするルーンを選択</div>${rows}`;
-    const unsetBtn = picker.querySelector('[data-act="unset"]');
-    if (unsetBtn) unsetBtn.addEventListener('click', () => {
-      state.unsocketRune(weaponId, selectedRuneSlot);
-      Audio_.tap();
-      renderBlacksmith();
-    });
-    picker.querySelectorAll('[data-set]').forEach((row2) => {
-      row2.querySelector('button').addEventListener('click', () => {
-        state.socketRune(weaponId, selectedRuneSlot, row2.dataset.set);
-        Audio_.pickup();
-        selectedRuneSlot = null;
-        renderBlacksmith();
-      });
-    });
-    content.appendChild(picker);
-  }
-
-  renderCraftSection(content);
-}
-
-function renderCraftSection(content) {
-  const heading = document.createElement('div');
-  heading.className = 'section-heading';
-  heading.textContent = 'ルーン作成（魔石で作成）';
-  content.appendChild(heading);
-
-  for (const rune of craftableRunes()) {
-    const canCraft = state.data.manastone >= rune.craftCost.manastone && state.data.gold >= rune.craftCost.gold;
-    const card = document.createElement('div');
-    card.className = 'forge-card';
-    card.innerHTML = `
-      <div class="forge-card-top">
-        <div class="forge-card-name">${rune.name}</div>
-        <div>${rune.stat.toUpperCase()}+${rune.value}</div>
-      </div>
-      <div class="forge-card-sub">所持: ${state.data.inventory[rune.id] || 0}個</div>
-      <button class="forge-card-btn" ${canCraft ? '' : 'disabled'}>作成する（💎${rune.craftCost.manastone} + 💰${rune.craftCost.gold}）</button>
-    `;
-    card.querySelector('button').addEventListener('click', () => {
-      if (state.craftRune(rune.id)) { Audio_.pickup(); renderBlacksmith(); }
-    });
-    content.appendChild(card);
-  }
-}
 
 // ---------------------------------------------------------
 // 武器熟練タブ
@@ -334,7 +239,7 @@ function renderAwakenedItemCard(id) {
       <div>${kills}/${AWAKENED_ITEM_LAYER.KILLS_TIER2}</div>
     </div>
     <div class="forge-card-sub">
-      ${(item.effects || []).map((e) => `✨${e.name}: ${e.desc}`).join('<br>')}
+      ${(item.effects || []).map((e) => `◆${e.name}: ${e.desc}`).join('<br>')}
       ${!equipped ? '<br>※装備していないと覚醒キルは増えません' : ''}
     </div>
     <div class="bar xp-bar small"><div class="fill" style="width:${pct}%"></div></div>
@@ -359,11 +264,11 @@ function appendAffix2Section(card, id, tier) {
       ? `第2Affix：${AFFIX_STAT_LABEL[affix2.stat] || affix2.stat}+${Math.round(affix2.pct * 1000) / 10}%（再抽選すると上書きされます）`
       : '第2の極Affix枠が解放されています（まだ付与されていません）'}</div>
     <button class="forge-card-btn" ${canDo ? '' : 'disabled'}>
-      ${affix2 ? '再抽選する' : '極める'}（💰${EXTREME_AFFIX_LAYER.ROLL_COST_GOLD} + 💎${EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE}）
+      ${affix2 ? '再抽選する' : '極める'}（Gold${EXTREME_AFFIX_LAYER.ROLL_COST_GOLD} + 魔石${EXTREME_AFFIX_LAYER.ROLL_COST_MANASTONE}）
     </button>
   `;
   wrap.querySelector('button').addEventListener('click', () => {
-    if (state.rollAffix2(id)) { Audio_.jobMastered(); renderBlacksmith(); }
+    if (state.rollAffix2(id)) { Audio_.jobMastered(); showToast(`${getItem(id)?.name || ''} に第2の極Affixを付与した！`); renderBlacksmith(); }
   });
   card.appendChild(wrap);
 }
@@ -400,10 +305,10 @@ function renderDisposeTab(content) {
     card.className = 'forge-card';
     card.innerHTML = `
       <div class="forge-card-top">
-        <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${qty}${state.isItemFavorite(id) ? ' ★' : ''}${locked ? ' 🔒' : ''}</div>
+        <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name} ×${qty}${state.isItemFavorite(id) ? ' ★' : ''}${locked ? ' [LOCK]' : ''}</div>
         <div>${RARITY[item.rarity].label}</div>
       </div>
-      <div class="forge-card-sub">売却: 💰${sellGold}/個　／　分解: 🔹${dismantleEssence}欠片/個${locked ? '<br>※ロック中は売却・分解できません' : ''}</div>
+      <div class="forge-card-sub">売却: Gold${sellGold}/個　／　分解: ${dismantleEssence}欠片/個${locked ? '<br>※ロック中は売却・分解できません' : ''}</div>
     `;
     const btnRow = document.createElement('div');
     btnRow.style.display = 'flex';
@@ -421,7 +326,7 @@ function renderDisposeTab(content) {
     dismantleBtn.addEventListener('click', () => { if (state.dismantleItem(id, 1)) { Audio_.pickup(); renderBlacksmith(); } });
     const lockBtn = document.createElement('button');
     lockBtn.className = 'inline-btn';
-    lockBtn.textContent = locked ? '🔓ロック解除' : '🔒ロックする';
+    lockBtn.textContent = locked ? 'ロック解除' : 'ロックする';
     lockBtn.addEventListener('click', () => { state.toggleItemLocked(id); Audio_.tap(); renderBlacksmith(); });
     btnRow.appendChild(sellBtn);
     btnRow.appendChild(dismantleBtn);

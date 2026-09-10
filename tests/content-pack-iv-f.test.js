@@ -61,5 +61,7 @@ test('CP4-6 bootstraps from CP4-5 and grants immediately after first anchor obse
   const anchor=fs.readFileSync(new URL('../js/patches/contentPackIVD.js',import.meta.url),'utf8');
   assert.match(parent,/import '\.\/contentPackIVF\.js';/);
   assert.match(anchor,/import \{ syncCP4IdentityReward \} from '\.\/contentPackIVF\.js';/);
-  assert.match(anchor,/syncCP4IdentityReward\(\);return world\(\)\.discoveries/);
+  assert.match(anchor,/function observeAnchor\(/);
+  assert.match(anchor,/syncCP4IdentityReward\(\);/);
+  assert.match(anchor,/return world\(\)\.discoveries\[anchor\.discoveryId\]/);
 });

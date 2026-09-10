@@ -69,16 +69,16 @@ function installBreedingPanel(){
   if(!content||document.getElementById('companion3BreedingPanel'))return;
   const list=state.companionList?.()||[];
   const panel=document.createElement('div');panel.id='companion3BreedingPanel';panel.className='forge-card';
-  if(list.length<2){panel.innerHTML='<div class="forge-card-name">🧬 配合</div><div class="forge-card-sub">配合には仲間が2体必要です。</div>';content.prepend(panel);return;}
+  if(list.length<2){panel.innerHTML='<div class="forge-card-name">配合</div><div class="forge-card-sub">配合には仲間が2体必要です。</div>';content.prepend(panel);return;}
   const options=list.map(optionHtml).join('');
-  panel.innerHTML=`<div class="forge-card-name">🧬 配合</div><div class="forge-card-sub">親は残ります。子は才能・性格・レアリティ・特性を遺伝し、組み合わせによって交配種が誕生します。</div><div class="forge-card-sub">費用: ${BREEDING_COST.gold.toLocaleString()} Gold / 魔石 ${BREEDING_COST.manastone}</div><label class="forge-card-sub">親A<select id="companionBreedA" style="width:100%;margin-top:4px;">${options}</select></label><label class="forge-card-sub" style="margin-top:6px;display:block;">親B<select id="companionBreedB" style="width:100%;margin-top:4px;">${options}</select></label><button id="companionBreedBtn" class="btn-highlight" style="margin-top:8px;">配合する</button><div id="companionBreedMsg" class="forge-card-sub" style="margin-top:6px;"></div>`;
+  panel.innerHTML=`<div class="forge-card-name">配合</div><div class="forge-card-sub">親は残ります。子は才能・性格・レアリティ・特性を遺伝し、組み合わせによって交配種が誕生します。</div><div class="forge-card-sub">費用: ${BREEDING_COST.gold.toLocaleString()} Gold / 魔石 ${BREEDING_COST.manastone}</div><label class="forge-card-sub">親A<select id="companionBreedA" style="width:100%;margin-top:4px;">${options}</select></label><label class="forge-card-sub" style="margin-top:6px;display:block;">親B<select id="companionBreedB" style="width:100%;margin-top:4px;">${options}</select></label><button id="companionBreedBtn" class="btn-highlight" style="margin-top:8px;">配合する</button><div id="companionBreedMsg" class="forge-card-sub" style="margin-top:6px;"></div>`;
   content.prepend(panel);
   const a=panel.querySelector('#companionBreedA'),b=panel.querySelector('#companionBreedB'),btn=panel.querySelector('#companionBreedBtn'),msg=panel.querySelector('#companionBreedMsg');
   if(b.options.length>1)b.selectedIndex=1;
   btn.addEventListener('click',()=>{
     const r=state.breedCompanions(a.value,b.value);
     if(!r.ok){msg.textContent=r.reason==='cost'?'Goldまたは魔石が足りません。':r.reason==='parents'?'異なる2体を選んでください。':'配合できません。';return;}
-    const child=r.child;msg.textContent=`✨ ${child.instance.nickname||child.species.name} が誕生！ 第${r.generation}世代${r.inheritedTraits.length?` / 継承特性: ${r.inheritedTraits.join('・')}`:''}`;
+    const child=r.child;msg.textContent=`${child.instance.nickname||child.species.name} が誕生！ 第${r.generation}世代${r.inheritedTraits.length?` / 継承特性: ${r.inheritedTraits.join('・')}`:''}`;
     renderCompanionScreen();
   });
 }

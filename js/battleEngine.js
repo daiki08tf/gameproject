@@ -112,6 +112,9 @@ export class BattleEngine {
     }
 
     this.job = state.currentJob;
+    // C1 先陣: 戦闘中だけ保持するPressure。保存・育成authorityには触れない。
+    this._c1Pressure = 0;
+    this._c1LastElement = null;
     this.effects = state.getEquippedEffects();
     for (const eff of this.effects) {
       if (eff.kind === 'glassCannon' && eff.hpMult) {
@@ -380,6 +383,45 @@ export class BattleEngine {
     }
   }
 
+  // C1影刃：既存のweaken/DoTが残る相手だけ、背後の一撃を処刑へ強化する。
+  // 新しい状態は持たず、既存の対象条件判定をそのまま使う。
+  _c1ShadowExecutionPower(tech, target) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'execution' || !rule.executionSkillIds.includes(tech.id)) return 0;
+    return this._targetBonusPower({ when:'debuffed', power:rule.bonusPower }, target);
+  }
+
+  // C1楽匠：既存buffが続く間だけ、舞踏攻撃を終演として強化する。
+  _c1MaestroChorusPower(tech) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'chorus' || !rule.finaleSkillIds.includes(tech.id)) return 0;
+    return Object.values(this.player.buffs || {}).some((buff) => buff?.turnsLeft > 0) ? rule.bonusPower : 0;
+  }
+
+  // C1聖護官：守護が続く間の回復を、既存regen buffへつなげる。
+  _c1ChaplainSanctuary(result, tech) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'sanctuary' || !rule.healSpellIds.includes(tech.id) || this.player.buffs.def?.turnsLeft <= 0) return;
+    this._applyBuffPayload({ regenAdd:rule.regenAdd, turns:rule.regenTurns }, result);
+    result.sanctuary = { regenAdd:rule.regenAdd, turns:rule.regenTurns };
+  }
+
+  // C1補給官：既存Gold消費技の実MPコストだけを戦闘中に還元する。
+  _c1QuartermasterSupply(result, tech) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'supply' || result.goldSpent <= 0) return;
+    const restored = Math.round(this._effectiveMpCost(tech) * rule.mpRefundPct);
+    this.player.mp = Math.min(this.player.maxMp, this.player.mp + restored);
+    result.supply = { mpRestored:restored };
+  }
+
+  // C1神託師：既存の会心buff中だけ、星術の会心率を上げる。
+  _c1OracleOmenCritBonus(tech) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'omen' || !rule.attackSpellIds.includes(tech.id)) return 0;
+    return this.player.buffs.critAdd?.turnsLeft > 0 ? rule.critBonus : 0;
+  }
+
   // ---------------------------------------------------------
   // ダメージ計算（PR#2のDamage Bucketをそのまま流用。新式は作らない）
   // ---------------------------------------------------------
@@ -400,8 +442,16 @@ export class BattleEngine {
       + (bloodChaliceMult - 1)
       + (tempAtkMult - 1)
       + (this._tempDmgBonusTurns > 0 ? this._tempDmgBonus : 0);
+    // Observed Branches M6 / NULL ROOT: the fixed identity turns the absence
+    // of recovery gear into offense. This stays inside the existing passive
+    // Damage bucket; it does not add a second proc/Option pipeline.
+    const regenBuff = this.player?.buffs?.regenAdd;
+    const recoveryActive = this._regenPower > 0
+      || (regenBuff?.turnsLeft > 0 && regenBuff.value > 0)
+      || this.effects.some((eff) => ['regen','lifesteal','lifestealLowHp','healOnCrit','guardianHeal','healOnKill','healOnGuard'].includes(eff.kind));
     for (const eff of this._effectsOf('passive')) {
-      if (eff.kind === 'dmgBonusAdd') mult += eff.power;
+      if (eff.kind === 'noRecoveryDmgBonus' && !recoveryActive) mult += eff.power;
+      else if (eff.kind === 'dmgBonusAdd') mult += eff.power;
       else if (sourceKind === 'normal' && eff.kind === 'normalDmgAdd') mult += eff.power;
       else if (sourceKind === 'skill' && eff.kind === 'skillDmgAdd') mult += eff.power;
       else if (sourceKind === 'spell' && eff.kind === 'spellDmgAdd') mult += eff.power;
@@ -634,6 +684,7 @@ export class BattleEngine {
       critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, berserkerDoubled,
     };
     this._actionTypesUsed.add('attack');
+    this._c1VanguardGain(result);
     this._lastActionWasAttack = true; // 拳聖「連環拳」：直前の行動が攻撃系だったかの判定に使う
     this._checkActionDiversityBurst(result);
     return result;
@@ -649,6 +700,34 @@ export class BattleEngine {
   _isTechniqueLearned(tech) {
     if (tech.learnLevel === 'master') return state.isMastered(state.currentJobId);
     return state.currentLevel >= tech.learnLevel;
+  }
+
+  _c1VanguardGain(result, techId = null) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'pressure' || (techId && !rule.gainSkillIds.includes(techId))) return;
+    const before = this._c1Pressure;
+    this._c1Pressure = Math.min(rule.maxStacks, this._c1Pressure + 1);
+    if (this._c1Pressure > before) result.pressure = { stacks:this._c1Pressure, gained:true };
+  }
+
+  _c1VanguardSpend(tech) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'pressure' || !rule.spendSkillIds.includes(tech.id) || this._c1Pressure <= 0) return 1;
+    const stacks = this._c1Pressure;
+    this._c1Pressure = 0;
+    return 1 + stacks * rule.damagePerStack;
+  }
+
+  _c1ElementCycle(result, tech, kind) {
+    const rule = this.job?.c1Combat;
+    if (rule?.kind !== 'elementCycle' || kind !== 'spell' || !tech.element || tech.element === 'random') return;
+    const previous = this._c1LastElement;
+    const switched = previous && previous !== tech.element;
+    this._c1LastElement = tech.element;
+    if (!switched) return;
+    const refunded = Math.round(this._effectiveMpCost(tech) * rule.mpRefundPct);
+    this.player.mp = Math.min(this.player.maxMp, this.player.mp + refunded);
+    result.elementCycle = { from:previous, to:tech.element, mpRestored:refunded };
   }
 
   // 習得済み（かつpassiveではない＝コマンドとして選択可能な）技一覧
@@ -758,6 +837,10 @@ export class BattleEngine {
       }
     };
     dispatchTechnique();
+    this._c1ElementCycle(result, tech, kind);
+    this._c1ChaplainSanctuary(result, tech);
+    this._c1QuartermasterSupply(result, tech);
+    if (tech.type === 'damage') this._c1VanguardGain(result, tech.id);
     // 賢者MASTER「連続詠唱」：直前に予約されていれば、次に唱えたspell1回に
     // 限り2回発動させる（MPは2回分消費、不足していれば1回のみで諦める＝
     // ラウンド自体はすでに成立しているので失敗にはしない）。連続詠唱自身の
@@ -791,12 +874,15 @@ export class BattleEngine {
     const statValue = tech.hybrid ? (this._effectiveAtk() + this._effectiveMag()) / 2
       : (tech.magic ? this._effectiveMag() : this._effectiveAtk());
     const hits = tech.hits || 1;
+    const pressureMult = this._c1VanguardSpend(tech);
     const targets = this._resolveTargets(tech, targetId);
     if (targets.length === 0) { result.noTarget = true; return; }
     const opts = {};
     if (tech.armorPenBonus) opts.armorPen = Math.min(CAPS_LAYER.ARMOR_PEN_MAX, this._effectiveArmorPen() + tech.armorPenBonus);
     // critBonus：魔法剣士「雷鳴斬」・急所突き等、この技の一撃だけ会心率に加算する
     if (tech.critBonus) opts.critPct = Math.min(CAPS_LAYER.CRIT_PCT_MAX, this._effectiveCritPct() + tech.critBonus);
+    const omenCritBonus = this._c1OracleOmenCritBonus(tech);
+    if (omenCritBonus) opts.critPct = Math.min(CAPS_LAYER.CRIT_PCT_MAX, (opts.critPct ?? this._effectiveCritPct()) + omenCritBonus);
     // 自己参照の条件付き威力ボーナス（先攻/回避直後/Boss予兆中/直前の行動/
     // 背水/回避回数）。対象ごとには変わらないため先に1回だけ計算する
     let conditionBonusPower = 0;
@@ -822,12 +908,14 @@ export class BattleEngine {
         continue;
       }
       const targetBonusPower = this._targetBonusPower(tech.targetBonus, target);
+      const executionBonusPower = this._c1ShadowExecutionPower(tech, target);
+      const chorusBonusPower = this._c1MaestroChorusPower(tech);
       let totalDamage = 0, criticalCount = 0, hitsLanded = 0;
       const effects = []; let kill = null;
       for (let i = 0; i < hits; i++) {
         if (target.dead) break;
-        const power = tech.power + conditionBonusPower + targetBonusPower;
-        const atkValue = statValue * power * this._mainDmgMult(kind);
+        const power = tech.power + conditionBonusPower + targetBonusPower + executionBonusPower + chorusBonusPower;
+        const atkValue = statValue * power * pressureMult * this._mainDmgMult(kind);
         const { damage, critical } = this.calculateDamage(atkValue, target, opts);
         if (critical) criticalCount++;
         hitsLanded++;
@@ -856,9 +944,13 @@ export class BattleEngine {
         targetId: target.id, targetName: target.name, damage: totalDamage, defeated: target.dead,
         critical: criticalCount > 0, criticalCount, hitCount: hitsLanded, effects, kill,
       });
+      if (executionBonusPower > 0) result.execution = { targetId:target.id, bonusPower:executionBonusPower };
+      if (chorusBonusPower > 0) result.chorus = { targetId:target.id, bonusPower:chorusBonusPower };
     }
     // プリマ・ディーヴァ「剣の舞曲」等：攻撃と同時に自分へバフをかける
     if (tech.selfBuff) this._applyBuffPayload(tech.selfBuff, result);
+    if (pressureMult > 1) result.pressure = { spent:true, mult:pressureMult };
+    if (omenCritBonus) result.omen = { critBonus:omenCritBonus };
   }
 
   // 星詠みの魔女「流星」専用：固定hit数ぶん、毎回独立してランダムな生存中の

@@ -152,9 +152,9 @@ state.equipment3ImprintLegendary = function equipment3ImprintLegendary(instanceI
 
 function fmtCost(cost) {
   const parts = [];
-  if (cost.gold) parts.push(`💰${cost.gold}`);
+  if (cost.gold) parts.push(`Gold${cost.gold}`);
   if (cost.essence) parts.push(`欠片×${cost.essence}`);
-  if (cost.manastone) parts.push(`💎${cost.manastone}`);
+  if (cost.manastone) parts.push(`魔石${cost.manastone}`);
   return parts.join(' + ');
 }
 
@@ -182,8 +182,8 @@ function renderEquipment3Forge() {
     .map(([id, qty]) => `${getLegendaryEffect(id)?.name || id}×${qty}`)
     .join(' / ') || 'なし';
   intro.innerHTML = `
-    <div class="forge-card-top"><div class="forge-card-name">⚒️ 鍛冶屋3.0</div><div>IP装備専用</div></div>
-    <div class="forge-card-sub">💰 ${state.data.gold} ／ 武器の欠片 ${state.data.weaponEssence || 0} ／ 💎 ${state.data.manastone}<br>
+    <div class="forge-card-top"><div class="forge-card-name">鍛冶屋3.0</div><div>IP装備専用</div></div>
+    <div class="forge-card-sub">Gold ${state.data.gold} ／ 武器の欠片 ${state.data.weaponEssence || 0} ／ 魔石 ${state.data.manastone}<br>
     刻印ストック：${imprintText}<br>1枠だけ厳選できるので、神個体の残り1枠を育てられます。</div>`;
   content.appendChild(intro);
 

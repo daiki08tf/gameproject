@@ -97,10 +97,10 @@ function enrichEnemyCards(screen){
     }
     const known=tacticalKnowledge(enemy);
     const parts=[];
-    if(known.role) parts.push(`ROLE ${known.role.icon||''}${known.role.name||known.role.id||''}`);
+    if(known.role) parts.push(`ROLE ${known.role.name||known.role.id||''}`);
     const elementText=elementKnowledgeText(known.elements);
     if(elementText) parts.push(elementText);
-    if(enemy.pendingSpecial) parts.push('⚠ 特殊行動の予兆');
+    if(enemy.pendingSpecial) parts.push('特殊行動の予兆');
     else if(known.skill) parts.push(`観測技 ${known.skill}`);
     line.textContent=parts.length?parts.join(' / '):'攻略情報：未解析';
   });

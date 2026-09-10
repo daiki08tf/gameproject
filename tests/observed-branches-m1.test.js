@@ -46,9 +46,11 @@ test('M1 discovery conditions reuse the CP4 anchor deterministically',()=>{
 
 test('M1 can resolve Branches by the existing Prime Region reference',()=>{
   const matches=observedBranchesForPrimeRegion({worldRegionId:'frontier',chapterNum:2});
-  assert.equal(matches.length,1);
-  assert.equal(matches[0].id,'tree-sovereign-deep-green');
-  assert.deepEqual(observedBranchesForPrimeRegion({worldRegionId:'elemental'}),[]);
+  assert.equal(matches.length,2);
+  assert.deepEqual(matches.map(branch=>branch.id),['tree-sovereign-deep-green','deep-green-absence']);
+  assert.deepEqual(observedBranchesForPrimeRegion({worldRegionId:'elemental'}).map(branch=>branch.id),['flame-king-volcano']);
+  assert.deepEqual(observedBranchesForPrimeRegion({worldRegionId:'veil'}).map(branch=>branch.id),['unbroken-veil']);
+  assert.deepEqual(observedBranchesForPrimeRegion({worldRegionId:'no-such-region'}),[]);
 });
 
 test('M1 Branch definitions contain no combat or reward authority',()=>{

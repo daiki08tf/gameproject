@@ -116,7 +116,7 @@ function decorateCraftingButtons() {
   }
 
   for (const title of root.querySelectorAll('.forge-card-name')) {
-    if (title.textContent.trim() === '⚒️ 鍛冶屋3.0') title.textContent = '⚒️ Option鍛造';
+    if (title.textContent.trim() === '鍛冶屋3.0') title.textContent = 'Option鍛造';
   }
   for (const hint of root.querySelectorAll('.hint')) {
     if (hint.textContent.trim() === 'Affixなし') hint.textContent = 'Optionなし';

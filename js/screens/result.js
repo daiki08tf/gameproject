@@ -23,10 +23,10 @@ function resolveDrop(itemId) {
     let name = `${item.unique ? '◆ UNIQUE ' : ''}${stars ? stars + ' ' : ''}${p?.name || item.name}`;
     const lines = [];
     const meta = equipment3MetaText(p);
-    if (meta) lines.push(`⚙ ${meta}`);
+    if (meta) lines.push(meta);
     if (!item.unique && inst) {
       if (p.affixes.length) for (const a of p.affixes) lines.push(`${a.greater ? '★ ' : ''}[${a.rarityLabel}] ${a.name}: ${a.desc}`);
-      else lines.push('⚙ オプションなし');
+      else lines.push('オプションなし');
       lines.push(...equipment3SpecialLines(p));
     }
     if (item.unique && item.lore) lines.push(`「${item.lore}」`);
@@ -34,7 +34,7 @@ function resolveDrop(itemId) {
     return {name,color:RARITY[item.rarity].color,equipment3:p,headline:equipment3DropHeadline(p)};
   }
   const rune = getRune(itemId);
-  if (rune) return { name: `✨ ${rune.name}`, color: 'var(--accent)', equipment3: null, headline: null };
+  if (rune) return { name: rune.name, color: 'var(--accent)', equipment3: null, headline: null };
   return { name: itemId, color: '', equipment3: null, headline: null };
 }
 
@@ -49,8 +49,8 @@ function renderLoot3Chase(result, itemsEl) {
   const wrap=document.createElement('div');wrap.className='result-drop-wrap eq3-special';
   const headline=document.createElement('div');headline.className='result-loot-headline';headline.textContent='――TARGET FARM BONUS――';wrap.appendChild(headline);
   const chip=document.createElement('div');chip.className='result-item-chip';chip.style.whiteSpace='pre-line';
-  if(chase.type==='relicResonance') chip.textContent=`☀ RELIC RESONANCE — ${chase.name}\n解放資源 +${chase.gold.toLocaleString()} Gold / +${chase.manastone} 魔石`;
-  else if(chase.type==='uniqueEcho') chip.textContent=`🔥 UNIQUE ECHO — ${chase.name}\n試練残響 ${chase.echoes}/${chase.maxEchoes}（初期試練を最大25%補助）`;
+  if(chase.type==='relicResonance') chip.textContent=`RELIC RESONANCE — ${chase.name}\n解放資源 +${chase.gold.toLocaleString()} Gold / +${chase.manastone} 魔石`;
+  else if(chase.type==='uniqueEcho') chip.textContent=`UNIQUE ECHO — ${chase.name}\n試練残響 ${chase.echoes}/${chase.maxEchoes}（初期試練を最大25%補助）`;
   else chip.textContent='TARGET FARM BONUS';
   wrap.appendChild(chip);itemsEl.appendChild(wrap);
 }
@@ -76,14 +76,15 @@ function renderPhase13(result,itemsEl){
 
 export function renderResult(result) {
   const title=document.getElementById('resultTitle'),stats=document.getElementById('resultStats'),itemsEl=document.getElementById('resultItems');
-  if(result.retreated){title.textContent='RETREAT';title.style.color='#b9c0cc';}else if(result.bountyUnique){title.textContent='BOUNTY CLEARED — UNIQUE FOUND';title.style.color='#f2c94c';}else if(result.bountyNemesis?.grew){title.textContent=`DEFEATED — ${result.bountyNemesis.title || 'NEMESIS'}`;title.style.color='#e6425a';}else if(result.cleared){title.textContent='STAGE CLEAR';title.style.color='';}else{title.textContent='DEFEATED...';title.style.color='#e6425a';}
+  const panel=title.closest('.panel');
+  if(result.retreated){title.textContent='RETREAT';title.style.color='var(--dc-ash-300)';if(panel)panel.dataset.tone='neutral';}else if(result.bountyUnique){title.textContent='BOUNTY CLEARED — UNIQUE FOUND';title.style.color='var(--dc-brass-300)';if(panel)panel.dataset.tone='success';}else if(result.bountyNemesis?.grew){title.textContent=`DEFEATED — ${result.bountyNemesis.title || 'NEMESIS'}`;title.style.color='var(--dc-danger-300)';if(panel)panel.dataset.tone='danger';}else if(result.cleared){title.textContent='STAGE CLEAR';title.style.color='';if(panel)panel.dataset.tone='success';}else{title.textContent='DEFEATED...';title.style.color='var(--dc-danger-300)';if(panel)panel.dataset.tone='danger';}
   stats.textContent=`獲得経験値: ${result.expGained} / 獲得ゴールド: ${result.goldGained}`+(result.world2?.fragment?` / 鍵片 +${result.world2.fragment}`:'')+(result.world2?.keyDungeon?` / 境界鍵路報酬 鍵片 +${result.world2.keyDungeon.keyFragments}`:'')+(result.bounty2?` / 賞金首の証 +${result.bounty2.marks}（所持 ${result.bounty2.totalMarks}）`:'')+(result.bounty2?.nemesisDefeated?' / 宿敵討伐ボーナス！':'')+(result.bountyNemesis?.grew?` / 宿敵Lv.${result.bountyNemesis.level}へ成長`:'')+(result.cleared?'':'（撃破分のみ・レベルや装備は失われません）');
   itemsEl.innerHTML='';
   const normalItems=Array.isArray(result.items)?result.items:[],rune2Drops=Array.isArray(result.rune2Drops)?result.rune2Drops:[];
   if(normalItems.length===0&&rune2Drops.length===0&&!result.world2?.event&&!result.loot3Chase&&!result.phase13)itemsEl.innerHTML='<span class="hint" style="opacity:.6;font-size:12px;">ドロップなし</span>';
   else{
     for(const itemId of normalItems)appendDropChip(itemsEl,resolveDrop(itemId));
-    for(const drop of rune2Drops){const rune=getRune2(drop.id);if(!rune)continue;const chip=document.createElement('div');chip.className='result-item-chip';chip.style.color='var(--accent)';chip.textContent=`✨ RUNE ${rune.name} +${drop.amount}刻（${drop.owned}刻）`;itemsEl.appendChild(chip);}
+    for(const drop of rune2Drops){const rune=getRune2(drop.id);if(!rune)continue;const chip=document.createElement('div');chip.className='result-item-chip';chip.style.color='var(--accent)';chip.textContent=`RUNE ${rune.name} +${drop.amount}刻（${drop.owned}刻）`;itemsEl.appendChild(chip);}
   }
   renderLoot3Chase(result,itemsEl);
   renderWorldEvent(result,itemsEl);

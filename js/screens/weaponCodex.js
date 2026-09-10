@@ -8,8 +8,8 @@ const TYPE_LABELS = {
   dagger: '短剣', knuckle: '拳具', instrument: '楽器', rod: '錫杖',
 };
 const CODEX_ELEMENT_LABEL = {
-  fire: '🔥炎', ice: '❄️氷', lightning: '⚡雷', wind: '🌪️風',
-  light: '✨光', dark: '🌑闇', poison: '☠️毒',
+  fire: '炎', ice: '氷', lightning: '雷', wind: '風',
+  light: '光', dark: '闇', poison: '毒',
 };
 
 let weaponCodexActiveTab = 'sword';
@@ -96,7 +96,7 @@ function renderWeaponCard(w) {
     return card;
   }
   const seriesText = w.series && WEAPON_SERIES[w.series] ? `《${WEAPON_SERIES[w.series].name}》` : '';
-  const effectsText = (w.effects || []).map((e) => `✨${e.name}: ${e.desc}`).join('<br>');
+  const effectsText = (w.effects || []).map((e) => `◆${e.name}: ${e.desc}`).join('<br>');
   const implicitText = w.implicit && w.implicit.desc ? `【特性】${w.implicit.desc}` : '';
   card.innerHTML = `
     <div class="forge-card-top">

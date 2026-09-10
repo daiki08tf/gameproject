@@ -20,7 +20,6 @@ TextBattleScreen.prototype._renderTechMenu = function combat2ModifierTechMenu() 
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'inline-btn combat2-modifier-btn';
-    btn.style.cssText = 'margin-left:8px;padding:3px 7px;font-size:11px;';
     btn.textContent = `改造:${SKILL_MODIFIERS[current]?.name || '標準'}`;
     btn.title = SKILL_MODIFIERS[current]?.desc || '';
     btn.addEventListener('click', (event) => {
