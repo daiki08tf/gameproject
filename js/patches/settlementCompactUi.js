@@ -51,6 +51,7 @@ const SELECTOR_TAB = [
   ['[data-settlement-exploration]', 'explore'],
   ['[data-settlement-secrets]', 'explore'],
   ['[data-archaeology]', 'explore'],
+  ['[data-treasure-hunt]', 'explore'],
   ['[data-settlement-ui4-heading="exploration"]', 'explore'],
   ['[data-settlement-defense]', 'defense'],
   ['[data-settlement-seasons]', 'defense'],
