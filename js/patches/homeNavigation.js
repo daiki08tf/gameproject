@@ -59,6 +59,7 @@ import './monsterRanch2Facilities.js';
 import './monsterRanch2Complete.js';
 import './monsterRanch2Economy.js';
 import './settlementRanch3.js';
+import './ranchSpeciesGrade.js';
 import './monsterRanchUi.js';
 import './monsterRanch2FacilitiesUi.js';
 import './monsterRanch2CompleteUi.js';

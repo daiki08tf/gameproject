@@ -47,20 +47,26 @@ function resolveRecruitCandidate(candidate) {
   const companion = instanceId && state.getCompanion?.(instanceId);
   if (!instanceId || !companion) return { accepted: false, reason: 'error', name: candidate.name };
   const highTalent = applyTalentFloor(companion, candidate.speciesId, candidate.target);
-  state.recordRanchRecruit?.(candidate.speciesId);
+  const recruitRecord = state.recordRanchRecruit?.(candidate.speciesId);
   const mutation = state.rollRanchMutation?.(instanceId, { beastDen: !!candidate.targetFarmBonus }) || null;
   return {
     accepted: true, instanceId, speciesId: candidate.speciesId,
     name: companion.instance.nickname || companion.species.name,
     rarity: companion.instance.rarity, nature: companion.instance.nature,
     eliteOrigin: !!candidate.elite, bondRare, routeRare, highTalent, mutation,
+    gradedUpLabel: recruitRecord?.gradedUp ? recruitRecord.gradedUpLabel : null,
   };
 }
 
+// A recruit that also crosses a species-grade threshold (C6-4) gets ONE
+// combined toast rather than two separate ones racing for the same #toast
+// element back-to-back (the second call would just clobber the first
+// before the player could read it -- see js/patches/toastFeedback.js).
 function announceRecruit(result) {
   if (result.accepted) {
     Audio_.pickup();
-    showToast(`[Companion] ${result.name}が仲間になった`);
+    const gradeText = result.gradedUpLabel ? `（${result.gradedUpLabel}に昇格！）` : '';
+    showToast(`[Companion] ${result.name}が仲間になった${gradeText}`);
   } else if (result.reason === 'full') {
     showToast(`[Companion] ${result.name}が仲間になりたそうにしていたが、牧場が満員だった`);
   }
