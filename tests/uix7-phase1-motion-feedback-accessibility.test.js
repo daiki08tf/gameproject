@@ -34,11 +34,13 @@ test('UIX-7 phase 1: overlayA11y.js provides a dialog role + Escape + focus-rest
   assert.match(overlayA11y, /previouslyFocused/);
 });
 
-test('UIX-7 phase 1: the companion recruit-prompt overlay is wired to bindOverlayDialog', () => {
-  assert.match(companionRecruitment, /import \{ bindOverlayDialog \} from '\.\/overlayA11y\.js';/);
-  assert.match(companionRecruitment, /bindOverlayDialog\(overlay,panel,\(\)=>finish\(false\)\)/);
-  // restoreFocus() must run before the overlay is actually removed, not after.
-  assert.match(companionRecruitment, /resolved=true;restoreFocus\(\);/);
+test('C6-1 (Living World & Discovery) removed the companion recruit-prompt overlay this UIX-7 phase 1 test used to check -- bindOverlayDialog is no longer imported there', () => {
+  // Superseded by C6-1: a successful recruit now auto-joins instead of
+  // blocking battle flow behind an accept/decline modal, so there is no
+  // overlay left for bindOverlayDialog to wire up. This test locks the new
+  // reality in place rather than silently deleting the historical check.
+  assert.doesNotMatch(companionRecruitment, /bindOverlayDialog/);
+  assert.doesNotMatch(companionRecruitment, /companionRecruitOverlay/);
 });
 
 test('UIX-7 phase 1: both Settlement overlays (resident event, evolution) are wired to bindOverlayDialog', () => {
