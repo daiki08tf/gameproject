@@ -49,6 +49,13 @@ export function regionCodexBundle(regionId, sources = {}) {
   const regionFish = (sources.fishCodex || []).filter((f) => f.regionId === regionId);
   const archaeologySite = (sources.archaeologySites || []).find((s) => s.regionId === regionId) || null;
   const treasureHunts = (sources.treasureHunts || []).filter((h) => h.regionId === regionId);
+  // C8-3 -- Rare encounter identity, the last "bundle" item this slice
+  // covers. Reuses the EXISTING Enemy 2.0 rare-role system (enemies.js's
+  // rareIdentity:true / REGIONAL_ENEMY_ROLES 'rare' role, one per
+  // chapter) -- no new rare-enemy authority, this only surfaces which of
+  // a region's already-defined rare types (`sources.rareEncounters`,
+  // built in the runtime patch) have been discovered.
+  const rareEncounters = (sources.rareEncounters || []).filter((r) => r.regionId === regionId);
   return {
     region,
     faunaSeen: fauna.filter((s) => s.seen).length,
@@ -58,6 +65,8 @@ export function regionCodexBundle(regionId, sources = {}) {
     fishTotal: regionFish.length,
     archaeologySite,
     treasureHunts,
+    rareSeen: rareEncounters.filter((r) => r.seen).length,
+    rareTotal: rareEncounters.length,
   };
 }
 

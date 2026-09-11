@@ -14,6 +14,7 @@ import './treasureHunt.js'; // guarantees state.treasureHunts() exists
 import { COMPANION_SPECIES } from '../data/companions.js';
 import { world3RegionForChapter } from '../data/world3Regions.js';
 import { CHAPTERS, isChapterUnlocked } from '../data/stages.js';
+import { ENEMY_TYPES } from '../data/enemies.js';
 import { regionCodexRegions, regionCodexBundle, regionBossSummary } from '../data/regionCodex.js';
 
 // Companion species' own `regionId` (data/companions.js) is chapter-scoped
@@ -39,6 +40,25 @@ function faunaSpecies() {
     .filter(Boolean);
 }
 
+// ENEMY_TYPES entries carry `chapterId` in the same 'ch1'/'ch5' shape
+// faunaSpecies() already resolves -- reuse chapterNumFromSpeciesRegionId()
+// rather than a second parsing rule. `enemyType` (the object key, not the
+// enemy's own display name) is what the enemy Codex is keyed by
+// (state.data.monsterCodex[enemyType]), same as every other Codex read in
+// this file.
+function rareEncounters() {
+  const codex = state.data.monsterCodex || {};
+  return Object.entries(ENEMY_TYPES)
+    .filter(([, e]) => e.rareIdentity && e.chapterId)
+    .map(([enemyType, e]) => {
+      const chapterNum = chapterNumFromSpeciesRegionId(e.chapterId);
+      const region = chapterNum ? world3RegionForChapter(chapterNum) : null;
+      if (!region) return null;
+      return { id: enemyType, name: e.name, regionId: region.id, seen: !!codex[enemyType]?.seen };
+    })
+    .filter(Boolean);
+}
+
 state.regionCodexList = function regionCodexList() {
   const sources = {
     faunaSpecies: faunaSpecies(),
@@ -46,6 +66,7 @@ state.regionCodexList = function regionCodexList() {
     fishCodex: this.fishCodex?.() || [],
     archaeologySites: this.archaeologySites?.() || [],
     treasureHunts: this.treasureHunts?.() || [],
+    rareEncounters: rareEncounters(),
   };
   const isStageCleared = (id) => this.isStageCleared(id);
   const bossCtx = { isStageCleared, isChapterUnlocked: (idx) => isChapterUnlocked(idx, isStageCleared) };

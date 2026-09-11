@@ -150,6 +150,46 @@ test('Runtime: chapter 1 (always unlocked) reveals its own boss name immediately
   assert.equal(after.bosses.find((b) => b.chapterNum === 1).cleared, true);
 });
 
+// ---- C8-3: rare encounter identity -------------------------------------
+// The last "bundle" item C8's own goal names. Reuses the EXISTING Enemy
+// 2.0 rare-role system (enemies.js's rareIdentity:true) directly -- no
+// new rare-enemy authority.
+
+test('regionCodexBundle() aggregates rareEncounters the same way as fauna -- filtered by regionId, counted seen/total', () => {
+  const sources = {
+    rareEncounters: [
+      { id: 'ch1_rare', regionId: 'frontier', seen: true },
+      { id: 'ch2_rare', regionId: 'frontier', seen: false },
+      { id: 'ch5_rare', regionId: 'elemental', seen: true },
+    ],
+  };
+  const bundle = regionCodexBundle('frontier', sources);
+  assert.equal(bundle.rareSeen, 1);
+  assert.equal(bundle.rareTotal, 2);
+});
+
+test('Runtime: state.regionCodexList() reads rare-encounter discovery through the existing enemy Codex (state.data.monsterCodex[enemyType].seen) -- no new discovery flag', () => {
+  state.resetAll();
+  state.data.stageProgress = state.data.stageProgress || {};
+  const before = state.regionCodexList().find((b) => b.region.id === 'frontier');
+  assert.ok(before.rareTotal > 0, 'frontier must have at least one region-native rare enemy type (Enemy 2.0 already defines one per chapter)');
+  assert.equal(before.rareSeen, 0, 'nothing marked seen yet on a fresh save');
+
+  // Mark chapter 1's rare enemy type seen via the SAME real codex path
+  // fauna/boss discovery already goes through -- proves this isn't a
+  // separately-invented tracking flag.
+  state.markCodexSeen?.({ type: 'ch1_rare', name: 'テスト', rareIdentity: true });
+  const after = state.regionCodexList().find((b) => b.region.id === 'frontier');
+  assert.ok(after.rareSeen >= before.rareSeen);
+});
+
+test('C8-3: no new rare-enemy authority -- regionCodex.js reads enemies.js\'s existing rareIdentity flag, it never defines a rare enemy itself', () => {
+  const src = read('js/patches/regionCodex.js');
+  assert.match(src, /import \{ ENEMY_TYPES \} from '\.\.\/data\/enemies\.js';/);
+  assert.match(src, /e\.rareIdentity/);
+  assert.doesNotMatch(src, /rareIdentity:\s*true/, 'must never author a NEW rareIdentity entry, only read the existing ones');
+});
+
 test('No platform emoji introduced by the Region Codex feature', () => {
   const PICTOGRAPH = /\p{Extended_Pictographic}/u;
   for (const file of ['js/data/regionCodex.js', 'js/patches/regionCodex.js', 'js/patches/regionCodexUi.js']) {
