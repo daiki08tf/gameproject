@@ -190,6 +190,50 @@ test('C8-3: no new rare-enemy authority -- regionCodex.js reads enemies.js\'s ex
   assert.doesNotMatch(src, /rareIdentity:\s*true/, 'must never author a NEW rareIdentity entry, only read the existing ones');
 });
 
+// ---- C8-4: Unique/Rune target per region -------------------------------
+// Completes C8's originally-listed "bundle" (ecology, fish, archaeology,
+// Rumor, boss/hidden threat, rare encounter, Rune target). Rune 2.1
+// already gives each numbered Story chapter exactly one Rune -- no new
+// Rune authority, this only counts region-native Runes the player has
+// actually started owning.
+
+test('regionCodexBundle() aggregates runes the same way as fauna/rareEncounters -- filtered by regionId, counted owned/total', () => {
+  const sources = {
+    runes: [
+      { id: 'force', regionId: 'frontier', owned: true },
+      { id: 'ironclad', regionId: 'frontier', owned: false },
+      { id: 'wise', regionId: 'frontier', owned: false },
+      { id: 'notfall', regionId: 'frontier', owned: false },
+      { id: 'hawkeye', regionId: 'elemental', owned: true },
+    ],
+  };
+  const bundle = regionCodexBundle('frontier', sources);
+  assert.equal(bundle.runesOwned, 1);
+  assert.equal(bundle.runesTotal, 4);
+});
+
+test('Runtime: state.regionCodexList() counts real region-native Runes via the existing Rune 2.1 authority (RUNE2_DEFS + state.rune2OwnedMarks()) -- no new Rune data, no new ownership flag', () => {
+  state.resetAll();
+  const before = state.regionCodexList().find((b) => b.region.id === 'frontier');
+  // frontier = chapters 1-4, and RUNE2_DEFS gives exactly one Rune per
+  // chapter 1-36, so frontier must have exactly 4.
+  assert.equal(before.runesTotal, 4);
+  assert.equal(before.runesOwned, 0, 'nothing owned on a fresh save');
+
+  // Grant chapter 1's Rune ('force') via the real Rune 2.1 mark-granting
+  // authority, not a separately-invented flag.
+  state.addRune2Marks('force', 1);
+  const after = state.regionCodexList().find((b) => b.region.id === 'frontier');
+  assert.equal(after.runesOwned, before.runesOwned + 1);
+});
+
+test('C8-4: no new Rune authority -- regionCodex.js reads the existing RUNE2_DEFS/state.rune2OwnedMarks(), it never defines a Rune itself', () => {
+  const src = read('js/patches/regionCodex.js');
+  assert.match(src, /import \{ RUNE2_DEFS \} from '\.\.\/data\/runes2\.js';/);
+  assert.match(src, /state\.rune2OwnedMarks\(r\.id\)/);
+  assert.doesNotMatch(src, /RUNE2_DEFS\s*=|RUNE2_DEFS\.push/, 'must never mutate or redefine RUNE2_DEFS');
+});
+
 test('No platform emoji introduced by the Region Codex feature', () => {
   const PICTOGRAPH = /\p{Extended_Pictographic}/u;
   for (const file of ['js/data/regionCodex.js', 'js/patches/regionCodex.js', 'js/patches/regionCodexUi.js']) {

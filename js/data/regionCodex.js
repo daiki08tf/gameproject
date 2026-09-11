@@ -56,6 +56,14 @@ export function regionCodexBundle(regionId, sources = {}) {
   // a region's already-defined rare types (`sources.rareEncounters`,
   // built in the runtime patch) have been discovered.
   const rareEncounters = (sources.rareEncounters || []).filter((r) => r.regionId === regionId);
+  // C8-4 -- Unique/Rune target per region, the last item of C8's
+  // originally-listed bundle. Rune 2.1 already gives each numbered Story
+  // chapter exactly one Rune (data/runes2.js's RUNE2_DEFS, `chapter`
+  // field) -- no new Rune authority, this only counts how many of a
+  // region's own Runes the player has actually started owning
+  // (`sources.runes`, built in the runtime patch from the existing
+  // state.rune2OwnedMarks() authority).
+  const runes = (sources.runes || []).filter((r) => r.regionId === regionId);
   return {
     region,
     faunaSeen: fauna.filter((s) => s.seen).length,
@@ -67,6 +75,8 @@ export function regionCodexBundle(regionId, sources = {}) {
     treasureHunts,
     rareSeen: rareEncounters.filter((r) => r.seen).length,
     rareTotal: rareEncounters.length,
+    runesOwned: runes.filter((r) => r.owned).length,
+    runesTotal: runes.length,
   };
 }
 

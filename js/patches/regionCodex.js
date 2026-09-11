@@ -11,10 +11,12 @@ import { state } from '../state.js';
 import './fishing.js'; // guarantees state.fishingSpots() exists
 import './archaeology.js'; // guarantees state.archaeologySites() exists
 import './treasureHunt.js'; // guarantees state.treasureHunts() exists
+import './rune2Core.js'; // guarantees state.rune2OwnedMarks() exists
 import { COMPANION_SPECIES } from '../data/companions.js';
 import { world3RegionForChapter } from '../data/world3Regions.js';
 import { CHAPTERS, isChapterUnlocked } from '../data/stages.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
+import { RUNE2_DEFS } from '../data/runes2.js';
 import { regionCodexRegions, regionCodexBundle, regionBossSummary } from '../data/regionCodex.js';
 
 // Companion species' own `regionId` (data/companions.js) is chapter-scoped
@@ -59,6 +61,19 @@ function rareEncounters() {
     .filter(Boolean);
 }
 
+// RUNE2_DEFS' own `chapter` is already a plain chapter number (not the
+// 'ch1'-prefixed id species/enemy data use) -- world3RegionForChapter()
+// takes it directly, no prefix parsing needed.
+function runes() {
+  return RUNE2_DEFS
+    .map((r) => {
+      const region = world3RegionForChapter(r.chapter);
+      if (!region) return null;
+      return { id: r.id, chapter: r.chapter, regionId: region.id, owned: state.rune2OwnedMarks(r.id) > 0 };
+    })
+    .filter(Boolean);
+}
+
 state.regionCodexList = function regionCodexList() {
   const sources = {
     faunaSpecies: faunaSpecies(),
@@ -67,6 +82,7 @@ state.regionCodexList = function regionCodexList() {
     archaeologySites: this.archaeologySites?.() || [],
     treasureHunts: this.treasureHunts?.() || [],
     rareEncounters: rareEncounters(),
+    runes: runes(),
   };
   const isStageCleared = (id) => this.isStageCleared(id);
   const bossCtx = { isStageCleared, isChapterUnlocked: (idx) => isChapterUnlocked(idx, isStageCleared) };
