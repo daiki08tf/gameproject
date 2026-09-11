@@ -6,7 +6,7 @@
    ============================================================ */
 import { state } from '../state.js';
 import './regionCodex.js'; // guarantees state.regionCodexList() exists
-import './fieldKnowledge.js'; // guarantees state.rareEncounterFieldNote()/secretClueFieldNote() exist
+import './fieldKnowledge.js'; // guarantees state.rareEncounterFieldNote()/secretClueFieldNote()/rumorContradiction()/rumorContradictionFieldNote() exist
 
 function escapeHtml(v) { return String(v ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;'); }
 
@@ -27,6 +27,17 @@ function hiddenThreatLine(hiddenThreats) {
   return `隠し脅威 討伐 ${cleared}/${hiddenThreats.length}`;
 }
 
+// C9-5: two short, always-visible conflicting testimony lines (never
+// spoiling anything -- this is what the Rumor Notebook already does with
+// unresolved rumors). See data/fieldKnowledge.js's RUMOR_CONTRADICTIONS
+// comment for why this is new authored content rather than a connecting
+// note like C9-1..4.
+function contradictionLine(regionId) {
+  const c = state.rumorContradiction?.(regionId);
+  if (!c) return null;
+  return `噂の食い違い：「${escapeHtml(c.accountA.text)}」（${escapeHtml(c.accountA.source)}）／「${escapeHtml(c.accountB.text)}」（${escapeHtml(c.accountB.source)}）`;
+}
+
 function regionCard(bundle) {
   const { region, faunaSeen, faunaTotal, fishingSpot, fishSeen, fishTotal, archaeologySite, treasureHunts, bosses, hiddenThreats, rareSeen, rareTotal, runesOwned, runesTotal } = bundle;
   const lines = [];
@@ -41,6 +52,8 @@ function regionCard(bundle) {
   if (hiddenThreat) lines.push(hiddenThreat);
   if (rareTotal) lines.push(`レア個体 遭遇 ${rareSeen}/${rareTotal}`);
   if (runesTotal) lines.push(`ルーン 入手 ${runesOwned}/${runesTotal}`);
+  const contradiction = contradictionLine(region.id);
+  if (contradiction) lines.push(contradiction);
   // C9-3: a field note (flavor only, never a gate) appended once at least
   // one of this region's rare types has actually been encountered AND the
   // player has genuinely fought through roughly half the region's native
@@ -53,7 +66,10 @@ function regionCard(bundle) {
   // unlocked (name revealed, never before) AND field knowledge is ready.
   // See data/fieldKnowledge.js's SECRET_CLUE_FIELD_NOTES comment.
   const secretNote = (hiddenThreats || []).some((h) => h.name) ? state.secretClueFieldNote?.(region.id) : null;
-  const notes = [rareNote, secretNote].filter(Boolean).map((n) => `<br><span class="hint">${escapeHtml(n)}</span>`).join('');
+  // C9-5: the resolution half of the contradiction above, gated the same
+  // way -- see data/fieldKnowledge.js's RUMOR_CONTRADICTIONS comment.
+  const contradictionNote = contradiction ? state.rumorContradictionFieldNote?.(region.id) : null;
+  const notes = [rareNote, secretNote, contradictionNote].filter(Boolean).map((n) => `<br><span class="hint">${escapeHtml(n)}</span>`).join('');
   return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(region.name)}</b>　${escapeHtml(region.subtitle)}<br>${lines.join('　/　')}${notes}</div>`;
 }
 

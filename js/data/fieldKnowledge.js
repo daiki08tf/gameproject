@@ -103,3 +103,44 @@ export const SECRET_CLUE_FIELD_NOTES = Object.freeze({
   fracture: 'この地の敵の戦い方を知ってから振り返ると、境界裂域の歪みの奥に潜んでいたものの輪郭が、以前より掴めるようになる。',
   'last-mortal': '人界最奥の魔物たちを知ってから振り返ると、黒鉄機城の奥に潜んでいたものの気配にも、納得がいくようになる。',
 });
+
+// C9-5: "Rumor contradictions" -- the sixth item C9's own goal list names.
+// Unlike C9-1..4 (a connecting note appended to EXISTING content), this is
+// deliberately new small authored content, by explicit user decision: a
+// C9-0 audit found data/ch1RumorThreads.js already contains two genuinely
+// contradicting testimony threads (`gate_scar`, `valley_echo` -- two
+// residents' accounts explicitly framed in-fiction as "not matching each
+// other"), but that thread-with-entries system exists ONLY for Chapter 1/
+// frontier -- the other 3 mortal regions have no equivalent to reuse. To
+// keep the same one-per-region symmetry C9-3/C9-4 established rather than
+// leaving 3 regions uncovered, the user chose to author one NEW, small,
+// self-contained contradicting-testimony pair per region here instead of
+// building a second ch1RumorThreads-style entries system. `accountA`/
+// `accountB` are always shown (two short conflicting lines, non-spoiling
+// flavor); `resolution` is gated behind regionFieldKnowledgeReady() the
+// same as every other C9 note, and -- like C9-1..4 -- never confirms which
+// account was "right" via any mechanic, only in-fiction. ch1RumorThreads'
+// own gate_scar/valley_echo remain untouched in the Rumor Notebook,
+// independent of this.
+export const RUMOR_CONTRADICTIONS = Object.freeze({
+  frontier: {
+    accountA: { source: '猟師', text: '夜になると、動物たちがみな北へ逃げていくのを見た' },
+    accountB: { source: '行商人', text: '南の道はいつも通りだった。何もおかしくはなかったよ' },
+    resolution: 'この地の魔物たちの気性を知った今なら、動物たちが北へ逃げたのは、縄張りを荒らす何かがそちら側にいたからだと見当がつく。南の道が平穏だったという話も、食い違いではなく、単に方向が違っていただけなのだろう。',
+  },
+  elemental: {
+    accountA: { source: '観測者', text: '湧水場の温度が、この数日で明らかに上がっている' },
+    accountB: { source: '山案内人', text: 'いつも通りの温度だ。何も変わってはいない' },
+    resolution: '四境の獣たちの性質を知った今なら、温度の変化は火・水・風・魔が交差するこの山域ならではの偏りによるものだと分かる。観測者と案内人は、同じ湧水場の違う場所を見ていただけなのだろう。',
+  },
+  fracture: {
+    accountA: { source: '斥候', text: '古戦場の同じ場所を二度通ったのに、景色が違って見えた' },
+    accountB: { source: '別の斥候', text: 'そんなことはない。景色はずっと同じだったはずだ' },
+    resolution: 'この地の敵の戦い方を知った今なら、景色が違って見えたという話も、境界裂域の歪みが生む一時的な錯覚だったのだろうと納得できる。二人の斥候は、同じ場所を違う瞬間に見ていただけなのかもしれない。',
+  },
+  'last-mortal': {
+    accountA: { source: '機城の技師', text: '外郭遺構の奥から、機械音のようなものが聞こえた' },
+    accountB: { source: '別の技師', text: 'あの奥に、今も動く機構なんて残っていないはずだ' },
+    resolution: '人界最奥の魔物たちを知った今なら、機械音のように聞こえたものの正体にも見当がつく。遺構そのものではなく、そこに潜む何かが立てた音だったのだろう。',
+  },
+});

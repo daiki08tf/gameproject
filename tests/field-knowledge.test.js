@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { regionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES, RARE_ENCOUNTER_FIELD_NOTES, SECRET_CLUE_FIELD_NOTES } from '../js/data/fieldKnowledge.js';
+import { regionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES, RARE_ENCOUNTER_FIELD_NOTES, SECRET_CLUE_FIELD_NOTES, RUMOR_CONTRADICTIONS } from '../js/data/fieldKnowledge.js';
 import { ENEMY_TYPES } from '../js/data/enemies.js';
 import { world3RegionForChapter, WORLD3_REGIONS } from '../js/data/world3Regions.js';
 import { state } from '../js/state.js';
@@ -195,6 +195,57 @@ test('C9-4: wired into regionCodexUi.js\'s regionCard() as an appended flavor li
   assert.match(regionUi, /\(hiddenThreats\s*\|\|\s*\[\]\)\.some\(\(h\)\s*=>\s*h\.name\)\s*\?\s*state\.secretClueFieldNote\?\.\(region\.id\)/, 'must only be looked up once the region\'s own condition (a hidden threat\'s name already revealed) is already met');
 });
 
+// ---- C9-5: Rumor contradictions ---------------------------------------
+// The sixth item C9's own goal list names ("Rumor contradictions"). Unlike
+// C9-1..4, this is new small authored content by explicit user decision
+// (a C9-0 audit found ch1RumorThreads.js's own gate_scar/valley_echo
+// already frame a genuine in-fiction contradiction, but that thread-with-
+// entries system exists only for frontier/Chapter 1) -- see
+// data/fieldKnowledge.js's own comment on RUMOR_CONTRADICTIONS for the
+// full rationale and why one new pair was authored per region instead.
+
+test('Runtime: state.rumorContradiction() is a pure, ungated lookup (the two testimony lines are always visible, non-spoiling flavor)', () => {
+  state.resetAll();
+  assert.equal(state.rumorContradiction('not-a-real-region'), null);
+  const c = state.rumorContradiction('frontier');
+  assert.deepEqual(c, RUMOR_CONTRADICTIONS.frontier, 'must return the real authored pair even with zero field knowledge -- the accounts themselves are never gated');
+});
+
+test('Runtime: state.rumorContradictionFieldNote() gates only the resolution half, mirroring the same regionFieldKnowledgeReady() contract as C9-3/C9-4', () => {
+  state.resetAll();
+  assert.equal(state.rumorContradictionFieldNote('not-a-real-region'), null);
+  assert.equal(state.rumorContradictionFieldNote('frontier'), null, 'must stay null before the region\'s field knowledge is ready');
+
+  const types = nativeEnemyTypesForRegion('frontier');
+  for (const t of types) markRoleKnown(t);
+  assert.equal(state.rumorContradictionFieldNote('frontier'), RUMOR_CONTRADICTIONS.frontier.resolution);
+});
+
+test('every region has exactly one authored Rumor Contradiction, keyed by a real WORLD3_REGIONS id, with two distinct sourced accounts and a resolution', () => {
+  const regionIds = new Set(WORLD3_REGIONS.map((r) => r.id));
+  const mortalRegionIds = WORLD3_REGIONS.filter((r) => r.tone === 'mortal').map((r) => r.id);
+  for (const regionId of Object.keys(RUMOR_CONTRADICTIONS)) {
+    assert.ok(regionIds.has(regionId), `${regionId} must be a real WORLD3_REGIONS id`);
+  }
+  for (const regionId of mortalRegionIds) {
+    const c = RUMOR_CONTRADICTIONS[regionId];
+    assert.ok(c, `${regionId} (a mortal region, matching C9-3/C9-4's coverage) must have a Rumor Contradiction entry`);
+    assert.equal(typeof c.accountA.source, 'string');
+    assert.equal(typeof c.accountA.text, 'string');
+    assert.equal(typeof c.accountB.source, 'string');
+    assert.equal(typeof c.accountB.text, 'string');
+    assert.notEqual(c.accountA.source, c.accountB.source, `${regionId}'s two accounts must come from distinct sources to actually read as a contradiction`);
+    assert.ok(c.accountA.text.length > 0 && c.accountB.text.length > 0 && c.resolution.length > 0);
+  }
+});
+
+test('C9-5: wired into regionCodexUi.js\'s regionCard() -- the two accounts always shown, the resolution only appended once the same contradiction is present', () => {
+  const regionUi = read('js/patches/regionCodexUi.js');
+  assert.match(regionUi, /state\.rumorContradiction\?\.\(regionId\)/);
+  assert.match(regionUi, /contradictionLine\(region\.id\)/, 'regionCard() must look up the contradiction for the region actually being rendered');
+  assert.match(regionUi, /contradiction\s*\?\s*state\.rumorContradictionFieldNote\?\.\(region\.id\)/, 'the resolution must only be looked up once the region actually has a contradiction entry');
+});
+
 test('No new save root: js/patches/fieldKnowledge.js never writes state.data -- it only reads through existing state functions', () => {
   const src = read('js/patches/fieldKnowledge.js');
   assert.doesNotMatch(src, /state\.data\.\w+\s*(=|\?\?=|&&=)/, 'fieldKnowledge.js must be read-only aggregation, matching regionCodex.js\'s own convention');
@@ -207,7 +258,7 @@ test('No new data authority: js/data/fieldKnowledge.js is pure data with no stat
   assert.doesNotMatch(src, /document\.|window\./);
 });
 
-test('No platform emoji introduced by the C9-1/C9-2/C9-3/C9-4 field knowledge feature', () => {
+test('No platform emoji introduced by the C9-1/C9-2/C9-3/C9-4/C9-5 field knowledge feature', () => {
   const PICTOGRAPH = /\p{Extended_Pictographic}/u;
   for (const file of ['js/data/fieldKnowledge.js', 'js/patches/fieldKnowledge.js']) {
     assert.doesNotMatch(read(file), PICTOGRAPH, `${file} must not introduce platform emoji`);

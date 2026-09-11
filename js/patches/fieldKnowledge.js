@@ -15,7 +15,7 @@ import { getArchaeologySite } from '../data/archaeology.js';
 import { getTreasureHuntChain } from '../data/treasureHunt.js';
 import { getFishSpecies } from '../data/fishing.js';
 import { WORLD3_REGIONS } from '../data/world3Regions.js';
-import { regionFieldKnowledgeReady as pureRegionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES, RARE_ENCOUNTER_FIELD_NOTES, SECRET_CLUE_FIELD_NOTES } from '../data/fieldKnowledge.js';
+import { regionFieldKnowledgeReady as pureRegionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES, RARE_ENCOUNTER_FIELD_NOTES, SECRET_CLUE_FIELD_NOTES, RUMOR_CONTRADICTIONS } from '../data/fieldKnowledge.js';
 
 // Same 'ch1'/'ch5'-prefixed chapterId -> WORLD3_REGIONS resolution
 // js/patches/regionCodex.js already established -- duplicated here rather
@@ -105,4 +105,20 @@ state.secretClueFieldNote = function secretClueFieldNote(regionId) {
   if (!note) return null;
   if (!WORLD3_REGIONS.some((r) => r.id === regionId)) return null;
   return this.regionFieldKnowledgeReady(regionId) ? note : null;
+};
+
+// C9-5: RUMOR_CONTRADICTIONS' two testimony lines are always visible (pure
+// data lookup, no gate -- they're non-spoiling flavor on their own, the
+// same way the other regions' summary lines are always shown). Returns
+// null for a region with no entry, so the UI can skip the whole block.
+state.rumorContradiction = function rumorContradiction(regionId) {
+  return RUMOR_CONTRADICTIONS[regionId] || null;
+};
+
+// The resolution half is the one gated behind regionFieldKnowledgeReady(),
+// mirroring rareEncounterFieldNote()/secretClueFieldNote() exactly.
+state.rumorContradictionFieldNote = function rumorContradictionFieldNote(regionId) {
+  const entry = RUMOR_CONTRADICTIONS[regionId];
+  if (!entry) return null;
+  return this.regionFieldKnowledgeReady(regionId) ? entry.resolution : null;
 };
