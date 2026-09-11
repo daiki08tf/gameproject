@@ -6,6 +6,7 @@
    ============================================================ */
 import { state } from '../state.js';
 import './regionCodex.js'; // guarantees state.regionCodexList() exists
+import './fieldKnowledge.js'; // guarantees state.rareEncounterFieldNote() exists
 
 function escapeHtml(v) { return String(v ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;'); }
 
@@ -40,7 +41,14 @@ function regionCard(bundle) {
   if (hiddenThreat) lines.push(hiddenThreat);
   if (rareTotal) lines.push(`レア個体 遭遇 ${rareSeen}/${rareTotal}`);
   if (runesTotal) lines.push(`ルーン 入手 ${runesOwned}/${runesTotal}`);
-  return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(region.name)}</b>　${escapeHtml(region.subtitle)}<br>${lines.join('　/　')}</div>`;
+  // C9-3: a field note (flavor only, never a gate) appended once at least
+  // one of this region's rare types has actually been encountered AND the
+  // player has genuinely fought through roughly half the region's native
+  // creatures -- see data/fieldKnowledge.js. Rare encounters have no
+  // per-item text of their own (unlike a Record/chain/ヌシ), so the note
+  // is appended after the whole region line instead of one item's text.
+  const rareNote = rareTotal && rareSeen > 0 ? state.rareEncounterFieldNote?.(region.id) : null;
+  return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(region.name)}</b>　${escapeHtml(region.subtitle)}<br>${lines.join('　/　')}${rareNote ? `<br><span class="hint">${escapeHtml(rareNote)}</span>` : ''}</div>`;
 }
 
 function render() {

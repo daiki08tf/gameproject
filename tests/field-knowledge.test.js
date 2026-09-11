@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { regionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES } from '../js/data/fieldKnowledge.js';
+import { regionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES, RARE_ENCOUNTER_FIELD_NOTES } from '../js/data/fieldKnowledge.js';
 import { ENEMY_TYPES } from '../js/data/enemies.js';
-import { world3RegionForChapter } from '../js/data/world3Regions.js';
+import { world3RegionForChapter, WORLD3_REGIONS } from '../js/data/world3Regions.js';
 import { state } from '../js/state.js';
 import '../js/patches/settlementCore.js';
 import '../js/patches/fieldKnowledge.js';
@@ -134,6 +134,37 @@ test('C9-2: wired into fishingCodexUi.js\'s fishRow() as an appended flavor line
   assert.match(fishingUi, /escapeHtml\(f\.flavor\)\}\$\{fieldNote/, 'the field note must be appended AFTER the fish\'s own flavor text, never replacing it');
 });
 
+// ---- C9-3: Rare encounter conditions --------------------------------------
+// The fourth item C9's own goal list names ("Rare encounter conditions").
+// Rare encounters (enemies.js's rareIdentity:true, one per chapter,
+// already surfaced as a region-level count by C8-3) have no per-item
+// authored text of their own, so this note is keyed by region and shown
+// once at least one of the region's rare types has been seen -- see
+// data/fieldKnowledge.js's own comment on RARE_ENCOUNTER_FIELD_NOTES.
+
+test('Runtime: state.rareEncounterFieldNote() mirrors the same gate, keyed by region', () => {
+  state.resetAll();
+  assert.equal(state.rareEncounterFieldNote('not-a-real-region'), null);
+  assert.equal(state.rareEncounterFieldNote('frontier'), null, 'must stay null before the region\'s field knowledge is ready');
+
+  const types = nativeEnemyTypesForRegion('frontier');
+  for (const t of types) markRoleKnown(t);
+  assert.equal(state.rareEncounterFieldNote('frontier'), RARE_ENCOUNTER_FIELD_NOTES.frontier);
+});
+
+test('every Rare Encounter field note is keyed by a real WORLD3_REGIONS id -- no orphaned note', () => {
+  const regionIds = new Set(WORLD3_REGIONS.map((r) => r.id));
+  for (const regionId of Object.keys(RARE_ENCOUNTER_FIELD_NOTES)) {
+    assert.ok(regionIds.has(regionId), `${regionId} must be a real WORLD3_REGIONS id`);
+  }
+});
+
+test('C9-3: wired into regionCodexUi.js\'s regionCard() as an appended flavor line only once a rare type has actually been seen, never substituted for the region\'s own summary line', () => {
+  const regionUi = read('js/patches/regionCodexUi.js');
+  assert.match(regionUi, /import '\.\/fieldKnowledge\.js';/);
+  assert.match(regionUi, /rareTotal\s*&&\s*rareSeen\s*>\s*0\s*\?\s*state\.rareEncounterFieldNote\?\.\(region\.id\)/, 'must only be looked up once the region\'s own condition (a rare actually seen) is already met');
+});
+
 test('No new save root: js/patches/fieldKnowledge.js never writes state.data -- it only reads through existing state functions', () => {
   const src = read('js/patches/fieldKnowledge.js');
   assert.doesNotMatch(src, /state\.data\.\w+\s*(=|\?\?=|&&=)/, 'fieldKnowledge.js must be read-only aggregation, matching regionCodex.js\'s own convention');
@@ -146,7 +177,7 @@ test('No new data authority: js/data/fieldKnowledge.js is pure data with no stat
   assert.doesNotMatch(src, /document\.|window\./);
 });
 
-test('No platform emoji introduced by the C9-1/C9-2 field knowledge feature', () => {
+test('No platform emoji introduced by the C9-1/C9-2/C9-3 field knowledge feature', () => {
   const PICTOGRAPH = /\p{Extended_Pictographic}/u;
   for (const file of ['js/data/fieldKnowledge.js', 'js/patches/fieldKnowledge.js']) {
     assert.doesNotMatch(read(file), PICTOGRAPH, `${file} must not introduce platform emoji`);

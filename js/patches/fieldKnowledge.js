@@ -14,7 +14,8 @@ import { world3RegionForChapter } from '../data/world3Regions.js';
 import { getArchaeologySite } from '../data/archaeology.js';
 import { getTreasureHuntChain } from '../data/treasureHunt.js';
 import { getFishSpecies } from '../data/fishing.js';
-import { regionFieldKnowledgeReady as pureRegionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES } from '../data/fieldKnowledge.js';
+import { WORLD3_REGIONS } from '../data/world3Regions.js';
+import { regionFieldKnowledgeReady as pureRegionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES, RARE_ENCOUNTER_FIELD_NOTES } from '../data/fieldKnowledge.js';
 
 // Same 'ch1'/'ch5'-prefixed chapterId -> WORLD3_REGIONS resolution
 // js/patches/regionCodex.js already established -- duplicated here rather
@@ -79,4 +80,17 @@ state.fishingFieldNote = function fishingFieldNote(fishId) {
   const fish = getFishSpecies(fishId);
   if (!fish) return null;
   return this.regionFieldKnowledgeReady(fish.regionId) ? note : null;
+};
+
+// C9-3: mirrors the above but keyed by region directly (rare encounters
+// have no per-item authored text of their own to hang a note off of --
+// see the comment on RARE_ENCOUNTER_FIELD_NOTES). The caller is expected
+// to only call this once its own condition is met (at least one of the
+// region's rare types actually seen), matching how huntCard()/fishRow()
+// only call their own equivalents inside an already-gated branch.
+state.rareEncounterFieldNote = function rareEncounterFieldNote(regionId) {
+  const note = RARE_ENCOUNTER_FIELD_NOTES[regionId];
+  if (!note) return null;
+  if (!WORLD3_REGIONS.some((r) => r.id === regionId)) return null;
+  return this.regionFieldKnowledgeReady(regionId) ? note : null;
 };

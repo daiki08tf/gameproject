@@ -64,3 +64,23 @@ export const FISHING_FIELD_NOTES = Object.freeze({
   fracture_nushi: 'この地の敵の戦い方を知ってから見ると、姿の定まらないという噂が、境界裂域の歪みそのものを映しているように思えてくる。',
   last_mortal_nushi: '人界最奥の魔物たちを知ってから見ると、誰も釣り上げたことがないという主の話が、この淵の深さをより実感させる。',
 });
+
+// C9-3: one field note per region (data/world3Regions.js's WORLD3_REGIONS
+// ids) -- the "Rare encounter conditions" item from C9's own goal list.
+// Rare encounters (enemies.js's `rareIdentity:true`, one per chapter,
+// already surfaced as a region-level count by C8-3's Region Codex) have
+// no per-item authored text of their own to append to the way a Record/
+// Treasure Hunt chain/ヌシ does, so this note is keyed by region and shown
+// appended to the Region Codex's own "レア個体 遭遇" line once at least one
+// of that region's rare types has actually been encountered (the caller's
+// own condition, mirroring `f.seen`/`hunt.stage==='resolved'` above) AND
+// regionFieldKnowledgeReady() is true for that region. Deliberately does
+// not spell out the underlying spawn-chance mechanic (no other flavor
+// text in this codebase leaks a numeric drop/spawn rate) -- it only
+// confirms, in-fiction, that persistence is what it takes.
+export const RARE_ENCOUNTER_FIELD_NOTES = Object.freeze({
+  frontier: 'この地の魔物たちの気性を知ってから見ると、稀にまぎれ込むという話にも見当がつく。狩りを重ねるほど、そういう機会も巡ってくるのだろう。',
+  elemental: '四境の獣たちの性質を知ってから見ると、稀な個体の話も、この山域の気まぐれな性質の延長のように思えてくる。',
+  fracture: 'この地の敵の戦い方を知ってから見ると、稀な個体も境界裂域の歪みが生んだ産物なのだろうと、自然に納得できる。',
+  'last-mortal': '人界最奥の魔物たちを知ってから見ると、稀な個体もまた、この地の深さが生んだ異質さの一つなのだと分かってくる。',
+});
