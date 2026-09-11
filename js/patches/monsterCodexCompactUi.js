@@ -30,6 +30,7 @@ const TABS = [
   ['tactics', '戦術解析'],
   ['rumors', '噂帳'],
   ['fish', '釣果'],
+  ['region', '地域'],
 ];
 
 // Known add-on selectors, matched against DIRECT children of
@@ -43,6 +44,7 @@ const SELECTOR_TAB = [
   ['[data-packc-rumors]', 'rumors'],
   ['[data-archaeology-codex]', 'rumors'],
   ['[data-fish-codex]', 'fish'],
+  ['[data-region-codex]', 'region'],
 ];
 
 let activeTab = 'base';

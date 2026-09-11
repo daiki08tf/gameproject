@@ -35,18 +35,82 @@ function read(relPath) {
 // Archaeology (C4) already shipped, reused directly rather than
 // duplicated or registered as an oddly-gated 5th Archaeology site.
 
-test('C7-1: SETTLEMENT_INCIDENTS entries are shaped like an ARTIFACT_FRAGMENTS entry (difficulty + reward) so they feed archaeology.js\'s pure round functions directly', () => {
-  assert.ok(SETTLEMENT_INCIDENTS.length >= 1);
+test('C7-1/C7-3: every SETTLEMENT_INCIDENTS entry has the common shape (id/minHall/desc/record), and the archaeology-kind one is shaped like an ARTIFACT_FRAGMENTS entry (difficulty + reward) so it feeds archaeology.js\'s pure round functions directly', () => {
+  assert.ok(SETTLEMENT_INCIDENTS.length >= 2, 'must cover at least two incident archetypes');
   for (const incident of SETTLEMENT_INCIDENTS) {
     assert.equal(typeof incident.id, 'string');
     assert.equal(typeof incident.minHall, 'number');
-    assert.equal(typeof incident.fragment.difficulty, 'number');
-    assert.equal(typeof incident.fragment.reward, 'object');
+    assert.equal(typeof incident.desc, 'string');
     assert.equal(typeof incident.record.text, 'string');
     assert.equal(typeof incident.record.reward, 'object');
-    // must actually resolve to a real difficulty profile, not fall through to a default silently
-    assert.ok(excavationDifficultyProfile(incident.fragment.difficulty));
+    if (incident.kind === 'archaeology') {
+      assert.equal(typeof incident.fragment.difficulty, 'number');
+      assert.equal(typeof incident.fragment.reward, 'object');
+      // must actually resolve to a real difficulty profile, not fall through to a default silently
+      assert.ok(excavationDifficultyProfile(incident.fragment.difficulty));
+    }
   }
+});
+
+// ---- C7-3: Settlement Incidents, second archetype (住民失踪) -------------
+// Deliberately a different resolution shape (pick the correct lead out of
+// several) from the excavation-based archetype above, so the Incident
+// system doesn't converge on one mechanic for every entry.
+
+test('C7-3: the investigation-kind incident has exactly one correct lead, and every wrong lead authors its own missHint', () => {
+  const incident = getSettlementIncident('residentDisappearance');
+  assert.equal(incident.kind, 'investigation');
+  assert.ok(Array.isArray(incident.leads) && incident.leads.length >= 2);
+  const correct = incident.leads.filter((l) => l.correct === true);
+  assert.equal(correct.length, 1, 'exactly one lead must be the real answer -- not zero (unsolvable) or more than one (no real deduction)');
+  for (const lead of incident.leads) {
+    assert.equal(typeof lead.text, 'string');
+    if (!lead.correct) assert.equal(typeof lead.missHint, 'string', `wrong lead "${lead.id}" must have its own missHint, not a generic fallback`);
+  }
+  assert.equal(typeof incident.reward, 'object');
+});
+
+test('Runtime: picking a wrong lead is free and repeatable (no busy-guard, no penalty); picking the correct lead resolves the incident and grants both rewards', () => {
+  state.resetAll();
+  state.data.settlementBuildings = state.data.settlementBuildings || {};
+  state.data.settlementBuildings.hall = 6;
+  const incident = getSettlementIncident('residentDisappearance');
+  const wrongLead = incident.leads.find((l) => !l.correct);
+  const correctLead = incident.leads.find((l) => l.correct);
+
+  // Wrong lead, twice in a row -- must stay a no-op miss both times, never lock the incident.
+  for (let i = 0; i < 2; i++) {
+    const miss = state.investigateSettlementIncidentLead('residentDisappearance', wrongLead.id);
+    assert.equal(miss.ok, true);
+    assert.equal(miss.outcome, 'miss');
+    assert.equal(miss.lead.missHint, wrongLead.missHint);
+    assert.equal(state.settlementIncidents().find((x) => x.id === 'residentDisappearance').resolved, false);
+  }
+
+  const goldBefore = Number(state.data.gold) || 0;
+  const resolved = state.investigateSettlementIncidentLead('residentDisappearance', correctLead.id);
+  assert.equal(resolved.ok, true);
+  assert.equal(resolved.outcome, 'resolved');
+  assert.ok(resolved.record);
+  assert.ok(state.data.gold >= goldBefore, 'gold reward must be applied, never reduced');
+  assert.equal(state.settlementIncidents().find((x) => x.id === 'residentDisappearance').resolved, true);
+
+  // Cannot be investigated again once resolved (same rule as the excavation archetype).
+  const again = state.investigateSettlementIncidentLead('residentDisappearance', correctLead.id);
+  assert.equal(again.ok, false);
+  assert.equal(again.reason, 'resolved');
+});
+
+test('C7-3: the two archetypes never cross-invoke each other\'s entry points (starting an excavation on an investigation incident, or vice versa, fails cleanly)', () => {
+  state.resetAll();
+  state.data.settlementBuildings = state.data.settlementBuildings || {};
+  state.data.settlementBuildings.hall = 6;
+  const wrongKindExcavation = state.startSettlementIncidentInvestigation('residentDisappearance');
+  assert.equal(wrongKindExcavation.ok, false);
+  assert.equal(wrongKindExcavation.reason, 'wrong-kind');
+  const wrongKindLead = state.investigateSettlementIncidentLead('artifactArrival', 'well');
+  assert.equal(wrongKindLead.ok, false);
+  assert.equal(wrongKindLead.reason, 'wrong-kind');
 });
 
 test('settlementIncidentEligible is a pure function of hall level only -- no hidden state reads', () => {

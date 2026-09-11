@@ -47,7 +47,10 @@ function render() {
     const card = section.querySelector(`[data-treasure-hunt-card="${result.chain.id}"]`);
     if (card) {
       const reward = rewardText(result.gained);
-      card.innerHTML = `<b>${escapeHtml(result.chain.name)}</b>　発見済み<br>${escapeHtml(result.chain.resolutionText)}${reward ? `<br>獲得: ${reward}` : ''}`;
+      // C6-8: flavor-only companion reaction line, no icon/badge -- see
+      // data/companionDiscoveryReactions.js.
+      const reaction = result.companionReaction ? `<br>${escapeHtml(result.companionReaction.text)}` : '';
+      card.innerHTML = `<b>${escapeHtml(result.chain.name)}</b>　発見済み<br>${escapeHtml(result.chain.resolutionText)}${reward ? `<br>獲得: ${reward}` : ''}${reaction}`;
     }
   }));
 }

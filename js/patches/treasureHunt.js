@@ -17,6 +17,7 @@ import './archaeology.js'; // guarantees state.archaeologySites() exists -- the 
 import {
   TREASURE_HUNT_CHAINS, getTreasureHuntChain, isTreasureHuntReachable, treasureHuntStage, TREASURE_HUNT_STAGE_LABEL,
 } from '../data/treasureHunt.js';
+import { companionDiscoveryReaction } from '../data/companionDiscoveryReactions.js';
 
 const META_KEY = '__settlement3';
 function meta() {
@@ -112,5 +113,9 @@ state.claimTreasureHunt = function claimTreasureHunt(chainId) {
   }
   state.treasureHunts(); // re-sync the Rumor Notebook entry to the now-resolved state
   state.save();
-  return { ok: true, chain, gained };
+  // C6-8: flavor-only reaction -- never touches gained/reward, just an
+  // extra line when a matching (family:'spirit') companion happens to be
+  // active. See data/companionDiscoveryReactions.js for the full rationale.
+  const companionReaction = companionDiscoveryReaction('treasureHunt', state.activeCompanions?.() || []);
+  return { ok: true, chain, gained, companionReaction };
 };

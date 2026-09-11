@@ -14,6 +14,7 @@ import {
   pickFragmentForSite, rollExcavationCue, resolveExcavationRound, excavationDifficultyProfile,
   computeArchaeologyReward, isSiteFullyExcavated, getReconstructedRecord, fragmentsForSite,
 } from '../data/archaeology.js';
+import { companionDiscoveryReaction } from '../data/companionDiscoveryReactions.js';
 
 const META_KEY = '__settlement3';
 function meta() {
@@ -104,7 +105,11 @@ state.excavationAction = function excavationAction(action) {
     }
   }
   state.save();
-  return { ok: true, outcome: 'recovered', fragment, first, gained, count: entry.count, siteId, record };
+  // C6-8: flavor-only reaction -- never touches gained/reward, just an
+  // extra line when a matching (family:'undead') companion happens to be
+  // active. See data/companionDiscoveryReactions.js for the full rationale.
+  const companionReaction = companionDiscoveryReaction('archaeology', state.activeCompanions?.() || []);
+  return { ok: true, outcome: 'recovered', fragment, first, gained, count: entry.count, siteId, record, companionReaction };
 };
 
 state.archaeologyCodex = function archaeologyCodex() {
