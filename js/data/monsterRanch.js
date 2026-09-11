@@ -37,6 +37,42 @@ export const SPECIES_GRADE_THRESHOLDS = Object.freeze([
   { grade: 'mythic', count: 100 },
 ]);
 export function speciesGrade(recruited=0){let g=SPECIES_GRADE_THRESHOLDS[0].grade;for(const t of SPECIES_GRADE_THRESHOLDS)if(recruited>=t.count)g=t.grade;return g;}
+
+// Living World & Discovery C6-5 -- what species grade mechanically unlocks.
+// Deliberately NOT a flat stat ladder (the roadmap's own warning against
+// "another uncapped vertical power ladder"): grade scales the POWER of the
+// species' own already-authored combat trait (COMPANION_TRAIT_EFFECTS /
+// RANCH_SPECIES_TRAIT_EFFECTS in data/companions.js, already read every
+// battle by companionBattle.js's traitEffect()) instead of adding a new
+// stat line, so a graded-up species stays recognizably itself -- a species
+// with a dodge/speed trait gets faster, one with a mitigation trait gets
+// tankier -- rather than every species converging on the same generic
+// power curve. Normal/Rare/Epic keep the trait at its authored strength:
+// duplicate recruitment below Legendary is about collection identity and
+// visible progress (C6-4's grade display), not raw power. Legendary and
+// Mythic are where the roadmap's own table explicitly allows power to
+// rise ("distinctive combat interaction" / "strongest species identity").
+// No new save field: this is a pure function of the same SPECIES_GRADE_
+// THRESHOLDS grade above.
+export const SPECIES_GRADE_TRAIT_MULT = Object.freeze({
+  normal: 1, rare: 1, epic: 1, legendary: 1.25, mythic: 1.5,
+});
+export function speciesGradeTraitMult(grade){return SPECIES_GRADE_TRAIT_MULT[grade]??1;}
+
+// Living World & Discovery C6-9 -- after Mythic. A duplicate recruited
+// once a species is already at grade cap can no longer move the grade
+// (C6-4) or scale its trait further (C6-5) -- the roadmap's own C6-9
+// explicitly warns this must not make the duplicate useless, while also
+// warning against "another uncapped vertical power ladder". Route it into
+// the existing Species Board memory economy instead of inventing a new
+// currency: that economy is itself finite (every SPECIES_BOARD_NODES
+// entry in monsterRanchBoard.js has a maxRank), so this cannot become an
+// unbounded power line either. The bonus is flat and modest -- well below
+// what releasing an instance grants via memoryValue() (which scales with
+// that individual's own rarity/talent) -- so manually releasing stays the
+// primary, larger source of memory; this only keeps a post-cap duplicate
+// from being pure noise instead of replacing that existing choice.
+export const POST_MYTHIC_RECRUIT_MEMORY_BONUS = 2;
 export function speciesGradeProgress(recruited=0){
   const count=Math.max(0,Math.floor(Number(recruited)||0));
   const idx=SPECIES_GRADE_THRESHOLDS.findIndex(t=>t.grade===speciesGrade(count));

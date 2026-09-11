@@ -25,6 +25,36 @@ function context(){
 function project(id){return SETTLEMENT_DEFENSE_PROJECTS.find(x=>x.id===id)||null;}
 function invasion(id){return SETTLEMENT_INVASIONS.find(x=>x.id===id)||null;}
 
+// Living World & Discovery C7-2 -- wires these existing Defense incidents
+// into the same Rumor Notebook cross-reference C7-1 established for the
+// new 謎の遺物漂着 incident (state.data.world2.discoveries, the exact
+// {rumor:true, rumorId, name, hint, rumorState, rumorStateLabel, at,
+// resolvedAt} shape ch1RumorThreads.js/treasureHunt.js already use). Only
+// an already-available (unlocked) incident gets an entry, so this never
+// spoils an incident the player hasn't reached yet; "cleared" (first
+// clear, which never un-happens even though the incident stays
+// re-triggerable) flips the SAME entry to its resolvedHint outcome text.
+function ensureWorld(){state.data.world2??={};state.data.world2.discoveries??={};return state.data.world2;}
+function syncDefenseRumorNotebook(incidents){
+ const world=ensureWorld();
+ for(const incident of incidents){
+  const id=`rumor:defense_${incident.id}`;
+  if(!incident.available){delete world.discoveries[id];continue;}
+  const prev=world.discoveries[id];
+  world.discoveries[id]={
+   ...prev,
+   rumor:true,
+   rumorId:`defense_${incident.id}`,
+   name:`噂：${incident.name}`,
+   hint:incident.cleared?incident.resolvedHint:incident.desc,
+   rumorState:incident.cleared?'resolved':'unresolved',
+   rumorStateLabel:incident.cleared?'解決済み':'未解決',
+   at:prev?.at||Date.now(),
+   resolvedAt:incident.cleared?(prev?.resolvedAt||Date.now()):prev?.resolvedAt,
+  };
+ }
+}
+
 // 既存のBounty/Nemesis3システムをそのまま流用する（新しい成長式・敵権威は作らない）。
 // 育っていないと拠点には来ない：settlementDefenseIncidentEligibleのrequiresActiveNemesisで判定。
 function defenseChapter(){
@@ -79,10 +109,10 @@ state.settlementDefenseNemesisPreview=function(){
 state.settlementDefenseProjects=function(){const meta=ensureMeta();return SETTLEMENT_DEFENSE_PROJECTS.map(p=>({...p,level:Math.max(0,Math.min(p.maxLevel,Math.floor(Number(meta.projects[p.id]||0))))}));};
 state.canUpgradeSettlementDefense=function(id){const meta=ensureMeta(),p=project(id);if(!p)return{ok:false,reason:'unknown'};const level=Math.max(0,Math.floor(Number(meta.projects[id]||0)));if(level>=p.maxLevel)return{ok:false,reason:'max'};const cost=p.costs[level];for(const [k,v] of Object.entries(cost||{}))if((this.data.settlementMaterials?.[k]||0)<v)return{ok:false,reason:'materials',cost,level};return{ok:true,cost,level,next:level+1};};
 state.upgradeSettlementDefense=function(id){const check=this.canUpgradeSettlementDefense(id);if(!check.ok)return check;for(const [k,v] of Object.entries(check.cost))this.data.settlementMaterials[k]-=v;const meta=ensureMeta();meta.projects[id]=check.next;this.recordSettlementFactionActivity?.('adventurers',1);this.save();return{ok:true,id,level:check.next};};
-state.settlementDefenseIncidents=function(){const meta=ensureMeta(),ctx=context(),favored=this.settlementPolicyBias?.('defense')===1;return SETTLEMENT_INVASIONS.map(i=>({...i,available:settlementDefenseIncidentEligible(i,ctx),cleared:meta.cleared.includes(i.id),attempts:Number(meta.attempts[i.id]||0),pending:meta.pending===i.id,policyFavored:favored,nemesisPreview:i.requiresActiveNemesis?this.settlementDefenseNemesisPreview():null})).sort((a,b)=>favored?Number(b.pending)-Number(a.pending)||Number(b.available)-Number(a.available)||Number(a.cleared)-Number(b.cleared):0);};
+state.settlementDefenseIncidents=function(){const meta=ensureMeta(),ctx=context(),favored=this.settlementPolicyBias?.('defense')===1;const incidents=SETTLEMENT_INVASIONS.map(i=>({...i,available:settlementDefenseIncidentEligible(i,ctx),cleared:meta.cleared.includes(i.id),attempts:Number(meta.attempts[i.id]||0),pending:meta.pending===i.id,policyFavored:favored,nemesisPreview:i.requiresActiveNemesis?this.settlementDefenseNemesisPreview():null}));syncDefenseRumorNotebook(incidents);return incidents.sort((a,b)=>favored?Number(b.pending)-Number(a.pending)||Number(b.available)-Number(a.available)||Number(a.cleared)-Number(b.cleared):0);};
 state.settlementDefenseSummary=function(){const projects=this.settlementDefenseProjects(),incidents=this.settlementDefenseIncidents();return{projectLevels:projects.reduce((n,p)=>n+p.level,0),maxProjectLevels:projects.reduce((n,p)=>n+p.maxLevel,0),available:incidents.filter(x=>x.available).length,cleared:incidents.filter(x=>x.cleared).length,total:incidents.length,pending:incidents.find(x=>x.pending)?.id||null};};
 state.startSettlementDefense=function(id){const meta=ensureMeta(),i=invasion(id);if(!i)return{ok:false,reason:'unknown'};if(!settlementDefenseIncidentEligible(i,context()))return{ok:false,reason:'locked'};if(meta.pending)return{ok:false,reason:'pending'};meta.pending=id;meta.attempts[id]=Number(meta.attempts[id]||0)+1;this.save();return{ok:true,incident:i,encounter:{...i.encounter,defenseProjects:Object.fromEntries(this.settlementDefenseProjects().map(p=>[p.id,p.level]))}};};
-state.resolveSettlementDefense=function(id,cleared){const meta=ensureMeta(),i=invasion(id);if(!i||meta.pending!==id)return{ok:false,reason:'noPending'};meta.pending=null;if(!cleared){this.save();return{ok:true,cleared:false,incident:i,buildingLoss:false};}const first=!meta.cleared.includes(id);if(first)meta.cleared.push(id);const gained=first?(this.addSettlementMaterials?.(i.firstReward||{})||{}):{};if(cleared)this.recordSettlementFactionActivity?.('adventurers',1);this.save();return{ok:true,cleared:true,first,incident:i,gained,buildingLoss:false};};
+state.resolveSettlementDefense=function(id,cleared){const meta=ensureMeta(),i=invasion(id);if(!i||meta.pending!==id)return{ok:false,reason:'noPending'};meta.pending=null;if(!cleared){this.save();return{ok:true,cleared:false,incident:i,buildingLoss:false};}const first=!meta.cleared.includes(id);if(first)meta.cleared.push(id);const gained=first?(this.addSettlementMaterials?.(i.firstReward||{})||{}):{};if(cleared)this.recordSettlementFactionActivity?.('adventurers',1);this.settlementDefenseIncidents();this.save();return{ok:true,cleared:true,first,incident:i,gained,buildingLoss:false};};
 state.settlementDefenseEncounter=function(){const meta=ensureMeta();const i=invasion(meta.pending);return i?{...i.encounter,incidentId:i.id}:null;};
 state.prepareSettlementDefenseBattle=function(id){
  const stage=defenseStageFor(id);

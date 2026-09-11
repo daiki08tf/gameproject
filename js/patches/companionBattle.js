@@ -42,7 +42,12 @@ function ensureCompanionBattle(engine) {
   engine.companion=engine.companions[0]||null;
 }
 function livingCompanions(engine){ensureCompanionBattle(engine);return(engine.companions||[]).filter(c=>!c.down&&c.hp>0);}
-function traitEffect(companion,kind){for(const name of companion?.traits||[]){const effect=companionTraitEffect(name);if(effect?.kind===kind)return effect;}return null;}
+// C6-5: a species' current grade (state.ranchSpeciesGrade) scales the
+// POWER of its own already-authored trait rather than adding a new stat
+// line -- see data/monsterRanch.js's speciesGradeTraitMult for the full
+// rationale. Below Legendary the multiplier is 1 (no-op), so this is a
+// pure extension of the existing trait system, not a new one.
+function traitEffect(companion,kind){for(const name of companion?.traits||[]){const effect=companionTraitEffect(name);if(effect?.kind===kind){const mult=state.ranchSpeciesGrade?.(companion.speciesId)?.traitMult||1;return mult===1?effect:{...effect,power:effect.power*mult};}}return null;}
 function effectiveCompanionSpd(companion){const effect=traitEffect(companion,'initiativeSpd');return companion.spd*(1+(effect?.power||0));}
 function chooseTarget(engine,companion,skill=null){const alive=engine.aliveEnemies;if(!alive.length)return null;if(skill?.preferLowHp)return[...alive].sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp))[0];const nature=COMPANION_NATURES[companion.nature]||COMPANION_NATURES.balanced;if(nature.ai==='aggressive')return[...alive].sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp))[0];if(nature.ai==='defensive')return[...alive].sort((a,b)=>b.atk-a.atk)[0];return alive[Math.floor(Math.random()*alive.length)];}
 function companionDamage(companion,target,skill=null){const nature=COMPANION_NATURES[companion.nature]||COMPANION_NATURES.balanced;let stat=skill?.stat==='mag'?companion.mag:companion.atk;if(!skill&&nature.ai==='support'&&companion.mag>companion.atk)stat=companion.mag*.9;let power=stat*(skill?.power||1);const lowHp=traitEffect(companion,'lowHpDamage');if(lowHp&&target.hp/Math.max(1,target.maxHp)<=(lowHp.threshold??.5))power*=1+lowHp.power;const raw=Math.max(1,power*(.90+Math.random()*.20));const mitigation=defMitigationPct(target.def||0);return Math.max(1,Math.round(raw*(1-mitigation)));}
