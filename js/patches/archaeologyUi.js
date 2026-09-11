@@ -45,6 +45,13 @@ function recordHtml(record) {
   return `<div class="forge-card-sub" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:8px;"><b>記録が復元された：${escapeHtml(record.name)}</b><br>${escapeHtml(record.text)}${reward ? `<br>獲得: ${reward}` : ''}</div>`;
 }
 
+// C6-8: a companion reaction is flavor only -- a plain line, no icon, no
+// separate badge, so it never reads as a mechanical bonus.
+function reactionHtml(reaction) {
+  if (!reaction) return '';
+  return `<div class="forge-card-sub" style="margin-top:4px;">${escapeHtml(reaction.text)}</div>`;
+}
+
 function renderSession(container, siteId, session, onEnd, lastHit = null) {
   if (!session) { container.innerHTML = ''; return; }
   container.innerHTML = sessionHtml(session, lastHit);
@@ -58,7 +65,7 @@ function renderSession(container, siteId, session, onEnd, lastHit = null) {
       return;
     }
     const reward = rewardText(result.gained);
-    container.innerHTML = `<div class="forge-card-sub" style="margin-top:8px;">${escapeHtml(result.fragment.name)}を掘り出した！${result.first ? '（初めての記録）' : `（累計${result.count}個）`}${reward ? `<br>獲得: ${reward}` : ''}<br>（「発掘する」を押すと再挑戦できる）</div>${recordHtml(result.record)}`;
+    container.innerHTML = `<div class="forge-card-sub" style="margin-top:8px;">${escapeHtml(result.fragment.name)}を掘り出した！${result.first ? '（初めての記録）' : `（累計${result.count}個）`}${reward ? `<br>獲得: ${reward}` : ''}<br>（「発掘する」を押すと再挑戦できる）</div>${reactionHtml(result.companionReaction)}${recordHtml(result.record)}`;
   }));
 }
 
