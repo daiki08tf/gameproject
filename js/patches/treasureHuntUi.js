@@ -12,6 +12,7 @@
    ============================================================ */
 import { state } from '../state.js';
 import './treasureHunt.js'; // guarantees state.treasureHunts()/claimTreasureHunt() exist
+import './fieldKnowledge.js'; // guarantees state.treasureHuntFieldNote() exists
 
 function escapeHtml(v) { return String(v ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;'); }
 function rewardText(gained = {}) { return Object.entries(gained).filter(([, v]) => v > 0).map(([k, v]) => `${k} +${v}`).join(' / '); }
@@ -21,7 +22,11 @@ function huntCard(hunt) {
     return `<div class="forge-card-sub" style="margin:4px 0;">？？？（LOCKED） その地域の冒険を進めると、噂帳に手掛かりが現れる。</div>`;
   }
   if (hunt.stage === 'resolved') {
-    return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(hunt.name)}</b>　発見済み<br>${escapeHtml(hunt.resolutionText)}</div>`;
+    // C9-1: a field note (flavor only, never a gate) appended once the
+    // player has genuinely fought through roughly half this chain's
+    // region's own native creatures -- see data/fieldKnowledge.js.
+    const fieldNote = state.treasureHuntFieldNote?.(hunt.id);
+    return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(hunt.name)}</b>　発見済み<br>${escapeHtml(hunt.resolutionText)}${fieldNote ? `<br><span class="hint">${escapeHtml(fieldNote)}</span>` : ''}</div>`;
   }
   if (hunt.stage === 'ready') {
     return `<div class="forge-card-sub" style="margin:4px 0;" data-treasure-hunt-card="${hunt.id}"><b>${escapeHtml(hunt.name)}</b>　解読済み<br>${escapeHtml(hunt.decodedText)}<br><button class="forge-card-btn treasure-hunt-claim" data-hunt="${hunt.id}" style="margin-top:6px;">掘り当てる</button></div>`;
@@ -50,7 +55,9 @@ function render() {
       // C6-8: flavor-only companion reaction line, no icon/badge -- see
       // data/companionDiscoveryReactions.js.
       const reaction = result.companionReaction ? `<br>${escapeHtml(result.companionReaction.text)}` : '';
-      card.innerHTML = `<b>${escapeHtml(result.chain.name)}</b>　発見済み<br>${escapeHtml(result.chain.resolutionText)}${reward ? `<br>獲得: ${reward}` : ''}${reaction}`;
+      const fieldNote = state.treasureHuntFieldNote?.(result.chain.id);
+      const note = fieldNote ? `<br><span class="hint">${escapeHtml(fieldNote)}</span>` : '';
+      card.innerHTML = `<b>${escapeHtml(result.chain.name)}</b>　発見済み<br>${escapeHtml(result.chain.resolutionText)}${reward ? `<br>獲得: ${reward}` : ''}${reaction}${note}`;
     }
   }));
 }

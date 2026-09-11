@@ -4,6 +4,7 @@
    ============================================================ */
 import { state } from '../state.js';
 import './archaeology.js'; // guarantees state.archaeologyCodex()/archaeologyRecords()/archaeologySummary() exist
+import './fieldKnowledge.js'; // guarantees state.archaeologyFieldNote() exists
 
 function escapeHtml(v) { return String(v ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;'); }
 
@@ -13,7 +14,11 @@ function fragmentRow(f) {
 }
 function recordRow(r) {
   if (!r.unlocked) return `<div class="forge-card-sub" style="margin:4px 0;">？？？（未復元）</div>`;
-  return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(r.name)}</b><br>${escapeHtml(r.text)}</div>`;
+  // C9-1: a field note (flavor only, never a gate) appended once the
+  // player has genuinely fought through roughly half this record's
+  // region's own native creatures -- see data/fieldKnowledge.js.
+  const fieldNote = state.archaeologyFieldNote?.(r.id);
+  return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(r.name)}</b><br>${escapeHtml(r.text)}${fieldNote ? `<br><span class="hint">${escapeHtml(fieldNote)}</span>` : ''}</div>`;
 }
 
 function render() {
