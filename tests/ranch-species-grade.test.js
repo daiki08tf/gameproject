@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { SPECIES_GRADE_THRESHOLDS, speciesGrade, speciesGradeProgress, speciesGradeTraitMult, SPECIES_GRADE_TRAIT_MULT, RANCH_RESEARCH_MILESTONES } from '../js/data/monsterRanch.js';
+import { SPECIES_GRADE_THRESHOLDS, speciesGrade, speciesGradeProgress, speciesGradeTraitMult, SPECIES_GRADE_TRAIT_MULT, POST_MYTHIC_RECRUIT_MEMORY_BONUS, RANCH_RESEARCH_MILESTONES } from '../js/data/monsterRanch.js';
 import { COMPANION_RARITY, COMPANION_RARITY_LABEL } from '../js/data/companions.js';
 import { state } from '../js/state.js';
 // Deliberately NOT importing companionFoundation.js: it installs DOM UI
@@ -161,4 +161,46 @@ test('C6-5: Ranch and collection UI show the trait-power bonus so grade stays de
   const collectionUi = read('js/patches/ranchCollectionUi.js');
   assert.match(collectionUi, /特性威力/);
   assert.match(collectionUi, /grade\.traitMult/);
+});
+
+// ---- C6-9: after Mythic -- duplicates must remain non-useless -----------
+// Once a species is capped at Mythic, a further duplicate can no longer
+// raise the grade (C6-4) or scale its trait further (C6-5). Route it into
+// the existing, itself-capped Species Board memory economy instead of a
+// new currency or an uncapped power line.
+
+test('C6-9: POST_MYTHIC_RECRUIT_MEMORY_BONUS is a small, flat, positive number -- not a scaling/uncapped value', () => {
+  assert.equal(typeof POST_MYTHIC_RECRUIT_MEMORY_BONUS, 'number');
+  assert.ok(POST_MYTHIC_RECRUIT_MEMORY_BONUS > 0);
+  assert.ok(POST_MYTHIC_RECRUIT_MEMORY_BONUS < 10, 'must stay modest -- releasing an instance via memoryValue() should remain the primary, larger source of Species Board memory');
+});
+
+test('Runtime: recruiting a species that has NOT reached Mythic yet grants no post-cap memory bonus (existing behavior unchanged)', () => {
+  state.resetAll();
+  const speciesId = 'goblin';
+  for (let i = 0; i < 99; i++) state.recordRanchRecruit(speciesId);
+  assert.equal(state.ranchSpeciesGrade(speciesId).grade, 'legendary'); // 99 < 100 (the Mythic threshold)
+  assert.equal(state.ranchMemory(speciesId), 0, 'no duplicate before Mythic should add Species Board memory -- that stays release-only');
+});
+
+test('Runtime: once a species is Mythic, every further duplicate recruit adds the flat post-cap memory bonus instead of doing nothing', () => {
+  state.resetAll();
+  const speciesId = 'bat';
+  for (let i = 0; i < 100; i++) state.recordRanchRecruit(speciesId); // reach Mythic exactly on the 100th
+  assert.equal(state.ranchSpeciesGrade(speciesId).grade, 'mythic');
+  assert.equal(state.ranchMemory(speciesId), 0, 'reaching Mythic itself is a grade-up, not a post-cap duplicate -- no bonus on the crossing call');
+
+  const result = state.recordRanchRecruit(speciesId); // 101st -- genuinely post-cap
+  assert.equal(result.postMythicMemoryBonus, POST_MYTHIC_RECRUIT_MEMORY_BONUS);
+  assert.equal(result.gradedUp, undefined, 'a post-cap duplicate must not also report a (impossible) grade-up');
+  assert.equal(state.ranchMemory(speciesId), POST_MYTHIC_RECRUIT_MEMORY_BONUS);
+
+  state.recordRanchRecruit(speciesId); // 102nd
+  assert.equal(state.ranchMemory(speciesId), POST_MYTHIC_RECRUIT_MEMORY_BONUS * 2, 'the bonus must keep accruing, not fire only once');
+});
+
+test('C6-9: the post-cap bonus feeds the existing ranchMemory/Species Board economy -- no new save field, no new currency', () => {
+  const src = read('js/patches/ranchSpeciesGrade.js');
+  assert.match(src, /this\.data\.ranchMemory\[speciesId\]/);
+  assert.doesNotMatch(src, /state\.data\.\w+\s*=\s*\{\}/, 'must not introduce a new top-level save object');
 });

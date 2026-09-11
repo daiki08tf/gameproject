@@ -18,7 +18,7 @@
    (C6-5) is a deliberately separate, later step.
    ============================================================ */
 import { state } from '../state.js';
-import { speciesGrade, speciesGradeProgress, speciesGradeTraitMult } from '../data/monsterRanch.js';
+import { speciesGrade, speciesGradeProgress, speciesGradeTraitMult, POST_MYTHIC_RECRUIT_MEMORY_BONUS } from '../data/monsterRanch.js';
 import { COMPANION_RARITY_LABEL, getCompanionSpecies } from '../data/companions.js';
 
 // Reuses the exact same label vocabulary already shown for individual
@@ -54,6 +54,16 @@ if (previousRecordRanchRecruit) {
     const before = speciesGrade(this.ranchResearch?.(speciesId)?.recruited || 0);
     const result = previousRecordRanchRecruit(speciesId);
     const after = speciesGrade(result?.recruited || 0);
+    // C6-9: once a species is already capped at Mythic, a further
+    // duplicate can no longer raise the grade -- keep it from being pure
+    // noise by feeding the existing (capped) Species Board memory economy
+    // instead. See data/monsterRanch.js's POST_MYTHIC_RECRUIT_MEMORY_BONUS
+    // comment for why this specific, modest route was chosen.
+    if (before === 'mythic') {
+      this.data.ranchMemory[speciesId] = (this.data.ranchMemory[speciesId] || 0) + POST_MYTHIC_RECRUIT_MEMORY_BONUS;
+      this.save();
+      return { ...result, postMythicMemoryBonus: POST_MYTHIC_RECRUIT_MEMORY_BONUS, memoryTotal: this.ranchMemory(speciesId) };
+    }
     if (after === before) return result;
     const species = getCompanionSpecies(speciesId);
     return { ...result, gradedUp: after, gradedUpLabel: COMPANION_RARITY_LABEL[after] || after, gradedUpSpeciesName: species?.name || speciesId };
