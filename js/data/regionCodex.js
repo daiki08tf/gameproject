@@ -60,3 +60,33 @@ export function regionCodexBundle(regionId, sources = {}) {
     treasureHunts,
   };
 }
+
+// C8-2 — Boss / hidden threat identity, the other "bundle" item C8's own
+// goal names alongside ecology/fish/archaeology/Rumor. Every chapter
+// already carries a boss stage (stages.js's `boss:true`) and, for most
+// chapters, a hidden branch stage (`branch:true`) -- this only reads
+// those, it authors nothing new. `ctx.isStageCleared`/`ctx.isChapterUnlocked`
+// are injected predicates (same shape js/screens/chapterSelect.js already
+// uses) so this stays a pure function -- the runtime patch is the only
+// place that touches state.data.stageProgress directly. A boss/hidden-
+// threat name is withheld (`name: null`) until its own chapter is
+// unlocked, matching chapterSelect.js's own `unlocked?journeyName(ch):'？？？'`
+// convention -- this never reveals story content ahead of the player's
+// own progress.
+export function regionBossSummary(region, chapters, ctx = {}) {
+  const isStageCleared = typeof ctx.isStageCleared === 'function' ? ctx.isStageCleared : () => false;
+  const isChapterUnlocked = typeof ctx.isChapterUnlocked === 'function' ? ctx.isChapterUnlocked : () => false;
+  const bosses = [];
+  const hiddenThreats = [];
+  for (const num of region.chapters) {
+    const idx = num - 1;
+    const ch = chapters[idx];
+    if (!ch) continue;
+    const unlocked = isChapterUnlocked(idx);
+    const bossStage = ch.stages.find((s) => s.boss);
+    if (bossStage) bosses.push({ chapterNum: num, name: unlocked ? bossStage.name : null, cleared: isStageCleared(bossStage.id) });
+    const branchStage = ch.stages.find((s) => s.branch);
+    if (branchStage) hiddenThreats.push({ chapterNum: num, name: unlocked ? branchStage.name : null, cleared: isStageCleared(branchStage.id) });
+  }
+  return { bosses, hiddenThreats };
+}

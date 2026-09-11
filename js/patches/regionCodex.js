@@ -13,7 +13,8 @@ import './archaeology.js'; // guarantees state.archaeologySites() exists
 import './treasureHunt.js'; // guarantees state.treasureHunts() exists
 import { COMPANION_SPECIES } from '../data/companions.js';
 import { world3RegionForChapter } from '../data/world3Regions.js';
-import { regionCodexRegions, regionCodexBundle } from '../data/regionCodex.js';
+import { CHAPTERS, isChapterUnlocked } from '../data/stages.js';
+import { regionCodexRegions, regionCodexBundle, regionBossSummary } from '../data/regionCodex.js';
 
 // Companion species' own `regionId` (data/companions.js) is chapter-scoped
 // ('ch1', 'ch11', ...), a DIFFERENT id namespace from the WORLD3_REGIONS
@@ -46,8 +47,13 @@ state.regionCodexList = function regionCodexList() {
     archaeologySites: this.archaeologySites?.() || [],
     treasureHunts: this.treasureHunts?.() || [],
   };
+  const isStageCleared = (id) => this.isStageCleared(id);
+  const bossCtx = { isStageCleared, isChapterUnlocked: (idx) => isChapterUnlocked(idx, isStageCleared) };
   return regionCodexRegions()
-    .map((r) => regionCodexBundle(r.id, sources))
+    .map((r) => {
+      const bundle = regionCodexBundle(r.id, sources);
+      return bundle ? { ...bundle, ...regionBossSummary(r, CHAPTERS, bossCtx) } : null;
+    })
     .filter(Boolean);
 };
 

@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { WORLD3_REGIONS } from '../js/data/world3Regions.js';
-import { regionCodexRegions, regionCodexBundle } from '../js/data/regionCodex.js';
+import { regionCodexRegions, regionCodexBundle, regionBossSummary } from '../js/data/regionCodex.js';
+import { CHAPTERS } from '../js/data/stages.js';
 import { state } from '../js/state.js';
 import '../js/patches/settlementCore.js';
 import '../js/patches/regionCodex.js';
@@ -98,6 +99,55 @@ test('C8-1 regression: every tab in monsterCodexCompactUi.js\'s TABS has a match
   for (const id of tabIds) {
     assert.match(css, new RegExp(`data-codex-tab='${id}'\\s*\\]\\s*>\\s*\\[data-codex-tab-group='${id}'\\]\\{display:block\\}`), `TABS entry "${id}" has no matching show rule in monsterCodexCompact.css`);
   }
+});
+
+// ---- C8-2: boss / hidden-threat identity -----------------------------
+// The other "bundle" item C8's own goal names (Boss / hidden threat)
+// alongside ecology/fish/archaeology/Rumor. Reads stages.js's existing
+// boss:true/branch:true stages directly -- authors nothing new.
+
+test('regionBossSummary() withholds a boss/hidden-threat name until its own chapter is unlocked, matching chapterSelect.js\'s own convention -- never spoils ahead of progress', () => {
+  const region = WORLD3_REGIONS.find((r) => r.id === 'frontier');
+  const lockedCtx = { isStageCleared: () => false, isChapterUnlocked: () => false };
+  const { bosses, hiddenThreats } = regionBossSummary(region, CHAPTERS, lockedCtx);
+  assert.ok(bosses.length > 0);
+  for (const b of bosses) assert.equal(b.name, null);
+  for (const h of hiddenThreats) assert.equal(h.name, null);
+
+  const unlockedCtx = { isStageCleared: () => false, isChapterUnlocked: () => true };
+  const revealed = regionBossSummary(region, CHAPTERS, unlockedCtx);
+  for (const b of revealed.bosses) assert.equal(typeof b.name, 'string');
+});
+
+test('regionBossSummary() is a pure function of the injected predicates -- cleared/unlocked state comes only from ctx, never read from state.data directly', () => {
+  const src = fs.readFileSync(new URL('../js/data/regionCodex.js', import.meta.url), 'utf8');
+  const fnBody = src.slice(src.indexOf('export function regionBossSummary'));
+  assert.doesNotMatch(fnBody, /state\.data/);
+});
+
+test('Runtime: state.regionCodexList() attaches real boss/hidden-threat progress via the existing stageProgress authority (isStageCleared/isChapterUnlocked), no new save field -- a later, not-yet-reached chapter\'s boss in the same region stays hidden', () => {
+  state.resetAll();
+  state.data.stageProgress = state.data.stageProgress || {};
+  const before = state.regionCodexList().find((b) => b.region.id === 'frontier');
+  assert.ok(before.bosses.length > 1, 'frontier must have more than one chapter to make this a real test of the per-chapter unlock gate');
+  const chapter2Boss = before.bosses.find((b) => b.chapterNum === 2);
+  assert.ok(chapter2Boss);
+  assert.equal(chapter2Boss.cleared, false);
+  assert.equal(chapter2Boss.name, null, 'chapter 2 is locked until chapter 1\'s boss is cleared on a fresh save, so its boss name must stay hidden');
+});
+
+test('Runtime: chapter 1 (always unlocked) reveals its own boss name immediately, and clearing it flips `cleared`', () => {
+  state.resetAll();
+  state.data.stageProgress = state.data.stageProgress || {};
+  const before = state.regionCodexList().find((b) => b.region.id === 'frontier');
+  const ch1Boss = before.bosses.find((b) => b.chapterNum === 1);
+  assert.ok(ch1Boss);
+  assert.equal(typeof ch1Boss.name, 'string', 'chapter 1 is always unlocked, so its boss name must be visible on a fresh save');
+  assert.equal(ch1Boss.cleared, false);
+
+  state.data.stageProgress['1-5'] = { cleared: true };
+  const after = state.regionCodexList().find((b) => b.region.id === 'frontier');
+  assert.equal(after.bosses.find((b) => b.chapterNum === 1).cleared, true);
 });
 
 test('No platform emoji introduced by the Region Codex feature', () => {
