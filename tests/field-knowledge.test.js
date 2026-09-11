@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { regionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES } from '../js/data/fieldKnowledge.js';
+import { regionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES } from '../js/data/fieldKnowledge.js';
 import { ENEMY_TYPES } from '../js/data/enemies.js';
 import { world3RegionForChapter } from '../js/data/world3Regions.js';
 import { state } from '../js/state.js';
@@ -103,6 +103,37 @@ test('C9-1: wired into archaeologyCodexUi.js\'s recordRow() and treasureHuntUi.j
   assert.match(treasureHuntUi, /state\.treasureHuntFieldNote\?\.\(result\.chain\.id\)/, 'the claim-button re-render path must also surface the field note, not just the initial resolved render');
 });
 
+// ---- C9-2: Fishing hints -------------------------------------------------
+// Completes the "Treasure hints; Archaeology interpretation" pair with the
+// third item C9's own goal list names: "Fishing hints". Mirrors C9-1
+// exactly, one note per region's own ヌシ (master fish).
+
+test('Runtime: state.fishingFieldNote() mirrors the same gate for a region\'s ヌシ (master fish)', () => {
+  state.resetAll();
+  assert.equal(state.fishingFieldNote('not_a_real_fish'), null);
+  assert.equal(state.fishingFieldNote('frontier_nushi'), null, 'must stay null before the region\'s field knowledge is ready');
+
+  const types = nativeEnemyTypesForRegion('frontier');
+  for (const t of types) markRoleKnown(t);
+  assert.equal(state.fishingFieldNote('frontier_nushi'), FISHING_FIELD_NOTES.frontier_nushi);
+});
+
+test('every Fishing field note maps to a real, existing FISH_SPECIES id and specifically its region\'s ヌシ (master:true), never an ordinary fish', () => {
+  const fishingSrc = read('js/data/fishing.js');
+  for (const fishId of Object.keys(FISHING_FIELD_NOTES)) {
+    const line = fishingSrc.split('\n').find((l) => l.includes(`id: '${fishId}'`));
+    assert.ok(line, `${fishId} must be a real FISH_SPECIES entry`);
+    assert.match(line, /master:\s*true/, `${fishId} must specifically be a ヌシ (master:true), never an ordinary fish`);
+  }
+});
+
+test('C9-2: wired into fishingCodexUi.js\'s fishRow() as an appended flavor line, never substituted for the fish\'s own flavor text', () => {
+  const fishingUi = read('js/patches/fishingCodexUi.js');
+  assert.match(fishingUi, /import '\.\/fieldKnowledge\.js';/);
+  assert.match(fishingUi, /state\.fishingFieldNote\?\.\(f\.id\)/);
+  assert.match(fishingUi, /escapeHtml\(f\.flavor\)\}\$\{fieldNote/, 'the field note must be appended AFTER the fish\'s own flavor text, never replacing it');
+});
+
 test('No new save root: js/patches/fieldKnowledge.js never writes state.data -- it only reads through existing state functions', () => {
   const src = read('js/patches/fieldKnowledge.js');
   assert.doesNotMatch(src, /state\.data\.\w+\s*(=|\?\?=|&&=)/, 'fieldKnowledge.js must be read-only aggregation, matching regionCodex.js\'s own convention');
@@ -115,7 +146,7 @@ test('No new data authority: js/data/fieldKnowledge.js is pure data with no stat
   assert.doesNotMatch(src, /document\.|window\./);
 });
 
-test('No platform emoji introduced by the C9-1 field knowledge feature', () => {
+test('No platform emoji introduced by the C9-1/C9-2 field knowledge feature', () => {
   const PICTOGRAPH = /\p{Extended_Pictographic}/u;
   for (const file of ['js/data/fieldKnowledge.js', 'js/patches/fieldKnowledge.js']) {
     assert.doesNotMatch(read(file), PICTOGRAPH, `${file} must not introduce platform emoji`);

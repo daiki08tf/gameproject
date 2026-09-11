@@ -13,7 +13,8 @@ import { ENEMY_TYPES } from '../data/enemies.js';
 import { world3RegionForChapter } from '../data/world3Regions.js';
 import { getArchaeologySite } from '../data/archaeology.js';
 import { getTreasureHuntChain } from '../data/treasureHunt.js';
-import { regionFieldKnowledgeReady as pureRegionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES } from '../data/fieldKnowledge.js';
+import { getFishSpecies } from '../data/fishing.js';
+import { regionFieldKnowledgeReady as pureRegionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES } from '../data/fieldKnowledge.js';
 
 // Same 'ch1'/'ch5'-prefixed chapterId -> WORLD3_REGIONS resolution
 // js/patches/regionCodex.js already established -- duplicated here rather
@@ -68,4 +69,14 @@ state.treasureHuntFieldNote = function treasureHuntFieldNote(chainId) {
   const chain = getTreasureHuntChain(chainId);
   if (!chain) return null;
   return this.regionFieldKnowledgeReady(chain.regionId) ? note : null;
+};
+
+// C9-2: mirrors archaeologyFieldNote()/treasureHuntFieldNote() exactly,
+// but for a region's ヌシ (master fish) -- see FISHING_FIELD_NOTES.
+state.fishingFieldNote = function fishingFieldNote(fishId) {
+  const note = FISHING_FIELD_NOTES[fishId];
+  if (!note) return null;
+  const fish = getFishSpecies(fishId);
+  if (!fish) return null;
+  return this.regionFieldKnowledgeReady(fish.regionId) ? note : null;
 };

@@ -51,3 +51,16 @@ export const TREASURE_HUNT_FIELD_NOTES = Object.freeze({
   fracture_cache: 'この地の敵の戦い方を知ったうえで見ると、指揮官がこの場所を選んだ理由が、より納得できる。',
   last_mortal_cache: '人界最奥の魔物たちを知ったうえで見ると、保管庫がここまで人目を避けて隠されていた理由が分かる気がする。',
 });
+
+// C9-2: one field note per region's own ヌシ (master fish, data/fishing.js's
+// FISH_SPECIES `master:true` entry) -- the "Fishing hints" item from C9's
+// own goal list. Shown appended to the ヌシ's own flavor text once
+// regionFieldKnowledgeReady() is true for that fish's region, same gate
+// and same "supplement, never gate the catch itself" principle as the
+// Archaeology/Treasure Hunt notes above.
+export const FISHING_FIELD_NOTES = Object.freeze({
+  frontier_nushi: 'この地の魔物たちの気性を知ってから話を聞き直すと、老いた住民が語る「開拓前からいる主」の話が、ただの言い伝え以上に思えてくる。',
+  elemental_nushi: '四境の獣たちの性質を知ってから見ると、見る角度で色が違って見えるという話が、この山域そのものの性質と重なって見えてくる。',
+  fracture_nushi: 'この地の敵の戦い方を知ってから見ると、姿の定まらないという噂が、境界裂域の歪みそのものを映しているように思えてくる。',
+  last_mortal_nushi: '人界最奥の魔物たちを知ってから見ると、誰も釣り上げたことがないという主の話が、この淵の深さをより実感させる。',
+});

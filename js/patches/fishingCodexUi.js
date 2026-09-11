@@ -4,6 +4,7 @@
    ============================================================ */
 import { state } from '../state.js';
 import './fishing.js'; // guarantees state.fishCodex()/fishCodexSummary()/fishCodexBonuses() exist
+import './fieldKnowledge.js'; // guarantees state.fishingFieldNote() exists
 import { fishStatBonus } from '../data/fishing.js';
 
 function escapeHtml(v) { return String(v ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;'); }
@@ -18,7 +19,13 @@ const STAT_LABEL = { hp: 'HP', mp: 'MP', atk: 'ATK', def: 'DEF', mag: 'MAG', spd
 function fishRow(f) {
   if (!f.seen) return `<div class="forge-card-sub" style="margin:4px 0;">${f.master ? 'ヌシ：' : ''}？？？</div>`;
   const bonus = fishStatBonus(f, f.caught);
-  return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(f.name)}</b>${f.master ? '（ヌシ）' : ''} ×${f.caught}　${STAT_LABEL[bonus.stat] || bonus.stat} +${bonus.bonusPct.toFixed(2)}%<br>${escapeHtml(f.flavor)}</div>`;
+  // C9-2: a field note (flavor only, never a gate) appended to a region's
+  // own ヌシ once the player has genuinely fought through roughly half
+  // that region's native creatures -- see data/fieldKnowledge.js. Only
+  // FISHING_FIELD_NOTES entries (the 4 master fish) resolve to anything;
+  // an ordinary fish's lookup is always null.
+  const fieldNote = state.fishingFieldNote?.(f.id);
+  return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(f.name)}</b>${f.master ? '（ヌシ）' : ''} ×${f.caught}　${STAT_LABEL[bonus.stat] || bonus.stat} +${bonus.bonusPct.toFixed(2)}%<br>${escapeHtml(f.flavor)}${fieldNote ? `<br><span class="hint">${escapeHtml(fieldNote)}</span>` : ''}</div>`;
 }
 
 function byStatSummaryLine(byStat) {
