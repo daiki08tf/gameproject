@@ -15,7 +15,7 @@ import { getArchaeologySite } from '../data/archaeology.js';
 import { getTreasureHuntChain } from '../data/treasureHunt.js';
 import { getFishSpecies } from '../data/fishing.js';
 import { WORLD3_REGIONS } from '../data/world3Regions.js';
-import { regionFieldKnowledgeReady as pureRegionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES, RARE_ENCOUNTER_FIELD_NOTES } from '../data/fieldKnowledge.js';
+import { regionFieldKnowledgeReady as pureRegionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES, RARE_ENCOUNTER_FIELD_NOTES, SECRET_CLUE_FIELD_NOTES } from '../data/fieldKnowledge.js';
 
 // Same 'ch1'/'ch5'-prefixed chapterId -> WORLD3_REGIONS resolution
 // js/patches/regionCodex.js already established -- duplicated here rather
@@ -90,6 +90,18 @@ state.fishingFieldNote = function fishingFieldNote(fishId) {
 // only call their own equivalents inside an already-gated branch.
 state.rareEncounterFieldNote = function rareEncounterFieldNote(regionId) {
   const note = RARE_ENCOUNTER_FIELD_NOTES[regionId];
+  if (!note) return null;
+  if (!WORLD3_REGIONS.some((r) => r.id === regionId)) return null;
+  return this.regionFieldKnowledgeReady(regionId) ? note : null;
+};
+
+// C9-4: mirrors rareEncounterFieldNote() exactly, for a region's own
+// 隠し脅威 (hidden branch stage) instead -- see SECRET_CLUE_FIELD_NOTES.
+// The caller is expected to only call this once its own condition is met
+// (at least one of the region's hidden threats already revealed by its
+// own chapter-unlock gate), matching rareEncounterFieldNote()'s contract.
+state.secretClueFieldNote = function secretClueFieldNote(regionId) {
+  const note = SECRET_CLUE_FIELD_NOTES[regionId];
   if (!note) return null;
   if (!WORLD3_REGIONS.some((r) => r.id === regionId)) return null;
   return this.regionFieldKnowledgeReady(regionId) ? note : null;

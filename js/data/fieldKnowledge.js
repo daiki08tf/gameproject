@@ -84,3 +84,22 @@ export const RARE_ENCOUNTER_FIELD_NOTES = Object.freeze({
   fracture: 'この地の敵の戦い方を知ってから見ると、稀な個体も境界裂域の歪みが生んだ産物なのだろうと、自然に納得できる。',
   'last-mortal': '人界最奥の魔物たちを知ってから見ると、稀な個体もまた、この地の深さが生んだ異質さの一つなのだと分かってくる。',
 });
+
+// C9-4: one field note per region -- the "Secret clues" item from C9's own
+// goal list. A region's own 隠し脅威 (hidden branch stage, C8-2's
+// regionBossSummary()'s `hiddenThreats`, `branch:true` stages read
+// straight from CHAPTERS) has no per-item authored text of its own the way
+// a Record/chain/ヌシ does either, so this mirrors RARE_ENCOUNTER_FIELD_NOTES
+// exactly: keyed by region, appended to the Region Codex's own "隠し脅威
+// 討伐" line, once at least one of the region's hidden threats has had its
+// chapter individually unlocked (its name revealed -- the caller's own
+// condition, mirroring `rareSeen > 0` above) AND regionFieldKnowledgeReady()
+// is true. Never spoils WHICH stage hides the threat or how to reach it --
+// only confirms, in-fiction, that the region's own creatures were the
+// signal the player had already been seeing.
+export const SECRET_CLUE_FIELD_NOTES = Object.freeze({
+  frontier: 'この地の魔物たちの気性を知ってから振り返ると、平原の外れで感じていた違和感にも、思い当たる節が出てくる。',
+  elemental: '四境の獣たちの性質を知ってから振り返ると、山域のどこかに紛れていた「らしくないもの」の気配にも、説明がつく気がする。',
+  fracture: 'この地の敵の戦い方を知ってから振り返ると、境界裂域の歪みの奥に潜んでいたものの輪郭が、以前より掴めるようになる。',
+  'last-mortal': '人界最奥の魔物たちを知ってから振り返ると、黒鉄機城の奥に潜んでいたものの気配にも、納得がいくようになる。',
+});

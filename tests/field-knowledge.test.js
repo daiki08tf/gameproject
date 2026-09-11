@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { regionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES, RARE_ENCOUNTER_FIELD_NOTES } from '../js/data/fieldKnowledge.js';
+import { regionFieldKnowledgeReady, ARCHAEOLOGY_FIELD_NOTES, TREASURE_HUNT_FIELD_NOTES, FISHING_FIELD_NOTES, RARE_ENCOUNTER_FIELD_NOTES, SECRET_CLUE_FIELD_NOTES } from '../js/data/fieldKnowledge.js';
 import { ENEMY_TYPES } from '../js/data/enemies.js';
 import { world3RegionForChapter, WORLD3_REGIONS } from '../js/data/world3Regions.js';
 import { state } from '../js/state.js';
@@ -165,6 +165,36 @@ test('C9-3: wired into regionCodexUi.js\'s regionCard() as an appended flavor li
   assert.match(regionUi, /rareTotal\s*&&\s*rareSeen\s*>\s*0\s*\?\s*state\.rareEncounterFieldNote\?\.\(region\.id\)/, 'must only be looked up once the region\'s own condition (a rare actually seen) is already met');
 });
 
+// ---- C9-4: Secret clues ----------------------------------------------------
+// The fifth item C9's own goal list names ("Secret clues"). A region's own
+// 隠し脅威 (hidden branch stage, C8-2's regionBossSummary()) has no per-item
+// authored text either, so this mirrors C9-3 exactly, keyed by region and
+// shown once at least one of the region's hidden threats has had its
+// chapter individually unlocked (name revealed) -- see
+// data/fieldKnowledge.js's own comment on SECRET_CLUE_FIELD_NOTES.
+
+test('Runtime: state.secretClueFieldNote() mirrors the same gate, keyed by region', () => {
+  state.resetAll();
+  assert.equal(state.secretClueFieldNote('not-a-real-region'), null);
+  assert.equal(state.secretClueFieldNote('frontier'), null, 'must stay null before the region\'s field knowledge is ready');
+
+  const types = nativeEnemyTypesForRegion('frontier');
+  for (const t of types) markRoleKnown(t);
+  assert.equal(state.secretClueFieldNote('frontier'), SECRET_CLUE_FIELD_NOTES.frontier);
+});
+
+test('every Secret Clue field note is keyed by a real WORLD3_REGIONS id -- no orphaned note', () => {
+  const regionIds = new Set(WORLD3_REGIONS.map((r) => r.id));
+  for (const regionId of Object.keys(SECRET_CLUE_FIELD_NOTES)) {
+    assert.ok(regionIds.has(regionId), `${regionId} must be a real WORLD3_REGIONS id`);
+  }
+});
+
+test('C9-4: wired into regionCodexUi.js\'s regionCard() as an appended flavor line only once a hidden threat\'s chapter has actually been unlocked (name revealed), never spoiling ahead of that gate', () => {
+  const regionUi = read('js/patches/regionCodexUi.js');
+  assert.match(regionUi, /\(hiddenThreats\s*\|\|\s*\[\]\)\.some\(\(h\)\s*=>\s*h\.name\)\s*\?\s*state\.secretClueFieldNote\?\.\(region\.id\)/, 'must only be looked up once the region\'s own condition (a hidden threat\'s name already revealed) is already met');
+});
+
 test('No new save root: js/patches/fieldKnowledge.js never writes state.data -- it only reads through existing state functions', () => {
   const src = read('js/patches/fieldKnowledge.js');
   assert.doesNotMatch(src, /state\.data\.\w+\s*(=|\?\?=|&&=)/, 'fieldKnowledge.js must be read-only aggregation, matching regionCodex.js\'s own convention');
@@ -177,7 +207,7 @@ test('No new data authority: js/data/fieldKnowledge.js is pure data with no stat
   assert.doesNotMatch(src, /document\.|window\./);
 });
 
-test('No platform emoji introduced by the C9-1/C9-2/C9-3 field knowledge feature', () => {
+test('No platform emoji introduced by the C9-1/C9-2/C9-3/C9-4 field knowledge feature', () => {
   const PICTOGRAPH = /\p{Extended_Pictographic}/u;
   for (const file of ['js/data/fieldKnowledge.js', 'js/patches/fieldKnowledge.js']) {
     assert.doesNotMatch(read(file), PICTOGRAPH, `${file} must not introduce platform emoji`);

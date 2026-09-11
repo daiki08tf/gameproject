@@ -6,7 +6,7 @@
    ============================================================ */
 import { state } from '../state.js';
 import './regionCodex.js'; // guarantees state.regionCodexList() exists
-import './fieldKnowledge.js'; // guarantees state.rareEncounterFieldNote() exists
+import './fieldKnowledge.js'; // guarantees state.rareEncounterFieldNote()/secretClueFieldNote() exist
 
 function escapeHtml(v) { return String(v ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;'); }
 
@@ -48,7 +48,13 @@ function regionCard(bundle) {
   // per-item text of their own (unlike a Record/chain/ヌシ), so the note
   // is appended after the whole region line instead of one item's text.
   const rareNote = rareTotal && rareSeen > 0 ? state.rareEncounterFieldNote?.(region.id) : null;
-  return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(region.name)}</b>　${escapeHtml(region.subtitle)}<br>${lines.join('　/　')}${rareNote ? `<br><span class="hint">${escapeHtml(rareNote)}</span>` : ''}</div>`;
+  // C9-4: mirrors rareNote exactly, for the region's own 隠し脅威 line --
+  // appended once at least one hidden threat has actually had its chapter
+  // unlocked (name revealed, never before) AND field knowledge is ready.
+  // See data/fieldKnowledge.js's SECRET_CLUE_FIELD_NOTES comment.
+  const secretNote = (hiddenThreats || []).some((h) => h.name) ? state.secretClueFieldNote?.(region.id) : null;
+  const notes = [rareNote, secretNote].filter(Boolean).map((n) => `<br><span class="hint">${escapeHtml(n)}</span>`).join('');
+  return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(region.name)}</b>　${escapeHtml(region.subtitle)}<br>${lines.join('　/　')}${notes}</div>`;
 }
 
 function render() {
