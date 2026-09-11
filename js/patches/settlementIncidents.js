@@ -82,6 +82,30 @@ state.settlementIncidents = function settlementIncidents() {
   return incidents;
 };
 
+// Shared by both incident archetypes below: mark resolved, grant the
+// incident's own `reward` (or, for the excavation archetype, the
+// fragment's reward via computeArchaeologyReward) plus the record's
+// reward, using the exact addSettlementMaterials()+gold split every other
+// incident/site this session already uses, then re-sync the Rumor
+// Notebook. Kept as one function so the two archetypes can never drift
+// into two different reward-granting rules.
+function grantAndResolve(incidentId, reward) {
+  const incident = getSettlementIncident(incidentId);
+  const m = meta();
+  m.resolved[incidentId] = true;
+  const gained = Object.keys(reward || {}).filter((k) => k !== 'gold').length
+    ? (state.addSettlementMaterials?.(reward) || {}) : {};
+  if (reward?.gold > 0) { state.data.gold = Math.max(0, (Number(state.data.gold) || 0) + reward.gold); gained.gold = reward.gold; }
+  const recordReward = incident.record?.reward || {};
+  const recordGained = Object.keys(recordReward).filter((k) => k !== 'gold').length
+    ? (state.addSettlementMaterials?.(recordReward) || {}) : {};
+  if (recordReward.gold > 0) { state.data.gold = Math.max(0, (Number(state.data.gold) || 0) + recordReward.gold); recordGained.gold = recordReward.gold; }
+  state.settlementIncidents(); // re-sync the Rumor Notebook entry to the now-resolved state
+  state.save();
+  return { ok: true, outcome: 'resolved', incident, gained, recordGained, record: incident.record };
+}
+
+// ---- kind: 'archaeology' (謎の遺物漂着) -----------------------------------
 // One investigation at a time, same busy-guard rule Archaeology/Fishing
 // already established.
 let activeSession = null;
@@ -91,6 +115,7 @@ state.startSettlementIncidentInvestigation = function startSettlementIncidentInv
   const incident = state.settlementIncidents().find((x) => x.id === id);
   if (!incident) return { ok: false, reason: 'unknown' };
   if (!incident.active) return { ok: false, reason: incident.resolved ? 'resolved' : 'locked' };
+  if (incident.kind !== 'archaeology') return { ok: false, reason: 'wrong-kind' };
   const cue = rollExcavationCue();
   const profile = excavationDifficultyProfile(incident.fragment.difficulty);
   activeSession = { incidentId: id, fragment: incident.fragment, progress: 0, misses: 0, ...cue };
@@ -115,16 +140,22 @@ state.settlementIncidentAction = function settlementIncidentAction(action) {
   // recovered -- this incident is a one-shot, so recovering the fragment
   // resolves it outright (no repeat-visit collection loop like a full
   // Archaeology site).
-  const incident = getSettlementIncident(incidentId);
-  const m = meta();
-  m.resolved[incidentId] = true;
   const reward = computeArchaeologyReward(fragment, true);
-  const gained = Object.keys(reward.materials).length ? (state.addSettlementMaterials?.(reward.materials) || {}) : {};
-  if (reward.gold > 0) { state.data.gold = Math.max(0, (Number(state.data.gold) || 0) + reward.gold); gained.gold = reward.gold; }
-  const recordReward = incident.record?.reward || {};
-  const recordGained = Object.keys(recordReward).length ? (state.addSettlementMaterials?.(recordReward) || {}) : {};
-  if (recordReward.gold > 0) { state.data.gold = Math.max(0, (Number(state.data.gold) || 0) + recordReward.gold); recordGained.gold = recordReward.gold; }
-  state.settlementIncidents(); // re-sync the Rumor Notebook entry to the now-resolved state
-  state.save();
-  return { ok: true, outcome: 'resolved', incident, gained, recordGained, record: incident.record };
+  const gold = reward.gold || 0;
+  return grantAndResolve(incidentId, { ...reward.materials, ...(gold ? { gold } : {}) });
+};
+
+// ---- kind: 'investigation' (住民失踪, C7-3) --------------------------------
+// No multi-round session/busy-guard needed -- picking a lead is a single,
+// free, always-repeatable action (see data/settlementIncidents.js's own
+// comment on why this archetype is deliberately simpler than excavation).
+state.investigateSettlementIncidentLead = function investigateSettlementIncidentLead(incidentId, leadId) {
+  const incident = state.settlementIncidents().find((x) => x.id === incidentId);
+  if (!incident) return { ok: false, reason: 'unknown' };
+  if (!incident.active) return { ok: false, reason: incident.resolved ? 'resolved' : 'locked' };
+  if (incident.kind !== 'investigation') return { ok: false, reason: 'wrong-kind' };
+  const lead = (incident.leads || []).find((l) => l.id === leadId);
+  if (!lead) return { ok: false, reason: 'unknown-lead' };
+  if (!lead.correct) return { ok: true, outcome: 'miss', lead };
+  return grantAndResolve(incidentId, incident.reward || {});
 };
