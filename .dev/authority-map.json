@@ -1,0 +1,205 @@
+{
+  "version": 1,
+  "description": "Curated authority map for Blade Vale, distilled from PROJECT_GUIDE.md + CLAUDE.md and verified against the real code. Each entry names where a concept's source of truth lives — the map itself is NOT an authority, it only points at one. `consumers`/`tests` are derived by `dev map` into .dev/project-map.json — do not hand-maintain them here. `./dev authority --check` verifies every listed path exists.",
+  "authorities": [
+    {
+      "id": "save",
+      "title": "Persistent save (localStorage root + defaultSave + C1 job migration)",
+      "authority": ["js/state.js", "js/data/jobIdentityMigration.js"],
+      "persisted": "localStorage 'bladevale_save_v1' — single root, no schema version; load = {...defaultSave(), ...migrateC1JobSaveBack(parsed)}",
+      "mutation": ["js/state.js (defaultSave + StateManager methods)", "js/data/jobIdentityMigration.js (migrateC1JobSaveBack)"],
+      "validation": "tests/c1-job-identity-migration.test.js; tests/progression3-c1-job-stats.test.js; ./dev save-check",
+      "notes": "PROJECT_GUIDE.md §4 is the save-namespace ownership table. Hard constraint: no new save root; permanent progress must not be duplicated into state.data.adventure4. Corrupt JSON silently falls back to defaultSave."
+    },
+    {
+      "id": "story-stage",
+      "title": "Story chapters / stage progress",
+      "authority": ["js/data/stages.js", "js/data/storyCanon.js", "js/state.js"],
+      "persisted": "state.data.stageProgress",
+      "mutation": ["js/data/chapters*.js (chapter defs)", "js/state.js (recordStageResult / isStageCleared)"],
+      "validation": "npm test (chapter/stage tests)",
+      "notes": "CHAPTERS + stageProgress are the navigation spine (Home → Adventure → Chapter → Stage → Story/Hunt). Do not create new Story progression (CLAUDE.md hard constraint)."
+    },
+    {
+      "id": "combat",
+      "title": "BattleEngine / battle resolution",
+      "authority": ["js/battleEngine.js", "js/screens/textBattle.js"],
+      "derived": ["js/patches/combat*", "js/patches/battle*", "js/data/combat*"],
+      "persisted": "no battle state persisted (rewards flow into save via state)",
+      "mutation": ["js/battleEngine.js"],
+      "validation": "tests/battle-integration3*.test.js; tests/boss-companion-simulation.test.js; npm test",
+      "notes": "TextBattleScreen.start(stageId, onEnd, blessingId) is the entry point. No Adventure-specific BattleEngine (PROJECT_GUIDE §3/§6). ENEMY_SCALING in js/data/balance.js is marked do-not-change."
+    },
+    {
+      "id": "loot",
+      "title": "Loot / drop / reward pipeline",
+      "authority": ["js/battleEngine.js", "js/data/weapons.js", "js/data/options4.js"],
+      "derived": ["js/data/equipment3*.js", "js/patches/loot3*.js", "js/patches/equipment3SmartLoot.js", "js/data/endgameLootRoles.js", "js/data/endgameRewardScaling.js", "js/data/loot3EndgameChase.js"],
+      "persisted": "drops land in inventory/equipped/weaponInstances (equipment save owner)",
+      "mutation": ["js/battleEngine.js (_rollDrop, stage dropTable)", "scripts/loot-simulation.js (audit only)"],
+      "validation": "npm run sim:loot; npm test",
+      "notes": "_rollDrop() in BattleEngine is the only drop roll; stage dropTable + weaponDropPoolForStage feed it. No second drop/reward authority; no Loot/World-Tier double scaling (PROJECT_GUIDE §6)."
+    },
+    {
+      "id": "jobs",
+      "title": "Job roster + job save migration",
+      "authority": ["js/data/jobsPhase8.js", "js/data/jobs.js", "js/data/jobFusion.js", "js/data/jobIdentityMigration.js"],
+      "persisted": "state.data.currentJobId / jobs / mastered / job3Specializations / job3LegacySlots",
+      "mutation": ["js/data/jobsPhase8.js", "js/patches/phase8JobSwitchRuntime.js"],
+      "validation": "tests/c1-job-identity-migration.test.js; tests/progression3-c1-job-stats.test.js",
+      "notes": "jobsPhase8 (56 hand-authored tiered jobs) is the ACTIVE roster; jobs.js is the legacy base it builds on. The retired C1 flat roster is folded back onto host jobs at load by migrateC1JobSaveBack."
+    },
+    {
+      "id": "companions",
+      "title": "Companion / Monster Ranch",
+      "authority": ["js/data/companions.js", "js/patches/companionFoundation.js"],
+      "persisted": "state.data.companionInstances / companionParty (max 3) / ranchResearch",
+      "mutation": ["js/data/companions.js", "js/data/monsterRanch.js", "js/patches/companion*.js"],
+      "validation": "tests/companion-*.test.js; tests/boss-companion-simulation.test.js",
+      "notes": "Required Story must not hard-require a companion; no permanent companion loss as exploration penalty (PROJECT_GUIDE §3)."
+    },
+    {
+      "id": "equipment",
+      "title": "Equipment 3.0 / gear instances",
+      "authority": ["js/data/equipment.js", "js/patches/equipment3Foundation.js", "js/patches/equipment3GearFoundation.js"],
+      "derived": ["js/data/equipment3*.js", "js/patches/equipment3*.js", "js/data/unique*.js"],
+      "persisted": "state.data.weaponInstances / gearInstances / equipped / inventory / weaponEnhance / weaponAffix*",
+      "mutation": ["js/data/equipment.js", "js/data/equipment3*.js", "js/patches/equipment3*.js"],
+      "validation": "npm test (equipment / gear overhaul tests); GEAR_OVERHAUL_* docs",
+      "notes": "Regional Gear / Utility Set attach metadata to existing instances — never a parallel inventory (PROJECT_GUIDE §3)."
+    },
+    {
+      "id": "runes",
+      "title": "Rune 2.1 (locked spec)",
+      "authority": ["js/data/runes2.js", "js/patches/rune2Core.js", "RUNE_2_1_SPEC.md"],
+      "persisted": "state.data.rune2Owned / rune2Active",
+      "mutation": ["js/data/runes2.js", "js/patches/rune2Core.js", "js/patches/rune2Special.js"],
+      "validation": "npm test (rune2 tests)",
+      "notes": "LOCKED (CLAUDE.md): one Rune per story chapter 1–36, first real post-battle drop unlocks Lv1, +1% per mark with caps, no socket architecture, no region-wide two-Rune distribution, no repeated mark drops, no +5% base scaling."
+    },
+    {
+      "id": "world-tier",
+      "title": "World Tier",
+      "authority": ["js/data/worldTiers.js", "js/patches/worldTierRuntime.js"],
+      "persisted": "state.data.worldTierId",
+      "mutation": ["js/data/worldTiers.js"],
+      "validation": "npm test",
+      "notes": "Hard constraint: no new World Tier authority. Adventure reads only tier rank for optional content availability — never re-applies enemy/drop/item-power tier scaling (PROJECT_GUIDE §3)."
+    },
+    {
+      "id": "nemesis",
+      "title": "Nemesis / Bounty hunts",
+      "authority": ["js/patches/bounty2Foundation.js", "js/patches/bounty2Combat.js", "js/data/nemesis3.js"],
+      "persisted": "state.data.bountyNemesis",
+      "mutation": ["js/data/nemesis3.js", "js/data/bounty*.js"],
+      "validation": "tests/bounty2.test.js; tests/bountyUniques.test.js",
+      "notes": "No Adventure-specific Nemesis level or reward store; existing intel/huntMode is read as Activity→Trace→Clue→location (PROJECT_GUIDE §3)."
+    },
+    {
+      "id": "world-event",
+      "title": "World Event framework",
+      "authority": ["js/patches/world2Core.js", "js/data/worldEvents2.js"],
+      "persisted": "state.data.world2.lastEvent / eventsSeen / eventChains / eventMemory",
+      "mutation": ["js/patches/world2Core.js"],
+      "validation": "npm test",
+      "notes": "Adventure must not re-resolve event rewards/outcomes/cooldowns — Living World only surfaces the current event as context (PROJECT_GUIDE §3)."
+    },
+    {
+      "id": "realm-rift",
+      "title": "Realm visibility / Rift Key / Machine World unlock",
+      "authority": ["js/data/world2.js", "js/patches/riftKeyCore.js"],
+      "persisted": "state.data.world2 (realm visibility, discoveries, rift keys)",
+      "mutation": ["js/patches/riftKeyCore.js", "js/data/world2.js"],
+      "validation": "tests/rift-entry.test.js",
+      "notes": "Existing unlock authorities are final; Adventure realm discovery only appends observation records to world2.discoveries — never generates/consumes keys or bypasses Heaven/Underworld/Modern/Machine World unlocks."
+    },
+    {
+      "id": "adventure4",
+      "title": "Adventure World 4.0 — session / routes / scenes / discovery",
+      "authority": [
+        "js/patches/adventureWorld4Session.js",
+        "js/data/adventureWorld4Regions.js",
+        "js/data/adventureWorld4Routes.js",
+        "js/data/adventureWorld4Scenes.js",
+        "js/data/adventureWorld4Discoveries.js",
+        "js/data/adventureWorld4Events.js",
+        "js/data/adventureWorld4Investigation.js",
+        "js/data/adventureWorld4Mysteries.js",
+        "js/data/adventureWorld4EventMemory.js",
+        "js/data/adventureWorld4RealmDiscovery.js",
+        "js/data/adventureWorld4LivingWorld.js",
+        "js/data/adventureWorld4FieldActions.js"
+      ],
+      "derived": ["js/patches/adventureWorld4*.js (runtimes + UI)"],
+      "persisted": "state.data.adventure4 = CURRENT SESSION ONLY (allowlist in PROJECT_GUIDE.md §4)",
+      "mutation": ["js/data/adventureWorld4*.js", "js/patches/adventureWorld4*Runtime.js"],
+      "validation": "tests/adventure-world4-*.test.js",
+      "notes": "Wraps Story, never replaces it. Forbidden: Adventure XP/token/energy/daily, dedicated inventory/BattleEngine/job/companion/Nemesis/realm progression, permanent progress inside adventure4, Required Story depending on RNG/rare events/one build."
+    },
+    {
+      "id": "discovery",
+      "title": "Discovery activities — Fishing / Archaeology / Treasure Hunt / Region Codex",
+      "authority": ["js/data/archaeology.js", "js/data/treasureHunt.js", "js/data/regionCodex.js"],
+      "derived": ["js/patches/archaeology*.js", "js/patches/treasureHunt*.js", "js/patches/regionCodex*.js"],
+      "persisted": "state.data.world2.discoveries (shared Rumor Notebook shape used by C2/C5/C7)",
+      "mutation": ["js/data/archaeology.js", "js/data/treasureHunt.js", "js/data/regionCodex.js"],
+      "validation": "tests/archaeology.test.js; tests/companion-discovery-reactions.test.js; region codex tests",
+      "notes": "Region Codex is pure read-side aggregation over existing spot/site/hunt/codex authorities — no new save data (C8-1). Resolution writes reuse the shared discoveries shape."
+    },
+    {
+      "id": "settlement",
+      "title": "Settlement hub / incidents / seasons",
+      "authority": ["js/patches/settlementCore.js", "js/patches/settlementSeasons.js", "js/data/settlementIncidents.js", "js/data/settlementDefense.js"],
+      "persisted": "state.data.world2 settlement namespaces",
+      "mutation": ["js/data/settlement*.js", "js/patches/settlement*.js"],
+      "validation": "npm test",
+      "notes": "Deterministic game-progress cycles only — never real-world-clock waits, energy, or respawn gates (PROJECT_GUIDE §3). Incidents write into the shared Rumor Notebook, not a parallel store."
+    },
+    {
+      "id": "codex",
+      "title": "Enemy / weapon / region codex + seen flags",
+      "authority": ["js/data/codex.js", "js/patches/codexFoundation.js"],
+      "derived": ["js/data/regionCodex.js", "js/patches/codex*.js", "js/patches/monsterCodex*.js"],
+      "persisted": "seen flags under existing save namespaces (no codex root)",
+      "mutation": ["js/data/codex.js", "js/data/regionCodex.js", "js/patches/codex*.js"],
+      "validation": "npm test",
+      "notes": "Spoiler convention: boss/hidden-threat names stay '???' until their own chapter is unlocked — reuse the chapterSelect.js convention (C8-2)."
+    },
+    {
+      "id": "balance",
+      "title": "Numeric balance layers / scaling curves",
+      "authority": ["js/data/balance.js", "js/data/chapters.js"],
+      "persisted": "never (constants)",
+      "mutation": ["js/data/balance.js", "js/data/chapters.js (chapterMult)"],
+      "validation": "npm run sim:* ; balance-audit tests",
+      "notes": "ENEMY_SCALING (exponential per chapter) is marked 'do not change' by its own calibration comment. chapterMult (linear) must not be touched until the owner decides on the known difficulty/pacing gap (CLAUDE.md)."
+    },
+    {
+      "id": "story-canon",
+      "title": "Story canon / player-facing language",
+      "authority": ["STORY_CANON.md", "WORLD_LORE_BIBLE.md", "PLAYER_FACING_LANGUAGE_POLICY.md", "js/data/storyCanon.js"],
+      "persisted": "canon text (not save data)",
+      "mutation": ["js/data/storyCanon.js", "js/data/story*.js"],
+      "validation": "npm test",
+      "notes": "Do not blindly rewrite authored canon text; distinguish decorative UI glyphs from content before editing (CLAUDE.md)."
+    },
+    {
+      "id": "dom-safety",
+      "title": "DOM / MutationObserver patch safety",
+      "authority": ["js/patches/domSafety.js", "docs/MUTATION_OBSERVER_SAFETY.md"],
+      "persisted": "never",
+      "mutation": ["js/patches/domSafety.js"],
+      "validation": "npm test",
+      "notes": "Every observer-triggered write must be idempotent. Never unconditional textContent/classList/appendChild/remove+recreate/innerHTML inside an observed subtree (CLAUDE.md DOM safety)."
+    },
+    {
+      "id": "ui-design",
+      "title": "UI design system — Dark Chronicle",
+      "authority": ["UI_DESIGN_SYSTEM.md", "UI_OVERHAUL_ROADMAP.md", "css/"],
+      "persisted": "never",
+      "mutation": ["css/", "js/ui/", "js/screens/", "js/patches/*Ui.js"],
+      "validation": "live-viewport gate 390×844 / 375×667 / desktop (manual, per work protocol)",
+      "notes": "Text-first hack-and-slash; no platform emoji in rendered UI; restrained monochrome SVG/CSS icons only. The px→rem/clamp retrofit is an open scope question — do not start it silently (CLAUDE.md UIX-7)."
+    }
+  ]
+}

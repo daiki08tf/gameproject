@@ -20,6 +20,13 @@ The stable baseline is main after:
 
 ## Read before changing code
 
+Before diving into prose docs, orient machine-first: `./dev status` and
+`./dev doctor` for repo health, `./dev authority <id>` for where a
+concept's source of truth lives, `./dev impact <file>` for blast radius,
+`./dev context <system>` for a focused packet. See `DEV_INFRA.md`.
+
+Then read:
+
 1. PROJECT_GUIDE.md
 2. UI_OVERHAUL_ROADMAP.md
 3. ROADMAP.md
