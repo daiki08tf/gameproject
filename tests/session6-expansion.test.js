@@ -108,9 +108,9 @@ test('Session6: side locations never chain into or from main-story stage progres
   for (const ch of SIDE_LOCATION_CHAPTERS) {
     for (const s of ch.stages) assert.equal(nextStageAfter(s), null, `${s.id} must not chain (side content is self-contained)`);
   }
-  // Session 7でArc VIII（ch42-45）が続いたため、終端Bossはnum45側。
+  // Session 8でArc IX（ch46-48）が続いたため、終端Bossはnum48側。
   // num41のBossは42-1へ繋がるのが正しい連鎖。
-  const lastMainBoss = CHAPTERS.find(c => c.num === 45).stages.find(s => s.boss);
+  const lastMainBoss = CHAPTERS.find(c => c.num === 48).stages.find(s => s.boss);
   assert.equal(nextStageAfter(lastMainBoss), null);
 });
 

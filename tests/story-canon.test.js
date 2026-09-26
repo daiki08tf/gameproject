@@ -73,7 +73,7 @@ test('clue ladder preserves modern-world evidence and advances through bidirecti
 test('writing rules protect mobile readability and progression separation', () => {
   assert.ok(STORY_WRITING_RULES.some(x => x.includes('mobile')));
   assert.ok(STORY_WRITING_RULES.some(x => x.includes('progression')));
-  // Session 7 — Arc VIII 未記録帯（ch42–45）が8番目のArc
-  assert.equal(STORY_ARCS.length, 8);
-  assert.equal(storyCanonSummary().arcCount, 8);
+  // Session 8 — Arc IX 応答層（ch46–48）が9番目のArc
+  assert.equal(STORY_ARCS.length, 9);
+  assert.equal(storyCanonSummary().arcCount, 9);
 });

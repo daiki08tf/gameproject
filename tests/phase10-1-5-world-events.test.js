@@ -16,9 +16,9 @@ test('World Event 2.0 is deliberately low frequency with light pity',()=>{
   assert.equal(eventChanceForDryStreak(26),.12);
 });
 
-test('eight event chains each contain four meaningful branching beats',()=>{
+test('nine event chains each contain four meaningful branching beats',()=>{
   const chains=Object.values(WORLD_EVENT_CHAINS);
-  assert.equal(chains.length,8);
+  assert.equal(chains.length,9);
   for(const chain of chains){
     assert.equal(chain.steps.length,4,`${chain.id} must have four beats`);
     for(const [index,event] of chain.steps.entries()){

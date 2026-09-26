@@ -27,8 +27,8 @@ test('Abyss clear advances exactly one floor',()=>{
 });
 
 test('final main-story boss has no phantom next stage when optional pseudo chapters are appended',()=>{
-  // Session 7 — 現行の物語終端はch45（Arc VIII）
-  const storyLast=CHAPTERS.find(ch=>ch.id==='ch45');
+  // Session 8 — 現行の物語終端はch48（Arc IX）
+  const storyLast=CHAPTERS.find(ch=>ch.id==='ch48');
   const boss=storyLast.stages.find(s=>s.boss);
   const pseudo={id:'machine_world',num:26,stages:[{id:'machine-world-debug',name:'debug',secretRealm:true}]};
   CHAPTERS.push(pseudo);
