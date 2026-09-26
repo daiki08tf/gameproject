@@ -68,6 +68,7 @@ state.playerTreeHuntBonuses = function playerTreeHuntBonuses() {
 };
 // 個別の読み口（engine側から直接読む面用）
 state.playerTreeRoamerBonus = function playerTreeRoamerBonus() { return this.playerTreeHuntBonuses().roamerChanceBonus; };
+state.playerTreeBondExpMult = function playerTreeBondExpMult() { return this.activePlayerTreeNodes().reduce((m, n) => m * (Number(n.companion?.bondExpMult) || 1), 1); };
 state.playerTreeUniqueBonus = function playerTreeUniqueBonus() { return this.playerTreeHuntBonuses().uniqueChanceBonus; };
 state.playerTreeRecruitBonus = function playerTreeRecruitBonus() { return this.playerTreeHuntBonuses().recruitChanceBonus; };
 state.playerTreeCompanionTakenMult = function playerTreeCompanionTakenMult() { return this.playerTreeCompanionBonuses().takenMult; };

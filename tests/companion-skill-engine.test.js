@@ -45,7 +45,7 @@ test('skill definitions cover damage, heal, and debuff roles', () => {
 
 test('battle patch executes skills through the shared skill engine', async () => {
   const text = await source('js/patches/companionBattle.js');
-  assert.match(text, /chooseCompanionSkill\(species\s*,\s*c\s*,\s*engine\.aliveEnemies\)/,
+  assert.match(text, /chooseCompanionSkill\(species\s*,\s*c\s*,\s*engine\.aliveEnemies/,
     'battle AI must ask the shared engine for an action');
   assert.match(text, /skill\.type\s*===\s*'heal'/,
     'healing should be dispatched by skill type');

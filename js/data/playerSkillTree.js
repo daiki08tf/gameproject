@@ -39,6 +39,7 @@ export const PLAYER_SKILL_TREE = Object.freeze([
   node('wt_beast_pack', 'beast', '群れの絆', '群れを率いる絆。仲間HP +8%。', 1, ['wt_beast_bond'], { companion: { hpMult: 1.08 } }),
   node('wt_beast_scent', 'beast', '獣の嗅覚', '懐きやすい個体を見分ける。勧誘成功率 +4%。', 1, ['wt_beast_pack'], { hunt: { recruitChanceBonus: .04 } }),
   node('wt_beast_raise', 'beast', '共育の印', '共に戦い共に育つ。仲間EXP +20%。', 2, ['wt_beast_pack'], { companion: { expMult: 1.20 } }, 'major'),
+  node('wt_beast_bondcall', 'beast', '絆の呼び声', '呼び続ける者に獣は応える。絆EXP +30%。', 2, ['wt_beast_raise'], { companion: { bondExpMult: 1.30 } }, 'major'),
   node('wt_beast_keystone', 'beast', '獣王の采配', '獣を前に立てる者の采配。仲間ATK +8% / 仲間の被ダメージ -20%。', 3, ['wt_beast_raise'], { companion: { atkMult: 1.08, takenMult: .80 } }, 'keystone'),
 
   // ---- 狩：巡回 ----
@@ -46,6 +47,7 @@ export const PLAYER_SKILL_TREE = Object.freeze([
   node('wt_hunt_scent', 'hunt', '獣の気配', '群れに紛れる異彩を嗅ぎ分ける。Rare出現率 +3%。', 2, ['wt_hunt_tracker'], { hunt: { rareChanceBonus: .03 } }),
   node('wt_hunt_quarry', 'hunt', '強敵の勘', '名もなき強敵の気配を追う。Roamer出現率 +4%。', 2, ['wt_hunt_scent'], { hunt: { roamerChanceBonus: .04 } }),
   node('wt_hunt_eye', 'hunt', '目利きの目', '獲物が落とす宝を見極める。固有装備の抽選率 +4%。', 2, ['wt_hunt_tracker'], { hunt: { uniqueChanceBonus: .04 } }, 'major'),
+  node('wt_hunt_lairs', 'hunt', '巣穴の気配', '獣径の奥に潜む異彩を読む。Rare出現率 +3%。', 2, ['wt_hunt_quarry'], { hunt: { rareChanceBonus: .03 } }),
   node('wt_hunt_keystone', 'hunt', '呪いの味方', '呪いと引き換えに生きる覚悟。呪い巡回の被ダメージ上昇を大幅に抑える。', 3, ['wt_hunt_eye'], { hunt: { cursedResist: .40 } }, 'keystone'),
 ]);
 
