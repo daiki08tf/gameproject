@@ -108,6 +108,7 @@ function describePlayerAction(result) {
     if (result.mpRestored != null) lines.push(`MPを${result.mpRestored}回復した！`);
     if (result.cleansed != null) lines.push(result.cleansed > 0 ? '体を蝕む弱体効果が消え去った！' : 'しかし打ち消すべき弱体効果はなかった…');
     if (result.buffed) lines.push(`${STAT_JP[result.buffed.stat] || result.buffed.stat}が上がった！`);
+    if (result.lured) lines.push('強い獣の匂いが漂い始めた…！ この戦いの残り、Rare・名もなき強敵が出やすい！');
     return lines;
   }
   if (result.action === 'flee') {
@@ -261,8 +262,14 @@ function describeEncounterStart(enemies) {
   const counts = new Map();
   for (const e of enemies) counts.set(e.name, (counts.get(e.name) || 0) + 1);
   const parts = [...counts.entries()].map(([name, n]) => `${name}が${n}体`);
-  const anyBoss = enemies.some((e) => e.boss);
-  return [`${parts.join(' 、 ')} あらわれた！${anyBoss ? '（ボスの気配…！）' : ''}`];
+  const lines = [`${parts.join(' 、 ')} あらわれた！${enemies.some((e) => e.boss) ? '（ボスの気配…！）' : ''}`];
+  // 名もなき強敵（Roamer）・Rareは出会い自体がイベントなので、
+  // 一覧の後に専用の一行を添える（カード表示だけでは驚きが伝わらない）。
+  for (const e of enemies) {
+    if (e.roamer) lines.push(`……群れに、見知らぬ強敵「${e.name}」が紛れ込んでいる！`);
+    else if (e.rare) lines.push(`……希少な個体「${e.name}」がいる！`);
+  }
+  return lines;
 }
 
 // BattleEngine.advanceTurn()の返り値 { events, over, result } を丸ごと受け取り、

@@ -4,13 +4,13 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "main",
-      "head": "1805f72",
+      "head": "419de83",
       "remote": "https://github.com/daiki08tf/gameproject.git"
     },
     "fileCounts": {
-      "total": 1047,
-      "code": 895,
-      "tests": 365
+      "total": 1050,
+      "code": 898,
+      "tests": 366
     }
   },
   "systems": [
@@ -74,6 +74,7 @@
         "tests/progression-core.test.js",
         "tests/progression3-c1-job-stats.test.js",
         "tests/ranch-species-grade.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/region-codex.test.js",
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js",
@@ -412,6 +413,7 @@
         "tests/progression-core.test.js",
         "tests/progression3-c1-job-stats.test.js",
         "tests/ranch-species-grade.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/region-codex.test.js",
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js",
@@ -871,6 +873,7 @@
         "tests/play-tune-balance-pass.test.js",
         "tests/play-tune-polish.test.js",
         "tests/progression3-story-expansion.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/region-codex.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/result-next-stage.test.js",
@@ -929,9 +932,11 @@
         "js/data/enemies.js",
         "js/data/equipment.js",
         "js/data/equipment3Sets.js",
+        "js/data/huntUniques.js",
         "js/data/monsterRanchSpecies.js",
         "js/data/observedBranchStages.js",
         "js/data/resultNextStage.js",
+        "js/data/roamers.js",
         "js/data/runes.js",
         "js/data/secretRealms.js",
         "js/data/stages.js",
@@ -1023,6 +1028,7 @@
         "tests/play-tune-balance-pass.test.js",
         "tests/play-tune-polish.test.js",
         "tests/progression3-story-expansion.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/region-codex.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/result-next-stage.test.js",
@@ -1648,6 +1654,7 @@
         "js/data/nemesis3.js",
         "js/data/raidBosses.js",
         "js/data/regionalEnemies2.js",
+        "js/data/roamers.js",
         "js/patches/bounty2Combat.js",
         "js/patches/bounty2Foundation.js",
         "js/patches/bountyFoundation.js",
@@ -1713,6 +1720,7 @@
         "tests/phase9-world-region-expansion.test.js",
         "tests/play-tune-system-value-pass.test.js",
         "tests/progression3-bounty-nemesis.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
@@ -1776,6 +1784,7 @@
         "js/data/observedBranchStages.js",
         "js/data/postCp3ConvergenceApex.js",
         "js/data/riftStages.js",
+        "js/data/roamers.js",
         "js/data/secretRealms.js",
         "js/data/stages.js",
         "js/main.js",
@@ -1864,6 +1873,7 @@
         "tests/phase9-world-region-expansion.test.js",
         "tests/play-tune-system-value-pass.test.js",
         "tests/progression3-bounty-nemesis.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
@@ -1907,6 +1917,7 @@
         "js/data/equipment3SmartLoot.js",
         "js/data/equipmentFixedIdentity.js",
         "js/data/gearOverhaulPhase9TargetFarm.js",
+        "js/data/huntUniques.js",
         "js/data/loot3EndgameChase.js",
         "js/data/options4.js",
         "js/data/options4Fusion.js",
@@ -2029,6 +2040,7 @@
         "tests/post-cp3-deep-survey.test.js",
         "tests/progression3-equipment-ip.test.js",
         "tests/progression3-relic-era.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
@@ -2146,6 +2158,7 @@
         "js/screens/jobsPhase8.js",
         "js/screens/rebirthModern.js",
         "js/screens/result.js",
+        "js/screens/stageSelect.js",
         "js/screens/status.js",
         "js/screens/weaponCodex.js",
         "js/state.js",
@@ -2232,6 +2245,7 @@
         "tests/post-cp3-deep-survey.test.js",
         "tests/progression3-equipment-ip.test.js",
         "tests/progression3-relic-era.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
@@ -2938,7 +2952,8 @@
         "tests/gearScaling.test.js",
         "tests/huntMode.test.js",
         "tests/phase10-5-job-master-pacing.test.js",
-        "tests/phase10-6-numeric-safety.test.js"
+        "tests/phase10-6-numeric-safety.test.js",
+        "tests/rareHuntContent.test.js"
       ],
       "docs": [
         "PHASE10_6_NUMERIC_SAFETY.md",
@@ -2991,7 +3006,8 @@
         "tests/gearScaling.test.js",
         "tests/huntMode.test.js",
         "tests/phase10-5-job-master-pacing.test.js",
-        "tests/phase10-6-numeric-safety.test.js"
+        "tests/phase10-6-numeric-safety.test.js",
+        "tests/rareHuntContent.test.js"
       ]
     },
     {
@@ -3695,6 +3711,7 @@
         "tests/progression3-story-expansion.test.js",
         "tests/progression3.test.js",
         "tests/ranch-species-grade.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/region-codex.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/result-next-stage.test.js",
@@ -4062,6 +4079,7 @@
         "tests/progression3-story-expansion.test.js",
         "tests/progression3.test.js",
         "tests/ranch-species-grade.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/region-codex.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/result-next-stage.test.js",
@@ -4490,6 +4508,7 @@
         "tests/progression-core.test.js",
         "tests/progression3-c1-job-stats.test.js",
         "tests/ranch-species-grade.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/region-codex.test.js",
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js",
@@ -4608,6 +4627,7 @@
         "tests/progression3-c1-job-stats.test.js",
         "tests/progression3-story-expansion.test.js",
         "tests/ranch-species-grade.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/region-codex.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/result-next-stage.test.js",
@@ -4669,6 +4689,7 @@
         "tests/observed-branches-m6.test.js",
         "tests/phase10-1-world-tier.test.js",
         "tests/phase9-8-machine-depths.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js"
       ]
@@ -4721,6 +4742,7 @@
         "tests/phase10-1-world-tier.test.js",
         "tests/phase9-8-machine-depths.test.js",
         "tests/post-cp3-deep-survey-loop-validation.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js"
       ]
@@ -4866,6 +4888,7 @@
         "tests/phase12-horizontal-pack.test.js",
         "tests/phase9-world-region-expansion.test.js",
         "tests/play-tune-balance-pass.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -5249,6 +5272,7 @@
         "tests/gearScaling.test.js",
         "tests/huntMode.test.js",
         "tests/phase10-5-job-master-pacing.test.js",
+        "tests/rareHuntContent.test.js",
         "tests/story-expansion-ii-ch36.test.js",
         "tests/world-expansion-11-15.test.js"
       ]
@@ -5517,6 +5541,7 @@
     "tests/progression-core.test.js",
     "tests/progression3-c1-job-stats.test.js",
     "tests/ranch-species-grade.test.js",
+    "tests/rareHuntContent.test.js",
     "tests/region-codex.test.js",
     "tests/rift-entry.test.js",
     "tests/rune2-runtime-2-1.test.js",

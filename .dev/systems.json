@@ -219,7 +219,8 @@
         "js/patches/bount",
         "js/data/nemesis",
         "js/patches/nemesis",
-        "js/data/raidBosses"
+        "js/data/raidBosses",
+        "js/data/roamers"
       ],
       "docs": [
         "ENEMY_ENCOUNTER_2_ROADMAP.md",
@@ -256,7 +257,8 @@
         "js/patches/endgameDrop",
         "js/patches/endgameReward",
         "js/data/gearOverhaul",
-        "js/patches/gearOverhaul"
+        "js/patches/gearOverhaul",
+        "js/data/huntUniques"
       ],
       "docs": [
         "GEAR_OVERHAUL_ROADMAP.md",

@@ -13,6 +13,9 @@ import { world2KeyStageDescriptor } from '../data/world2Stages.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
 import { knownObservedBranchesForPrimeRegion } from '../data/observedBranchDiscovery.js';
 import { observedBranchStageProgress, observedBranchHuntTargets, buildObservedBranchStage } from '../data/observedBranchStages.js';
+import { observedBranchById } from '../data/observedBranches.js';
+import { huntUniquesForChapter } from '../data/huntUniques.js';
+import { ROAMERS, roamersForChapter } from '../data/roamers.js';
 import { HUNT_LAYER } from '../data/balance.js';
 
 export function isStageDiscovered(chapter, stage, stageIndex) {
@@ -205,6 +208,19 @@ export function renderStageConfirm(stage) {
     modEl.textContent = `${modEl.textContent ? modEl.textContent + '\n' : ''}巡回モード：エリート出現率${elitePct}% ／ ドロップ率×${stage.dropMult || 1}（Elite撃破でEXP・Gold UP）`;
     modEl.style.whiteSpace = 'pre-line'; modEl.classList.remove('hidden');
   }
+  // 呪い巡回（Cursed Hunt）：巡回にだけ出る任意のリスク・リターン。
+  // ONで被ダメージUP、引き換えにドロップ・Elite密度・EXP/Goldが上がる。
+  const cursedBtn = document.getElementById('confirmCursedBtn');
+  if (cursedBtn) {
+    const paint = () => {
+      cursedBtn.textContent = stage.cursed
+        ? `呪い巡回：ON（被ダメージ×${HUNT_LAYER.CURSED_DMG_TAKEN_MULT} ／ ドロップ×${HUNT_LAYER.CURSED_DROP_BONUS} ／ エリート+${Math.round(HUNT_LAYER.CURSED_ELITE_BONUS * 100)}%）`
+        : '呪い巡回：OFF（危険を引き受けて報酬を増やす）';
+    };
+    cursedBtn.classList.toggle('hidden', !stage.hunt);
+    cursedBtn.onclick = stage.hunt ? () => { Audio_.tap(); stage.cursed = !stage.cursed; paint(); } : null;
+    paint();
+  }
   // 出撃前情報：何と戦うか（wave構成から敵名×数）と手持ちのどうぐを
   // 確認画面に出す。「準備→挑戦」の判断材料を与え、敵の姿を見てから
   // 道具を買いに戻る・装備を組み直す、というプレイループを作る。
@@ -220,6 +236,21 @@ export function renderStageConfirm(stage) {
   const owned = state.ownedConsumables();
   if (owned.length > 0) intelLines.push(`所持どうぐ：${owned.map((o) => `${o.item.name}×${o.count}`).join('、')}`);
   else intelLines.push('どうぐは未所持（鍛冶屋の「道具」タブで準備できる）');
+  // 巡回の追撃対象を明示する：この章で狙える固有装備と、目撃例のある
+  // 名もなき強敵。未入手/未発見は？？？表示で「何かいる」期待だけ残す。
+  if (stage.hunt) {
+    const branchChapter = Number((observedBranchById(stage.observedBranchId)?.primeRegionRef?.chapterId || '').replace('ch', ''));
+    const chapterNum = Number(/^(\d+)-\d+$/.exec(stage.id || '')?.[1]) || branchChapter || 1;
+    const pool = huntUniquesForChapter(Number(chapterNum));
+    if (pool.length) {
+      intelLines.push(`狙える固有：${pool.map((i) => state.ownsItem(i.id) ? i.name : '？？？').join(' ／ ')}`);
+    }
+    const codex = state.data.monsterCodex || {};
+    const roamers = roamersForChapter(Number(chapterNum));
+    if (roamers.length) {
+      intelLines.push(`強敵の目撃情報：${roamers.map((id) => codex[`roamer:${id}`]?.seen ? `${ROAMERS[id].name}（遭遇済）` : '？？？').join(' ／ ')}`);
+    }
+  }
   if (intelLines.length > 0) {
     intelEl.textContent = intelLines.join('\n');
     intelEl.style.whiteSpace = 'pre-line';

@@ -48,6 +48,11 @@ export const CONSUMABLES = {
     desc: '3ターンの間、防御力が40%上がる',
     effect: { kind: 'buff', stat: 'def', pct: 0.40, turns: 3 },
   },
+  item_lure: {
+    id: 'item_lure', name: '匂い袋', price: 140,
+    desc: 'この戦闘中、Rareと「名もなき強敵」の出現率が上がる',
+    effect: { kind: 'lure' },
+  },
 };
 
 export function getConsumable(id) {
@@ -67,6 +72,7 @@ export const CONSUMABLE_DROP_TABLE = [
   { itemId: 'item_bell', weight: 10 },
   { itemId: 'item_warcry', weight: 7 },
   { itemId: 'item_ironwall', weight: 6 },
+  { itemId: 'item_lure', weight: 5 },
 ];
 
 // 敵1体撃破ごとのどうぐドロップ抽選確率
@@ -74,7 +80,7 @@ export const CONSUMABLE_DROP_CHANCE = 0.07;
 
 // 鍛冶屋「道具」タブの品揃え（陳列順＝この配列順）
 export const CONSUMABLE_SHOP = [
-  'item_herb', 'item_hiherb', 'item_ether', 'item_bell', 'item_warcry', 'item_ironwall',
+  'item_herb', 'item_hiherb', 'item_ether', 'item_bell', 'item_warcry', 'item_ironwall', 'item_lure',
 ];
 
 export function pickConsumableDrop() {
