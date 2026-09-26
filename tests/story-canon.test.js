@@ -73,6 +73,6 @@ test('clue ladder preserves modern-world evidence and advances through bidirecti
 test('writing rules protect mobile readability and progression separation', () => {
   assert.ok(STORY_WRITING_RULES.some(x => x.includes('mobile')));
   assert.ok(STORY_WRITING_RULES.some(x => x.includes('progression')));
-  assert.equal(STORY_ARCS.length, 6);
-  assert.equal(storyCanonSummary().arcCount, 6);
+  assert.equal(STORY_ARCS.length, 7);
+  assert.equal(storyCanonSummary().arcCount, 7);
 });

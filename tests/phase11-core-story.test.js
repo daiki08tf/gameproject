@@ -34,7 +34,9 @@ test('story beats use opening, midpoint discovery and boss closure only',()=>{
 
 test('runtime attaches journey story to Ch1-25 main stages and keeps optional branches clean',()=>{
   attachCoreStory();
-  for(const chapter of CHAPTERS.filter(ch=>ch.num<=25)){
+  // Session 6: 探索地点（sideLocation）はnumアンカーを持つが本編Beatの
+  // 対象外 —— フィルタも本編＋外伝に絞る。
+  for(const chapter of CHAPTERS.filter(ch=>ch.num<=25&&!ch.sideLocation)){
     const main=chapter.stages.filter(s=>!s.branch&&!s.bounty);
     assert.ok(main[0].story11?.opening,`chapter ${chapter.num} opening not attached`);
     assert.ok(main.find(s=>s.boss)?.story11?.bossIntro,`chapter ${chapter.num} boss intro not attached`);

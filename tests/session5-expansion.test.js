@@ -46,13 +46,16 @@ test('Session5: every gaiden Denlord is registered, recruitable, and resolves a 
   }
 });
 
-test('Session5: Arc VI extends the main story through ch39 and ends cleanly', () => {
+test('Session5: Arc VI covers ch36-39 and the story continues cleanly into Arc VII', () => {
   for (const num of [36, 37, 38, 39]) assert.equal(storyArcForChapter(num)?.id, 'arc6', `ch${num} must be Arc VI`);
+  for (const num of [40, 41]) assert.equal(storyArcForChapter(num)?.id, 'arc7', `ch${num} must be Arc VII`);
   const ch39 = CHAPTERS.find(c => c.num === 39);
   assert.ok(ch39 && !ch39.gaiden);
   const boss = ch39.stages.find(s => s.boss);
   assert.ok(boss, 'ch39 needs a final boss stage');
-  assert.equal(nextStageAfter(boss), null, 'the current story end must not chain into gaidens');
+  assert.equal(nextStageAfter(boss)?.id, '40-1', 'ch39 boss must chain into ch40');
+  const lastBoss = CHAPTERS.find(c => c.num === 41).stages.find(s => s.boss);
+  assert.equal(nextStageAfter(lastBoss), null, 'the current story end must not chain into gaidens');
 });
 
 test('Session5: gaidens do not leak into main progression or Abyss unlock', () => {
@@ -61,7 +64,7 @@ test('Session5: gaidens do not leak into main progression or Abyss unlock', () =
     const ch = CHAPTERS.find(c => c.id === g.id);
     assert.ok(ch.gaiden, `${g.id} must keep the gaiden flag so progression/Abyss gates ignore it`);
   }
-  // 39-8 next must be null even though gaiden chapters sit after it in CHAPTERS
-  const last = CHAPTERS.find(c => c.num === 39).stages.find(s => s.boss);
+  // 41-8 next must be null even though gaiden chapters sit after it in CHAPTERS
+  const last = CHAPTERS.find(c => c.num === 41).stages.find(s => s.boss);
   assert.equal(nextStageAfter(last), null);
 });

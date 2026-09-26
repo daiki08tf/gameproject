@@ -18,7 +18,7 @@ test('chapter 16-20 roadmap bridges Lv700 to Lv3000 without regression', () => {
     ],
   );
 
-  const story = CHAPTERS.filter((chapter) => chapter.num >= 15 && chapter.num <= 20);
+  const story = CHAPTERS.filter((chapter) => chapter.num >= 15 && chapter.num <= 20 && !chapter.gaiden);
   const ranges = story.map((chapter) => {
     const main = chapter.stages.filter((stage) => !stage.branch);
     return [chapter.num, main[0].recLevel, main.at(-1).recLevel];
