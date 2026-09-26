@@ -11,6 +11,7 @@ import { runHandoff } from './handoff.mjs';
 import { runSaveCheck } from './saveCheck.mjs';
 import { runSmoke } from './smoke.mjs';
 import { runCheck } from './check.mjs';
+import { runPlay } from './play.mjs';
 
 const USAGE = `Blade Vale dev front door
 
@@ -28,6 +29,9 @@ authority
   scope [t]            likely-in-scope files (+ current diff when run bare)
   context <t>          agent-ready context packet for a system/concept
   handoff [t]          handoff packet (working tree, or focused on <t>)
+
+play
+  play                 launch a local server + browser — THE way to run the game
 
 validation
   save-check           save schema + c1 job migration + migration tests
@@ -51,6 +55,7 @@ const COMMANDS = {
   'save-check': runSaveCheck,
   smoke: runSmoke,
   check: runCheck,
+  play: runPlay,
 };
 
 const [cmd, ...args] = process.argv.slice(2);

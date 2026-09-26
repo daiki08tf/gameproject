@@ -4,13 +4,13 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "main",
-      "head": "a554201",
+      "head": "b857bef",
       "remote": "https://github.com/daiki08tf/gameproject.git"
     },
     "fileCounts": {
-      "total": 1087,
-      "code": 935,
-      "tests": 370
+      "total": 1089,
+      "code": 937,
+      "tests": 371
     }
   },
   "systems": [
@@ -2922,6 +2922,7 @@
         "js/patches/session8World.js",
         "js/patches/settlementChronicle.js",
         "js/patches/settlementEndgameNetwork.js",
+        "js/patches/settlementSeasons.js",
         "js/patches/stageFirstNavigationUi.js",
         "js/patches/systemDeepeningPackC.js",
         "js/patches/world2Core.js",
@@ -3913,6 +3914,7 @@
         "tests/treasure-hunt.test.js",
         "tests/ui-foundation-shared.test.js",
         "tests/ui-home-foundation.test.js",
+        "tests/uix-no-emoji-law.test.js",
         "tests/uix1-design-system.test.js",
         "tests/uix2-home-command-center.test.js",
         "tests/uix3-stage-first-adventure.test.js",
@@ -4285,6 +4287,7 @@
         "tests/treasure-hunt.test.js",
         "tests/ui-foundation-shared.test.js",
         "tests/ui-home-foundation.test.js",
+        "tests/uix-no-emoji-law.test.js",
         "tests/uix1-design-system.test.js",
         "tests/uix2-home-command-center.test.js",
         "tests/uix3-stage-first-adventure.test.js",
@@ -4531,6 +4534,7 @@
         "scripts/dev/lib/output.mjs",
         "scripts/dev/lib/repo.mjs",
         "scripts/dev/map.mjs",
+        "scripts/dev/play.mjs",
         "scripts/dev/saveCheck.mjs",
         "scripts/dev/scope.mjs",
         "scripts/dev/smoke.mjs",

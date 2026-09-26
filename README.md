@@ -12,8 +12,9 @@
 ES Modulesを使用しているため、`file://` ではなくローカルサーバー経由で起動してください。
 
 ```bash
-python3 -m http.server 8000
-# ブラウザで http://localhost:8000 を開く
+./dev play
+# サーバーが起動してブラウザが自動で開く。停止は Ctrl+C。
+# （手動の場合: python3 -m http.server 8000 → http://localhost:8000）
 ```
 
 ## 基本ゲームループ
