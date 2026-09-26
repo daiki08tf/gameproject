@@ -24,6 +24,7 @@ export const ROAMERS = Object.freeze({
     statMult: { hp: 3.2, atk: 0.7, def: 1.5, spd: 0.6, xp: 2.5, gold: 9 },
     minChapter: 2,
     dropItemId: 'uq_hunt_slayer_sigil', dropChance: 0.35,
+    territory: { lairStage: 'rw-2', lairName: '獣の根城', hint: '獣の根城で何かを溜め込んでいる。嗅覚の鋭い仲間が巣を嗅ぎつける。', habitat: '獣道・鉱山・食料の豊かな窪地' },
   },
   glass_step: {
     id: 'glass_step', name: '鏡歩き・GLASS STEP',
@@ -31,6 +32,7 @@ export const ROAMERS = Object.freeze({
     statMult: { hp: 1.6, atk: 1.1, def: 0.7, spd: 1.8, xp: 3, gold: 3 },
     minChapter: 5,
     dropItemId: 'uq_hunt_stillwater_lens', dropChance: 0.35,
+    territory: { lairStage: 'sr-2', lairName: '嵐鳥の営巣', hint: '嵐の営巣地で、羽の合間を歩く影が見えた。翼ある仲間が昇れる。', habitat: '高所・視界の開けた場所・鏡面' },
   },
   pale_jailer: {
     id: 'pale_jailer', name: '白き獄卒・PALE JAILER',
@@ -38,6 +40,7 @@ export const ROAMERS = Object.freeze({
     statMult: { hp: 2.4, atk: 0.8, def: 2.2, spd: 0.75, xp: 3, gold: 3 },
     minChapter: 8,
     dropItemId: 'uq_hunt_starlit_censer', dropChance: 0.35,
+    territory: { lairStage: 'gv-2', lairName: '墓標の回廊', hint: '墓標の巡回路に、名もなき白い影が通った。不死の仲間が読める。', habitat: '墓所・監獄跡・巡回路' },
   },
   rust_errant: {
     id: 'rust_errant', name: '錆びた遍歴騎士・RUST ERRANT',
@@ -45,6 +48,7 @@ export const ROAMERS = Object.freeze({
     statMult: { hp: 2.0, atk: 1.35, def: 1.2, spd: 1.0, xp: 3.5, gold: 3.5 },
     minChapter: 9,
     dropItemId: 'uq_hunt_thousand_edge', dropChance: 0.35,
+    territory: { lairStage: 'am-3', lairName: '頂の食卓', hint: '巨大な食事場の探し場で、錆びた剣士がまだ何かを探している。', habitat: '高台・戦場跡・骨の散らばる場所' },
   },
   null_chant: {
     id: 'null_chant', name: '名を持たぬ詠唱者・NULL CHANT',
@@ -52,6 +56,7 @@ export const ROAMERS = Object.freeze({
     statMult: { hp: 1.3, atk: 1.8, def: 0.9, spd: 1.3, xp: 3.5, gold: 4 },
     minChapter: 12,
     dropItemId: 'uq_hunt_blight_fang', dropChance: 0.35,
+    territory: { lairStage: 'fg-2', lairName: '水没坑道', hint: '水底の坑道で、歌の続きを拾い集める声がする。水棲の仲間が潜れる。', habitat: '水辺・坑道・声の反響する場所' },
   },
 });
 

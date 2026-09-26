@@ -130,7 +130,10 @@ export function optionFilterMatches(inst, rawFilter = {}) {
 export function equipment3FilterMatches(item, inst = null, rawFilter = {}) {
   const filter = normalizeLootFilter3(rawFilter);
   if (!item) return false;
-  if (rarityIndex(item.rarity) < rarityIndex(filter.minRarity)) return false;
+  // Session 7 — ドロップ位階を持つ個体は、実際の位階でフィルターする
+  // （relicドロップの神話装備は「遺物以上」フィルターを通す）。
+  const effRarity = inst?.rank || item.rarity;
+  if (rarityIndex(effRarity) < rarityIndex(filter.minRarity)) return false;
 
   // Weapon family is meaningful only for weapons. All other instance/detail
   // filters now apply consistently to weapon / shield / head / body / accessory.

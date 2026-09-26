@@ -15,18 +15,21 @@ export const DENLORDS = Object.freeze({
     gaidenId: 'gaiden_beasttrail', finaleStageId: 'bt-7',
     name: '獣径の主・DENLORD', title: '獣径の主',
     prestige: Object.freeze({ namePrefix: '【再臨】', hpMult: 1.45, atkMult: 1.30, defMult: 1.30, recruitRarity: 'legendary', trait: '再臨' }),
+    super: Object.freeze({ namePrefix: '【超再臨】', hpMult: 1.90, atkMult: 1.55, defMult: 1.60, recruitRarity: 'mythic', trait: '超再臨' }),
   }),
   tp_denlord: Object.freeze({
     id: 'tp_denlord', enemyType: 'tp_denlord', speciesId: 'tp_denlord',
     gaidenId: 'gaiden_tidepath', finaleStageId: 'tp-5',
     name: '潮径の主・TIDELORD', title: '潮径の主',
     prestige: Object.freeze({ namePrefix: '【再臨】', hpMult: 1.50, atkMult: 1.25, defMult: 1.35, recruitRarity: 'legendary', trait: '再臨' }),
+    super: Object.freeze({ namePrefix: '【超再臨】', hpMult: 1.95, atkMult: 1.45, defMult: 1.65, recruitRarity: 'mythic', trait: '超再臨' }),
   }),
   af_denlord: Object.freeze({
     id: 'af_denlord', enemyType: 'af_denlord', speciesId: 'af_denlord',
     gaidenId: 'gaiden_ashfield', finaleStageId: 'af-5',
     name: '灰径の主・ASHLORD', title: '灰径の主',
     prestige: Object.freeze({ namePrefix: '【再臨】', hpMult: 1.40, atkMult: 1.40, defMult: 1.25, recruitRarity: 'legendary', trait: '再臨' }),
+    super: Object.freeze({ namePrefix: '【超再臨】', hpMult: 1.85, atkMult: 1.70, defMult: 1.50, recruitRarity: 'mythic', trait: '超再臨' }),
   }),
 });
 

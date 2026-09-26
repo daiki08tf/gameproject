@@ -94,6 +94,30 @@ export const HUNT_UNIQUES = Object.freeze([
              { trigger:'onHit', kind:'lifestealLowHp', name:'嗜血', power:.15, hpThreshold:.35 }],
     lore:'回復を捨てた者だけが纏える烙印。守りを捨て、倒れる寸前まで獣のように噛み付く。',
   }),
+  /* Session 7 — 秘密の戦利品。秘密Boss・超再臨の領域からだけ
+     届く、新位階（relic）の追撃装備。huntChapters は通常の
+     Chase抽選で拾われないよう極狭に絞るか、直接抽選のみにする。 */
+  u({ id:'uq_hunt_forgeheart_relay', name:'炉心の中継核・FORGERELAY', slot:'weapon', weaponType:'staff',
+    rarity:'relic', unique:true, anchor:22, huntChapters:[22,28],
+    stats:{ mag:520, mp:90, spd:14 },
+    effects:[{ trigger:'onSkill', kind:'spellMpRefund', name:'炉心還流', chance:.35, power:.45, spellOnly:true },
+             { trigger:'passive', kind:'mpShield', name:'機魂防壁', threshold:.35, power:.3 }],
+    lore:'炉心回廊の監督機が抱えていた中継核。回した分の魔力が、もう一度炉へ還ってくる。',
+  }),
+  u({ id:'uq_hunt_unwritten_leaf', name:'未記述の頁・UNWRITTEN LEAF', slot:'accessory',
+    rarity:'relic', unique:true, anchor:41, huntChapters:[41,45],
+    stats:{ spd:34, crit:14, mp:80, atk:60 },
+    effects:[{ trigger:'passive', kind:'firstStrikeBonus', name:'記録の隙間', power:.25 },
+             { trigger:'passive', kind:'eliteDmg', name:'記されざる狩り', power:.4 }],
+    lore:'どの帳簿にも存在しない頁。めくれば、まだ誰も書いていない場所への道が透けて見える。',
+  }),
+  u({ id:'uq_hunt_overlord_core', name:'超再臨の心核・OVERLORD', slot:'accessory',
+    rarity:'relic', unique:true, anchor:30, huntChapters:[99,99],
+    stats:{ hp:160, atk:80, def:40 },
+    effects:[{ trigger:'passive', kind:'damageBoost', name:'主の残り火', threshold:.35, power:.25 },
+             { trigger:'onHurt', kind:'counter', name:'領域の報復', power:.55 }],
+    lore:'超再臨を越えた巣の主の心核。二度の再臨を耐え抜いた意志が、領域そのものを武装化する。',
+  }),
 ]);
 
 const BY_ID = new Map(HUNT_UNIQUES.map(i => [i.id, i]));

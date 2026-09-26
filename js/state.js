@@ -14,6 +14,7 @@ import { getArtifact } from './data/artifacts.js';
 import { ALL_ABYSS_TREE_NODES, getAbyssTreeNodeDef, abyssTreeNodeCostFor } from './data/abyssTree.js';
 import { isAbyssBossFloor } from './data/abyss.js';
 import { generateWeaponAffixes, splitAffixesForApplication } from './data/affixes.js';
+import { rollItemRank, effectiveItemRank, itemRankStatMult } from './data/itemRanks.js';
 import { deriveCombatStats } from './data/combatStats.js';
 import { getConsumable } from './data/consumables.js';
 
@@ -181,8 +182,9 @@ class StateManager {
       // スロットを問わず適用する。
       const affix = slot === 'weapon' ? this.weaponAffix(id) : null;
       const affix2 = this.weaponAffix2(id);
+      const rankMult = slot === 'weapon' ? this.weaponInstanceRankStatMult(id) : 1;
       for (const k in item.stats) {
-        let mult = baseMult;
+        let mult = baseMult * rankMult;
         if (affix && affix.stat === k) mult += affix.pct;
         if (affix2 && affix2.stat === k) mult += affix2.pct;
         bonus[k] = (bonus[k] || 0) + item.stats[k] * mult;
@@ -245,8 +247,9 @@ class StateManager {
       const item = getItem(id);
       if (!item || !(stat in item.stats)) continue;
       const baseMult = slot === 'weapon'
-        ? 1 + this.weaponEnhanceLevel(id) * EQUIPMENT_LAYER.ENHANCE_BONUS_PER_LEVEL
-              + this.weaponAwakenedRank(id) * AWAKENED_EQUIP_LAYER.BONUS_PER_RANK
+        ? (1 + this.weaponEnhanceLevel(id) * EQUIPMENT_LAYER.ENHANCE_BONUS_PER_LEVEL
+              + this.weaponAwakenedRank(id) * AWAKENED_EQUIP_LAYER.BONUS_PER_RANK)
+            * this.weaponInstanceRankStatMult(id)
         : 1;
       const affix1 = slot === 'weapon' ? this.weaponAffix(id) : null;
       const affix2 = this.weaponAffix2(id);
@@ -440,8 +443,13 @@ class StateManager {
       // （同じ武器名でもドロップごとに性能が変わる＝Part Aの核心）
       for (let i = 0; i < qty; i++) {
         const instanceId = `${itemId}#${this.data.nextInstanceSeq++}`;
-        const affixes = generateWeaponAffixes(item, dropCtx || {});
-        this.data.weaponInstances[instanceId] = { itemId, affixes };
+        // Session 7 — ドロップ時の位階抽選。rankは図鑑等級を上回った時
+        // だけ保存する（additive field。rankが作れるのはドロップだけ）。
+        const rank = rollItemRank(item, dropCtx || {});
+        const affixes = generateWeaponAffixes(item, { ...(dropCtx || {}), itemRank: rank });
+        const inst = { itemId, affixes };
+        if (rank !== item.rarity) inst.rank = rank;
+        this.data.weaponInstances[instanceId] = inst;
         this.data.inventory[instanceId] = 1;
         this._lastWeaponInstanceId = instanceId;
       }
@@ -512,6 +520,23 @@ class StateManager {
   weaponInstanceAffixes(id) {
     const inst = this.data.weaponInstances[id];
     return inst ? inst.affixes : [];
+  }
+
+  // ---------- アイテム位階（Session 7） ----------
+  // instance.rank を読むだけの薄いアクセサ。計算規則は itemRanks.js の
+  // authority に委譲する（ここに式を書かない）。
+  weaponInstanceRank(id) {
+    const inst = this.data.weaponInstances[id];
+    if (!inst) return null;
+    const item = getItem(inst.itemId) || getItem(baseItemId(id));
+    return effectiveItemRank(item, inst);
+  }
+  // 実効位階の基礎stat倍率。同格なら1（旧セーブ含め全て無傷）。
+  weaponInstanceRankStatMult(id) {
+    const inst = this.data.weaponInstances[id];
+    if (!inst || !inst.rank) return 1;
+    const item = getItem(inst.itemId) || getItem(baseItemId(id));
+    return itemRankStatMult(item, inst);
   }
 
   // requiredLevel（Blade Vale 2.1）：転生（覚醒）で職業Lvがリセットされる

@@ -188,10 +188,20 @@ export class TextBattleScreen {
       // 「狙い：技名」として表示し、誰を優先して倒すかの判断材料にする。
       const intent = !e.dead && e.combat3WillUseSkill && e.combat3Skill
         ? `<div class="tb-enemy-intent">狙い：${e.combat3Skill.name}</div>` : '';
+      // Session 7 — Boss位相の可読性。現在の位相と次の変化までの
+      // 距離を示し、「読み」を報いる（具体値を全開示せず余白を残す）。
+      const enc = e.combat3Encounter;
+      let phaseLine = '';
+      if (!e.dead && enc?.profile?.phases?.length) {
+        const next = enc.profile.phases[enc.nextPhase];
+        const remain = next ? Math.max(0, Math.ceil((e.hp / Math.max(1, e.maxHp) - next.ratio) * 100)) : null;
+        phaseLine = `<div class="tb-enemy-intent">位相 ${enc.nextPhase + 1}/${enc.profile.phases.length + 1}${next ? ` ・ 形態変化まで${remain > 15 ? '余裕あり' : remain > 0 ? 'あと少し' : '目前'}` : ' ・ 最終位相'}</div>`;
+      }
       card.innerHTML = `
         <div class="tb-enemy-name-row"><span>${e.name}</span><span class="tag">${tag}</span></div>
         <div class="bar hp-bar small"><div class="fill" style="width:${e.dead ? 0 : Math.max(0, e.hp / e.maxHp * 100)}%"></div></div>
         ${intent}
+        ${phaseLine}
       `;
       if (!e.dead) card.addEventListener('click', () => { this.selectedTargetId = e.id; this._renderEnemies(); });
       list.appendChild(card);

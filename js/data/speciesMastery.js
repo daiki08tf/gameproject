@@ -65,3 +65,35 @@ export function speciesMasteryTierLabel(level) {
   if (level >= 1) return '知見';
   return '';
 }
+
+/* ============================================================
+   Session 7 — Mastery 2.0「熟練とは知識」。
+   Lv毎に「その種について分かること」が一段ずつ増える。
+   数値ではなく Codex に載る知識行として生成するため、種族の
+   メタデータ（family / traits / skills / region）から導く。
+   Lv5 は到達点: 勧誘した個体の素質が底上げされる（quality floor）。
+   ============================================================ */
+export const SPECIES_MASTERY_INTEL_LABELS = Object.freeze({
+  1: '生態',
+  2: '気質',
+  3: '棲息地',
+  4: '行動',
+  5: '極み',
+});
+const MASTERY_FAMILY_LABEL = Object.freeze({
+  beast: '獣', aquatic: '水棲', construct: '機械',
+  spirit: '精霊', undead: '不死', slime: '粘性',
+});
+export function speciesMasteryIntelLines(species, level) {
+  if (!species || level <= 0) return [];
+  const lines = [];
+  if (level >= 1) lines.push(`${MASTERY_FAMILY_LABEL[species.family] || '魔物'}の一員。${species.regionName || '各地'}で目撃される。`);
+  if (level >= 2) lines.push(`特性『${(species.traits || []).join('・') || '不明'}』を持つ個体を確認している。`);
+  if (level >= 3) lines.push(`${species.regionName || '不明'}周辺に棲息する。群れを離れた強個体もいる。`);
+  if (level >= 4) {
+    const topSkill = (species.skills || []).slice(-1)[0];
+    lines.push(`「${topSkill?.name || topSkill?.id || '不明な技'}」を使う個体を確認している。`);
+  }
+  if (level >= 5) lines.push('この種を知り尽くした。勧誘した個体は高い素質で応える。');
+  return lines;
+}

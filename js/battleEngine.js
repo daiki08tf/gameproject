@@ -275,6 +275,13 @@ export class BattleEngine {
   }
 
   _spawnEnemy(type) {
+    // Session 7 — 巣穴（roamerLair）のwaveは 'roamer:<id>' でRoamerを
+    // 直接配置する（乱数ではなく「縄張りに来れば会える」狩り）。
+    if (typeof type === 'string' && type.startsWith('roamer:')) {
+      const roamer = this._spawnRoamer(type.slice('roamer:'.length));
+      if (roamer) { roamer.lairId = this.stage.roamerLair || type.slice(7); this._roamerSpawned = true; }
+      return roamer;
+    }
     // 巡回（Hunt）中、ごくまれに「名もなき強敵」（Roamer）が非Boss
     // スロットへ紛れ込む。1バトル1体まで。匂い袋で出現率を底上げできる。
     if (this.stage.hunt && !this._roamerSpawned && !ENEMY_TYPES[type]?.boss
@@ -1699,7 +1706,17 @@ export class BattleEngine {
     const onKillEvents = this.applyEffect('onKill', { enemy });
     // 武器Affix（Part A）：深淵深度・Elite・Boss討伐でAffix品質が少し上がる。
     // Session 6: 探索地点の固有補正（stage.dropAffixBonus）を品質に少量乗せる。
-    const dropCtx = { depth: this.stage.isAbyss ? (this.stage.abyssDepth || 0) : 0, elite: !!enemy.elite, boss: !!enemy.boss, bonus: Number(this.stage.dropAffixBonus) || 0 };
+    // Session 7: dropRankBonus（位階+1抽選の底上げ、秘密の狩場向け）と
+    // locTags/affixBiasCats（地点署名Affixと場所のAffix傾向）を載せる。
+    const dropCtx = {
+      depth: this.stage.isAbyss ? (this.stage.abyssDepth || 0) : 0,
+      elite: !!enemy.elite,
+      boss: !!enemy.boss,
+      bonus: Number(this.stage.dropAffixBonus) || 0,
+      rankBonus: Number(this.stage.dropRankBonus ?? this.chapter?.dropRankBonus) || 0,
+      locTags: this.stage.locTags || this.chapter?.locTags || null,
+      affixBiasCats: this.stage.affixBiasCats || this.chapter?.affixBiasCats || null,
+    };
     const drops = [];
     const dropInfo = this._rollDrop(dropCtx); if (dropInfo) drops.push(dropInfo);
     const weaponDropInfo = this._rollWeaponDrop(dropCtx); if (weaponDropInfo) drops.push(weaponDropInfo);
@@ -1816,7 +1833,10 @@ export class BattleEngine {
 
     if (enemy.roamerId) {
       const def = ROAMERS[enemy.roamerId];
-      if (def?.dropItemId && Math.random() < def.dropChance) {
+      // Session 7 — 巣穴で仕留めたRoamerは固有ドロップ率が上がる
+      // （縄張りへ乗り込む狩りの報酬。lairBonusは小さく留める）。
+      const lairMult = enemy.lairId ? 1.5 : 1;
+      if (def?.dropItemId && Math.random() < Math.min(0.9, def.dropChance * lairMult)) {
         out.push(this._takeItem(def.dropItemId, dropCtx));
       }
     }
@@ -1824,6 +1844,11 @@ export class BattleEngine {
     if (isRare) {
       const extra = this._rollDrop(dropCtx, { guaranteed: true });
       if (extra) out.push(extra);
+    }
+    // Session 7 — 超再臨Denlordは専用の心核を一定率で落とす
+    // （「頂点の狩りには頂点の戦利品」。Chase枠とは別抽選）。
+    if (enemy.superPrestige && Math.random() < 0.5) {
+      out.push(this._takeItem('uq_hunt_overlord_core', dropCtx));
     }
 
     const treeBonus = state.playerTreeUniqueBonus?.() || 0;
@@ -1885,9 +1910,13 @@ export class BattleEngine {
     const item = getItem(itemId);
     if (item) {
       const affixes = instanceId ? state.weaponInstanceAffixes(instanceId) : [];
+      // Session 7 — 昇格個体の位階をドロップ記述に載せる（画面側で
+      // 「遺物級」「原初級」の告知演出に使う）。
+      const rank = instanceId ? state.weaponInstanceRank(instanceId) : item.rarity;
       return {
         itemId, name: item.name, rarity: item.rarity, isNew, isBossWeapon: !!item.isBossWeapon,
         instanceId: instanceId || null, affixCount: affixes.length,
+        rank, rankUpgraded: rank !== item.rarity,
         hasRareAffix: hasRareAffix(affixes), highestAffixRarity: highestAffixRarity(affixes),
       };
     }

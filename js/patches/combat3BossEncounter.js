@@ -60,7 +60,9 @@ proto.beginNextEncounter=function combat3BossEncounterBegin(){
   if(!event)return event;
   const boss=this.aliveEnemies.find(isEncounterAnchor);
   if(!boss)return event;
-  const profile=bossEncounterProfile(boss.type)||(boss.type==='phase12_apex_boss'?PHASE12_APEX_BOSS_PROFILE:null);
+  // Session 7 — 超再臨Denlordは再臨profileではなく専用の長い位相表を引く。
+  const profileKey=boss.superPrestige?`${boss.type}__super`:boss.type;
+  const profile=bossEncounterProfile(profileKey)||bossEncounterProfile(boss.type)||(boss.type==='phase12_apex_boss'?PHASE12_APEX_BOSS_PROFILE:null);
   if(!profile)return event;
   boss.combat3Encounter={profile,nextPhase:0};
   const added=spawnAdds(this,boss,profile.startEscorts);
@@ -99,6 +101,25 @@ proto._grantKillRewards=function combat3BossEncounterGrant(enemy){
 const originalEnemyTurn=proto.performEnemyTurn;
 proto.performEnemyTurn=function combat3BossEncounterTurn(enemy){
   let phaseResult=null;
+  // Session 7 — 号令カウンター：profile.orderReaction を持つBossは、
+  // プレイヤーの号令に対して1戦闘1回だけ反応装甲を張る。
+  // 「読まれた」ではなく「読み合いが返ってきた」瞬間を作る演出。
+  if(enemy&&!enemy.dead){
+    const enc=encounterOf(enemy);
+    const reaction=enc?.profile?.orderReaction;
+    if(reaction&&!enc.orderCountered){
+      for(const orderId of Object.keys(reaction)){
+        if(this._ordersUsed?.[orderId]){
+          enc.orderCountered=true;
+          const r=reaction[orderId];
+          if(r.atkMult)enemy.atk=Math.max(1,Math.round(enemy.atk*r.atkMult));
+          if(r.defMult)enemy.def=Math.max(0,Math.round(enemy.def*r.defMult));
+          if(r.spdMult)enemy.spd=Math.max(1,Math.round(enemy.spd*r.spdMult));
+          enc.orderCounterMessage=r.message||'対応反応';
+        }
+      }
+    }
+  }
   if(enemy&&!enemy.dead){
     const enc=encounterOf(enemy);
     const phase=enc?.profile?.phases?.[enc.nextPhase];
@@ -112,6 +133,10 @@ proto.performEnemyTurn=function combat3BossEncounterTurn(enemy){
     result.phased=true;
     result.encounterPhase=phaseResult;
     result.name=`${result.name}「${phaseResult.phaseName}」`;
+  }
+  if(result&&encounterOf(enemy)?.orderCounterMessage){
+    result.orderCounter=encounterOf(enemy).orderCounterMessage;
+    delete encounterOf(enemy).orderCounterMessage;
   }
   return result;
 };

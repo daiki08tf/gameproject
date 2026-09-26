@@ -31,7 +31,10 @@ export const JOB_TIER = {
 // C. 装備成長レイヤー（武器種・レアリティ・強化・ルーン・武器熟練）
 // ---------------------------------------------------------
 export const EQUIPMENT_LAYER = {
-  RARITY_MULT: { normal: 1.0, rare: 1.6, epic: 2.4, legendary: 3.6, mythic: 5.4 },
+  // Session 7: 位階拡張。relic（遺物級）= mythicの約1.3倍、primordial
+  // （原初級）= mythicの約1.63倍。最上位は「何が起きたか分からない」
+  // 稀有な拾いものとして残し、伸びは一段ずつに留める。
+  RARITY_MULT: { normal: 1.0, rare: 1.6, epic: 2.4, legendary: 3.6, mythic: 5.4, relic: 7.0, primordial: 8.8 },
 
   WEAPON_AFFINITY_BONUS: 0.08,      // 得意武器種を装備中、主要ステータスに+8%
 

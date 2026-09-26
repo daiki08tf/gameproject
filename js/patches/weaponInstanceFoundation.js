@@ -49,6 +49,9 @@ state.weaponItemPower = function weaponItemPower(itemId) {
   let score = powerScore(item);
   if (item.slot !== 'weapon') return score;
 
+  // Session 7 — 位階昇格した個体は基礎スコア自体を引き上げる。
+  score *= this.weaponInstanceRankStatMult(itemId);
+
   const enhanced = this.weaponEnhanceLevel(itemId);
   score *= 1 + enhanced * EQUIPMENT_LAYER.ENHANCE_BONUS_PER_LEVEL;
 

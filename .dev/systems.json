@@ -90,7 +90,10 @@
         "js/data/gaiden",
         "js/data/denlords.js",
         "js/patches/denlordLords.js",
-        "js/data/sideLocations.js"
+        "js/data/sideLocations.js",
+        "js/data/sideLocations2.js",
+        "js/data/fieldAbilities.js",
+        "js/patches/fieldAbilities.js"
       ],
       "docs": [
         "ROADMAP.md",
@@ -268,7 +271,8 @@
         "js/patches/endgameReward",
         "js/data/gearOverhaul",
         "js/patches/gearOverhaul",
-        "js/data/huntUniques"
+        "js/data/huntUniques",
+        "js/data/itemRanks.js"
       ],
       "docs": [
         "GEAR_OVERHAUL_ROADMAP.md",

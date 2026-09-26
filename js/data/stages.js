@@ -16,6 +16,7 @@ import { CHAPTER_EXPANSION_35, CHAPTER_EXPANSION_REGION_TAGS_35 } from './chapte
 import { CHAPTER_EXPANSION_36, CHAPTER_EXPANSION_REGION_TAGS_36 } from './chapters36.js';
 import { CHAPTER_EXPANSION_37_39, CHAPTER_EXPANSION_REGION_TAGS_37_39 } from './chapters37to39.js';
 import { CHAPTER_EXPANSION_40_41, CHAPTER_EXPANSION_REGION_TAGS_40_41 } from './chapters40to41.js';
+import { CHAPTER_EXPANSION_42_45, CHAPTER_EXPANSION_REGION_TAGS_42_45 } from './chapters42to45.js';
 import { regionProfileForChapter } from './regionsPhase9.js';
 import { buildAbyssStage } from './abyss.js';
 import { buildSecretRealmStage } from './secretRealms.js';
@@ -26,6 +27,7 @@ import { BEAST_TRAIL_CHAPTER } from './beastTrail.js';
 import { TIDEPATH_CHAPTER } from './gaidenTidepath.js';
 import { ASHFIELD_CHAPTER } from './gaidenAshfield.js';
 import { SIDE_LOCATION_CHAPTERS } from './sideLocations.js';
+import { SIDE_LOCATION_CHAPTERS_2 } from './sideLocations2.js';
 
 const CHAPTER_1 = {
   id: 'ch1', num: 1, name: '第1章 はじまりの平原', stages: [
@@ -65,8 +67,8 @@ function buildExpandedChapter(ch){
   return{id:ch.id,num:ch.num,name:`第${ch.num}章 ${ch.name}`,lore:ch.lore,expanded:true,stages};
 }
 
-export const CHAPTERS=[CHAPTER_1,...CHAPTER_SPECS.map(buildChapter),...CHAPTER_EXPANSION_16_20.map(buildExpandedChapter),...CHAPTER_EXPANSION_21_25.map(buildExpandedChapter),...CHAPTER_EXPANSION_26_29.map(buildExpandedChapter),...CHAPTER_EXPANSION_30.map(buildExpandedChapter),...CHAPTER_EXPANSION_31.map(buildExpandedChapter),...CHAPTER_EXPANSION_32.map(buildExpandedChapter),...CHAPTER_EXPANSION_33.map(buildExpandedChapter),...CHAPTER_EXPANSION_34.map(buildExpandedChapter),...CHAPTER_EXPANSION_35.map(buildExpandedChapter),...CHAPTER_EXPANSION_36.map(buildExpandedChapter),...CHAPTER_EXPANSION_37_39.map(buildExpandedChapter),...CHAPTER_EXPANSION_40_41.map(buildExpandedChapter),BEAST_TRAIL_CHAPTER,TIDEPATH_CHAPTER,ASHFIELD_CHAPTER,...SIDE_LOCATION_CHAPTERS];
-const ALL_REGION_TAGS={...CHAPTER_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS_21_25,...CHAPTER_EXPANSION_REGION_TAGS_26_29,...CHAPTER_EXPANSION_REGION_TAGS_30,...CHAPTER_EXPANSION_REGION_TAGS_31,...CHAPTER_EXPANSION_REGION_TAGS_32,...CHAPTER_EXPANSION_REGION_TAGS_33,...CHAPTER_EXPANSION_REGION_TAGS_34,...CHAPTER_EXPANSION_REGION_TAGS_35,...CHAPTER_EXPANSION_REGION_TAGS_36,...CHAPTER_EXPANSION_REGION_TAGS_37_39,...CHAPTER_EXPANSION_REGION_TAGS_40_41};
+export const CHAPTERS=[CHAPTER_1,...CHAPTER_SPECS.map(buildChapter),...CHAPTER_EXPANSION_16_20.map(buildExpandedChapter),...CHAPTER_EXPANSION_21_25.map(buildExpandedChapter),...CHAPTER_EXPANSION_26_29.map(buildExpandedChapter),...CHAPTER_EXPANSION_30.map(buildExpandedChapter),...CHAPTER_EXPANSION_31.map(buildExpandedChapter),...CHAPTER_EXPANSION_32.map(buildExpandedChapter),...CHAPTER_EXPANSION_33.map(buildExpandedChapter),...CHAPTER_EXPANSION_34.map(buildExpandedChapter),...CHAPTER_EXPANSION_35.map(buildExpandedChapter),...CHAPTER_EXPANSION_36.map(buildExpandedChapter),...CHAPTER_EXPANSION_37_39.map(buildExpandedChapter),...CHAPTER_EXPANSION_40_41.map(buildExpandedChapter),...CHAPTER_EXPANSION_42_45.map(buildExpandedChapter),BEAST_TRAIL_CHAPTER,TIDEPATH_CHAPTER,ASHFIELD_CHAPTER,...SIDE_LOCATION_CHAPTERS,...SIDE_LOCATION_CHAPTERS_2];
+const ALL_REGION_TAGS={...CHAPTER_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS_21_25,...CHAPTER_EXPANSION_REGION_TAGS_26_29,...CHAPTER_EXPANSION_REGION_TAGS_30,...CHAPTER_EXPANSION_REGION_TAGS_31,...CHAPTER_EXPANSION_REGION_TAGS_32,...CHAPTER_EXPANSION_REGION_TAGS_33,...CHAPTER_EXPANSION_REGION_TAGS_34,...CHAPTER_EXPANSION_REGION_TAGS_35,...CHAPTER_EXPANSION_REGION_TAGS_36,...CHAPTER_EXPANSION_REGION_TAGS_37_39,...CHAPTER_EXPANSION_REGION_TAGS_40_41,...CHAPTER_EXPANSION_REGION_TAGS_42_45};
 for(const ch of CHAPTERS){
   const tags=ALL_REGION_TAGS[ch.id]||[],profile=regionProfileForChapter(ch.id);
   ch.regionProfile=profile;

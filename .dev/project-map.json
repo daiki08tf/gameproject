@@ -4,13 +4,13 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "main",
-      "head": "7f6fcda",
+      "head": "5e85000",
       "remote": "https://github.com/daiki08tf/gameproject.git"
     },
     "fileCounts": {
-      "total": 1069,
-      "code": 917,
-      "tests": 369
+      "total": 1075,
+      "code": 923,
+      "tests": 370
     }
   },
   "systems": [
@@ -80,6 +80,7 @@
         "tests/rune2-runtime-2-1.test.js",
         "tests/session4-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
         "tests/special-tier-job-content.test.js",
@@ -135,6 +136,7 @@
       ],
       "importers": [
         "js/battleEngine.js",
+        "js/data/companionSynergies.js",
         "js/main.js",
         "js/patches/abyss2Pacts.js",
         "js/patches/abyss3Challenges.js",
@@ -249,6 +251,7 @@
         "js/patches/equipment3SmartLoot.js",
         "js/patches/equipment3UniqueGearSafety.js",
         "js/patches/exploration1Core.js",
+        "js/patches/fieldAbilities.js",
         "js/patches/finalIntegrationUi.js",
         "js/patches/fishing.js",
         "js/patches/fishingCodexUi.js",
@@ -426,6 +429,7 @@
         "tests/rune2-runtime-2-1.test.js",
         "tests/session4-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
         "tests/special-tier-job-content.test.js",
@@ -812,12 +816,15 @@
         "js/data/chapters36.js",
         "js/data/chapters37to39.js",
         "js/data/chapters40to41.js",
+        "js/data/chapters42to45.js",
         "js/data/denlords.js",
+        "js/data/fieldAbilities.js",
         "js/data/gaidenAshfield.js",
         "js/data/gaidenTidepath.js",
         "js/data/observedBranchStages.js",
         "js/data/resultNextStage.js",
         "js/data/sideLocations.js",
+        "js/data/sideLocations2.js",
         "js/data/stages.js",
         "js/data/storyChapters16to20.js",
         "js/data/storyChapters1to15.js",
@@ -832,7 +839,8 @@
         "js/data/storyChapters36.js",
         "js/data/storyChapters40to41.js",
         "js/data/world2Stages.js",
-        "js/patches/denlordLords.js"
+        "js/patches/denlordLords.js",
+        "js/patches/fieldAbilities.js"
       ],
       "tests": [
         "tests/abyss3-branching.test.js",
@@ -899,6 +907,7 @@
         "tests/session4-expansion.test.js",
         "tests/session5-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -921,6 +930,7 @@
       "dependsOn": [
         "abyss",
         "balance",
+        "companions",
         "enemies",
         "engine",
         "world"
@@ -962,6 +972,7 @@
         "js/data/roamers.js",
         "js/data/runes.js",
         "js/data/secretRealms.js",
+        "js/data/sideLocations.js",
         "js/data/stages.js",
         "js/data/uniqueEquipment.js",
         "js/data/weapons.js",
@@ -971,6 +982,7 @@
         "js/patches/adventureWorld4WorldRecords.js",
         "js/patches/bounty2Foundation.js",
         "js/patches/bountyFoundation.js",
+        "js/patches/companionFoundation.js",
         "js/patches/companionRecruitment.js",
         "js/patches/coreLoopClr17LootIdentityUi.js",
         "js/patches/denlordLords.js",
@@ -978,6 +990,7 @@
         "js/patches/enemy2EncounterTemplates.js",
         "js/patches/enemy2RankVariants.js",
         "js/patches/enemy2StoryMigration.js",
+        "js/patches/fieldAbilities.js",
         "js/patches/finalIntegrationUi.js",
         "js/patches/legacyRuneRetirement.js",
         "js/patches/levelRoadmap99999.js",
@@ -1062,6 +1075,7 @@
         "tests/session4-expansion.test.js",
         "tests/session5-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -1138,7 +1152,8 @@
         "tests/phase10-raid-boss.test.js",
         "tests/phase12-world-activity.test.js",
         "tests/phase9-2-monster-boss.test.js",
-        "tests/session6-expansion.test.js"
+        "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js"
       ],
       "docs": [
         "PHASE5_BATTLE_INTEGRATION_3_COMPLETE.md"
@@ -1209,7 +1224,8 @@
         "tests/phase10-raid-boss.test.js",
         "tests/phase12-world-activity.test.js",
         "tests/phase9-2-monster-boss.test.js",
-        "tests/session6-expansion.test.js"
+        "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js"
       ]
     },
     {
@@ -1349,6 +1365,7 @@
         "tests/session4-expansion.test.js",
         "tests/session5-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/world-expansion-11-15.test.js"
       ],
       "docs": [
@@ -1370,6 +1387,7 @@
       ],
       "dependents": [
         "adventure4",
+        "chapters",
         "codex",
         "content-packs",
         "discovery",
@@ -1386,6 +1404,7 @@
         "js/data/companionSkills.js",
         "js/data/companionSynergies.js",
         "js/data/companions.js",
+        "js/data/fieldAbilities.js",
         "js/data/monsterRanch.js",
         "js/main.js",
         "js/patches/adventureWorld4BuildExpressionRuntime.js",
@@ -1401,6 +1420,7 @@
         "js/patches/companionSynergy.js",
         "js/patches/contentPackIICD.js",
         "js/patches/contentPackIIIB.js",
+        "js/patches/fieldAbilities.js",
         "js/patches/homeNavigation.js",
         "js/patches/monsterRanch2Complete.js",
         "js/patches/monsterRanch2Facilities.js",
@@ -1438,6 +1458,7 @@
         "tests/session4-expansion.test.js",
         "tests/session5-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/world-expansion-11-15.test.js"
       ]
     },
@@ -1781,6 +1802,7 @@
         "tests/session4-expansion.test.js",
         "tests/session5-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -1884,6 +1906,7 @@
         "js/patches/regionCodex.js",
         "js/patches/settlementChronicle.js",
         "js/patches/settlementDefense.js",
+        "js/patches/speciesMastery.js",
         "js/patches/systemDeepeningPackB.js",
         "js/patches/worldTierRuntime.js",
         "js/screens/abyss.js",
@@ -1939,6 +1962,7 @@
         "tests/session4-expansion.test.js",
         "tests/session5-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -1982,6 +2006,7 @@
         "js/data/equipmentFixedIdentity.js",
         "js/data/gearOverhaulPhase9TargetFarm.js",
         "js/data/huntUniques.js",
+        "js/data/itemRanks.js",
         "js/data/loot3EndgameChase.js",
         "js/data/options4.js",
         "js/data/options4Fusion.js",
@@ -2107,6 +2132,7 @@
         "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -2175,6 +2201,7 @@
         "js/data/equipment3Presentation.js",
         "js/data/equipment3SmartLoot.js",
         "js/data/equipmentFixedIdentity.js",
+        "js/data/itemRanks.js",
         "js/data/options4Fusion.js",
         "js/data/options4RarityFloors.js",
         "js/data/riftStages.js",
@@ -2313,6 +2340,7 @@
         "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -2487,6 +2515,7 @@
         "tests/rune2-runtime-2-1.test.js",
         "tests/rune2-special.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/world-expansion-11-15.test.js"
       ],
       "docs": [
@@ -2527,6 +2556,7 @@
         "tests/rune2-runtime-2-1.test.js",
         "tests/rune2-special.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/world-expansion-11-15.test.js"
       ]
     },
@@ -3806,6 +3836,7 @@
         "tests/session4-expansion.test.js",
         "tests/session5-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/settlement-compact-ui.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
@@ -4177,6 +4208,7 @@
         "tests/session4-expansion.test.js",
         "tests/session5-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/settlement-compact-ui.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
@@ -4596,6 +4628,7 @@
         "tests/rune2-runtime-2-1.test.js",
         "tests/session4-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
         "tests/special-tier-job-content.test.js",
@@ -4720,6 +4753,7 @@
         "tests/session4-expansion.test.js",
         "tests/session5-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
         "tests/special-tier-job-content.test.js",
@@ -4779,7 +4813,8 @@
         "tests/rareHuntContent.test.js",
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js",
-        "tests/session6-expansion.test.js"
+        "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js"
       ]
     },
     {
@@ -4833,7 +4868,8 @@
         "tests/rareHuntContent.test.js",
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js",
-        "tests/session6-expansion.test.js"
+        "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js"
       ]
     },
     {
@@ -4919,6 +4955,7 @@
         "tests/session4-expansion.test.js",
         "tests/session5-expansion.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/world-expansion-11-15.test.js"
       ]
     },
@@ -4983,6 +5020,7 @@
         "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/session6-expansion.test.js",
+        "tests/session7-expansion.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
         "tests/story-expansion-i-front.test.js",
@@ -5469,6 +5507,7 @@
     "js/battleEngine.js",
     "js/data/archaeology.js",
     "js/data/collectionMilestones.js",
+    "js/data/companionSynergies.js",
     "js/data/consumables.js",
     "js/data/fishing.js",
     "js/data/jobIdentityMigration.js",
@@ -5520,6 +5559,7 @@
     "js/patches/contentPackIVH.js",
     "js/patches/contentPackIVI.js",
     "js/patches/contentPackIVJ.js",
+    "js/patches/denlordLords.js",
     "js/patches/endgameGuidanceUi.js",
     "js/patches/enemy3CodexAnalysis.js",
     "js/patches/enemy3CodexUi.js",
@@ -5644,6 +5684,7 @@
     "tests/rune2-runtime-2-1.test.js",
     "tests/session4-expansion.test.js",
     "tests/session6-expansion.test.js",
+    "tests/session7-expansion.test.js",
     "tests/settlement-defense-rumor.test.js",
     "tests/settlement-incidents.test.js",
     "tests/special-tier-job-content.test.js",

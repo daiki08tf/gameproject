@@ -210,6 +210,31 @@ export const AFFIXES = {
     effect: (v) => ([{ trigger: 'passive', kind: 'dropRateMultAdd', power: v / 100 }, { trigger: 'passive', kind: 'expMultAdd', power: v / 100 }]) },
   build_echoedge: { name: '残響の刃', category: 'TRIGGER', scale: 'big', minRarity: 'mythic', exclusiveGroup: 'echoedge', desc: (v) => `${Math.max(2, 6 - Math.round(v / 5))}hit毎に強化追撃`,
     effect: (v) => ({ trigger: 'onHit', kind: 'everyNHits', n: Math.max(2, 6 - Math.round(v / 5)), power: 0.65 }) },
+
+  /* Session 7 — 地点署名Affix。def.locTags が stage.locTags と重なる
+     場所でしか抽選に入らない（「どこを狩るか」を意味づける）。
+     全て既存effect kindの組み合わせ。 */
+  loc_beastmark: { name: '追獣の痕', category: 'BOSS', scale: 'medium', minRarity: 'rare', locTags: ['beast'],
+    desc: (v) => `Elite/RoamerへDamage+${v}%、会心時追撃`,
+    effect: (v) => ([{ trigger: 'passive', kind: 'eliteDmg', power: v / 100 }, { trigger: 'onCrit', kind: 'critExtraAttack', chance: v / 200, power: 0.35, perActionCap: 1 }]) },
+  loc_tidebound: { name: '潮呑みの刃', category: 'SUSTAIN', scale: 'medium', minRarity: 'rare', locTags: ['aquatic'],
+    desc: (v) => `Lifesteal・撃破時MP回復+${v}%`,
+    effect: (v) => ([{ trigger: 'onHit', kind: 'lifesteal', power: v / 200 }, { trigger: 'onKill', kind: 'mpOnKill', power: v / 100 }]) },
+  loc_stormseal: { name: '嵐の刻印', category: 'SPEED', scale: 'medium', minRarity: 'epic', locTags: ['storm'],
+    desc: (v) => `攻撃間隔-${v}%、回避後Crit上昇`,
+    effect: (v) => ([{ trigger: 'passive', kind: 'atkSpeedAdd', power: v / 100 }, { trigger: 'onEvade', kind: 'evadeCritBuff', power: v * 0.6, turns: 2 }]) },
+  loc_graveoath: { name: '墓所の誓い', category: 'DEFENSE', scale: 'medium', minRarity: 'rare', locTags: ['grave', 'undead'],
+    desc: (v) => `ぼうぎょ軽減+${v}%、撃破時HP回復`,
+    effect: (v) => ([{ trigger: 'passive', kind: 'guardMitigation', power: v / 150 }, { trigger: 'onKill', kind: 'healOnKill', power: v / 150 }]) },
+  loc_enginesoul: { name: '機魂の共鳴', category: 'MAGIC', scale: 'medium', minRarity: 'epic', locTags: ['machine', 'ruin'],
+    desc: (v) => `とくぎDamage+${v}%、じゅもんMP還元`,
+    effect: (v) => ([{ trigger: 'passive', kind: 'skillDmgAdd', power: v / 100 }, { trigger: 'onSkill', kind: 'spellMpRefund', chance: v / 200, power: 0.3, spellOnly: true }]) },
+  loc_hollowcall: { name: '空洞の呼び声', category: 'STATUS', scale: 'medium', minRarity: 'epic', locTags: ['hollow', 'deep'],
+    desc: (v) => `DoT中の相手・虚弱な敵へDamage+${v}%`,
+    effect: (v) => ([{ trigger: 'passive', kind: 'debuffedDmg', power: v / 100 }, { trigger: 'passive', kind: 'dotDmg', power: v / 100 }]) },
+  loc_uncharted: { name: '未踏の采配', category: 'UTILITY', scale: 'medium', minRarity: 'epic', locTags: ['hidden', 'uncharted'],
+    desc: (v) => `Drop率・Gold +${v}%（隠れ家の加護）`,
+    effect: (v) => ([{ trigger: 'passive', kind: 'dropRateMultAdd', power: v / 100 }, { trigger: 'passive', kind: 'goldMultAdd', power: v / 100 }]) },
 };
 
 // ---------------------------------------------------------
@@ -217,6 +242,7 @@ export const AFFIXES = {
 // ---------------------------------------------------------
 const AFFIX_COUNT_BY_WEAPON_RARITY = {
   normal: [0, 1], rare: [1, 2], epic: [2, 3], legendary: [3, 4], mythic: [4, 5],
+  relic: [4, 6], primordial: [5, 7],
 };
 
 // ---------------------------------------------------------
@@ -243,7 +269,7 @@ function pickAffixRarity(qualityBonus) {
 function affixCountForWeaponRarity(weaponRarity, qualityBonus) {
   const [lo, hi] = AFFIX_COUNT_BY_WEAPON_RARITY[weaponRarity] || [0, 1];
   const extra = qualityBonus > 0.5 && Math.random() < qualityBonus - 0.5 ? 1 : 0; // 深淵深部/Elite/Bossでまれに1本増える
-  return Math.min(5, Math.round(lo + Math.random() * (hi - lo)) + extra);
+  return Math.min(7, Math.round(lo + Math.random() * (hi - lo)) + extra);
 }
 
 // ---------------------------------------------------------
@@ -259,15 +285,23 @@ export function generateWeaponAffixes(item, ctx = {}) {
   const sideBonus = Math.min(0.15, ctx.bonus || 0); // 探索地点の固有補正（小さく留める）
   const qualityBonus = Math.min(1, depthBonus + eliteBonus + bossBonus + sideBonus);
 
-  const count = affixCountForWeaponRarity(item.rarity, qualityBonus);
+  // Session 7 — 個体位階（ctx.itemRank）が図鑑等級を上回るとき、
+  // Affix本数は位階側を使う（原初級の拾い物は枠も多い）。
+  const count = affixCountForWeaponRarity(ctx.itemRank || item.rarity, qualityBonus);
   if (count <= 0) return [];
 
   const biasCats = WEAPON_TYPE_AFFIX_BIAS[item.weaponType] || [];
+  // Session 7 — 狩場のアイデンティティ。stage.locTags がある場所でだけ
+  // locTags 付きAffixが候補に入り、stage.affixBiasCats のカテゴリは
+  // 出やすくなる。どちらも無ければ従来どおり。
+  const locTags = Array.isArray(ctx.locTags) ? ctx.locTags : [];
+  const locBias = Array.isArray(ctx.affixBiasCats) ? ctx.affixBiasCats : [];
   const pool = Object.keys(AFFIXES);
   const weighted = [];
   for (const id of pool) {
     const def = AFFIXES[id];
-    const w = biasCats.includes(def.category) ? WEAPON_BIAS_WEIGHT : 1;
+    if (def.locTags && !def.locTags.some((t) => locTags.includes(t))) continue;
+    const w = biasCats.includes(def.category) || locBias.includes(def.category) ? WEAPON_BIAS_WEIGHT : 1;
     for (let i = 0; i < w * 10; i++) weighted.push(id);
   }
 

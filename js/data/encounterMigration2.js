@@ -93,9 +93,9 @@ export function isE8MigratableStage(chapter,stage){
 export function migrateStoryEncounterPools(chapters,enemyTypes){
   const migrated=[];
   for(const chapter of chapters||[]){
-    // Session 6: Arc VII（ch40–41）も移行対象。gaiden/探索地点は
-    // 手書きencounterPool（棲み分け）を持つので移行しない。
-    if(!chapter||chapter.num<1||chapter.num>41||chapter.gaiden)continue;
+    // Session 6/7: Arc VII（ch40–41）・Arc VIII（ch42–45）も移行対象。
+    // gaiden/探索地点は手書きencounterPool（棲み分け）を持つので移行しない。
+    if(!chapter||chapter.num<1||chapter.num>45||chapter.gaiden)continue;
     const basePool=buildChapterEncounterPool(chapter,enemyTypes);
     for(const stage of chapter.stages||[]){
       if(!isE8MigratableStage(chapter,stage))continue;

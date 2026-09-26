@@ -207,6 +207,9 @@ function describeEnemyAction(result) {
   // あっても（通常攻撃・特殊攻撃どちらの手番で閾値を割ってもあり得る）先頭に
   // 出す
   if (result.phased) lines.push(`${result.name}の様子が変わった…！ 攻撃が激化する！`);
+  // Session 7 — 号令カウンター。Bossがプレイヤーの号令を読んで
+  // 対応装甲を張った瞬間を、静かな一行で知らせる。
+  if (result.orderCounter) lines.push(`……${result.name}がこちらの号令を読み取った！ ${result.orderCounter}！`);
   if (result.frozen) { lines.push(`${result.name}は時を止められて動けない！`); return lines; }
   if (result.kind === 'telegraph') {
     lines.push(`${result.name}が${SPECIAL_FLAVOR[result.specialKind] || '大技'}の構えを見せた…！ 次のターンに来る！`);
@@ -258,7 +261,13 @@ function describeEnemyAction(result) {
 }
 
 // 遭遇グループの出現宣言（「ゴブリンが2体 コウモリが1体 あらわれた！」）
-function describeEncounterStart(enemies) {
+const DANGER_TAG_JP = {
+  burn:'炎', guard:'護衛', escalate:'増幅', slow:'鈍重', sustain:'持続', burst:'爆発',
+  haste:'加速', multi:'連撃', poison:'毒', heal:'回復', attrition:'消耗', resource:'資源',
+  phase:'相位', counter:'反応', armor:'装甲', adds:'増援', speed:'迅速', element:'属性',
+  magic:'魔力', analysis:'解析', observer:'観測', machine:'機械', erase:'消去',
+};
+function describeEncounterStart(enemies, ev = {}) {
   const counts = new Map();
   for (const e of enemies) counts.set(e.name, (counts.get(e.name) || 0) + 1);
   const parts = [...counts.entries()].map(([name, n]) => `${name}が${n}体`);
@@ -269,6 +278,13 @@ function describeEncounterStart(enemies) {
     if (e.roamer) lines.push(`……群れに、見知らぬ強敵「${e.name}」が紛れ込んでいる！`);
     else if (e.rare) lines.push(`……希少な個体「${e.name}」がいる！`);
   }
+  // Session 7 — Boss intent readability。危険兆候と対処の読みを
+  // 戦闘開始時の一行に載せる（数値ではなく傾向として）。
+  if (ev.bossDangerTags?.length) {
+    const tags = ev.bossDangerTags.map((t) => DANGER_TAG_JP[t] || t).join('・');
+    lines.push(`……強敵の兆候を感じる：${tags}`);
+  }
+  if (ev.bossCounterHint) lines.push(`……${ev.bossCounterHint}`);
   return lines;
 }
 
@@ -278,7 +294,7 @@ export function describeRound(events) {
   const lines = [];
   for (const ev of events) {
     switch (ev.type) {
-      case 'encounterStart': lines.push(...describeEncounterStart(ev.enemies)); break;
+      case 'encounterStart': lines.push(...describeEncounterStart(ev.enemies, ev)); break;
       case 'playerAction': lines.push(...describePlayerAction(ev.result)); break;
       case 'enemyAction': lines.push(...describeEnemyAction(ev.result)); break;
       case 'enemyWait': break; // 「様子を見ている」は毎ラウンド出ると煩雑なため、ログには出さない（元指示20・21番：テンポ優先）

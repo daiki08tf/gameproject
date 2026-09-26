@@ -265,6 +265,36 @@ export function sideLocationVisible(chapter, isChapterUnlocked) {
   if (chapter.poiKind !== 'hidden') return true;
   return !!isChapterUnlocked?.();
 }
+
+/* Session 7 — 三段階の見え方。
+     'open'         … 入れる
+     'field-locked' … 存在は見えているがField Abilityがない（ヒントあり）
+     'foreshadow'   … 本格解放前の「？？？」の気配カード
+     'hidden'       … 描画しない（完全な秘密）
+   foreshadowAfter がある場所は、その踏破を越えると姿のない気配を
+   見せ始める。requiresField がある場所は、能力を満たして初めて開く。 */
+import { SIDE_LOCATION_KIND_2 } from './sideLocations2.js';
+import { requiredFieldAbilityIds } from './fieldAbilities.js';
+
+export function sideLocationVisibility(chapter, { unlocked = false, foreshadowed = false, fieldOk = true } = {}) {
+  if (!chapter?.sideLocation) return 'hidden';
+  if (unlocked) {
+    if (chapter.requiresField && !fieldOk) return 'field-locked';
+    return 'open';
+  }
+  if (chapter.foreshadowAfter && foreshadowed) return 'foreshadow';
+  if (chapter.poiKind === 'hidden' || chapter.requiresField || chapter.foreshadowAfter) return 'hidden';
+  return 'open';
+}
+export function sideLocationForeshadowed(chapter, isStageCleared) {
+  return !!(chapter?.foreshadowAfter && isStageCleared?.(chapter.foreshadowAfter));
+}
 export function sideLocationKindLabel(chapter) {
-  return SIDE_LOCATION_KIND[chapter?.poiKind] || '探索地点';
+  return SIDE_LOCATION_KIND[chapter?.poiKind] || SIDE_LOCATION_KIND_2[chapter?.poiKind] || '探索地点';
+}
+export function sideLocationFieldHint(chapter) {
+  return chapter?.fieldHint || null;
+}
+export function sideLocationRequiresField(chapter) {
+  return requiredFieldAbilityIds(chapter?.requiresField);
 }

@@ -15,6 +15,7 @@ import {
   companionTraitLabel,
 } from '../data/companions.js';
 import { unlockedCompanionSkills } from '../data/companionSkills.js';
+import { FIELD_ABILITIES, requiredFieldAbilityIds, fieldAbilitiesForSpecies } from '../data/fieldAbilities.js';
 
 const PARTY_SIZE = 3;
 const SAVE_FIELDS = { companionInstances: {}, companionParty: [null, null, null], nextCompanionSeq: 1, companionCodex: {} };
@@ -74,23 +75,48 @@ if (!state.data.starterCompanionGranted) {
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id)?.classList.add('active');}
 function rarityStars(rarity){return'★'.repeat(Math.max(1,COMPANION_RARITY.indexOf(rarity)+1));}
 const COMPANION_ORIGIN_LABELS={starter:'初めての仲間',recruit:'野生',eliteRecruit:'精鋭の血統',rareRecruit:'異彩の個体',roamerRecruit:'名もなき強敵',denlordRecruit:'巣の主',bondRecruit:'絆の迎え',abyssBeastDen:'深淵の巣',breeding:'配合',hatch:'孵化'};
-function companionOriginLabel(instance){if(!instance)return'';const bits=[],base=COMPANION_ORIGIN_LABELS[instance.origin];if(base)bits.push(base);const p=instance.provenance||{};if(p.prestige)bits.push('再臨');if(p.eliteAffixName)bits.push(`特性『${p.eliteAffixName}』`);if(p.rareBehaviorName)bits.push(`気質『${p.rareBehaviorName}』`);return bits.join(' / ');}
+function companionOriginLabel(instance){if(!instance)return'';const bits=[],base=COMPANION_ORIGIN_LABELS[instance.origin];if(base)bits.push(base);const p=instance.provenance||{};if(p.superPrestige)bits.push('超再臨');else if(p.prestige)bits.push('再臨');if(p.lairId)bits.push('巣穴');if(p.eliteAffixName)bits.push(`特性『${p.eliteAffixName}』`);if(p.rareBehaviorName)bits.push(`気質『${p.rareBehaviorName}』`);return bits.join(' / ');}
 function escapeHtml(value){return String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');}
 function partySlotOf(id){return state.data.companionParty.findIndex(x=>x===id);}
+state.companionSlotOf=partySlotOf;
+/* Session 7 — Formation（隊列）。3枠は前衛・中衛・後衛を意味する。
+   戦闘中の効果は companionBattle.js の COMPANION_FORMATION。 */
+const FORMATION_LABELS=Object.freeze(['前衛','中衛','後衛']);
+const FORMATION_HINT='前衛：敵に狙われやすいが守りが固い / 中衛：バランス / 後衛：狙われにくく魔法・素早さ向き';
+
+/* Session 7 — Monster Field Abilities。「あの場所、あの仲間がいれば…」
+   を作る探索述語。編成中でなく牧場にいるだけで有効（収集が意味を持つ）。
+   requiresField: 'trail' | ['a','b'…全必要] | {any:[…いずれか]} */
+state.ownedFieldAbilities=function ownedFieldAbilities(){
+  const out=new Set();
+  for(const inst of Object.values(this.data.companionInstances||{})){
+    const species=getCompanionSpecies(inst.speciesId);
+    for(const id of fieldAbilitiesForSpecies(species))out.add(id);
+  }
+  return [...out];
+};
+state.fieldAbilityAvailable=function fieldAbilityAvailable(requirement){
+  if(!requirement)return true;
+  const owned=new Set(this.ownedFieldAbilities());
+  if(typeof requirement==='string')return owned.has(requirement);
+  if(requirement.any)return requirement.any.some(id=>owned.has(id));
+  const ids=requiredFieldAbilityIds(requirement);
+  return ids.every(id=>owned.has(id));
+};
 
 function renderCompanionScreen(){
   const content=document.getElementById('companionContent');if(!content)return;
   const party=state.data.companionParty.slice(0,PARTY_SIZE);
   const list=state.companionList();
-  const partySummary=party.map((id,i)=>{const c=id?state.getCompanion(id):null;return `<div class="forge-card-sub">枠${i+1}: ${c?`${escapeHtml(c.instance.nickname||c.species.name)} Lv.${c.instance.level}`:'－'}</div>`;}).join('');
+  const partySummary=party.map((id,i)=>{const c=id?state.getCompanion(id):null;return `<div class="forge-card-sub">【${FORMATION_LABELS[i]}】${c?`${escapeHtml(c.instance.nickname||c.species.name)} Lv.${c.instance.level}`:'－'}</div>`;}).join('');
   if(!list.length){content.innerHTML=`<div class="forge-card"><div class="forge-card-name">編成</div>${partySummary}</div><p class="hint">まだ仲間はいません。</p>`;return;}
   const cards=list.map(({id,species,instance,stats})=>{
     const slot=partySlotOf(id),active=slot>=0,nature=COMPANION_NATURES[instance.nature]||COMPANION_NATURES.balanced,xpNeed=companionExpToNext(instance.level),displayName=escapeHtml(instance.nickname||species.name),traits=[...(species.traits||[]),...(instance.inheritedTraits||[])].map(companionTraitLabel).join('・')||'なし',model={id,species,speciesId:species.id,...stats},skills=unlockedCompanionSkills(species,instance.level,model),skillText=skills.length?skills.map(s=>`${s.name}${s.mpCost?` MP${s.mpCost}`:''}: ${s.desc}`).join(' / '):'なし',evo=state.companionEvolutionInfo?.(id),evoText=evo?`進化: ${evo.name}（Lv.${evo.level} / ${COMPANION_RARITY_LABEL[evo.minRarity]}以上${evo.bondLevel?` / 絆Lv${evo.bondLevel}`:''}）`:instance.evolution?'進化済み':'進化先なし';
     const originText=companionOriginLabel(instance);
-    const slotButtons=[0,1,2].map(i=>`<button class="btn-sub companion-slot-btn" data-id="${escapeHtml(id)}" data-slot="${i}" ${slot===i?'disabled':''}>${slot===i?`枠${i+1} 編成中`:`枠${i+1}へ`}</button>`).join('');
-    return `<div class="forge-card companion-card ${active?'companion-active':''}" data-companion-id="${escapeHtml(id)}"><div class="forge-card-name">${displayName} ${active?`【編成${slot+1}】`:''}</div><div class="forge-card-sub">Lv.${instance.level} / ${COMPANION_RARITY_LABEL[instance.rarity]} ${rarityStars(instance.rarity)} / 性格: ${escapeHtml(nature.name)}${originText?` / ${escapeHtml(originText)}`:''}</div><div class="forge-card-sub">HP ${stats.hp}　MP ${stats.mp}　ATK ${stats.atk}　DEF ${stats.def}　MAG ${stats.mag}　SPD ${stats.spd}</div><div class="forge-card-sub">EXP ${instance.exp} / ${xpNeed}</div><div class="forge-card-sub">特性: ${escapeHtml(traits)}</div><div class="forge-card-sub">技: ${escapeHtml(skillText)}</div><div class="forge-card-sub">${escapeHtml(evoText)}</div><div class="confirm-actions" style="margin-top:8px;">${slotButtons}${active?`<button class="btn-sub companion-unset-btn" data-slot="${slot}">編成解除</button>`:''}${evo?`<button class="btn-highlight companion-evolve-btn" data-id="${escapeHtml(id)}" ${evo.canEvolve?'':'disabled'}>進化</button>`:''}<button class="btn-sub companion-release-btn" data-id="${escapeHtml(id)}">帰す</button></div></div>`;
+    const slotButtons=[0,1,2].map(i=>`<button class="btn-sub companion-slot-btn" data-id="${escapeHtml(id)}" data-slot="${i}" ${slot===i?'disabled':''}>${slot===i?`${FORMATION_LABELS[i]} 編成中`:`${FORMATION_LABELS[i]}へ`}</button>`).join('');
+    return `<div class="forge-card companion-card ${active?'companion-active':''}" data-companion-id="${escapeHtml(id)}"><div class="forge-card-name">${displayName} ${active?`【${FORMATION_LABELS[slot]}】`:''}</div><div class="forge-card-sub">Lv.${instance.level} / ${COMPANION_RARITY_LABEL[instance.rarity]} ${rarityStars(instance.rarity)} / 性格: ${escapeHtml(nature.name)}${originText?` / ${escapeHtml(originText)}`:''}</div><div class="forge-card-sub">HP ${stats.hp}　MP ${stats.mp}　ATK ${stats.atk}　DEF ${stats.def}　MAG ${stats.mag}　SPD ${stats.spd}</div><div class="forge-card-sub">EXP ${instance.exp} / ${xpNeed}</div><div class="forge-card-sub">特性: ${escapeHtml(traits)}</div><div class="forge-card-sub">技: ${escapeHtml(skillText)}</div><div class="forge-card-sub">探索: ${escapeHtml(fieldAbilitiesForSpecies(species).map(a=>FIELD_ABILITIES[a]?.label||a).join('・')||'－')}</div><div class="forge-card-sub">${escapeHtml(evoText)}</div><div class="confirm-actions" style="margin-top:8px;">${slotButtons}${active?`<button class="btn-sub companion-unset-btn" data-slot="${slot}">編成解除</button>`:''}${evo?`<button class="btn-highlight companion-evolve-btn" data-id="${escapeHtml(id)}" ${evo.canEvolve?'':'disabled'}>進化</button>`:''}<button class="btn-sub companion-release-btn" data-id="${escapeHtml(id)}">帰す</button></div></div>`;
   }).join('');
-  content.innerHTML=`<div class="forge-card"><div class="forge-card-name">編成（最大3体）</div>${partySummary}</div>${cards}`;
+  content.innerHTML=`<div class="forge-card"><div class="forge-card-name">編成（最大3体・隊列）</div>${partySummary}<div class="forge-card-sub">${FORMATION_HINT}</div></div>${cards}`;
   content.querySelectorAll('.companion-slot-btn').forEach(btn=>btn.addEventListener('click',()=>{state.setCompanionSlot(Number(btn.dataset.slot),btn.dataset.id);renderCompanionScreen();}));
   content.querySelectorAll('.companion-unset-btn').forEach(btn=>btn.addEventListener('click',()=>{state.setCompanionSlot(Number(btn.dataset.slot),null);renderCompanionScreen();}));
   content.querySelectorAll('.companion-evolve-btn').forEach(btn=>btn.addEventListener('click',()=>{const c=state.getCompanion(btn.dataset.id),e=state.companionEvolutionInfo?.(btn.dataset.id);if(!c||!e?.canEvolve)return;if(!window.confirm(`${c.instance.nickname||c.species.name}を${e.name}へ進化させますか？`))return;state.evolveCompanion(btn.dataset.id);renderCompanionScreen();}));

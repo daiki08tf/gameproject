@@ -18,7 +18,9 @@ const RARITY_FILTER_OPTIONS = [
   { rarity: 'rare', label: 'レア以上' },
   { rarity: 'epic', label: 'エピック以上' },
   { rarity: 'legendary', label: 'レジェンド以上' },
-  { rarity: 'mythic', label: '神話のみ' },
+  { rarity: 'mythic', label: '神話以上' },
+  { rarity: 'relic', label: '遺物以上' },
+  { rarity: 'primordial', label: '原初のみ' },
 ];
 let selectedSlot = null;
 let lootFilterAdvancedOpen = false;
@@ -286,7 +288,8 @@ function showItemCard(id, compareId = null) {
   document.getElementById('equipItemCardOverlay')?.remove();
   const item = getItem(id);
   if (!item) return;
-  const rarity = RARITY[item.rarity];
+  const pres = presentationFor(id, item);
+  const rarity = RARITY[pres?.rank || item.rarity];
   const statHtml = statLine(item, id).split(' / ').filter(Boolean).join('<br>');
   const eq3Html = equipment3Block(id, item);
   const diffHtml = compareId && compareId !== id ? compareLine(item, getItem(compareId), id, compareId) : '';
@@ -354,7 +357,7 @@ export function renderEquipment() {
     div.className = 'equip-slot' + (slot === selectedSlot ? ' selected' : '') + (p?.quality === 'jackpot' ? ' eq3-jackpot' : '');
     div.dataset.slot = slot;
     div.innerHTML = `<div class="slot-label">${SLOT_LABELS[slot]}</div>`
-      + (item ? `<div class="slot-item" style="color:${RARITY[item.rarity].color}">${displayName(itemId, item)}</div>${p?.itemPower ? `<div class="slot-eq3-meta">IP ${p.itemPower} / T${p.tier}${p.archetype ? ` / ${p.archetype}` : ''}</div>` : ''}` : '<div class="slot-empty">未装備</div>');
+      + (item ? `<div class="slot-item" style="color:${RARITY[p?.rank || item.rarity].color}">${displayName(itemId, item)}</div>${p?.itemPower ? `<div class="slot-eq3-meta">IP ${p.itemPower} / T${p.tier}${p.archetype ? ` / ${p.archetype}` : ''}</div>` : ''}` : '<div class="slot-empty">未装備</div>');
     div.addEventListener('click', () => { selectedSlot = slot; Audio_.tap(); renderEquipment(); });
     doll.appendChild(div);
   }
@@ -387,7 +390,7 @@ export function renderEquipment() {
     const p = presentationFor(currentId, item);
     const row = document.createElement('div');
     row.className = `pick-row equipped${p?.quality ? ` eq3-${p.quality}` : ''}`;
-    row.innerHTML = `<div class="pick-main"><div class="item-name" style="color:${RARITY[item.rarity].color}">${displayName(currentId, item)}${favoriteLockBadges(currentId)}</div>`
+    row.innerHTML = `<div class="pick-main"><div class="item-name" style="color:${RARITY[p?.rank || item.rarity].color}">${displayName(currentId, item)}${favoriteLockBadges(currentId)}</div>`
       + `<div class="item-stats">${statLine(item, currentId)}</div>${equipment3Block(currentId, item)}</div><button data-action="unequip">外す</button>`;
     row.querySelector('[data-action="unequip"]').addEventListener('click', () => { state.equipItem(selectedSlot, null); Audio_.tap(); renderEquipment(); });
     appendFavLockButtons(row, currentId);
@@ -407,7 +410,7 @@ export function renderEquipment() {
 
     const row = document.createElement('div');
     row.className = `pick-row${p?.quality ? ` eq3-${p.quality}` : ''}`;
-    row.innerHTML = `<div class="pick-main"><div class="item-name" style="color:${RARITY[item.rarity].color}">${displayName(c.id, item)} ×${state.data.inventory[c.id]}${favoriteLockBadges(c.id)}</div>`
+    row.innerHTML = `<div class="pick-main"><div class="item-name" style="color:${RARITY[p?.rank || item.rarity].color}">${displayName(c.id, item)} ×${state.data.inventory[c.id]}${favoriteLockBadges(c.id)}</div>`
       + `<div class="item-stats">${statLine(item, c.id)}${lockReason ? `<br>${lockReason}` : ''}</div>${equipment3Block(c.id, item)}${compareLine(item, currentItemForCompare, c.id, currentId)}</div>`
       + `<button data-action="equip" ${locked ? 'disabled' : ''}>装備</button>`;
     if (!locked) row.querySelector('[data-action="equip"]').addEventListener('click', () => { state.equipItem(selectedSlot, c.id); Audio_.tap(); renderEquipment(); });

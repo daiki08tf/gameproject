@@ -5,7 +5,7 @@ import { optionDisplayLabel } from './options4.js';
 import { getLegendaryEffect, getCursedAffix } from './equipment3Legendary.js';
 import { fixedEquipmentIdentities, fixedIdentitySummary } from './equipmentFixedIdentity.js';
 import { loot3EndgameChase } from './loot3EndgameChase.js';
-import { getItem } from './equipment.js';
+import { getItem, RARITY } from './equipment.js';
 
 function lootQuality(item, inst, affixes, { legendary, curse, greaterCount, itemPower }) {
   const reasons = [];
@@ -22,9 +22,11 @@ function lootQuality(item, inst, affixes, { legendary, curse, greaterCount, item
   else if (highest === 'legendary') reasons.push('LEGENDARY OPTION');
   if (buildCount) reasons.push(buildCount > 1 ? `BUILD ×${buildCount}` : 'BUILD');
   if (item.isCodexWeapon) reasons.push('CODEX');
+  // Session 7 — ドロップ位階が図鑑等級を上回った個体は理由として刻む。
+  if (inst?.rank && inst.rank !== item.rarity) reasons.push(`RANK:${RARITY[inst.rank]?.label || inst.rank}`);
   let quality = 'standard';
-  if (item.unique || legendary || greaterCount >= 2 || highest === 'ancient' || (buildCount && highest && affixRarityIndex(highest) >= affixRarityIndex('mythic'))) quality = 'jackpot';
-  else if (item.setId || item.setName || curse || greaterCount === 1 || (highest && affixRarityIndex(highest) >= affixRarityIndex('legendary')) || buildCount || itemPower >= 3000) quality = 'special';
+  if (item.unique || legendary || greaterCount >= 2 || highest === 'ancient' || inst?.rank === 'primordial' || inst?.rank === 'relic' || (buildCount && highest && affixRarityIndex(highest) >= affixRarityIndex('mythic'))) quality = 'jackpot';
+  else if (item.setId || item.setName || curse || greaterCount === 1 || (inst?.rank && inst.rank !== item.rarity) || (highest && affixRarityIndex(highest) >= affixRarityIndex('legendary')) || buildCount || itemPower >= 3000) quality = 'special';
   return { quality, reasons, highestAffixRarity: highest, buildCount, targetFarm: inst?.targetFarm || null, targetFarmHit: !!inst?.targetFarmHit };
 }
 
@@ -60,13 +62,16 @@ export function equipment3Presentation(item, inst = null) {
     };
   });
   const q=lootQuality(item,inst,affixes,{legendary,curse,greaterCount,itemPower});
-  const base={name:inst.displayName||item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,branchOrigin:item.branchOrigin||null,variantOfName:item.variantOfId?(getItem(item.variantOfId)?.name||null):null,itemPower,tier,band,greaterCount,affixes,fixedIdentities,legendary,curse,...q};
+  const rank=inst?.rank||item.rarity;
+  const rankUpgraded=!!(inst?.rank&&inst.rank!==item.rarity);
+  const base={name:inst.displayName||item.name,archetype:item.weaponArchetypeName||null,identity:item.weaponArchetypeIdentity||null,branchOrigin:item.branchOrigin||null,variantOfName:item.variantOfId?(getItem(item.variantOfId)?.name||null):null,itemPower,tier,band,greaterCount,affixes,fixedIdentities,legendary,curse,rank,rankLabel:RARITY[rank]?.label||rank,rankColor:RARITY[rank]?.color||null,rankUpgraded,...q};
   return {...base,chase:loot3EndgameChase(item,base)};
 }
 
 export function equipment3MetaText(p) {
   if (!p) return '';
   const bits=[];
+  if(p.rankUpgraded)bits.push(`位階:${p.rankLabel||p.rank}`);
   if(p.itemPower!=null)bits.push(`IP ${p.itemPower}`,`T${p.tier}`,p.band?.label);
   if (p.archetype) bits.push(`${p.archetype}${p.identity ? `：${p.identity}` : ''}`);
   if (p.greaterCount) bits.push(`★Greater ×${p.greaterCount}`);

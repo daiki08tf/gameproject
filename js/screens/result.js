@@ -20,8 +20,12 @@ function resolveDrop(itemId) {
     if (p && isWeaponInstance && inst && p.affixes.length === 0 && legacyAffixes.length > 0) {
       p.affixes = legacyAffixes.map((a) => {const d = describeAffix(a);return {id:a.id,name:d.name,desc:d.desc,rarity:a.rarity,rarityLabel:a.rarity,greater:!!a.greater,roll:a.roll};});
     }
-    const stars = '★'.repeat(rarityIndex(item.rarity));
-    let name = `${item.unique ? '◆ UNIQUE ' : ''}${stars ? stars + ' ' : ''}${p?.name || item.name}`;
+    // Session 7 — 位階昇格した個体は位階側の色・星数・肩書きで告知する。
+    const instRank = isWeaponInstance ? state.weaponInstanceRank?.(itemId) : null;
+    const rankUpgraded = instRank && instRank !== item.rarity;
+    const stars = '★'.repeat(rarityIndex(rankUpgraded ? instRank : item.rarity));
+    const rankTag = rankUpgraded ? `【${RARITY[instRank]?.label || instRank}級】 ` : '';
+    let name = `${item.unique ? '◆ UNIQUE ' : ''}${rankTag}${stars ? stars + ' ' : ''}${p?.name || item.name}`;
     const lines = [];
     const meta = equipment3MetaText(p);
     if (meta) lines.push(meta);
@@ -32,7 +36,7 @@ function resolveDrop(itemId) {
     }
     if (item.unique && item.lore) lines.push(`「${item.lore}」`);
     if (lines.length) name += `\n${lines.join('\n')}`;
-    return {name,color:RARITY[item.rarity].color,equipment3:p,headline:equipment3DropHeadline(p)};
+    return {name,color:RARITY[rankUpgraded ? instRank : item.rarity].color,equipment3:p,headline:equipment3DropHeadline(p)};
   }
   const rune = getRune(itemId);
   if (rune) return { name: rune.name, color: 'var(--accent)', equipment3: null, headline: null };

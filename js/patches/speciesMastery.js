@@ -23,7 +23,9 @@ import {
   speciesMasteryLevelFor,
   speciesMasteryKillXp,
   speciesMasteryTierLabel,
+  speciesMasteryIntelLines,
 } from '../data/speciesMastery.js';
+import { ROAMERS } from '../data/roamers.js';
 
 function ensureMastery() {
   state.data.speciesMastery ||= {};
@@ -73,6 +75,37 @@ state.speciesMasterySummary = function speciesMasterySummary() {
       label: speciesMasteryTierLabel(speciesMasteryLevelFor(e.exp)),
     }))
     .sort((a, b) => b.level - a.level || b.exp - a.exp);
+};
+
+/* Session 7 — Mastery 2.0: 知識行と Lv5 capstone。
+   speciesMasteryIntel … その種について「分かっていること」の行。
+   speciesMasteryCapstone … Lv5到達か（勧誘素質floor判定用）。
+   roamerIntelList … Roamer縄張り情報。遭遇=生息域、撃破=気配、
+                     種族熟練Lv3 or 撃破3 = 巣の場所まで分かる。 */
+state.speciesMasteryIntel = function speciesMasteryIntel(speciesId) {
+  const level = this.speciesMasteryEntry(speciesId).level;
+  return speciesMasteryIntelLines(getCompanionSpecies(speciesId), level);
+};
+state.speciesMasteryCapstone = function speciesMasteryCapstone(speciesId) {
+  return this.speciesMasteryEntry(speciesId).level >= SPECIES_MASTERY.MAX_LEVEL;
+};
+state.roamerIntelList = function roamerIntelList() {
+  const codex = this.data.monsterCodex || {};
+  return Object.values(ROAMERS).map((r) => {
+    const entry = codex[`roamer:${r.id}`] || {};
+    const species = getCompanionSpecies(`roamer_${r.id}`);
+    const masteryLv = species ? this.speciesMasteryEntry(species.id).level : 0;
+    let tier = 0;
+    if (entry.seen || (entry.kills || 0) > 0) tier = 1;           // 出会った
+    if ((entry.kills || 0) >= 1) tier = 2;                         // 倒した
+    if ((entry.kills || 0) >= 3 || masteryLv >= 3) tier = 3;       // 巣を知る
+    return {
+      roamerId: r.id, name: r.name, tier,
+      habitat: tier >= 1 ? r.territory?.habitat : null,
+      hint: tier >= 2 ? r.territory?.hint : null,
+      lairName: tier >= 3 ? r.territory?.lairName : null,
+    };
+  });
 };
 
 // 撃破 → 種族熟練。Codex記録と同じタイミングで走らせる。
