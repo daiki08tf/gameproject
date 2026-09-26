@@ -614,6 +614,12 @@ button { font-family: inherit; }
 .tb-enemy-card.telegraph { border-left-color: var(--dc-danger-300); box-shadow: 0 0 8px rgba(212,119,126,0.35); }
 .tb-enemy-name-row { display: flex; justify-content: space-between; font-size: 13px; }
 .tb-enemy-name-row .tag { font-size: 11px; opacity: 0.8; }
+/* Combat 3の敵が次の手番に予約した技（combat3WillUseSkill）の表示 */
+.tb-enemy-intent { font-size: 11px; color: var(--dc-brass-300, var(--accent)); opacity: 0.9; }
+/* プレイヤーのバフ/デバフ状態行（HP/MP行の下） */
+.tb-buff-line { font-size: 11px; color: var(--dc-brass-300, var(--accent)); padding: 2px 2px 0; letter-spacing: 0.5px; }
+/* どうぐサブメニューの効果説明 */
+.tb-tech-sub { display: block; font-size: 11px; opacity: 0.65; font-weight: normal; }
 
 .tb-log {
   flex: 1;

@@ -5,6 +5,7 @@ import { Audio_ } from '../audio.js';
 import { showToast } from '../patches/toastFeedback.js';
 import { EQUIPMENT_LAYER, AWAKENED_EQUIP_LAYER, EXTREME_AFFIX_LAYER, AWAKENED_ITEM_LAYER, WEAPON_CODEX_LAYER } from '../data/balance.js';
 import { renderRune2Dashboard } from '../patches/rune2Ui.js';
+import { CONSUMABLE_SHOP, getConsumable } from '../data/consumables.js';
 
 const AFFIX_STAT_LABEL = { atk: 'ATK', def: 'DEF', hp: 'HP', mag: 'MAG', spd: 'SPD', crit: 'CRIT' };
 
@@ -33,6 +34,7 @@ export function renderBlacksmith() {
   if (activeTab === 'enhance') renderEnhanceTab(content);
   else if (activeTab === 'rune') renderRune2Dashboard();
   else if (activeTab === 'awakenitem') renderAwakenedItemTab(content);
+  else if (activeTab === 'tools') renderToolsTab(content);
   else if (activeTab === 'dispose') renderDisposeTab(content);
   else renderMasteryTab(content);
 }
@@ -271,6 +273,39 @@ function appendAffix2Section(card, id, tier) {
     if (state.rollAffix2(id)) { Audio_.jobMastered(); showToast(`${getItem(id)?.name || ''} に第2の極Affixを付与した！`); renderBlacksmith(); }
   });
   card.appendChild(wrap);
+}
+
+// ---------------------------------------------------------
+// 道具タブ（どうぐ屋）：戦闘で使う消耗品をGoldで購入する。
+// ボス戦の壁に対して「レベル上げ以外の準備手段」を用意し、
+// 序盤のGoldに明確な使い道（備蓄）を与える。
+// ---------------------------------------------------------
+function renderToolsTab(content) {
+  const hint = document.createElement('p');
+  hint.className = 'hint';
+  hint.textContent = `戦闘中に「どうぐ」コマンドから使う消耗品。使うと1ターンを消費する。ボス戦前に備えておくと立ち回りの幅が広がる。（所持Gold: ${state.data.gold}）`;
+  content.appendChild(hint);
+
+  for (const id of CONSUMABLE_SHOP) {
+    const itemDef = getConsumable(id);
+    if (!itemDef) continue;
+    const owned = state.consumableCount(id);
+    const canBuy = state.canBuyConsumable(id);
+    const card = document.createElement('div');
+    card.className = 'forge-card';
+    card.innerHTML = `
+      <div class="forge-card-top">
+        <div class="forge-card-name">${itemDef.name}<span class="forge-card-sub">　所持: ${owned}個</span></div>
+        <div>Gold${itemDef.price}</div>
+      </div>
+      <div class="forge-card-sub">${itemDef.desc}</div>
+      <button class="forge-card-btn" ${canBuy ? '' : 'disabled'}>買う（Gold${itemDef.price}）</button>
+    `;
+    card.querySelector('button').addEventListener('click', () => {
+      if (state.buyConsumable(id)) { Audio_.pickup(); showToast(`${itemDef.name}を買った`); renderBlacksmith(); }
+    });
+    content.appendChild(card);
+  }
 }
 
 // ---------------------------------------------------------

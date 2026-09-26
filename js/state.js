@@ -15,6 +15,7 @@ import { ALL_ABYSS_TREE_NODES, getAbyssTreeNodeDef, abyssTreeNodeCostFor } from 
 import { isAbyssBossFloor } from './data/abyss.js';
 import { generateWeaponAffixes, splitAffixesForApplication } from './data/affixes.js';
 import { deriveCombatStats } from './data/combatStats.js';
+import { getConsumable } from './data/consumables.js';
 
 const SAVE_KEY = 'bladevale_save_v1';
 
@@ -25,7 +26,7 @@ function defaultSave() {
     currentJobId: 'warrior',
     jobs: { warrior: { level: 1, exp: 0 } },
     mastered: [],
-    inventory: {},
+    inventory: { item_herb: 2 }, // 初回ボス戦までの立ち回り選択肢として初期2個（どうぐ）
     equipped: { weapon: 'wp_sword_n', shield: null, head: null, body: null, accessory1: null, accessory2: null },
     weaponEnhance: {},
     runeSockets: {},
@@ -465,6 +466,46 @@ class StateManager {
   }
 
   isWeaponCodexSeen(itemId) { return !!this.data.weaponCodexSeen[itemId]; }
+
+  // ---------- どうぐ（消耗品） ----------
+  // 装備ではなくinventoryの個数として管理する。getItem()には登録しない
+  // （'item_'プレフィックスのidは装備候補・売却・分解・強化素材のいずれにも
+  // 混ざらない）。旧セーブとの互換：inventoryは既存フィールドのため
+  // マイグレーション不要、旧セーブは単に0個所持として扱われる。
+  consumableCount(itemId) { return this.data.inventory[itemId] || 0; }
+
+  ownedConsumables() {
+    const out = [];
+    for (const [id, qty] of Object.entries(this.data.inventory)) {
+      const c = getConsumable(id);
+      if (c && qty > 0) out.push({ id, item: c, count: qty });
+    }
+    return out;
+  }
+
+  canBuyConsumable(itemId) {
+    const c = getConsumable(itemId);
+    return !!c && this.data.gold >= c.price;
+  }
+
+  buyConsumable(itemId) {
+    const c = getConsumable(itemId);
+    if (!c || this.data.gold < c.price) return false;
+    this.data.gold -= c.price;
+    this.data.inventory[itemId] = (this.data.inventory[itemId] || 0) + 1;
+    this.save();
+    return true;
+  }
+
+  // 戦闘中の使用（BattleEngine._playerUseItem から呼ぶ）。1個消費してsave。
+  consumeConsumable(itemId) {
+    if (!getConsumable(itemId)) return false;
+    if ((this.data.inventory[itemId] || 0) <= 0) return false;
+    this.data.inventory[itemId] -= 1;
+    if (this.data.inventory[itemId] <= 0) delete this.data.inventory[itemId];
+    this.save();
+    return true;
+  }
 
   // ---------- 武器ランダムAffix（Part A） ----------
   isWeaponInstance(id) { return !!(id && this.data.weaponInstances[id]); }

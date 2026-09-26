@@ -26,6 +26,7 @@ export class TextBattleScreen {
       hpText: document.getElementById('tbHpText'),
       mpFill: document.getElementById('tbMpFill'),
       mpText: document.getElementById('tbMpText'),
+      buffText: document.getElementById('tbBuffText'),
       enemyList: document.getElementById('tbEnemyList'),
       log: document.getElementById('tbLog'),
       retreatBtn: document.getElementById('tbRetreatBtn'),
@@ -48,10 +49,9 @@ export class TextBattleScreen {
     // （元指示：「とくぎ」ボタンを押したら習得済みskills一覧を表示する）
     this.el.skillBtn.addEventListener('click', () => this._openTechMenu('skill'));
     this.el.spellBtn.addEventListener('click', () => this._openTechMenu('spell'));
+    this.el.itemBtn.addEventListener('click', () => this._openTechMenu('item'));
     this.el.techBackBtn.addEventListener('click', () => this._closeTechMenu());
     this.el.fleeBtn.addEventListener('click', () => this._onCommand({ type: 'flee' }));
-    // どうぐは今回のスコープでは拡張ポイントのスタブ（元指示1・15番）。
-    // ボタン自体はhtml側でdisabledにしてあるため、クリックしても何も起きない。
 
     // 画面上部の✕は「にげる」コマンド（成功率あり・Boss戦不可）とは別物で、
     // 旧battle.jsのretreatBtnと同じ無条件・即時の離脱（元指示19番：既存の
@@ -117,10 +117,12 @@ export class TextBattleScreen {
     this._render();
   }
 
-  // とくぎ・じゅもんの技一覧サブメニューを開閉する（コマンドグリッドと排他表示）
+  // とくぎ・じゅもん・どうぐの一覧サブメニューを開閉する（コマンドグリッドと排他表示）
   _openTechMenu(kind) {
     if (!this.engine || this.engine.over || this.locked) return;
-    const list = kind === 'spell' ? this.engine.availableSpells() : this.engine.availableSkills();
+    const list = kind === 'spell' ? this.engine.availableSpells()
+      : kind === 'item' ? this.engine.availableConsumables()
+      : this.engine.availableSkills();
     if (list.length === 0) return; // 念のため（習得済み0件ならボタン自体disabledのはず）
     Audio_.tap();
     this.techMenuKind = kind;
@@ -153,6 +155,7 @@ export class TextBattleScreen {
     this.el.hpText.textContent = `HP ${Math.max(0, Math.round(p.hp))}/${p.maxHp}`;
     this.el.mpFill.style.width = `${p.maxMp > 0 ? Math.max(0, p.mp / p.maxMp * 100) : 0}%`;
     this.el.mpText.textContent = `${Math.max(0, Math.round(p.mp))}/${p.maxMp}`;
+    this._renderPlayerBuffs();
 
     const remaining = Math.max(0, engine.totalToDefeat - engine.defeated);
     this.el.remain.textContent = `残り ${remaining}`;
@@ -180,9 +183,15 @@ export class TextBattleScreen {
         + (!e.dead && e.id === this.selectedTargetId ? ' selected' : '')
         + (e.pendingSpecial ? ' telegraph' : '');
       const tag = e.dead ? '（撃破）' : e.pendingSpecial ? '（技の予兆…！）' : e.elite ? '（エリート）' : e.boss ? '（BOSS）' : '';
+      // Combat 3の敵は次の手番の行動をcombat3WillUseSkill/combat3Skillに
+      // 予約済み（combat3EnemyAI.js planCombat3Skill）。それを敵カードに
+      // 「狙い：技名」として表示し、誰を優先して倒すかの判断材料にする。
+      const intent = !e.dead && e.combat3WillUseSkill && e.combat3Skill
+        ? `<div class="tb-enemy-intent">狙い：${e.combat3Skill.name}</div>` : '';
       card.innerHTML = `
         <div class="tb-enemy-name-row"><span>${e.name}</span><span class="tag">${tag}</span></div>
         <div class="bar hp-bar small"><div class="fill" style="width:${e.dead ? 0 : Math.max(0, e.hp / e.maxHp * 100)}%"></div></div>
+        ${intent}
       `;
       if (!e.dead) card.addEventListener('click', () => { this.selectedTargetId = e.id; this._renderEnemies(); });
       list.appendChild(card);
@@ -211,6 +220,28 @@ export class TextBattleScreen {
     this.el.fleeBtn.disabled = engine.over || !engine.canFlee();
     this.el.attackBtn.disabled = engine.over || engine.aliveEnemies.length === 0;
     this.el.guardBtn.disabled = engine.over;
+    this.el.itemBtn.disabled = engine.over || engine.availableConsumables().length === 0;
+  }
+
+  // プレイヤーのバフ/デバフをHUDに表示する。敵スキルの弱体（atk/spd↓）や
+  // どうぐ・とくぎの強化が見えないと「効いているのか分からない」ため、
+  // HP/MP行の下に「ATK↑2 / SPD↓1」のような短い状態行を出す。
+  _renderPlayerBuffs() {
+    const el = this.el.buffText;
+    if (!el) return;
+    const buffs = this.engine.player.buffs || {};
+    const LABEL = { atk: 'ATK', def: 'DEF', spd: 'SPD', mag: 'MAG', critAdd: '会心', evasionAdd: '回避', regenAdd: '再生' };
+    const parts = [];
+    for (const stat in buffs) {
+      const b = buffs[stat];
+      if (!b || b.turnsLeft <= 0) continue;
+      const isDown = (b.mult != null && b.mult < 1) || (b.value != null && b.value < 0);
+      const isUp = (b.mult != null && b.mult > 1) || (b.value != null && b.value > 0);
+      if (!isDown && !isUp) continue;
+      parts.push(`${LABEL[stat] || stat}${isDown ? '↓' : '↑'}${b.turnsLeft}`);
+    }
+    el.textContent = parts.join('　');
+    el.classList.toggle('hidden', parts.length === 0);
   }
 
   // とくぎ・じゅもんの技一覧サブメニューの中身を描画する（元指示の表示例：
@@ -219,7 +250,8 @@ export class TextBattleScreen {
     if (!this.techMenuKind) return;
     const { engine } = this;
     const kind = this.techMenuKind;
-    this.el.techMenuTitle.textContent = kind === 'spell' ? 'じゅもん' : 'とくぎ';
+    this.el.techMenuTitle.textContent = kind === 'spell' ? 'じゅもん' : kind === 'item' ? 'どうぐ' : 'とくぎ';
+    if (kind === 'item') { this._renderItemMenu(); return; }
     const list = kind === 'spell' ? engine.availableSpells() : engine.availableSkills();
     this.el.techList.innerHTML = '';
     if (list.length === 0) {
@@ -241,6 +273,30 @@ export class TextBattleScreen {
       item.addEventListener('click', () => {
         if (!probe.ok) return; // クールダウン中等は選択そのものを弾く（無駄なコマンド送信を避ける）
         this._onCommand({ type: kind, techId: tech.id, targetId: this.selectedTargetId });
+      });
+      this.el.techList.appendChild(item);
+    }
+  }
+
+  // どうぐサブメニュー：所持している消耗品を「名前×個数＋効果」で並べる。
+  // 使うと1ラウンドを消費する（敵はそのラウンド行動する）のはとくぎと同じ。
+  _renderItemMenu() {
+    const { engine } = this;
+    const list = engine.availableConsumables();
+    this.el.techList.innerHTML = '';
+    if (list.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'tb-tech-empty';
+      empty.textContent = 'どうぐを持っていない（鍛冶屋の「道具」タブで買える）';
+      this.el.techList.appendChild(empty);
+      return;
+    }
+    for (const entry of list) {
+      const item = document.createElement('div');
+      item.className = 'tb-tech-item';
+      item.innerHTML = `<span>${entry.item.name} ×${entry.count}<span class="tb-tech-sub">${entry.item.desc}</span></span><span class="tb-tech-cost">使う</span>`;
+      item.addEventListener('click', () => {
+        this._onCommand({ type: 'item', itemId: entry.id });
       });
       this.el.techList.appendChild(item);
     }

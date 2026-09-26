@@ -5,12 +5,15 @@
    ============================================================ */
 import { getItem } from './data/equipment.js';
 import { getRune } from './data/runes.js';
+import { getConsumable } from './data/consumables.js';
 
 function itemDisplayName(itemId) {
   const item = getItem(itemId);
   if (item) return item.name;
   const rune = getRune(itemId);
   if (rune) return rune.name;
+  const consumable = getConsumable(itemId);
+  if (consumable) return consumable.name;
   return itemId;
 }
 
@@ -96,6 +99,15 @@ function describePlayerAction(result) {
   }
   if (result.action === 'guard') {
     lines.push('ぼうぎょの構えを取った！ 次に受ける攻撃のダメージが下がる！');
+    return lines;
+  }
+  if (result.action === 'item') {
+    if (result.blocked) { lines.push('そのどうぐは持っていない！'); return lines; }
+    lines.push(`「${result.name}」を使った！`);
+    if (result.healAmount != null) lines.push(`HPを${result.healAmount}回復した！`);
+    if (result.mpRestored != null) lines.push(`MPを${result.mpRestored}回復した！`);
+    if (result.cleansed != null) lines.push(result.cleansed > 0 ? '体を蝕む弱体効果が消え去った！' : 'しかし打ち消すべき弱体効果はなかった…');
+    if (result.buffed) lines.push(`${STAT_JP[result.buffed.stat] || result.buffed.stat}が上がった！`);
     return lines;
   }
   if (result.action === 'flee') {
@@ -214,6 +226,30 @@ function describeEnemyAction(result) {
     return lines;
   }
   // kind === 'attack'
+  // Combat 3の敵スキル（enemySkill:true。nameは「敵名『技名』」形式）は
+  // 技名を冒頭に出し、ダメージの後にスキル固有の副次効果（味方回復・
+  // 敵全体バフ・MP吸収・状態異常ダメージ・プレイヤー弱体・連撃数）を
+  // すべて文章化する。これらを出さないと敵の行動が「ただの数字」に見え、
+  // ロール別の優先撃破判断ができない。
+  if (result.enemySkill) {
+    if (result.evaded) {
+      lines.push(`${result.name}！ しかし華麗に回避した！`);
+      lines.push(...describeHitEffects(result.evadeEvents));
+    } else {
+      const hitTag = result.multiHits ? `${result.multiHits}連撃！ ` : '';
+      lines.push(`${result.name}！ ${hitTag}${result.damage}のダメージを受けた！`);
+      lines.push(...describeHitEffects(result.hurtEvents));
+    }
+    if (result.statusDamage) {
+      const label = result.statusDamage.kind === 'poison' ? '毒が体を蝕む' : '炎が体を焼く';
+      lines.push(`${label}！ さらに${result.statusDamage.amount}のダメージ！`);
+    }
+    if (result.playerDebuff) lines.push(`こちらの${STAT_JP[result.playerDebuff.stat] || result.playerDebuff.stat}が下がった！`);
+    if (result.mpDrained) lines.push(`MPを${result.mpDrained}吸い取られた！`);
+    if (result.allyBuff) lines.push(`敵全体の${STAT_JP[result.allyBuff.stat] || result.allyBuff.stat}が上がった！`);
+    if (result.allyHeal) lines.push(`${result.allyHeal.name}の傷が癒える！ HPを${result.allyHeal.amount}回復した！`);
+    return lines;
+  }
   if (result.evaded) { lines.push(`${result.name}の攻撃！ しかし回避した！`); lines.push(...describeHitEffects(result.evadeEvents)); return lines; }
   lines.push(`${result.name}の攻撃！ ${result.damage}のダメージを受けた！`);
   lines.push(...describeHitEffects(result.hurtEvents));

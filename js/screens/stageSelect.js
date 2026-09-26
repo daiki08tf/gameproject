@@ -10,6 +10,7 @@ import { Audio_ } from '../audio.js';
 import { rollBlessingChoices } from '../data/blessings.js';
 import { KEY_DUNGEON_TYPES } from '../data/world2.js';
 import { world2KeyStageDescriptor } from '../data/world2Stages.js';
+import { ENEMY_TYPES } from '../data/enemies.js';
 import { knownObservedBranchesForPrimeRegion } from '../data/observedBranchDiscovery.js';
 import { observedBranchStageProgress, observedBranchHuntTargets, buildObservedBranchStage } from '../data/observedBranchStages.js';
 
@@ -192,6 +193,29 @@ export function renderStageConfirm(stage) {
   else if (stage.isAbyss) {const lines = [];if (stage.abyssRoute) lines.push(`${stage.abyssRoute.name}：${stage.abyssRoute.risk} ／ ◆ ${stage.abyssRoute.reward}`);if (stage.modifiers?.length) lines.push(`環境：${stage.modifiers.map(m => `${m.name}（${m.desc}）`).join(' ／ ')}`);if (stage.abyssPacts?.length) lines.push(`盟約：${stage.abyssPacts.map(p => p.name).join(' ／ ')}　危険度${stage.abyssPactDanger}`);modEl.textContent = lines.join('\n');modEl.style.whiteSpace = 'pre-line';modEl.classList.toggle('hidden', lines.length === 0);}
   else if (stage.observedBranch) {const label = stage.observedBranchLabel || '観測分岐';modEl.textContent = `${label}\nPrime世界とは異なる歴史が観測されている。`;modEl.style.whiteSpace = 'pre-line';modEl.classList.remove('hidden');}
   else {modEl.textContent = '';modEl.classList.add('hidden');}
+  // 出撃前情報：何と戦うか（wave構成から敵名×数）と手持ちのどうぐを
+  // 確認画面に出す。「準備→挑戦」の判断材料を与え、敵の姿を見てから
+  // 道具を買いに戻る・装備を組み直す、というプレイループを作る。
+  const intelEl = document.getElementById('confirmIntel');
+  const intelLines = [];
+  if (Array.isArray(stage.waves) && stage.waves.length > 0) {
+    const parts = stage.waves.map((w) => {
+      const name = ENEMY_TYPES[w.type]?.name || w.type;
+      return `${name}×${w.count}`;
+    });
+    intelLines.push(`出現予測：${parts.join('、')}`);
+  }
+  const owned = state.ownedConsumables();
+  if (owned.length > 0) intelLines.push(`所持どうぐ：${owned.map((o) => `${o.item.name}×${o.count}`).join('、')}`);
+  else intelLines.push('どうぐは未所持（鍛冶屋の「道具」タブで準備できる）');
+  if (intelLines.length > 0) {
+    intelEl.textContent = intelLines.join('\n');
+    intelEl.style.whiteSpace = 'pre-line';
+    intelEl.classList.remove('hidden');
+  } else {
+    intelEl.textContent = '';
+    intelEl.classList.add('hidden');
+  }
   const blessingRow = document.getElementById('confirmBlessingRow');
   if (stage.isAbyss) {currentBlessingChoices = rollBlessingChoices(3);selectedBlessingId = null;blessingRow.classList.remove('hidden');renderBlessingChoices(blessingRow);} else {currentBlessingChoices = [];selectedBlessingId = null;blessingRow.innerHTML = '';blessingRow.classList.add('hidden');}
 }

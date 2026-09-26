@@ -36,6 +36,7 @@ import { getBlessing } from './data/blessings.js';
 import { weaponDropPoolForStage, bossWeaponForChapter } from './data/weapons.js';
 import { sumPassivePower } from './data/combatStats.js';
 import { hasRareAffix, highestAffixRarity } from './data/affixes.js';
+import { getConsumable, CONSUMABLE_DROP_CHANCE, pickConsumableDrop } from './data/consumables.js';
 
 const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -612,6 +613,7 @@ export class BattleEngine {
     if (action.type === 'flee') return this._playerFlee();
     if (action.type === 'skill') return this._playerTechnique('skill', action.techId, action.targetId);
     if (action.type === 'spell') return this._playerTechnique('spell', action.techId, action.targetId);
+    if (action.type === 'item') return this._playerUseItem(action.itemId);
     return { action: action.type, noop: true };
   }
 
@@ -1263,6 +1265,57 @@ export class BattleEngine {
     return { action: 'flee', success };
   }
 
+  // どうぐ（消耗品）：inventoryの個数として所持しているアイテムを1個使う。
+  // 使えるかどうかの事前判定はadvanceTurn側がcanUseItemで行い、ここは
+  // 「実際に消費して効果を適用する」だけを担う。効果は既存の仕組みに
+  // 寄せる（回復=hp/mp加算、弱体打ち消し=負のbuff消去、バフ=_setBuff）。
+  canUseItem(itemId) {
+    return !!getConsumable(itemId) && state.consumableCount(itemId) > 0;
+  }
+
+  availableConsumables() {
+    return state.ownedConsumables();
+  }
+
+  _playerUseItem(itemId) {
+    const item = getConsumable(itemId);
+    if (!item || !state.consumeConsumable(itemId)) {
+      return { action: 'item', blocked: true };
+    }
+    const result = { action: 'item', itemId, name: item.name };
+    const eff = item.effect;
+    if (eff.kind === 'heal') {
+      const amount = Math.max(1, Math.round(this.player.maxHp * eff.pct));
+      const before = this.player.hp;
+      this.player.hp = Math.min(this.player.maxHp, this.player.hp + amount);
+      result.healAmount = Math.round(this.player.hp - before);
+    } else if (eff.kind === 'mp') {
+      const amount = Math.max(1, Math.round(this.player.maxMp * eff.pct));
+      const before = this.player.mp;
+      this.player.mp = Math.min(this.player.maxMp, this.player.mp + amount);
+      result.mpRestored = Math.round(this.player.mp - before);
+    } else if (eff.kind === 'cleanse') {
+      // 敵のweakenAtk/slow等はplayer.buffsにmult<1として乗っている。
+      // negativeStatusは現状空のスキャフォールドだが将来のDoT等もここで消す。
+      let cleared = 0;
+      for (const stat in this.player.buffs) {
+        const b = this.player.buffs[stat];
+        if (b && b.mult != null && b.mult < 1 && b.turnsLeft > 0) {
+          b.mult = 1; b.turnsLeft = 0; cleared++;
+        }
+        if (b && b.value != null && b.value < 0 && b.turnsLeft > 0) {
+          b.value = 0; b.turnsLeft = 0; cleared++;
+        }
+      }
+      this.player.negativeStatus = { weaken: {}, dotStacks: 0, dotTurnsLeft: 0 };
+      result.cleansed = cleared;
+    } else if (eff.kind === 'buff') {
+      this._setBuff(eff.stat, eff.pct, eff.turns);
+      result.buffed = { stat: eff.stat, pct: eff.pct, turns: eff.turns };
+    }
+    return result;
+  }
+
   // ---------------------------------------------------------
   // ダメージ適用・onHit/onCrit/onKill系固有効果（元指示4・12番：既存を流用）
   // ---------------------------------------------------------
@@ -1566,6 +1619,7 @@ export class BattleEngine {
     const drops = [];
     const dropInfo = this._rollDrop(dropCtx); if (dropInfo) drops.push(dropInfo);
     const weaponDropInfo = this._rollWeaponDrop(dropCtx); if (weaponDropInfo) drops.push(weaponDropInfo);
+    const consumableDropInfo = this._rollConsumableDrop(); if (consumableDropInfo) drops.push(consumableDropInfo);
     const manastone = this._rollManastone(enemy);
     let bossSlayerBuff = null;
     if (enemy.boss) {
@@ -1641,6 +1695,17 @@ export class BattleEngine {
     return this._describeDrop(bossWeapon.id, isNew, state.consumeLastWeaponInstanceId());
   }
 
+  // どうぐドロップ：敵撃破時に低確率で消耗品を1個落とす。装備ドロップとは
+  // 別枠の小さな抽選で、ボス戦に向けた「どうぐを貯める」準備ループを
+  // 戦闘中にも自然に育てるためのもの。
+  _rollConsumableDrop() {
+    if (Math.random() > CONSUMABLE_DROP_CHANCE) return null;
+    const itemId = pickConsumableDrop();
+    state.addItem(itemId, 1);
+    this.runItems.push(itemId);
+    return this._describeDrop(itemId, false, null);
+  }
+
   _rollManastone(enemy) {
     if (enemy.boss) {
       const amount = Math.round(rand(ECONOMY.MANASTONE_BOSS_MIN, ECONOMY.MANASTONE_BOSS_MAX));
@@ -1692,6 +1757,8 @@ export class BattleEngine {
     }
     const rune = getRune(itemId);
     if (rune) return { itemId, name: rune.name, rarity: null, isNew, isRune: true };
+    const consumable = getConsumable(itemId);
+    if (consumable) return { itemId, name: consumable.name, rarity: null, isNew, isConsumable: true };
     return { itemId, name: itemId, rarity: null, isNew };
   }
 
@@ -1932,6 +1999,20 @@ export class BattleEngine {
         preResolvedPlayerResult = this.performPlayerAction(command);
         events.push({ type: 'playerAction', result: preResolvedPlayerResult });
       }
+    }
+
+    // どうぐも自己対象のbuff/utility技と同じ構造のため同じ場所で扱う：
+    // 所持していない（or不正なidの）アイテム指定は行動選択自体が無効なので
+    // ラウンドを消費せず、使える場合は先攻/後攻に関わらずこのラウンドの
+    // 敵行動解決より前に実行する（「回復薬を選んだのに敵が先に動いて
+  // 死んだ」＝ぼうぎょで既に修正済みのバグと同じ問題を防ぐため）。
+    if (command.type === 'item') {
+      if (!this.canUseItem(command.itemId)) {
+        events.push({ type: 'playerAction', result: { action: 'item', blocked: true } });
+        return { events, over: false };
+      }
+      preResolvedPlayerResult = this.performPlayerAction(command);
+      events.push({ type: 'playerAction', result: preResolvedPlayerResult });
     }
 
     // ガードは「このラウンドに飛んでくる敵の攻撃を軽減する」ためのコマンドなので、

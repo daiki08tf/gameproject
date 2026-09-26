@@ -4,6 +4,7 @@ import { describeAffix } from '../data/affixes.js';
 import { getRune } from '../data/runes.js';
 import { getRune2 } from '../data/runes2.js';
 import { equipment3Presentation, equipment3MetaText, equipment3SpecialLines, equipment3DropHeadline } from '../data/equipment3Presentation.js';
+import { getConsumable } from '../data/consumables.js';
 
 function resolveDrop(itemId) {
   const item = getItem(itemId);
@@ -35,6 +36,8 @@ function resolveDrop(itemId) {
   }
   const rune = getRune(itemId);
   if (rune) return { name: rune.name, color: 'var(--accent)', equipment3: null, headline: null };
+  const consumable = getConsumable(itemId);
+  if (consumable) return { name: `${consumable.name}（どうぐ）`, color: 'var(--dc-ash-200, var(--accent))', equipment3: null, headline: null };
   return { name: itemId, color: '', equipment3: null, headline: null };
 }
 
@@ -78,7 +81,8 @@ export function renderResult(result) {
   const title=document.getElementById('resultTitle'),stats=document.getElementById('resultStats'),itemsEl=document.getElementById('resultItems');
   const panel=title.closest('.panel');
   if(result.retreated){title.textContent='RETREAT';title.style.color='var(--dc-ash-300)';if(panel)panel.dataset.tone='neutral';}else if(result.bountyUnique){title.textContent='BOUNTY CLEARED — UNIQUE FOUND';title.style.color='var(--dc-brass-300)';if(panel)panel.dataset.tone='success';}else if(result.bountyNemesis?.grew){title.textContent=`DEFEATED — ${result.bountyNemesis.title || 'NEMESIS'}`;title.style.color='var(--dc-danger-300)';if(panel)panel.dataset.tone='danger';}else if(result.cleared){title.textContent='STAGE CLEAR';title.style.color='';if(panel)panel.dataset.tone='success';}else{title.textContent='DEFEATED...';title.style.color='var(--dc-danger-300)';if(panel)panel.dataset.tone='danger';}
-  stats.textContent=`獲得経験値: ${result.expGained} / 獲得ゴールド: ${result.goldGained}`+(result.world2?.fragment?` / 鍵片 +${result.world2.fragment}`:'')+(result.world2?.keyDungeon?` / 境界鍵路報酬 鍵片 +${result.world2.keyDungeon.keyFragments}`:'')+(result.bounty2?` / 賞金首の証 +${result.bounty2.marks}（所持 ${result.bounty2.totalMarks}）`:'')+(result.bounty2?.nemesisDefeated?' / 宿敵討伐ボーナス！':'')+(result.bountyNemesis?.grew?` / 宿敵Lv.${result.bountyNemesis.level}へ成長`:'')+(result.cleared?'':'（撃破分のみ・レベルや装備は失われません）');
+  stats.textContent=`獲得経験値: ${result.expGained} / 獲得ゴールド: ${result.goldGained}`+(result.world2?.fragment?` / 鍵片 +${result.world2.fragment}`:'')+(result.world2?.keyDungeon?` / 境界鍵路報酬 鍵片 +${result.world2.keyDungeon.keyFragments}`:'')+(result.bounty2?` / 賞金首の証 +${result.bounty2.marks}（所持 ${result.bounty2.totalMarks}）`:'')+(result.bounty2?.nemesisDefeated?' / 宿敵討伐ボーナス！':'')+(result.bountyNemesis?.grew?` / 宿敵Lv.${result.bountyNemesis.level}へ成長`:'')+(result.cleared?'':'（撃破分のみ・レベルや装備は失われません）\nヒント：鍛冶屋の「道具」タブでやくそう等を備蓄できる');
+  stats.style.whiteSpace = 'pre-line';
   itemsEl.innerHTML='';
   const normalItems=Array.isArray(result.items)?result.items:[],rune2Drops=Array.isArray(result.rune2Drops)?result.rune2Drops:[];
   if(normalItems.length===0&&rune2Drops.length===0&&!result.world2?.event&&!result.loot3Chase&&!result.phase13)itemsEl.innerHTML='<span class="hint" style="opacity:.6;font-size:12px;">ドロップなし</span>';
