@@ -1,5 +1,22 @@
 /* Bounty Unique Equipment — Affix厳選とは別の、戦い方を変える固定効果装備 */
 import { OBSERVED_BRANCH_ORIGINS } from './observedBranchEquipment.js';
+import { authoredStatRescale } from './chapters.js';
+
+// 固定値ステータスは旧線形装備曲線に対して較正されていた。装備曲線の
+// 複利化で通常装備が伸びたため、「その固有装備が手に入る章」をアンカーに
+// 新舊曲線比で再スケールする（設計時の立ち位置＝固有効果の強さと引換の
+// スタッツ配分を維持する）。負値ステータスも等比でスケール＝引換えの
+// 重さも保存される。
+const BOUNTY_ANCHOR_CHAPTER = {
+  'bounty-redfang-varg': 2, 'bounty-ash-knight': 5, 'bounty-fallen-oracle': 8,
+  'bounty-crownless': 11, 'bounty-omega-zero': 15,
+};
+function uniqueAnchorChapter(u) {
+  if (u.bountyId) return BOUNTY_ANCHOR_CHAPTER[u.bountyId] || 10;
+  if (u.observedBranch) return 4; // 序盤〜中盤のBranch報酬（曲線比≈1でほぼ不変）
+  return 30; // machine-world / secret / contentPackII / phase8 = ポストストーリー級
+}
+const rescaleUnique = (u) => Object.freeze({ ...u, stats: authoredStatRescale(u.stats, uniqueAnchorChapter(u)) });
 
 export const BOUNTY_UNIQUES = [
   { id:'uq_bloodfang_gram', bountyId:'bounty-redfang-varg', name:'血牙グラム', slot:'weapon', weaponType:'sword', rarity:'legendary', stats:{atk:42,crit:4}, unique:true, unique2IdentityId:'u2_sword_firstblood', effects:[{trigger:'passive',kind:'highHpDoubleAttack',threshold:0.5},{trigger:'passive',kind:'defPenalty',power:0.25}], lore:'赤牙の血を吸い、獲物が弱る前に二度噛みつく魔剣。' },
@@ -50,6 +67,6 @@ export const BOUNTY_UNIQUES = [
 
   // Observed Branches M9 continuation (Branch Cluster 4) — 不断領・月蝕の境界 initial Fixed Unique reward.
   {id:'uq_observed_unbroken_sovereign',bountyId:null,sourceStageId:'observedbranch-unbroken-veil-boss',name:'不断の鏡刃・UNBROKEN SOVEREIGN',slot:'weapon',weaponType:'dagger',rarity:'legendary',stats:{atk:14.5,spd:5.5,crit:4},unique:true,observedBranch:true,branchOrigin:OBSERVED_BRANCH_ORIGINS['unbroken-veil'],unique2IdentityId:'u2_dagger_unbroken_sovereign',effects:[{trigger:'onCrit',kind:'critExtraAttack',chance:.20,power:.55,perActionCap:1}],lore:'一度も破断しなかったThe Veilの歴史から持ち出された鏡刃。会心の一撃は鏡像として複製され、同じ軌跡をもう一度なぞる。'},
-];
+].map(rescaleUnique);
 export function uniqueForBounty(bountyId){ return BOUNTY_UNIQUES.find(x=>x.bountyId===bountyId)||null; }
 export function bountyUniqueById(id){ return BOUNTY_UNIQUES.find(x=>x.id===id)||null; }

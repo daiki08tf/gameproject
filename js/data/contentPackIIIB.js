@@ -1,4 +1,5 @@
 /* Content Pack III B — multi-region convergence, bosses, companions and rewards. */
+import { authoredStatRescale } from './chapters.js';
 
 export const CP3_SECRET_CHAINS=Object.freeze({
   reply_target:{
@@ -52,7 +53,11 @@ export const CP3_SPECIAL_HYBRIDS=Object.freeze({
   'cp3_cinder_mite+cp3_echo_seed':{id:'cp3_reflux_beast',name:'逆流灰種獣',icon:'🔥🌰',role:'attacker',baseStats:{hp:226,mp:44,atk:70,def:46,mag:46,spd:51},growth:{hp:16.1,mp:2.6,atk:7.6,def:5.1,mag:5.2,spd:3.0},traits:['残照追跡','境界適応'],skills:[{level:1,id:'ash_slash'},{level:40,id:'iron_fang'}]},
 });
 
-export const CP3_REWARDS=Object.freeze([
+// 報酬の手書きステータスは旧線形装備曲線（chapterMult(30)≒11.15）を前提に
+// 較正されている。装備曲線の複利化でCh30通常装備が伸びたため、取得位置
+// （Ch30超のポストストーリー）をアンカーに新舊曲線比で再スケールし、
+// 「労力に見合う報酬」としての格差を維持する。
+const CP3_REWARDS_RAW=[
   {id:'uq_cp3_reply_guard',name:'返信守の盾',slot:'shield',rarity:'mythic',stats:{def:420,hp:880,mag:120},description:'観測を受けた直後の一撃に耐えるための重盾。'},
   {id:'uq_cp3_ack_lens',name:'受理照準鏡',slot:'accessory',rarity:'mythic',stats:{atk:180,mag:180,crit:24,spd:120},description:'敵の予兆と観測応答を同じ像として重ねる。'},
   {id:'uq_cp3_cinder_shell',name:'返灰外殻',slot:'body',rarity:'mythic',stats:{def:360,hp:1180,atk:130},description:'失われた熱履歴を装甲として固定した外殻。'},
@@ -65,7 +70,8 @@ export const CP3_REWARDS=Object.freeze([
   {id:'uq_cp3_blank_record',name:'空白記録板',slot:'shield',rarity:'mythic',stats:{def:390,hp:760,mag:210},description:'記録されなかった区間だけが硬質化した板。'},
   {id:'uq_cp3_reply_crown',name:'返答王冠',slot:'head',rarity:'mythic',stats:{def:220,atk:180,mag:260,crit:20},description:'返された観測を力へ変えるが、由来はなお不明。'},
   {id:'uq_cp3_boundary_echo',name:'境界反響核',slot:'accessory',rarity:'mythic',stats:{atk:190,mag:240,spd:170,crit:22,hp:420},description:'複数地域の逆流観測を一つの核に束ねたRelic。'},
-]);
+];
+export const CP3_REWARDS=Object.freeze(CP3_REWARDS_RAW.map(r=>Object.freeze({...r,stats:authoredStatRescale(r.stats,30)})));
 
 export const CP3_CODEX_ECOLOGY=Object.freeze({
   cp3_boss_ack_warden:{habitat:'返信炉床 / 第九照準線',ecology:'文字を守るのではなく、観測の受理と再照準を維持する局所守護体。'},

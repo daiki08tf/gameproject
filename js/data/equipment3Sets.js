@@ -1,6 +1,7 @@
 /* ============================================================
    Equipment 3.0 — Fixed Set equipment
    ============================================================ */
+import { authoredStatRescale } from './chapters.js';
 export const EQUIPMENT3_SETS = Object.freeze({
   blood_king:{name:'血王',unlockDepth:250,bonuses:{2:{desc:'ATK+12% / 撃破時HP3%回復',statMult:{atk:1.12},effects:[{trigger:'onKill',kind:'healOnKill',power:.03}]},3:{desc:'与ダメージ+20% / 撃破時さらにHP5%回復',effects:[{trigger:'passive',kind:'dmgBonusAdd',power:.20},{trigger:'onKill',kind:'healOnKill',power:.05}]}}},
   ancient_dragon:{name:'古竜',unlockDepth:500,bonuses:{2:{desc:'HP+12% / DEF+12%',statMult:{hp:1.12,def:1.12}},3:{desc:'与ダメージ+12% / ぼうぎょ後に反撃',effects:[{trigger:'passive',kind:'dmgBonusAdd',power:.12},{trigger:'onGuard',kind:'guardCounter',power:.65}]}}},
@@ -30,7 +31,18 @@ const RAW_SET_EQUIPMENT=[
 {id:'set_machine_body',name:'設計者の位相外殻',slot:'body',rarity:'mythic',setId:'machine_architect',fixedSet:true,stats:{def:250,hp:900,mag:170,spd:28}},
 {id:'set_machine_accessory',name:'設計者の多重核',slot:'accessory',rarity:'mythic',setId:'machine_architect',fixedSet:true,stats:{atk:160,mag:240,spd:46,crit:9}},
 ];
-export const SET_EQUIPMENT=Object.freeze(RAW_SET_EQUIPMENT.map(item=>{const def=EQUIPMENT3_SETS[item.setId];return Object.freeze({...item,implicit:{desc:`《${def.name}セット》2部位: ${def.bonuses[2].desc} / 3部位: ${def.bonuses[3].desc}`}})}));
+
+// 固定値ステータスは旧線形装備曲線に対して較正されていた。装備曲線の
+// 複利化で章立て装備が伸びたため、セット解禁深度（unlockDepth）を
+// 「そのセットが手に入る時点の章相当値」に換算してアンカーとし、
+// 新舊曲線比で再スケールする。セット効果そのものは不変。
+// unlockDepth 1〜3300 ≒ 章20〜36 のレンジに射影する。
+function setAnchorChapter(setId) {
+  const depth = EQUIPMENT3_SETS[setId]?.unlockDepth || 250;
+  return Math.min(36, Math.max(20, Math.round(20 + depth / 200)));
+}
+
+export const SET_EQUIPMENT=Object.freeze(RAW_SET_EQUIPMENT.map(item=>{const def=EQUIPMENT3_SETS[item.setId];return Object.freeze({...item,stats:authoredStatRescale(item.stats,setAnchorChapter(item.setId)),implicit:{desc:`《${def.name}セット》2部位: ${def.bonuses[2].desc} / 3部位: ${def.bonuses[3].desc}`}})}));
 export function setDefinition(setId){return EQUIPMENT3_SETS[setId]||null;}
 export function setPieces(setId){return SET_EQUIPMENT.filter(item=>item.setId===setId);}
 export function setDropsForDepth(depth,bossFloor=false){const d=Math.max(1,Math.floor(Number(depth)||1));const unlocked=Object.entries(EQUIPMENT3_SETS).filter(([,def])=>d>=def.unlockDepth);if(!unlocked.length)return[];const newest=unlocked[unlocked.length-1][0];return SET_EQUIPMENT.filter(item=>unlocked.some(([id])=>id===item.setId)).map(item=>({itemId:item.id,weight:item.setId===newest?(bossFloor?.20:.10):(bossFloor?.07:.035)}));}
