@@ -43,7 +43,12 @@ export const LONG_TERM_LEVEL_ERAS = Object.freeze([
   { id: 'terminal',    min: 50000, max: CHARACTER_LEVEL_MAX, label: '終焉域' },
 ]);
 
-const ONE_PASS_TARGET_SHARE = 0.85; // 本線1周で約85%。分岐・再挑戦・装備掘りで残りを埋める
+// 本線1周で約95%。分岐・ハント・再挑戦・装備掘りで残りを埋める設計は
+// 変えないが、実測プレイスルーでは85%では各章Boss時点で推奨Lvに10〜14級
+// も不足し「削り合い以外の選択肢がない壁」になっていた（どうぐ実装後も
+// カバーできるのは約10級分）。95%に上げてBoss到達Lvを推奨Lvの直下まで
+// 寄せ、残り5%をサイドコンテンツの役割として残す。
+const ONE_PASS_TARGET_SHARE = 0.95;
 
 function chapterEnemyKeys(chapter) {
   if (chapter === 1) return ['grunt', 'fast', 'tank', 'boss_orcking', 'branch_goblin_chief'];

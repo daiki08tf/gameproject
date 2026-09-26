@@ -29,11 +29,11 @@ function mainRouteBudget(chapterNumber) {
   return total;
 }
 
-test('all 20 story chapters award about 85% of their level-span EXP on the main route',()=>{
+test('all 20 story chapters award about 95% of their level-span EXP on the main route',()=>{
   for(const [chapter,min,max] of STORY){
     const need=cumulativeCharacterExpToLevel(max)-cumulativeCharacterExpToLevel(min);
     const share=mainRouteBudget(chapter)/need;
-    assert.ok(share>=0.83 && share<=0.87,`chapter ${chapter} share ${share}`);
+    assert.ok(share>=0.93 && share<=0.97,`chapter ${chapter} share ${share}`);
   }
 });
 

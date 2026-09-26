@@ -8,7 +8,11 @@ import { BattleEngine } from '../battleEngine.js';
 // attacks matter without rewriting the legacy chapter/abyss data tables.
 export const COMBAT3_DIFFICULTY = Object.freeze({
   normal: Object.freeze({ hp: 1.70, atk: 1.30, def: 1.15 }),
-  boss: Object.freeze({ hp: 2.20, atk: 1.40, def: 1.20 }),
+  // Bossは手動プレイ計測で「推奨Lvを6〜10級下回ってもどうぐ・立ち回りで
+  // 押し切れる壁」に留める。旧2.20/1.40は本編Bossがfight長＝被弾総量の
+  // 二乗的に痛くなり、中Boss（boss:trueで同じ倍率を受ける）を持つ章では
+  // 壁が2連続する実測結果があったため、HP・ATKを一段緩める。
+  boss: Object.freeze({ hp: 1.75, atk: 1.35, def: 1.20 }),
 });
 
 const originalSpawnEnemy = BattleEngine.prototype._spawnEnemy;

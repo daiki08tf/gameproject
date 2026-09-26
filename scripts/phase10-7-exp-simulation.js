@@ -6,7 +6,7 @@ export const STORY_EXP_CHECKPOINTS = Object.freeze([
   [11,300,360],[12,360,430],[13,430,510],[14,510,600],[15,600,700],[16,700,1000],[17,1000,1350],[18,1350,1750],[19,1750,2250],[20,2250,3000],
 ]);
 
-export const ONE_PASS_TARGET_SHARE = 0.85;
+export const ONE_PASS_TARGET_SHARE = 0.95;
 
 export function levelFromTotalExp(totalExp) {
   const exp = Math.max(0, Number(totalExp) || 0);
@@ -37,7 +37,7 @@ export function simulateStory() {
       remainingExp: Math.max(0, targetExp - totalExp),
       targetShare: need > 0 ? onePassExp / need : 1,
     };
-    // The roadmap intentionally leaves about 15% for branches, gear farming,
+    // The roadmap intentionally leaves about 5% for branches, gear farming,
     // bounties and retries before the next chapter target is considered complete.
     totalExp = targetExp;
     return row;

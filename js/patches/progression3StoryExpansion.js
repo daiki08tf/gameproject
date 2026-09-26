@@ -20,7 +20,10 @@ export const STORY_EXPANSION_LEVEL_ROADMAP = Object.freeze([
   { chapter: 20, min: 2250, max: 3000, oldMin: 600, oldMax: 700 },
 ]);
 
-const ONE_PASS_TARGET_SHARE = 0.85;
+// levelRoadmap99999.jsと同じ値に揃える（0.85では各章Boss到達Lvが推奨Lvを
+// 10級以上下回る実測があったため95%へ引き上げ。残り5%は引き続き分岐・
+// ハント・再挑戦・装備掘りの役割）。
+const ONE_PASS_TARGET_SHARE = 0.95;
 
 function chapterEnemyKeys(chapter) {
   const prefix = `ch${chapter}`;
