@@ -38,7 +38,7 @@ test('UIX-1 defines focus, interaction, disabled and reduced-motion states', () 
 test('UIX-1 keeps the shared shell free of platform pictographs', () => {
   const audit = spawnSync(process.execPath, ['scripts/uix-emoji-check.js'], { encoding: 'utf8' });
   assert.equal(audit.status, 0, audit.stderr || audit.stdout);
-  assert.match(audit.stdout, /shared shell clean/);
+  assert.match(audit.stdout, /clean/);
 });
 
 test('UIX-1 documents accepted and rejected visual patterns', () => {

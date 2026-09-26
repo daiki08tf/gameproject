@@ -44,7 +44,7 @@ function renderAwakening3Panel(){
     html+=`<div class="forge-card"><div class="forge-card-top"><div class="forge-card-name">Rank ${r}</div><strong>${selected?'刻印済み':'未選択'}</strong></div>`;
     for(const def of state.awakening3ImprintChoices()){
       const chosen=selected===def.id;
-      html+=`<div class="forge-card-sub" style="margin-top:6px;"><strong>${def.icon} ${def.name}${chosen?' ★':''}</strong><br>${def.desc}${selected?'':`<br><button class="btn-sub awakening3-pick" data-rank="${r}" data-id="${def.id}" style="margin-top:4px;">この刻印を選ぶ</button>`}</div>`;
+      html+=`<div class="forge-card-sub" style="margin-top:6px;"><strong>${def.name}${chosen?' ★':''}</strong><br>${def.desc}${selected?'':`<br><button class="btn-sub awakening3-pick" data-rank="${r}" data-id="${def.id}" style="margin-top:4px;">この刻印を選ぶ</button>`}</div>`;
     }
     html+='</div>';
   }

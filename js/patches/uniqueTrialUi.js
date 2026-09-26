@@ -19,14 +19,14 @@ function buildPanel(){
   panel.className='pick-row';
   panel.style.display='block';
   panel.style.marginBottom='10px';
-  panel.innerHTML='<div class="section-heading">⚔️ ユニーク覚醒試練</div>';
+  panel.innerHTML='<div class="section-heading">ユニーク覚醒試練</div>';
 
   for(const id of ids){
     const item=getItem(id), p=state.getUniqueTrialProgress(id);
     const box=document.createElement('div');
     box.style.margin='8px 0 12px';
     const lines=p.trials.map(t=>`${t.done?'✓':'□'} ${t.label} (${t.count}/${t.target})`).join('<br>');
-    box.innerHTML=`<div class="item-name">${item?.name||id}${p.awakened?' ✨覚醒済':''}</div><div class="item-stats">${p.def.flavor}<br>${lines}</div>`;
+    box.innerHTML=`<div class="item-name">${item?.name||id}${p.awakened?' <span class="mastered-badge">覚醒済</span>':''}</div><div class="item-stats">${p.def.flavor}<br>${lines}</div>`;
 
     if(p.ready&&!p.awakened){
       const b=document.createElement('button'); b.textContent='覚醒する';
@@ -39,7 +39,7 @@ function buildPanel(){
         row.dataset.uniqueBranchItem=id;
         row.dataset.uniqueBranchId=br.id;
         const req=br.requirements.map(r=>`${(p.counts[r.event]||0)>=r.target?'✓':'□'} ${r.event} ${Math.min(r.target,p.counts[r.event]||0)}/${r.target}`).join(' / ');
-        row.innerHTML=`<strong>${br.ready?'✨':'🔒'} ${br.name}</strong> — ${br.hint}<br>${req}`;
+        row.innerHTML=`<strong>${br.ready?'◆':'LOCKED'} ${br.name}</strong> — ${br.hint}<br>${req}`;
         if(br.ready){ const btn=document.createElement('button');btn.textContent=`${br.name}へ進化`;btn.addEventListener('click',()=>{state.chooseUniqueBranch(id,br.id);buildPanel();});row.appendChild(btn); }
         box.appendChild(row);
       }

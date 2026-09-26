@@ -71,12 +71,12 @@ if(previousEventContext){state.adventure4EventContext=function adventure4RealmEv
 
 if(previousResearchOutlook){state.settlementResearchOutlook=function adventure4RealmResearchOutlook(){
   const rows=previousResearchOutlook();const feedback=this.adventure4SettlementFeedback();
-  for(const signal of feedback.discoveries)rows.push({id:`realm:${signal.id}`,icon:'🌀',title:`境界研究：${signal.name}`,text:`${signal.hint} 既存Realmの鍵・入口条件は変更せず、観測記録だけを照合する。`,source:'Adventure Discovery'});
+  for(const signal of feedback.discoveries)rows.push({id:`realm:${signal.id}`,title:`境界研究：${signal.name}`,text:`${signal.hint} 既存Realmの鍵・入口条件は変更せず、観測記録だけを照合する。`,source:'Adventure Discovery'});
   return rows;
 };}
 if(previousChronicle){state.settlementChronicle=function adventure4RealmChronicle(){
   const rows=previousChronicle(),feedback=this.adventure4SettlementFeedback();
-  if(feedback.knownRealmCount)rows.push({id:'realmDiscoveries',name:'境界観測記録',icon:'🌀',value:`${feedback.knownRealmCount}件`,detail:feedback.discoveries.map(x=>x.name).join(' / '),records:feedback.discoveries.map(x=>({id:x.id,name:x.name,regionId:x.regionId}))});
+  if(feedback.knownRealmCount)rows.push({id:'realmDiscoveries',name:'境界観測記録',value:`${feedback.knownRealmCount}件`,detail:feedback.discoveries.map(x=>x.name).join(' / '),records:feedback.discoveries.map(x=>({id:x.id,name:x.name,regionId:x.regionId}))});
   return rows;
 };}
 

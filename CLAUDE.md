@@ -57,7 +57,15 @@ Home → Adventure → Chapter → Stage → Story / Hunt
 
 Visual direction is **Dark Chronicle**: black iron, soot navy, ash white, restrained aged metal, record/ledger/map structure, sharp geometry and dense readable information.
 
-**Rendered application UI must contain no platform emoji.**
+**Rendered application UI must contain no platform emoji.** This is a
+permanent design law, enforced by `scripts/uix-emoji-check.js` (wired into the
+test suite by `tests/uix-no-emoji-law.test.js`; also `npm run audit:uix:emoji`).
+When implementing a new feature, never use platform emoji as placeholder
+icons, decoration, category markers, or status markers — use text or existing
+project-owned visual assets (`js/ui/pixelIcons.js`). Canonical `icon:` data
+fields exist as data-layer tokens only and must never be interpolated into the
+DOM. Japanese typography and stable text glyphs (「」【】→ × ％ ★ ◆ ◇ ✦ ？？？)
+are allowed and are not emoji.
 
 Do not blindly rewrite authored Story/canon text. Distinguish decorative UI glyphs from content before editing.
 
