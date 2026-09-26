@@ -7,8 +7,11 @@ import { TextBattleScreen } from '../screens/textBattle.js';
 import { defMitigationPct } from '../data/combatStats.js';
 import { BOSS_AI_LAYER } from '../data/balance.js';
 import { COMPANION_NATURES, companionTraitEffect, getCompanionSpecies } from '../data/companions.js';
-import { chooseCompanionSkill } from '../data/companionSkills.js';
+import { chooseCompanionSkill, unlockedCompanionSkills } from '../data/companionSkills.js';
+import { bondSignatureSkillFor } from '../data/companionBondSkills.js';
 import { COMPANION_COMBOS } from '../data/companionSynergies.js';
+import { showToast } from './toastFeedback.js';
+import { Audio_ } from '../audio.js';
 
 export const BOSS_COMPANION_COMBAT = Object.freeze({
   BASIC_CLEAVE_CHANCE: 0.22,
@@ -24,11 +27,13 @@ export const BOSS_COMPANION_COMBAT = Object.freeze({
 
 function battleCompanionFrom(c, slot, synergy = {}) {
   const hp=Math.max(1,Math.round(c.stats.hp*(synergy.hpMult||1)));
+  const bondLevel=c.instance?state.companionBond?.(c.id)?.level||1:1;
   return {
     id:c.id,slot,name:c.instance.nickname||c.species.name,speciesId:c.instance.baseSpeciesId||c.species.id,
     // 倒した個体が持っていた特性（Elite Affix / Rare行動由来）はinstanceに
     // 保存され、種族特性と並んで戦闘でも効く — 「戦った個体が仲間になる」。
     nature:c.instance.nature,traits:[...(c.species.traits||[]),...(c.instance.inheritedTraits||[])],level:c.instance.level||1,
+    bondLevel,signatureId:bondSignatureSkillFor({id:c.id,speciesId:c.species.id,species:c.species})?.id||null,
     hp,maxHp:hp,mp:c.stats.mp,maxMp:c.stats.mp,
     atk:Math.max(1,Math.round(c.stats.atk*(synergy.atkMult||1))),
     def:Math.max(1,Math.round(c.stats.def*(synergy.defMult||1))),
@@ -52,7 +57,34 @@ function livingCompanions(engine){ensureCompanionBattle(engine);return(engine.co
 // pure extension of the existing trait system, not a new one.
 function traitEffect(companion,kind){for(const name of companion?.traits||[]){const effect=companionTraitEffect(name);if(effect?.kind===kind){const mult=state.ranchSpeciesGrade?.(companion.speciesId)?.traitMult||1;return mult===1?effect:{...effect,power:effect.power*mult};}}return null;}
 function effectiveCompanionSpd(companion){const effect=traitEffect(companion,'initiativeSpd');return companion.spd*(1+(effect?.power||0));}
-function chooseTarget(engine,companion,skill=null){const alive=engine.aliveEnemies;if(!alive.length)return null;if(skill?.preferLowHp)return[...alive].sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp))[0];const nature=COMPANION_NATURES[companion.nature]||COMPANION_NATURES.balanced;if(nature.ai==='aggressive')return[...alive].sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp))[0];if(nature.ai==='defensive')return[...alive].sort((a,b)=>b.atk-a.atk)[0];return alive[Math.floor(Math.random()*alive.length)];}
+/* Session 6 — 号令（Companion Orders）。1戦闘に各1回だけ使える
+   限定的な指示レイヤ。プレイヤーの行動を消費せず、そのターンの
+   仲間行動だけを上書きする（「読み」を報いる tactical 層）。
+     focus   狙いを定めろ … そのターン全員が最もHPの低い敵を狙う
+     brace   守りを固めろ … そのターン仲間の被ダメージ-38%(絆Lv7で-45%)
+     unleash 解放しろ     … そのターン仲間は最高威力の攻撃技を使い
+                            威力+25%（絆Lv7で+35%）。MP切れなら通常AI */
+export const COMPANION_ORDERS = Object.freeze({
+  focus:   { id: 'focus',   name: '狙いを定めろ', desc: 'このターン全員が最も弱った敵を集中攻撃' },
+  brace:   { id: 'brace',   name: '守りを固めろ', desc: 'このターン仲間の被ダメージを大きく減らす' },
+  unleash: { id: 'unleash', name: '解放しろ',     desc: 'このターン仲間が最高威力の攻撃を繰り出す' },
+});
+BattleEngine.prototype.issueCompanionOrder=function issueCompanionOrder(orderId){
+  ensureCompanionBattle(this);
+  if(!(this.companions||[]).some(c=>!c.down&&c.hp>0))return false;
+  this._ordersUsed ||= {};
+  if(this._ordersUsed[orderId]||!COMPANION_ORDERS[orderId])return false;
+  this._ordersUsed[orderId]=true;
+  this._activeOrder=orderId;
+  if(orderId==='focus'){
+    const alive=this.aliveEnemies||[];
+    this._focusTargetId=[...alive].sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp))[0]?.id||null;
+  }
+  if(orderId==='brace')for(const c of livingCompanions(this))c._brace=true;
+  return true;
+};
+
+function chooseTarget(engine,companion,skill=null){const alive=engine.aliveEnemies;if(!alive.length)return null;if(engine._focusTargetId){const marked=alive.find(e=>e.id===engine._focusTargetId);if(marked)return marked;}if(skill?.preferLowHp)return[...alive].sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp))[0];const nature=COMPANION_NATURES[companion.nature]||COMPANION_NATURES.balanced;if(nature.ai==='aggressive')return[...alive].sort((a,b)=>(a.hp/a.maxHp)-(b.hp/b.maxHp))[0];if(nature.ai==='defensive')return[...alive].sort((a,b)=>b.atk-a.atk)[0];return alive[Math.floor(Math.random()*alive.length)];}
 function companionDamage(companion,target,skill=null,engine=null){const nature=COMPANION_NATURES[companion.nature]||COMPANION_NATURES.balanced;let stat=skill?.stat==='mag'?companion.mag:companion.atk;if(!skill&&nature.ai==='support'&&companion.mag>companion.atk)stat=companion.mag*.9;let power=stat*(skill?.power||1);const lowHp=traitEffect(companion,'lowHpDamage');if(lowHp&&target.hp/Math.max(1,target.maxHp)<=(lowHp.threshold??.5))power*=1+lowHp.power;if(skill?.bonusVsDebuff&&target._companionAtkDebuffTurns>0)power*=skill.bonusVsDebuff;if(skill?.allyDownBonus&&engine&&(engine.companions||[]).some(c=>c!==companion&&(c.down||c.hp<=0)))power*=skill.allyDownBonus;if(companion._comboPending)power*=companion._comboPending.mult;const raw=Math.max(1,power*(.90+Math.random()*.20));const mitigation=defMitigationPct(target.def||0);return Math.max(1,Math.round(raw*(1-mitigation)));}
 function companionNatureDamageMult(companion){const ai=(COMPANION_NATURES[companion?.nature]||COMPANION_NATURES.balanced).ai||'balanced';return BOSS_COMPANION_COMBAT.NATURE_DAMAGE_MULT[ai]||1;}
 function enemyDamageToCompanion(enemy,companion,mult=1){let raw=Math.max(1,enemy.atk*mult*(.92+Math.random()*.16));const physicalMitigation=traitEffect(companion,'physicalMitigation');if(physicalMitigation)raw*=1-physicalMitigation.power;const mitigation=defMitigationPct(companion.def||0);return Math.max(1,Math.round(raw*(1-mitigation)));}
@@ -74,9 +106,23 @@ function executeHeal(engine,companion,skill){
 }
 function applySkillDebuff(target,skill){const debuff=skill?.debuff;if(!debuff)return null;if(debuff.kind==='weakenAtk'){target._companionAtkDebuffMult=Math.max(.1,1-debuff.power);target._companionAtkDebuffTurns=Math.max(target._companionAtkDebuffTurns||0,debuff.turns||1);return{kind:debuff.kind,power:debuff.power,turns:debuff.turns||1};}return null;}
 function executeOffensiveSkill(engine,companion,skill){const target=chooseTarget(engine,companion,skill);if(!target)return null;companion.mp-=skill.mpCost||0;const combo=companion._comboPending||null,damage=companionDamage(companion,target,skill,engine),kill=engine._applyRawDamageAndReward(target,damage),debuff=target.dead?null:applySkillDebuff(target,skill);const lifesteal=traitEffect(companion,'lifesteal');if(lifesteal&&damage>0)companion.hp=Math.min(companion.maxHp,companion.hp+Math.max(1,Math.round(damage*lifesteal.power)));companion._comboPending=null;return{action:'skill',companion:true,companionId:companion.id,companionName:companion.name,name:combo?`${combo.name}：${companion.name}の${skill.name}`:`${companion.name}の${skill.name}`,comboId:combo?.id,techType:skill.type==='debuff'?'damage':skill.type,targets:[{targetId:target.id,targetName:target.name,damage,critical:false,defeated:target.dead,effects:debuff?[debuff]:[],kill}]};}
-function performCompanionTurn(engine, companion = null) {ensureCompanionBattle(engine);const c=companion||engine.companion;if(!c||c.down||c.hp<=0||engine.over)return null;const species=getCompanionSpecies(c.speciesId);if(!species)return null;const regen=traitEffect(c,'regen');if(regen&&c.hp<c.maxHp)c.hp=Math.min(c.maxHp,c.hp+Math.max(1,Math.round(c.maxHp*regen.power)));const skill=chooseCompanionSkill(species,c,engine.aliveEnemies,{engine,player:engine.player,companions:engine.companions||[]});if(!skill)return null;if(skill.type==='heal')return executeHeal(engine,c,skill);return executeOffensiveSkill(engine,c,skill);}
+function performCompanionTurn(engine, companion = null) {ensureCompanionBattle(engine);const c=companion||engine.companion;if(!c||c.down||c.hp<=0||engine.over)return null;const species=getCompanionSpecies(c.speciesId);if(!species)return null;const regen=traitEffect(c,'regen');if(regen&&c.hp<c.maxHp)c.hp=Math.min(c.maxHp,c.hp+Math.max(1,Math.round(c.maxHp*regen.power)));
+  // 号令「解放しろ」: 最高威力の攻撃技を選び、威力に号令倍率を乗せる。
+  // MPが足りなければ通常AIへフォールバック（号令を無駄にしない）。
+  let skill=null,orderTag=null;
+  if(engine._activeOrder==='unleash'){
+    const pool=unlockedCompanionSkills(species,c.level||1,c).filter(s=>s.type!=='heal'&&(c.mp||0)>=(s.mpCost||0));
+    if(pool.length){const top=pool.sort((a,b)=>(b.power||0)-(a.power||0))[0];const mult=c.bondLevel>=7?1.35:1.25;skill={...top,power:(top.power||1)*mult};orderTag='解放';}
+  }
+  if(!skill)skill=chooseCompanionSkill(species,c,engine.aliveEnemies,{engine,player:engine.player,companions:engine.companions||[]});
+  if(!skill)return null;
+  // 絆Lv10「魂の契り」: 署名技の威力+15%。個体の到達点として静かに効く。
+  if(c.signatureId&&skill.id===c.signatureId&&(c.bondLevel||1)>=10)skill={...skill,power:(skill.power||1)*1.15};
+  let result=skill.type==='heal'?executeHeal(engine,c,skill):executeOffensiveSkill(engine,c,skill);
+  if(result&&orderTag)result={...result,name:`号令・${orderTag}：${result.name}`};
+  return result;}
 function companionCanBeTargeted(engine){return livingCompanions(engine).length>0;}
-function applyDamageToCompanion(enemy,c,mult=1,opts=null){const taken=Math.max(.25,Number(state.playerTreeCompanionTakenMult?.())||1);const damage=Math.max(1,Math.round((opts?bossDamageToCompanion(enemy,c,mult,opts):enemyDamageToCompanion(enemy,c,mult))*taken));c.hp=Math.max(0,c.hp-damage);if(c.hp<=0)c.down=true;return{enemyId:enemy.id,name:enemy.name,kind:'attack',damage,evaded:false,companionTarget:true,companionId:c.id,companionName:c.name,companionHp:c.hp,companionMaxHp:c.maxHp,companionDown:c.down};}
+function applyDamageToCompanion(enemy,c,mult=1,opts=null){const taken=Math.max(.25,Number(state.playerTreeCompanionTakenMult?.())||1);let damage=Math.max(1,Math.round((opts?bossDamageToCompanion(enemy,c,mult,opts):enemyDamageToCompanion(enemy,c,mult))*taken));if(c._brace)damage=Math.max(1,Math.round(damage*((c.bondLevel||1)>=7?.55:.62)));c.hp=Math.max(0,c.hp-damage);if(c.hp<=0)c.down=true;return{enemyId:enemy.id,name:enemy.name,kind:'attack',damage,evaded:false,companionTarget:true,companionId:c.id,companionName:c.name,companionHp:c.hp,companionMaxHp:c.maxHp,companionDown:c.down};}
 function hitCompanion(engine,enemy,mult=1,opts=null){const alive=livingCompanions(engine);if(!alive.length)return null;const c=alive[Math.floor(Math.random()*alive.length)];return applyDamageToCompanion(enemy,c,mult,opts);}
 function bossSpecialBaseMult(kind){if(kind==='slam')return BOSS_AI_LAYER.SLAM_DAMAGE_MULT||1;if(kind==='charge')return BOSS_AI_LAYER.CHARGE_DAMAGE_MULT||1;if(kind==='projectile')return BOSS_AI_LAYER.PROJECTILE_DAMAGE_MULT||1;return 1;}
 function bossCompanionCollateral(engine,enemy,result){
@@ -102,10 +148,24 @@ function actCompanions(engine,predicate){const events=[];for(const c of livingCo
 const originalRunEnemyPhase=BattleEngine.prototype._runEnemyPhase;
 BattleEngine.prototype._runEnemyPhase=function patchedRunEnemyPhase(){ensureCompanionBattle(this);this._companionsActedThisRound||=new Set();const events=actCompanions(this,c=>companionActsBeforeEnemyPhase(this,c));if(this.aliveEnemies.length>0&&this.player.hp>0)events.push(...originalRunEnemyPhase.call(this));return events;};
 const originalAdvanceTurn=BattleEngine.prototype.advanceTurn;
-BattleEngine.prototype.advanceTurn=function patchedAdvanceTurn(command){ensureCompanionBattle(this);this._companionsActedThisRound=new Set();for(const c of this.companions||[])delete c._comboPending;const out=originalAdvanceTurn.call(this,command);if(out.events)out.events=out.events.flatMap(convertCompanionCombatEvent);const blocked=out.events&&out.events.some(ev=>ev.type==='playerAction'&&ev.result&&ev.result.blocked),fled=out.result&&out.result.retreated;if(!blocked&&!fled&&!out.over&&this.player.hp>0&&this.aliveEnemies.length>0)out.events.push(...actCompanions(this));if(!out.over&&this.aliveEnemies.length===0){const end=this.checkBattleEnd();if(end.over){out.over=true;out.result=this.finalResult;}}return out;};
+BattleEngine.prototype.advanceTurn=function patchedAdvanceTurn(command){ensureCompanionBattle(this);this._companionsActedThisRound=new Set();for(const c of this.companions||[])delete c._comboPending;const out=originalAdvanceTurn.call(this,command);if(out.events)out.events=out.events.flatMap(convertCompanionCombatEvent);const blocked=out.events&&out.events.some(ev=>ev.type==='playerAction'&&ev.result&&ev.result.blocked),fled=out.result&&out.result.retreated;if(!blocked&&!fled&&!out.over&&this.player.hp>0&&this.aliveEnemies.length>0)out.events.push(...actCompanions(this));if(!out.over&&this.aliveEnemies.length===0){const end=this.checkBattleEnd();if(end.over){out.over=true;out.result=this.finalResult;}}// 号令はそのターン限り：消費した指示を掃除する（used履歴は残る）。
+this._activeOrder=null;this._focusTargetId=null;for(const c of this.companions||[])delete c._brace;return out;};
 const originalGrantKillRewards=BattleEngine.prototype._grantKillRewards;
 BattleEngine.prototype._grantKillRewards=function patchedGrantKillRewards(enemy){const result=originalGrantKillRewards.call(this,enemy);if(result&&(enemy.xp||0)>0&&state.gainPartyCompanionExp){const gained=Math.round(enemy.xp*.75);if(gained>0){const awards=state.gainPartyCompanionExp(gained);result.companionExpAwards=awards;result.companionExp=awards[0]?.gained||0;result.companionLeveledUp=awards.some(x=>x.leveledUp);}}return result;};
 function ensureCompanionHud(screen){if(!screen||!screen.engine)return null;ensureCompanionBattle(screen.engine);let el=document.getElementById('tbCompanionHud');if(!screen.engine.companions?.length){if(el)el.remove();return null;}if(!el){el=document.createElement('div');el.id='tbCompanionHud';el.className='forge-card-sub';el.style.padding='5px 10px';el.style.margin='4px 8px';document.querySelector('#textBattleScreen .tb-hud')?.appendChild(el);}return el;}
 const originalRender=TextBattleScreen.prototype._render;
-TextBattleScreen.prototype._render=function patchedCompanionRender(){originalRender.call(this);const el=ensureCompanionHud(this);if(!el)return;const synergy=this.engine.companionSynergies?.length?`<div>シナジー: ${this.engine.companionSynergies.map(s=>s.name).join(' / ')}</div>`:'';el.innerHTML=synergy+this.engine.companions.map((c,i)=>{const down=c.down||c.hp<=0;return `<div style="opacity:${down?.55:1}">仲間${i+1} ${c.name} Lv.${c.level}　HP ${Math.max(0,c.hp)}/${c.maxHp}　MP ${Math.max(0,c.mp)}/${c.maxMp}${down?'　【戦闘不能】':''}</div>`;}).join('');};
+TextBattleScreen.prototype._render=function patchedCompanionRender(){originalRender.call(this);const el=ensureCompanionHud(this);if(!el)return;const synergy=this.engine.companionSynergies?.length?`<div>シナジー: ${this.engine.companionSynergies.map(s=>s.name).join(' / ')}</div>`:'';el.innerHTML=synergy+this.engine.companions.map((c,i)=>{const down=c.down||c.hp<=0;return `<div style="opacity:${down?.55:1}">仲間${i+1} ${c.name} Lv.${c.level}　HP ${Math.max(0,c.hp)}/${c.maxHp}　MP ${Math.max(0,c.mp)}/${c.maxMp}${down?'　【戦闘不能】':''}</div>`;}).join('');
+  // 号令ボタン: 1戦闘に各1回。使用済みは無効化し、発行したら即再描画。
+  const engine=this.engine,used=engine._ordersUsed||{};
+  const row=document.createElement('div');row.style.cssText='display:flex;gap:6px;margin-top:4px;flex-wrap:wrap';
+  for(const order of Object.values(COMPANION_ORDERS)){
+    const btn=document.createElement('button');btn.type='button';btn.className='btn-sub';btn.style.cssText='padding:3px 8px;font-size:11px';
+    const active=engine._activeOrder===order.id,isUsed=!!used[order.id];
+    btn.textContent=`号令:${order.name}`;btn.title=order.desc;btn.disabled=isUsed||engine.over;
+    if(active)btn.classList.add('active');
+    if(isUsed)btn.style.opacity='.45';
+    btn.addEventListener('click',()=>{if(engine.issueCompanionOrder(order.id)){Audio_.tap();showToast(`[号令] ${order.name}`,1400);this._render();}});
+    row.appendChild(btn);
+  }
+  el.appendChild(row);};
 export { performCompanionTurn,effectiveCompanionSpd,companionDamage,enemyDamageToCompanion,bossDamageToCompanion,applySkillDebuff,livingCompanions,bossCompanionCollateral,companionNatureDamageMult };

@@ -23,6 +23,10 @@ export function refreshBondUi(){
     const skillText=skills.length?skills.map(s=>s.name).join(' / '):'まだ絆技はない';
     const el=document.createElement('div');el.className='ranch-bond-info';el.style.marginTop='7px';
     el.innerHTML=`<div class="forge-card-sub"><strong>Bond Lv.${bond.level} — ${esc(bondLabel(bond.level))}</strong>　同行 ${bond.battles}戦</div><div style="height:6px;border:1px solid rgba(255,255,255,.22);border-radius:4px;overflow:hidden;margin:4px 0 5px;"><div style="height:100%;width:${pct}%;background:currentColor;opacity:.72;"></div></div><div class="forge-card-sub">${bond.level>=10?'MAX':`${bond.exp} / ${bond.next}`}　／　絆技: ${esc(skillText)}</div><div class="forge-card-sub">次の絆: ${esc(nextUnlock(c,bond.level))}</div>`;
+    // Session 6 — 仲間の記憶。出自（provenance）とは別に「一緒に何を
+    // したか」を残す読み物層。最大6件、古い記憶から薄れていく。
+    const memories=c.instance?.memories||[];
+    if(memories.length)el.innerHTML+=`<div class="forge-card-sub" style="margin-top:4px;border-top:1px dashed rgba(255,255,255,.16);padding-top:4px">記憶: ${memories.map(esc).join('　／　')}</div>`;
     const actions=card.querySelector('.confirm-actions');if(actions)card.insertBefore(el,actions);else card.appendChild(el);
   });
 }

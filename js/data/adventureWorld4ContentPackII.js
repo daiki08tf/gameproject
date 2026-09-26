@@ -46,6 +46,11 @@ const RAW_SCENES=[
     {id:'listen',phase:'resolution',title:'途切れない喧騒',text:'賑わいへ集中すると、市場は最後まで途切れず存在し続けた。廃墟の気配だけが遠ざかる。',choices:[{id:'finish',label:'広場を離れる'}]},
     {id:'silence',phase:'resolution',title:'途切れない静寂',text:'静けさへ集中すると、廃墟は最後まで揺るがなかった。喧騒の気配だけが遠ざかる。',choices:[{id:'finish',label:'広場を離れる'}]},
   ]},
+  {id:'stratum-band-pruned-bed',name:'剪定された圃',tags:['ambient','mystery','stratum-band'],entryStepId:'observe',steps:[
+    {id:'observe',phase:'observation',title:'剪定された圃',text:'道の脇に整然と並んだ小さな芽の圃がある。芽はどれも途中で断ち切られ、切口には互いに矛盾する年月日が同時に刻まれている。',choices:[{id:'dates',label:'刻まれた年月日を読み比べる',nextStepId:'dates'},{id:'gardener',label:'剪定した者の痕を探す',nextStepId:'gardener'}]},
+    {id:'dates',phase:'resolution',title:'三つとも真',text:'三つの年月日はどれも同じ深さで刻まれている。訂正や重ね書きの跡はない——最初から、三つとも真として記された。',choices:[{id:'finish',label:'記録して進む'}]},
+    {id:'gardener',phase:'resolution',title:'不在の圃主',text:'剪定鋏だけが整頓されて置かれている。柄には握り跡があるが、圃を管理する者の記録はどこにも残っていない。蒔いた者ではない誰かが、刈り続けている。',choices:[{id:'finish',label:'圃を後にする'}]},
+  ]},
 ];
 
 export const ADVENTURE4_CONTENT_PACK_II_SCENES=Object.freeze(RAW_SCENES.map(normalizeAdventure4Scene).filter(Boolean));

@@ -3,6 +3,7 @@
 import { CHAPTER_SPECS } from './chapters.js';
 import { CHAPTER_EXPANSION_16_20 } from './chapters16to20.js';
 import { CHAPTER_EXPANSION_37_39 } from './chapters37to39.js';
+import { CHAPTER_EXPANSION_40_41 } from './chapters40to41.js';
 import { PHASE12_RECRUITABLE_SPECIES } from './phase12CompanionPack.js';
 import { REGIONAL_ENEMY_EXPANSION } from './regionalEnemies2.js';
 
@@ -14,7 +15,7 @@ function slug(ch,role){return`${ch.id}_${role}_companion`;}
 function statsFor(num,role){const late=Math.max(0,num-10),scale=1+(num-1)*.11+late*.035;if(role==='fast')return{baseStats:{hp:Math.round(32*scale),mp:Math.round(12*scale),atk:Math.round(9*scale),def:Math.round(5*scale),mag:Math.round(8*scale),spd:Math.round(14*scale)},growth:{hp:4.6+num*.28,mp:1+num*.04,atk:1.5+num*.10,def:.9+num*.07,mag:1.3+num*.10,spd:1.1+num*.06}};return{baseStats:{hp:Math.round(50*scale),mp:Math.round(10*scale),atk:Math.round(12*scale),def:Math.round(8*scale),mag:Math.round(6*scale),spd:Math.round(9*scale)},growth:{hp:5.8+num*.34,mp:.9+num*.04,atk:1.9+num*.12,def:1.4+num*.09,mag:1+num*.08,spd:.8+num*.05}};}
 function chanceFor(num,role){const base=role==='fast'?.095:.08;return Math.max(.022,Math.round((base-num*.0026)*1000)/1000);}
 function makeSpecies(ch,role,index){const name=ch.enemies[role];if(LEGACY_NAMES.has(name))return null;const id=role==='normal'&&LEGACY_NORMAL_IDS[ch.id]?LEGACY_NORMAL_IDS[ch.id]:slug(ch,role),st=statsFor(ch.num,role),trait=TRAITS[role][(ch.num+index)%TRAITS[role].length];return[id,{id,name,type:'monster',family:role==='fast'?'spirit':'beast',regionId:ch.id,regionName:ch.name,enemyType:`${ch.id}_${role}`,icon:ICONS[(ch.num*2+index)%ICONS.length],...st,recruit:{baseChance:chanceFor(ch.num,role)},traits:[trait],skills:role==='fast'?[{level:1,id:'bite'},{level:12,id:'sonic'}]:[{level:1,id:'body_attack'},{level:14,id:'club_hit'}]}];}
-const ALL=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_37_39];
+const ALL=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_37_39,...CHAPTER_EXPANSION_40_41];
 
 // ---- Rare / named-species recruitment (Session 4) --------------------------
 // 地域Rare（chN_rare）は Rare として戦った個体そのものが仲間になる。

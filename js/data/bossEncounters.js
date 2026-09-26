@@ -48,6 +48,26 @@ const SPECIAL = Object.freeze({
   phase12_bone_tyrant:{id:'dragonbone-emperor-valdrake',dangerTags:['phase','armor','burst'],counterHint:'髄晶騎士を崩し、骨格共振で加速する連撃に対応する。',startEscorts:[{type:'phase12_marrow_knight',count:2,guard:true}],guardDefMult:2.02,phases:[{ratio:.75,name:'竜骸装甲',defMult:1.22},{ratio:.46,name:'髄晶共振',atkMult:1.24,spawn:[{type:'phase12_bone_drake',count:2}]},{ratio:.16,name:'始祖骨格起動',atkMult:1.38,spdMult:1.10,accelerateBossAI:.48}]},
   phase12_archive_master:{id:'inverted-librarian-paradoxa',dangerTags:['magic','analysis','phase'],counterHint:'索引霊を処理し、因果逆読の展開を先読みして動く。',startEscorts:[{type:'phase12_index_wisp',count:2},{type:'phase12_reverse_scribe',count:1}],guardDefMult:1.84,phases:[{ratio:.73,name:'索引封鎖',defMult:1.14,spawn:[{type:'phase12_index_wisp',count:1}]},{ratio:.43,name:'因果逆読',atkMult:1.26,spdMult:1.14},{ratio:.14,name:'未刊結末',atkMult:1.34,spdMult:1.18,accelerateBossAI:.47}]},
   phase12_moon_deity:{id:'black-moon-noctil',dangerTags:['heal','observer','phase'],counterHint:'蝕眼を優先し、遮断解除のたびに短く生まれる隙へ全力を合わせる。',startEscorts:[{type:'phase12_moon_eye',count:2},{type:'phase12_moon_acolyte',count:1,guard:true}],guardDefMult:2.06,phases:[{ratio:.80,name:'黒月遮断膜',defMult:1.18,spawn:[{type:'phase12_moon_acolyte',count:1,guard:true}]},{ratio:.57,name:'蝕信号受信',atkMult:1.20,spdMult:1.12,spawn:[{type:'phase12_moon_eye',count:1}]},{ratio:.31,name:'月外同期',atkMult:1.29,accelerateBossAI:.58},{ratio:.10,name:'黒月完全蝕',atkMult:1.42,spdMult:1.20,accelerateBossAI:.42}]},
+
+  /* Session 6 — 探索地点・隠し場所のBoss。
+     sd_warden: 獣径最深部の相位の番人。位相がずれるたびに守りが薄く
+     なり攻めが鋭くなる「反転装甲」型。長期戦は危険、短期決戦が有効。 */
+  sd_warden:{id:'deeplord-phase-warden',dangerTags:['phase','armor','burst'],counterHint:'守りの相位では装甲が厚い。位相が反転するたび攻撃が鋭くなるが守りは薄くなる——反転直後の隙に畳みかける。',startEscorts:[{type:'ch5_normal',count:2}],guardDefMult:1.55,phases:[{ratio:.68,name:'相位反転・攻の位相',atkMult:1.24,defMult:.85,spawn:[{type:'ch5_fast',count:1}]},{ratio:.34,name:'相位反転・守の位相',defMult:1.30,atkMult:.92},{ratio:.14,name:'相位崩壊・乱',atkMult:1.36,spdMult:1.15,accelerateBossAI:.55}]},
+
+  /* Session 6 — Arc VI 終端 Boss。単一化中枢ユニタスの段階演出を
+     一般プロファイルから個別プロファイルへ。 */
+  ch39_boss:{id:'unification-core-unitas',dangerTags:['guard','phase','burst'],counterHint:'統合衛兵を崩し、単一化が進むほど加速する演算に押し負けないよう短期で削りきる。',startEscorts:[{type:'ch39_tank',count:1,guard:true},{type:'ch39_fast',count:1}],guardDefMult:1.85,phases:[{ratio:.72,name:'統合環・展開',defMult:1.16,spawn:[{type:'ch39_tank',count:1,guard:true}]},{ratio:.40,name:'単一化収束',atkMult:1.26,spdMult:1.12,spawn:[{type:'ch39_fast',count:1}]},{ratio:.15,name:'二系統畳み込み',atkMult:1.36,spdMult:1.16,accelerateBossAI:.52}]},
+
+  /* Session 6 — Arc VII 終端 Boss。分流圃の剪定者。芽（取り巻き）を
+     摘みながら戦う「手入れ」を中断させると本領を発揮する。 */
+  ch41_boss:{id:'pruner-severance',dangerTags:['adds','phase','burst'],counterHint:'芽体を放置すると圃が整う——取り巻きを間引きつつ、剪定モードの隙に本体へ刃を届かせる。',startEscorts:[{type:'ch41_tank',count:1,guard:true},{type:'ch41_fast',count:1}],guardDefMult:1.95,phases:[{ratio:.74,name:'剪定・間引き',defMult:1.15,spawn:[{type:'ch41_fast',count:1}]},{ratio:.46,name:'圃の管理権',atkMult:1.20,spawn:[{type:'ch41_tank',count:1,guard:true},{type:'ch41_normal',count:2}]},{ratio:.20,name:'切り落とす者',atkMult:1.34,spdMult:1.14,accelerateBossAI:.55}]},
+
+  /* Session 6 — 再臨Denlord（巣の主の再戦）。boss:falseなので勧誘は
+     そのまま、再臨個体だけが位相を持つ。1段階＝「主の本領」で
+     取り巻きを呼び猛攻に転じる。撃破すると『再臨』特性の個体になる。 */
+  bt_denlord:{id:'denlord-beast-returned',dangerTags:['phase','escalate'],counterHint:'再臨した主は途中で本領を発揮する。呼ばれる護り手を放置しない。',startEscorts:[{type:'ch4_normal',count:1}],guardDefMult:1.40,phases:[{ratio:.55,name:'主の本領・咆哮',atkMult:1.22,spdMult:1.10,spawn:[{type:'ch4_fast',count:1}]}]},
+  tp_denlord:{id:'denlord-tide-returned',dangerTags:['phase','sustain'],counterHint:'潮の主は再生する。甲殻の護り手を先に崩して潮位を下げる。',startEscorts:[{type:'tp_bulwark',count:1,guard:true}],guardDefMult:1.50,phases:[{ratio:.55,name:'主の本領・満潮',atkMult:1.18,defMult:1.14,spawn:[{type:'tp_skimmer',count:1}]}]},
+  af_denlord:{id:'denlord-ash-returned',dangerTags:['phase','burst'],counterHint:'灰の主は終盤ほど激しい。亡兵の群れを捌きながら短期で仕留める。',startEscorts:[{type:'af_revenant',count:1}],guardDefMult:1.45,phases:[{ratio:.55,name:'主の本領・灰燼の合唱',atkMult:1.26,spdMult:1.08,spawn:[{type:'af_moth',count:1}]}]},
 });
 
 export function bossEncounterProfile(type){

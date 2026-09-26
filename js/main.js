@@ -54,6 +54,8 @@ import './patches/battle2RoadmapComplete.js';
 import './patches/companionRecruitment.js';
 import './patches/denlordLords.js';
 import './patches/codexFoundation.js';
+import './patches/companionBond.js';
+import './patches/speciesMastery.js';
 import './patches/battleIntegration3.js';
 import './patches/battleIntegration3Final.js';
 import './patches/codexUi.js';

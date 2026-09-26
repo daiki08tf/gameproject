@@ -14,12 +14,16 @@ import { storyExpansionIICh33BeatForStage } from '../data/storyChapters33.js';
 import { storyExpansionIICh34BeatForStage } from '../data/storyChapters34.js';
 import { storyExpansionIICh35BeatForStage } from '../data/storyChapters35.js';
 import { storyExpansionIICh36BeatForStage } from '../data/storyChapters36.js';
+import { storyExpansionIVBeatForStage } from '../data/storyChapters40to41.js';
 import { worldMysteryClueForStage } from '../data/storyWorldMystery.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
 
 function attachJourneyStory(){
   for(const chapter of CHAPTERS){
-    if(chapter.num<1||chapter.num>36)continue;
+    // Session 6: 探索地点（sideLocation）は本編の旅の記録とは切り離す
+    // —— 章番号アンカーで本編Beatが混入すると「街道を外れた場所」の
+    // 語りが本編のものに化けてしまう。
+    if(chapter.sideLocation||chapter.num<1||chapter.num>41)continue;
     const mainStages=chapter.stages.filter(stage=>!stage.branch&&!stage.bounty);
     chapter.stages.forEach(stage=>{
       const mainIndex=mainStages.indexOf(stage);
@@ -44,7 +48,9 @@ function attachJourneyStory(){
                         ? storyExpansionIICh34BeatForStage(chapter.num,stage,mainIndex,mainStages.length)
                         : chapter.num===35
                           ? storyExpansionIICh35BeatForStage(chapter.num,stage,mainIndex,mainStages.length)
-                          : storyExpansionIICh36BeatForStage(chapter.num,stage,mainIndex,mainStages.length);
+                          : chapter.num===36
+                            ? storyExpansionIICh36BeatForStage(chapter.num,stage,mainIndex,mainStages.length)
+                            : storyExpansionIVBeatForStage(chapter.num,stage,mainIndex,mainStages.length);
       if(beat)stage.story11=beat;
     });
   }

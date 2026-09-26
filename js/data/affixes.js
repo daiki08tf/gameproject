@@ -202,6 +202,14 @@ export const AFFIXES = {
     effect: (v) => ({ trigger: 'passive', kind: 'mpShield', power: v / 100, threshold: 0.7 }) },
   build_quickdraw: { name: '早撃ち', category: 'BUILD', scale: 'medium', minRarity: 'legendary', desc: (v) => `先攻時Damage・Crit+${v}%`,
     effect: (v) => ({ trigger: 'passive', kind: 'firstStrikeBonus', power: v / 100 }) },
+
+  /* Session 6 — 探索・狩りの価値を上げる Chase Affix。
+     どれも既存effect kindの再利用で、ドロップだけが作れる組み合わせ。
+     （鍛冶の1枠再抽選・数値再鍛錬は既存authorityのまま。） */
+  build_pathfinder: { name: '道なき道の心得', category: 'UTILITY', scale: 'medium', minRarity: 'epic', desc: (v) => `Drop率・EXP +${v}%（探索者向け）`,
+    effect: (v) => ([{ trigger: 'passive', kind: 'dropRateMultAdd', power: v / 100 }, { trigger: 'passive', kind: 'expMultAdd', power: v / 100 }]) },
+  build_echoedge: { name: '残響の刃', category: 'TRIGGER', scale: 'big', minRarity: 'mythic', exclusiveGroup: 'echoedge', desc: (v) => `${Math.max(2, 6 - Math.round(v / 5))}hit毎に強化追撃`,
+    effect: (v) => ({ trigger: 'onHit', kind: 'everyNHits', n: Math.max(2, 6 - Math.round(v / 5)), power: 0.65 }) },
 };
 
 // ---------------------------------------------------------
@@ -248,7 +256,8 @@ export function generateWeaponAffixes(item, ctx = {}) {
   const depthBonus = Math.min(0.5, (ctx.depth || 0) / 400); // 深く潜るほど微増
   const eliteBonus = ctx.elite ? 0.12 : 0;
   const bossBonus = ctx.boss ? 0.2 : 0;
-  const qualityBonus = Math.min(1, depthBonus + eliteBonus + bossBonus);
+  const sideBonus = Math.min(0.15, ctx.bonus || 0); // 探索地点の固有補正（小さく留める）
+  const qualityBonus = Math.min(1, depthBonus + eliteBonus + bossBonus + sideBonus);
 
   const count = affixCountForWeaponRarity(item.rarity, qualityBonus);
   if (count <= 0) return [];
@@ -273,6 +282,10 @@ export function generateWeaponAffixes(item, ctx = {}) {
     if (usedIds.has(id)) continue; // 同一Affixは同一武器に複数付けない
     if (def.exclusiveGroup && usedGroups.has(def.exclusiveGroup)) continue;
     let rarity = pickAffixRarity(qualityBonus);
+    // Session 6 — 'ancient'（幻）は質の高いドロップにだけ宿る。
+    // Elite/Boss/深淵/探索地点の補正がない通常ドロップでは mythic に
+    // 落ちる。最高位Affixは「狩る場所を選ぶ」報酬になる。
+    if (rarity === 'ancient' && qualityBonus < 0.2) rarity = 'mythic';
     if (def.minRarity && affixRarityIndex(rarity) < affixRarityIndex(def.minRarity)) {
       // Build Affixはlegendary未満で当たっても、そのAffix自体を諦めて
       // 別のAffixを引き直す（rarity自体を後から底上げすると分布が歪むため）

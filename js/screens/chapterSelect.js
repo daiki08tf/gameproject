@@ -3,6 +3,7 @@ import { journeyName, latestVeilFragment } from '../data/worldVeil.js';
 import { WORLD3_REGIONS, world3RegionState } from '../data/world3Regions.js';
 import { world3BranchLabel } from '../data/world3Branches.js';
 import { visibleWorld3RealmNodes, resolveWorld3RealmRoute } from '../data/world3Realms.js';
+import { sideLocationVisible, sideLocationKindLabel } from '../data/sideLocations.js';
 import { state } from '../state.js';
 import { Audio_ } from '../audio.js';
 
@@ -79,9 +80,9 @@ export function renderChapterSelect(onPick) {
     header.addEventListener('click',()=>{body.hidden=!body.hidden;});wrap.append(header,body);list.appendChild(wrap);
   });
 
-  // 外伝(gaiden)：本編36章の連番に入れない寄り道章を、独自の節として
-  // 描く。解放条件はchapter.unlocksAfter（isChapterUnlocked）に委ねる。
-  const gaidens=CHAPTERS.map((ch,idx)=>({ch,idx})).filter(x=>x.ch.gaiden);
+  // 外伝(gaiden)：本編の連番に入れない寄り道章を、独自の節として描く。
+  // sideLocationは「探索地点」節へ振り分けるため、ここでは除く。
+  const gaidens=CHAPTERS.map((ch,idx)=>({ch,idx})).filter(x=>x.ch.gaiden&&!x.ch.sideLocation);
   if(gaidens.length){
     const unlockedAny=gaidens.some(({idx})=>isChapterUnlocked(idx,(id)=>state.isStageCleared(id)));
     if(unlockedAny){
@@ -92,6 +93,29 @@ export function renderChapterSelect(onPick) {
       header.innerHTML=`<span><strong>外伝</strong><br><small>本編の傍らに在る獣径。名付きの番獣は倒して仲間にできる。</small></span><span>${clearedCount===gaidens.length?'★ COMPLETE':`${clearedCount}/${gaidens.length}`}</span>`;
       const body=document.createElement('div');body.className='world3-region-body';body.hidden=!current;
       for(const {ch,idx} of gaidens)body.appendChild(renderChapterCard(ch,idx,onPick));
+      header.addEventListener('click',()=>{body.hidden=!body.hidden;});wrap.append(header,body);list.appendChild(wrap);
+    }
+  }
+
+  // 探索地点（Session 6）：街道を外れた小さな寄り道。外伝より小粒で、
+  // 本編と直接関係しない場所を束ねる。hidden（隠し場所）は解放条件を
+  // 満たすまで描画しない——「気づくと道が増えている」を表現する。
+  const sideLocs=CHAPTERS.map((ch,idx)=>({ch,idx})).filter(x=>x.ch.sideLocation&&sideLocationVisible(x.ch,()=>isChapterUnlocked(x.idx,(id)=>state.isStageCleared(id))));
+  if(sideLocs.length){
+    const unlockedAny=sideLocs.some(({idx})=>isChapterUnlocked(idx,(id)=>state.isStageCleared(id)));
+    if(unlockedAny){
+      const wrap=document.createElement('section');wrap.className='world3-region';wrap.style.cssText='margin:10px 0;border:1px solid var(--dc-iron-500);border-radius:var(--dc-radius-panel);padding:8px;background:rgba(18,24,32,.5)';
+      const header=document.createElement('button');header.type='button';header.className='btn-sub';header.style.cssText='width:100%;text-align:left;display:flex;justify-content:space-between;gap:8px;padding:9px';
+      const clearedCount=sideLocs.filter(({ch})=>state.isStageCleared(finalStageOf(ch).id)).length;
+      const current=sideLocs.some(({idx,ch})=>isChapterUnlocked(idx,(id)=>state.isStageCleared(id))&&!state.isStageCleared(finalStageOf(ch).id));
+      header.innerHTML=`<span><strong>探索地点</strong><br><small>街道を外れた場所。確定Rare・固有の戦利品・巣の主たちが眠る。</small></span><span>${clearedCount===sideLocs.length?'★ COMPLETE':`${clearedCount}/${sideLocs.length}`}</span>`;
+      const body=document.createElement('div');body.className='world3-region-body';body.hidden=!current;
+      for(const {ch,idx} of sideLocs){
+        const card=renderChapterCard(ch,idx,onPick);
+        const nameEl=card.querySelector('.name');
+        if(nameEl&&isChapterUnlocked(idx,(id)=>state.isStageCleared(id)))nameEl.innerHTML=`${sideLocationKindLabel(ch)}｜${nameEl.innerHTML}`;
+        body.appendChild(card);
+      }
       header.addEventListener('click',()=>{body.hidden=!body.hidden;});wrap.append(header,body);list.appendChild(wrap);
     }
   }

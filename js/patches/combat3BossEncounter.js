@@ -47,12 +47,18 @@ function applyPhase(engine,boss,phase){
 
 const proto=BattleEngine.prototype;
 
+// Encounter対象の判定をここに集約する。Boss旗を持つ敵に加え、
+// Session 6では「再臨Denlord」（boss:falseだが再戦時は位相を持つ
+// 番獣）も段階制の対象にする —— 番獣は勧誘可能なまま、再戦だけが
+// Encounterとして演出される。
+function isEncounterAnchor(e){ return !!(e&&(e.boss||e.denlordPrestige)); }
+
 // Boss group開始時に取り巻きを編成し、BossへEncounter状態を付与する。
 const originalBegin=proto.beginNextEncounter;
 proto.beginNextEncounter=function combat3BossEncounterBegin(){
   const event=originalBegin.call(this);
   if(!event)return event;
-  const boss=this.aliveEnemies.find(e=>e.boss);
+  const boss=this.aliveEnemies.find(isEncounterAnchor);
   if(!boss)return event;
   const profile=bossEncounterProfile(boss.type)||(boss.type==='phase12_apex_boss'?PHASE12_APEX_BOSS_PROFILE:null);
   if(!profile)return event;
@@ -72,7 +78,7 @@ proto.beginNextEncounter=function combat3BossEncounterBegin(){
 const originalEffective=proto._effectiveEnemyStat;
 proto._effectiveEnemyStat=function combat3BossEncounterEffective(enemy,stat){
   let value=originalEffective.call(this,enemy,stat);
-  if(stat==='def'&&enemy?.boss){
+  if(stat==='def'){
     const enc=encounterOf(enemy);
     if(enc&&guardAlive(this,enemy))value*=enc.profile.guardDefMult||1;
   }
@@ -93,7 +99,7 @@ proto._grantKillRewards=function combat3BossEncounterGrant(enemy){
 const originalEnemyTurn=proto.performEnemyTurn;
 proto.performEnemyTurn=function combat3BossEncounterTurn(enemy){
   let phaseResult=null;
-  if(enemy?.boss&&!enemy.dead){
+  if(enemy&&!enemy.dead){
     const enc=encounterOf(enemy);
     const phase=enc?.profile?.phases?.[enc.nextPhase];
     if(phase&&enemy.maxHp>0&&enemy.hp/enemy.maxHp<=phase.ratio){

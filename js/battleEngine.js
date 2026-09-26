@@ -1697,8 +1697,9 @@ export class BattleEngine {
     state.addItemAwakenKills();
     if (enemy.elite) state.addAbyssShards(ABYSS_EXPANSION_LAYER.ELITE_SHARD_DROP);
     const onKillEvents = this.applyEffect('onKill', { enemy });
-    // 武器Affix（Part A）：深淵深度・Elite・Boss討伐でAffix品質が少し上がる
-    const dropCtx = { depth: this.stage.isAbyss ? (this.stage.abyssDepth || 0) : 0, elite: !!enemy.elite, boss: !!enemy.boss };
+    // 武器Affix（Part A）：深淵深度・Elite・Boss討伐でAffix品質が少し上がる。
+    // Session 6: 探索地点の固有補正（stage.dropAffixBonus）を品質に少量乗せる。
+    const dropCtx = { depth: this.stage.isAbyss ? (this.stage.abyssDepth || 0) : 0, elite: !!enemy.elite, boss: !!enemy.boss, bonus: Number(this.stage.dropAffixBonus) || 0 };
     const drops = [];
     const dropInfo = this._rollDrop(dropCtx); if (dropInfo) drops.push(dropInfo);
     const weaponDropInfo = this._rollWeaponDrop(dropCtx); if (weaponDropInfo) drops.push(weaponDropInfo);

@@ -12,6 +12,7 @@ export const WORLD3_REGIONS=Object.freeze([
   Object.freeze({id:'reverse-observation',name:'逆観測域',subtitle:'第八鍵の接続元を追う第四部',chapters:[26,27,28,29,30],tone:'observer'}),
   Object.freeze({id:'shared-observation',name:'共観測域',subtitle:'返答・第八鍵・記録盲点・共通参照・共観測点を追う第五部',chapters:[31,32,33,34,35],tone:'handshake'}),
   Object.freeze({id:'branch-record',name:'分岐観測域',subtitle:'同じ座標が複数の歴史へ分かれていく第六部',chapters:[36,37,38,39],tone:'branch'}),
+  Object.freeze({id:'stratum-band',name:'重層観測域',subtitle:'三つ以上の記録が同時に真とされる第七部',chapters:[40,41],tone:'stratum'}),
 ]);
 
 export function world3RegionForChapter(chapterNumber){

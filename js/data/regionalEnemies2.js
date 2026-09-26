@@ -52,6 +52,8 @@ export const REGIONAL_ENEMY_EXPANSION = Object.freeze({
   ch37:entry('棄却残滓兵','淘汰簿の読み手','秒差撹乱体','棚卸し補助機','選ばれなかった残獣'),
   ch38:entry('双照巡視体','鏡合わせの術師','残光撹乱体','相互証明補助端末','対になった残響獣'),
   ch39:entry('統合執行体','単一化演算師','分岐撹乱体','収束補助端末','統合を拒んだ核獣'),
+  ch40:entry('重層巡索体','多重照合師','同時点撹乱体','重畳保持補助端末','三つ目の輪郭を持つ獣'),
+  ch41:entry('圃の警備芽体','分流培養師','摘み取り撹乱体','畦道補助端末','摘まれなかった芽獣'),
 });
 
 export function regionalEnemySet(chapterId){return REGIONAL_ENEMY_EXPANSION[chapterId]||null;}
