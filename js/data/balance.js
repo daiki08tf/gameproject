@@ -145,6 +145,21 @@ export const HUNT_LAYER = {
   // Observed Branch の Branch Hunt（周回先）：役割で密度を変える
   BRANCH_ELITE_CHANCE: { ecology: 0.20, deep: 0.40, boss: 0.25 },
   BRANCH_DROP_MULT: 2.0,
+  // Chase層（Session 3）：Rare・Roamer・Elite撃破時の固有装備抽選。
+  // huntUniques.js の「狙える章レンジ」で絞られたプールから1点選ぶ。
+  RARE_UNIQUE_CHANCE: 0.15,        // Rare撃破時
+  HUNT_ELITE_UNIQUE_CHANCE: 0.08,  // 巡回Elite撃破時
+  ELITE_UNIQUE_CHANCE: 0.03,       // それ以外のElite撃破時（深淵等）
+  // 名もなき強敵（Roamer）：巡回中の非Bossスロットがまれに差し替わる。
+  // 1バトル1体まで。匂い袋（item_lure）で+BONUS。
+  ROAMER_CHANCE: 0.03,
+  ROAMER_LURE_BONUS: 0.10,
+  LURE_RARE_BONUS: 0.12,           // 匂い袋使用時のRare出現率加算
+  // 呪い巡回（Cursed Hunt）：任意のリスク・リターン選択肢。
+  CURSED_DMG_TAKEN_MULT: 1.35,     // 被ダメージ
+  CURSED_DROP_BONUS: 2.0,          // dropMultへの追加乗算
+  CURSED_ELITE_BONUS: 0.15,        // Elite出現率への加算
+  CURSED_REWARD_MULT: 1.3,         // EXP/Gold
 };
 
 // 章立てスケーリングの共通計算（1〜PIVOTは指数EARLY_RATE、PIVOT以降は

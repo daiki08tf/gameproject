@@ -18,6 +18,12 @@ export function chooseEnemy3EliteAffix(enemy,rng=Math.random){
   return ENEMY3_ELITE_AFFIXES[AFFIX_IDS[Math.floor(boundedRoll(rng)*AFFIX_IDS.length)]]||null;
 }
 
+// Hunt（巡回）Elite等、genericEliteフラグを持たないEliteにも同じ
+// Affix語彙を割り当てるためのゲート無し抽選。
+export function rollEnemy3EliteAffix(rng=Math.random){
+  return ENEMY3_ELITE_AFFIXES[AFFIX_IDS[Math.floor(boundedRoll(rng)*AFFIX_IDS.length)]]||null;
+}
+
 export function assignEnemy3EliteAffix(enemy,rng=Math.random){
   if(!isEnemy3GenericElite(enemy)||enemy.enemy3EliteAffix)return enemy;
   const affix=chooseEnemy3EliteAffix(enemy,rng);

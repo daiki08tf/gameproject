@@ -32,6 +32,9 @@ import { ENEMY_TYPES } from './data/enemies.js';
 import { getItem, RARITY, rarityIndex } from './data/equipment.js';
 import { getRune } from './data/runes.js';
 import { DAMAGE_BUCKET, ECONOMY, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER, CAPS_LAYER, BOSS_AI_LAYER, resolveBossAIProfile, TEXT_BATTLE_LAYER, HUNT_LAYER } from './data/balance.js';
+import { huntUniquesForChapter } from './data/huntUniques.js';
+import { ROAMERS, pickRoamerForChapter, roamerTemplate } from './data/roamers.js';
+import { rollEnemy3EliteAffix } from './data/enemy3EliteAffixes.js';
 import { getBlessing } from './data/blessings.js';
 import { weaponDropPoolForStage, bossWeaponForChapter } from './data/weapons.js';
 import { sumPassivePower } from './data/combatStats.js';
@@ -75,6 +78,13 @@ export class BattleEngine {
         huntEliteChance: launchOpts.huntEliteChance ?? HUNT_LAYER.STORY_ELITE_CHANCE,
         dropMult: launchOpts.dropMult ?? HUNT_LAYER.STORY_DROP_MULT,
       };
+      // 呪い巡回（Cursed Hunt）：出撃前に任意で選ぶリスク・リターン。
+      // 被ダメージと引き換えにドロップ・Elite密度・EXP/Goldが上がる。
+      if (launchOpts.cursed) {
+        this.stage.cursed = true;
+        this.stage.dropMult = (this.stage.dropMult || 1) * HUNT_LAYER.CURSED_DROP_BONUS;
+        this.stage.huntEliteChance = Math.min(0.9, (this.stage.huntEliteChance || 0) + HUNT_LAYER.CURSED_ELITE_BONUS);
+      }
     }
     this.chapter = found.chapter;
     this.blessing = this.stage.isAbyss ? getBlessing(blessingId) : null;
@@ -261,14 +271,22 @@ export class BattleEngine {
         // 続くプレイヤーの最初のコマンドの1ラウンド目はこれまで通り敵が
     // まだ動かない猶予ラウンドのまま保たれ、既存の較正済みバランスは変わらない。
     this._freshGroupPending = true;
-    return { type: 'encounterStart', enemies: group.map((e) => ({ id: e.id, name: e.name, boss: e.boss, elite: e.elite })) };
+    return { type: 'encounterStart', enemies: group.map((e) => ({ id: e.id, name: e.name, boss: e.boss, elite: e.elite, rare: e.rank === 'rare' || !!e.rareIdentity, roamer: !!e.roamerId })) };
   }
 
   _spawnEnemy(type) {
+    // 巡回（Hunt）中、ごくまれに「名もなき強敵」（Roamer）が非Boss
+    // スロットへ紛れ込む。1バトル1体まで。匂い袋で出現率を底上げできる。
+    if (this.stage.hunt && !this._roamerSpawned && !ENEMY_TYPES[type]?.boss
+        && Math.random() < (HUNT_LAYER.ROAMER_CHANCE + (this._lureBonus || 0))) {
+      const roamerId = pickRoamerForChapter(this.chapter?.num || 1);
+      if (roamerId) { this._roamerSpawned = true; return this._spawnRoamer(roamerId); }
+    }
     const t = ENEMY_TYPES[type];
     let hp = t.hp, atk = t.atk, def = t.def, spd = t.speed;
     let xp = t.xp, gold = t.gold;
     let elite = false;
+    let eliteAffix = null;
 
     // 深淵拡張：モディファイア由来の敵強化＋エリート化抽選（元のbattle.jsと同一ロジック）
     if (this.stage.isAbyss && !t.boss) {
@@ -298,6 +316,9 @@ export class BattleEngine {
       def = Math.round(def * ABYSS_EXPANSION_LAYER.ELITE_DEF_MULT);
       xp = Math.round(xp * ABYSS_EXPANSION_LAYER.ELITE_REWARD_MULT);
       gold = Math.round(gold * ABYSS_EXPANSION_LAYER.ELITE_REWARD_MULT);
+      // 巡回Eliteは既存のElite Affix語彙（再生/狂乱/鉄壁/迅速）を持ち、
+      // 「素体が硬いだけの敵」ではなく読んで対応できる相手になる。
+      eliteAffix = rollEnemy3EliteAffix(Math.random);
     }
 
     const enemy = {
@@ -307,6 +328,10 @@ export class BattleEngine {
       xp, gold, dead: false,
       weaken: null, dotStacks: 0, dotTurnsLeft: 0, dotPower: 0, frozenTurns: 0,
     };
+    if (eliteAffix) {
+      enemy.enemy3EliteAffix = eliteAffix;
+      enemy.enemy3EliteAffixId = eliteAffix.id;
+    }
     if (enemy.boss) {
       // Boss AI Profile（元指示8番）：この解決ロジック自体はbattle.jsと完全に
       // 同一（resolveBossAIProfileは一切変更しない）。タイマーだけ秒数から
@@ -322,6 +347,24 @@ export class BattleEngine {
       this.boss = enemy;
     }
     return enemy;
+  }
+
+  // 名もなき強敵（Roamer）：章をまたいでさまよう徘徊者。通常の敵と
+  // 同じ敵オブジェクト構造で返し、rank='rare'化・Rare行動・Codex記録は
+  // 既存のrank/behavior/discoveryパッチに委ねる（rareIdentityを立てる
+  // だけで全部乗る）。
+  _spawnRoamer(roamerId) {
+    const def = ROAMERS[roamerId];
+    if (!def) return null;
+    const t = roamerTemplate(roamerId, this.chapter?.num || 1);
+    return {
+      id: `roamer_${roamerId}_${this._nextEnemyId = (this._nextEnemyId || 0) + 1}`,
+      type: `roamer:${roamerId}`, name: def.name, boss: false, elite: false,
+      rareIdentity: true, roamerId,
+      hp: t.hp, maxHp: t.hp, atk: t.atk, def: t.def, spd: t.speed,
+      xp: t.xp, gold: t.gold, dead: false,
+      weaken: null, dotStacks: 0, dotTurnsLeft: 0, dotPower: 0, frozenTurns: 0,
+    };
   }
 
   _riskMult(mult) {
@@ -590,6 +633,9 @@ export class BattleEngine {
     const effectiveDef = this._effectiveDef();
     const mitigation = Math.min(CAPS_LAYER.DEF_MITIGATION_MAX, effectiveDef / (effectiveDef + DAMAGE_BUCKET.MITIGATION_K));
     let dmg = Math.max(1, atk * (1 - mitigation));
+    // 呪い巡回：全被ダメージを底上げするリスク側の代償（通常攻撃・
+    // Boss特殊攻撃の両方に効く共通の乗算ポイント）。
+    if (this.stage.cursed) dmg *= HUNT_LAYER.CURSED_DMG_TAKEN_MULT;
     if (opts.mult == null) {
       // opts.multが指定されない＝予兆を経ない「通常攻撃」（Bossの通常攻撃含む）。
       // 実時間の「移動による回避」ぶんを補正するNORMAL_ATTACK_DAMAGE_MULTは
@@ -1335,6 +1381,20 @@ export class BattleEngine {
     } else if (eff.kind === 'buff') {
       this._setBuff(eff.stat, eff.pct, eff.turns);
       result.buffed = { stat: eff.stat, pct: eff.pct, turns: eff.turns };
+    } else if (eff.kind === 'lure') {
+      // 匂い袋：このバトルの残りの遭遇でRare出現率とRoamer出現率を
+      // 底上げする。encounterPoolを書き換える際は共有データを守るため
+      // Stageをコピーしてから触る（Hunt Stageは既にコピー済みだが
+      // 初回Story Stageは共有オブジェクトなので必ず複製する）。
+      const pool = this.stage.encounterPool;
+      if (pool) {
+        this.stage = {
+          ...this.stage,
+          encounterPool: { ...pool, rareChance: (pool.rareChance || 0) + HUNT_LAYER.LURE_RARE_BONUS },
+        };
+      }
+      this._lureBonus = (this._lureBonus || 0) + HUNT_LAYER.ROAMER_LURE_BONUS;
+      result.lured = true;
     }
     return result;
   }
@@ -1643,6 +1703,10 @@ export class BattleEngine {
     const dropInfo = this._rollDrop(dropCtx); if (dropInfo) drops.push(dropInfo);
     const weaponDropInfo = this._rollWeaponDrop(dropCtx); if (weaponDropInfo) drops.push(weaponDropInfo);
     const consumableDropInfo = this._rollConsumableDrop(); if (consumableDropInfo) drops.push(consumableDropInfo);
+    // Chase層（Session 3）：Rare/Roamer/巡回Eliteの撃破は固有装備の
+    // 抽選枠を持つ。「[RARE]が出た→倒した→何が落ちるか」の期待を作る。
+    const chaseDrops = this._rollChaseDrops(enemy, dropCtx);
+    for (const d of chaseDrops) drops.push(d);
     const manastone = this._rollManastone(enemy);
     let bossSlayerBuff = null;
     if (enemy.boss) {
@@ -1670,6 +1734,7 @@ export class BattleEngine {
     if (this._tempGoldBonusTurns > 0) m *= (1 + this._tempGoldBonus);
     // 武器Affix「商才」
     m *= 1 + sumPassivePower(this.effects, 'goldMultAdd');
+    if (this.stage.cursed) m *= HUNT_LAYER.CURSED_REWARD_MULT;
     return m;
   }
   _expMult() {
@@ -1677,6 +1742,7 @@ export class BattleEngine {
     if (this.stage.isAbyss && this.stage.boss) m *= state.abyssBossFloorRewardMult();
     // 語り部「伝説の一節」：数ターンの経験値取得ボーナス
     if (this._tempExpBonusTurns > 0) m *= (1 + this._tempExpBonus);
+    if (this.stage.cursed) m *= HUNT_LAYER.CURSED_REWARD_MULT;
     // 武器Affix「習熟の心得」
     m *= 1 + sumPassivePower(this.effects, 'expMultAdd');
     return m;
@@ -1729,6 +1795,49 @@ export class BattleEngine {
     return this._describeDrop(itemId, false, null);
   }
 
+  // アイテムを1つ取得してドロップ記述を返す共通処理。
+  _takeItem(itemId, dropCtx) {
+    const isNew = state.addItem(itemId, 1, dropCtx);
+    this.runItems.push(itemId);
+    return this._describeDrop(itemId, isNew, state.consumeLastWeaponInstanceId?.() ?? null);
+  }
+
+  // Chase層：Rare・Roamer・Elite撃破時の固有装備抽選。
+  //  - Roamer     : 固有の「持ち歩いていた品」を高確率で落とす
+  //  - Rare       : 装備ドロップを1回必ず抽選＋固有を一定率で
+  //  - 巡回Elite  : 固有を一定率で
+  //  - その他Elite: 固有を低確率で
+  _rollChaseDrops(enemy, dropCtx) {
+    const out = [];
+    if (!enemy || enemy.boss) return out;
+    const chapterNum = this.chapter?.num || 1;
+    const isRare = enemy.rank === 'rare' || !!enemy.rareIdentity;
+
+    if (enemy.roamerId) {
+      const def = ROAMERS[enemy.roamerId];
+      if (def?.dropItemId && Math.random() < def.dropChance) {
+        out.push(this._takeItem(def.dropItemId, dropCtx));
+      }
+    }
+    // Rare/Roamerは戦利品の塊：通常装備ドロップも1回必ず抽選する。
+    if (isRare) {
+      const extra = this._rollDrop(dropCtx, { guaranteed: true });
+      if (extra) out.push(extra);
+    }
+
+    const chance = isRare ? HUNT_LAYER.RARE_UNIQUE_CHANCE
+      : (enemy.elite && this.stage.hunt) ? HUNT_LAYER.HUNT_ELITE_UNIQUE_CHANCE
+      : enemy.elite ? HUNT_LAYER.ELITE_UNIQUE_CHANCE : 0;
+    if (chance > 0 && Math.random() < chance) {
+      const pool = huntUniquesForChapter(chapterNum);
+      if (pool.length > 0) {
+        const item = pool[Math.floor(Math.random() * pool.length)];
+        out.push(this._takeItem(item.id, dropCtx));
+      }
+    }
+    return out;
+  }
+
   _rollManastone(enemy) {
     if (enemy.boss) {
       const amount = Math.round(rand(ECONOMY.MANASTONE_BOSS_MIN, ECONOMY.MANASTONE_BOSS_MAX));
@@ -1741,12 +1850,12 @@ export class BattleEngine {
     return amount;
   }
 
-  _rollDrop(dropCtx) {
+  _rollDrop(dropCtx, opts = {}) {
     const table = this.stage.dropTable || [];
     if (table.length === 0) return null;
     const abyssMult = this.stage.isAbyss ? (this.stage.dropMult || 1) * state.abyssDropRateMult() : (this.stage.dropMult || 1);
     const chance = ECONOMY.BASE_DROP_CHANCE * state.dropRateMult() * abyssMult * this._dropChanceBonusMult();
-    if (Math.random() > chance) return null;
+    if (!opts.guaranteed && Math.random() > chance) return null;
     let pool = table;
     if (Math.random() < state.awakeningUnownedBiasChance()) {
       const unowned = table.filter((d) => !state.ownsItem(d.itemId));

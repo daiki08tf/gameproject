@@ -23,6 +23,9 @@ export function enemy2ActivityId(stage){
 
 export function enemy2EcologyIdentity(enemy){
   if(!enemy||enemy.boss)return null;
+  // 名もなき強敵（Roamer）は地域種ではなく徘徊者として記録する。
+  // （speciesIdは遭遇元の地域種を継承しうるためroamerIdを優先する）
+  if(enemy.roamerId)return{key:`roamer:${enemy.roamerId}`,name:String(enemy.name||enemy.roamerId),kind:'roamer',enemyType:enemy.type};
   if(enemy.speciesId){
     const species=globalEnemySpecies(enemy.speciesId);
     return{key:`global:${enemy.speciesId}`,name:species?.name||enemy.speciesId,kind:'global',speciesId:enemy.speciesId};
