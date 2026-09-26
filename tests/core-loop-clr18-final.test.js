@@ -10,7 +10,7 @@ function branchStages(){return CHAPTERS.flatMap(chapter=>(chapter.stages||[]).fi
 test('CLR-18 final bulk covers every canonical Chapter 1-36 main Story Stage',()=>{
   const stages=mainStages();
   const covered=new Set(clr18CoveredMainStageIds());
-  assert.equal(CHAPTERS.length,36);
+  assert.equal(CHAPTERS.filter(ch=>!ch.gaiden).length,36,'Chapters 1-36 remain the canonical main story');
   assert.equal(covered.size,stages.length);
   for(const {stage} of stages){
     assert.ok(covered.has(String(stage.id)),`missing coverage for ${stage.id}`);

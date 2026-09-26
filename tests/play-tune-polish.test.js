@@ -29,7 +29,7 @@ test('polish: Ranch facility observer is idempotent and special breeding feedbac
 
 test('polish: main story boss recommended levels rise through Ch30',()=>{
   let previous=0;
-  for(const chapter of CHAPTERS){
+  for(const chapter of CHAPTERS.filter(ch=>!ch.gaiden)){
     const final=finalStageOf(chapter);
     const level=Number(final?.recLevel);
     assert.ok(Number.isFinite(level),`Ch${chapter.num} final stage has no valid recommended level`);

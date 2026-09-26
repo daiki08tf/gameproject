@@ -50,6 +50,16 @@ for(const ch of ALL_CHAPTER_SPECS){
  if(ch.branch)ENEMY_TYPES[`${ch.id}_branchboss`]=scale(BRANCH_BASE,ch.branch.enemyName,ch.num,{role:'boss',chapterId:ch.id});
 }
 
+// 外伝 獣径の番獣。Bossではなく「巣の主」として異様に育ったRare系統の魔物
+// （boss:falseなので撃破後に勧誘できる）。RARE_BASEを約2.5体分に太らせた
+// 素体をCh5相当でスケーリングし、rareIdentityで既存のRare昇格・行動・
+// 撃破報酬・生態記録の仕組みへそのまま乗せる。
+{
+ const t=scale(RARE_BASE,'獣径の主・DENLORD',5,{role:'rare',chapterId:'gaiden_beasttrail',speciesId:'gaiden:beasttrail:denlord',regional:true,behaviorTags:['rare','threat'],rareIdentity:true});
+ t.hp=Math.round(t.hp*2.4);t.atk=Math.round(t.atk*1.5);t.def=Math.round(t.def*1.6);t.xp=Math.round(t.xp*2.2);t.gold=Math.round(t.gold*2.4);
+ ENEMY_TYPES.bt_denlord=t;
+}
+
 const STORY_REGION_NUMBERS=Object.freeze({ch1:1,...Object.fromEntries(ALL_CHAPTER_SPECS.map(ch=>[ch.id,ch.num]))});
 for(const [chapterId,set] of Object.entries(REGIONAL_ENEMY_EXPANSION)){
  const num=STORY_REGION_NUMBERS[chapterId];

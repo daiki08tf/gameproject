@@ -44,7 +44,7 @@ test('RC: story recommendations, rewards, waves and reward references stay valid
 });
 
 test('RC: main story boss ladder rises through Ch25 without exceeding the level cap',()=>{
-  const bosses=CHAPTERS.map(finalStageOf);
+  const bosses=CHAPTERS.filter(ch=>!ch.gaiden).map(finalStageOf);
   for(let i=1;i<bosses.length;i++)assert.ok(bosses[i].recLevel>=bosses[i-1].recLevel,`boss ladder regressed at Ch${i+1}`);
   assert.ok(bosses.at(-1).recLevel<=99999);
 });

@@ -63,7 +63,7 @@ test('E4 Rare identities are not Bosses and do not reuse the Abyss elite flag',(
 
 test('E4 does not migrate existing fixed story waves yet',()=>{
   const newSuffix=/(?:_attacker|_caster|_trickster|_support|_rare)$/;
-  for(const chapter of CHAPTERS){
+  for(const chapter of CHAPTERS.filter(ch=>!ch.gaiden)){
     for(const stage of chapter.stages){
       for(const wave of stage.waves||[]){
         assert.equal(newSuffix.test(String(wave.type)),false,`${stage.id} unexpectedly migrated to ${wave.type}`);

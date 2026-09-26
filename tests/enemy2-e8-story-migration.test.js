@@ -10,8 +10,8 @@ const roleSet=pool=>new Set((pool?.types||[]).map(x=>ENEMY_TYPES[x.type]?.role).
 const globals=pool=>(pool?.types||[]).filter(x=>ENEMY_TYPES[x.type]?.e8Global).map(x=>ENEMY_TYPES[x.type]?.speciesId);
 
 test('E8 migrates all eligible Ch1-36 story stages and leaves tutorial/branches fixed',()=>{
-  assert.equal(CHAPTERS.length,36);
-  const expected=CHAPTERS.flatMap(ch=>ch.stages.filter(st=>!st.branch&&st.id!=='1-1').map(st=>st.id));
+  assert.equal(CHAPTERS.filter(ch=>!ch.gaiden).length,36);
+  const expected=CHAPTERS.filter(ch=>!ch.gaiden).flatMap(ch=>ch.stages.filter(st=>!st.branch&&st.id!=='1-1').map(st=>st.id));
   assert.deepEqual([...E8_MIGRATED_STAGE_IDS].sort(),expected.sort());
   assert.equal(CHAPTERS[0].stages.find(s=>s.id==='1-1').encounterPool,undefined);
   for(const ch of CHAPTERS){
@@ -21,7 +21,7 @@ test('E8 migrates all eligible Ch1-36 story stages and leaves tutorial/branches 
 
 test('every migrated chapter keeps all seven regional roles as the encounter core',()=>{
   const required=['normal','fast','tank','attacker','caster','trickster','support'];
-  for(const ch of CHAPTERS){
+  for(const ch of CHAPTERS.filter(ch=>!ch.gaiden)){
     const st=ch.stages.find(s=>s.encounterPool);
     assert.ok(st,`${ch.id} should have a migrated field stage`);
     const roles=roleSet(st.encounterPool);
@@ -32,7 +32,7 @@ test('every migrated chapter keeps all seven regional roles as the encounter cor
 });
 
 test('Global Species are chapter-anchored, bounded and region-sensitive instead of one universal pool',()=>{
-  for(const ch of CHAPTERS){
+  for(const ch of CHAPTERS.filter(ch=>!ch.gaiden)){
     const pool=ch.stages.find(s=>s.encounterPool).encounterPool;
     const ids=globals(pool);
     assert.ok(ids.includes('slime'),`${ch.id} should retain true-global slime`);
@@ -48,7 +48,7 @@ test('Global Species are chapter-anchored, bounded and region-sensitive instead 
 });
 
 test('Boss and midboss wave order remains authored while only ordinary pre-waves can pool',()=>{
-  for(const ch of CHAPTERS){
+  for(const ch of CHAPTERS.filter(ch=>!ch.gaiden)){
     for(const st of ch.stages.filter(s=>s.boss||s.midBoss)){
       const last=st.waves.at(-1);
       assert.ok(ENEMY_TYPES[last.type]?.boss,`${st.id} must still end in authored boss type`);

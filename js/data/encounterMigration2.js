@@ -85,6 +85,7 @@ export function buildChapterEncounterPool(chapter,enemyTypes){
 
 export function isE8MigratableStage(chapter,stage){
   if(!chapter||!stage||stage.isAbyss||stage.branch)return false;
+  if(chapter.gaiden)return false;
   if(stage.id==='1-1')return false;
   return true;
 }

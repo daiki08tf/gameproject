@@ -15,7 +15,7 @@ import { findStage } from '../js/data/stages.js';
 test('M12: Prime Story chapters 1-35 are unaffected by the Observed Branches program', () => {
   // Every Prime chapter still resolves through the exact same canonical
   // Stage authority, unaltered in shape, count or ordering.
-  const primeChapters = CHAPTERS.filter(ch => ch.num >= 1 && ch.num <= 35);
+  const primeChapters = CHAPTERS.filter(ch => ch.num >= 1 && ch.num <= 35 && !ch.gaiden);
   assert.equal(primeChapters.length, 35);
   for (const ch of primeChapters) assert.ok(ch.stages.length > 0, `${ch.id} must still have its own Stages`);
   // Ch36 is a real, deliberate new chapter (Arc VI) -- not a Branch, and its

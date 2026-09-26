@@ -20,6 +20,7 @@ import { buildSecretRealmStage } from './secretRealms.js';
 import { buildRaidStage } from './raidBosses.js';
 import { buildObservedBranchStage } from './observedBranchStages.js';
 import { buildRiftStage } from './riftStages.js';
+import { BEAST_TRAIL_CHAPTER } from './beastTrail.js';
 
 const CHAPTER_1 = {
   id: 'ch1', num: 1, name: '第1章 はじまりの平原', stages: [
@@ -59,7 +60,7 @@ function buildExpandedChapter(ch){
   return{id:ch.id,num:ch.num,name:`第${ch.num}章 ${ch.name}`,lore:ch.lore,expanded:true,stages};
 }
 
-export const CHAPTERS=[CHAPTER_1,...CHAPTER_SPECS.map(buildChapter),...CHAPTER_EXPANSION_16_20.map(buildExpandedChapter),...CHAPTER_EXPANSION_21_25.map(buildExpandedChapter),...CHAPTER_EXPANSION_26_29.map(buildExpandedChapter),...CHAPTER_EXPANSION_30.map(buildExpandedChapter),...CHAPTER_EXPANSION_31.map(buildExpandedChapter),...CHAPTER_EXPANSION_32.map(buildExpandedChapter),...CHAPTER_EXPANSION_33.map(buildExpandedChapter),...CHAPTER_EXPANSION_34.map(buildExpandedChapter),...CHAPTER_EXPANSION_35.map(buildExpandedChapter),...CHAPTER_EXPANSION_36.map(buildExpandedChapter)];
+export const CHAPTERS=[CHAPTER_1,...CHAPTER_SPECS.map(buildChapter),...CHAPTER_EXPANSION_16_20.map(buildExpandedChapter),...CHAPTER_EXPANSION_21_25.map(buildExpandedChapter),...CHAPTER_EXPANSION_26_29.map(buildExpandedChapter),...CHAPTER_EXPANSION_30.map(buildExpandedChapter),...CHAPTER_EXPANSION_31.map(buildExpandedChapter),...CHAPTER_EXPANSION_32.map(buildExpandedChapter),...CHAPTER_EXPANSION_33.map(buildExpandedChapter),...CHAPTER_EXPANSION_34.map(buildExpandedChapter),...CHAPTER_EXPANSION_35.map(buildExpandedChapter),...CHAPTER_EXPANSION_36.map(buildExpandedChapter),BEAST_TRAIL_CHAPTER];
 const ALL_REGION_TAGS={...CHAPTER_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS_21_25,...CHAPTER_EXPANSION_REGION_TAGS_26_29,...CHAPTER_EXPANSION_REGION_TAGS_30,...CHAPTER_EXPANSION_REGION_TAGS_31,...CHAPTER_EXPANSION_REGION_TAGS_32,...CHAPTER_EXPANSION_REGION_TAGS_33,...CHAPTER_EXPANSION_REGION_TAGS_34,...CHAPTER_EXPANSION_REGION_TAGS_35,...CHAPTER_EXPANSION_REGION_TAGS_36};
 for(const ch of CHAPTERS){
   const tags=ALL_REGION_TAGS[ch.id]||[],profile=regionProfileForChapter(ch.id);
@@ -81,6 +82,7 @@ export function findStage(stageId,riftKeys=[]){
  for(const ch of CHAPTERS){const st=ch.stages.find(s=>s.id===stageId);if(st)return{chapter:ch,stage:st};}
  return null;
 }
-export function isChapterUnlocked(chapterIndex,isStageCleared){if(chapterIndex===0)return true;const prevChapter=CHAPTERS[chapterIndex-1];return isStageCleared(finalStageOf(prevChapter).id);} 
+export function isChapterUnlocked(chapterIndex,isStageCleared){if(chapterIndex===0)return true;const ch=CHAPTERS[chapterIndex];if(ch?.unlocksAfter)return isStageCleared(ch.unlocksAfter);const prevChapter=CHAPTERS[chapterIndex-1];return isStageCleared(finalStageOf(prevChapter).id);} 
 // Story Expansion must not silently move the already-live Abyss gate when new story chapters are appended.
-export function isAbyssUnlocked(isStageCleared){return CHAPTERS.filter(ch=>ch.num<=25).every(ch=>isStageCleared(finalStageOf(ch).id));}
+// 外伝(gaiden)は本編の踏破条件にも含めない — 任意の寄り道なので。
+export function isAbyssUnlocked(isStageCleared){return CHAPTERS.filter(ch=>ch.num<=25&&!ch.gaiden).every(ch=>isStageCleared(finalStageOf(ch).id));}

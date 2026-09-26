@@ -13,7 +13,10 @@ export function weightedEncounterPick(entries,rng=Math.random){
 export function pickEncounterPoolType(stage,originalType,enemyTypes,rng=Math.random){
   const original=enemyTypes?.[originalType];
   const pool=stage?.encounterPool;
-  if(!original||original.boss||!pool||!Array.isArray(pool.types)||!pool.types.length)return originalType;
+  // BossとRare系統のwave枠は意図的に差し替えない — Rare/Boss入りは
+  // rankOverride（planRareOverrideTypes）経路の管轄であり、waveに直書き
+  // された確定Rare・番獣スロットを群れ抽選で上書きすると失われる。
+  if(!original||original.boss||original.rareIdentity||!pool||!Array.isArray(pool.types)||!pool.types.length)return originalType;
   // E5 deliberately excludes Rare, Boss and current Abyss Elite semantics.
   const safe=pool.types.filter(entry=>{
     const enemy=enemyTypes?.[entry?.type];

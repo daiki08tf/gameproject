@@ -79,6 +79,23 @@ export function renderChapterSelect(onPick) {
     header.addEventListener('click',()=>{body.hidden=!body.hidden;});wrap.append(header,body);list.appendChild(wrap);
   });
 
+  // 外伝(gaiden)：本編36章の連番に入れない寄り道章を、独自の節として
+  // 描く。解放条件はchapter.unlocksAfter（isChapterUnlocked）に委ねる。
+  const gaidens=CHAPTERS.map((ch,idx)=>({ch,idx})).filter(x=>x.ch.gaiden);
+  if(gaidens.length){
+    const unlockedAny=gaidens.some(({idx})=>isChapterUnlocked(idx,(id)=>state.isStageCleared(id)));
+    if(unlockedAny){
+      const wrap=document.createElement('section');wrap.className='world3-region';wrap.style.cssText='margin:10px 0;border:1px solid var(--dc-iron-500);border-radius:var(--dc-radius-panel);padding:8px;background:rgba(18,24,32,.5)';
+      const header=document.createElement('button');header.type='button';header.className='btn-sub';header.style.cssText='width:100%;text-align:left;display:flex;justify-content:space-between;gap:8px;padding:9px';
+      const clearedCount=gaidens.filter(({ch})=>state.isStageCleared(finalStageOf(ch).id)).length;
+      const current=gaidens.some(({idx,ch})=>isChapterUnlocked(idx,(id)=>state.isStageCleared(id))&&!state.isStageCleared(finalStageOf(ch).id));
+      header.innerHTML=`<span><strong>外伝</strong><br><small>本編の傍らに在る獣径。名付きの番獣は倒して仲間にできる。</small></span><span>${clearedCount===gaidens.length?'★ COMPLETE':`${clearedCount}/${gaidens.length}`}</span>`;
+      const body=document.createElement('div');body.className='world3-region-body';body.hidden=!current;
+      for(const {ch,idx} of gaidens)body.appendChild(renderChapterCard(ch,idx,onPick));
+      header.addEventListener('click',()=>{body.hidden=!body.hidden;});wrap.append(header,body);list.appendChild(wrap);
+    }
+  }
+
   if((state.world2Progress?.()||0)>=5){
     const secretSites=(state.explorationSites||[]).map(site=>state.explorationProgress?.(site.id)).filter(Boolean);
     const summary={keyFragments:state.world2KeyFragments?.()||0,keyCount:Object.values(state.data.world2?.keys||{}).reduce((a,b)=>a+(Number(b)||0),0),secretSites,riftKeys:state.riftKeys?.()||[]};
