@@ -4,13 +4,13 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "main",
-      "head": "419de83",
+      "head": "643d256",
       "remote": "https://github.com/daiki08tf/gameproject.git"
     },
     "fileCounts": {
-      "total": 1050,
-      "code": 898,
-      "tests": 366
+      "total": 1055,
+      "code": 903,
+      "tests": 367
     }
   },
   "systems": [
@@ -78,6 +78,7 @@
         "tests/region-codex.test.js",
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js",
+        "tests/session4-expansion.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
         "tests/special-tier-job-content.test.js",
@@ -280,6 +281,7 @@
         "js/patches/phase9MachineWorldRuntime.js",
         "js/patches/phase9MechanosageRuntime.js",
         "js/patches/phase9RegionalMasteryRuntime.js",
+        "js/patches/playerSkillTree.js",
         "js/patches/postCp3ConvergenceApexCombat.js",
         "js/patches/postCp3DeepSurveyUi.js",
         "js/patches/postCp3SurveyConditionCombat.js",
@@ -370,6 +372,7 @@
         "js/screens/stageSelect.js",
         "js/screens/status.js",
         "js/screens/textBattle.js",
+        "js/screens/wayfarerTree.js",
         "js/screens/weaponCodex.js",
         "tests/adventure-world4-build-expression.test.js",
         "tests/adventure-world4-discoveries.test.js",
@@ -417,6 +420,7 @@
         "tests/region-codex.test.js",
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js",
+        "tests/session4-expansion.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
         "tests/special-tier-job-content.test.js",
@@ -789,6 +793,7 @@
         "chapter"
       ],
       "files": [
+        "js/data/beastTrail.js",
         "js/data/chapters.js",
         "js/data/chapters16to20.js",
         "js/data/chapters21to25.js",
@@ -878,6 +883,7 @@
         "tests/release-candidate-audit.test.js",
         "tests/result-next-stage.test.js",
         "tests/rift-entry.test.js",
+        "tests/session4-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -959,6 +965,7 @@
         "js/patches/phase13ReplayRuntime.js",
         "js/patches/phase9MachineWorldRuntime.js",
         "js/patches/phase9RegionalExplorationRuntime.js",
+        "js/patches/playerSkillTree.js",
         "js/patches/progression3OuterStory.js",
         "js/patches/progression3StoryExpansion.js",
         "js/patches/regionCodex.js",
@@ -1033,6 +1040,7 @@
         "tests/release-candidate-audit.test.js",
         "tests/result-next-stage.test.js",
         "tests/rift-entry.test.js",
+        "tests/session4-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -1263,6 +1271,7 @@
         "js/data/monsterRanchBoard.js",
         "js/data/monsterRanchFacilities.js",
         "js/data/monsterRanchSpecies.js",
+        "js/data/playerSkillTree.js",
         "js/patches/companion3Breeding.js",
         "js/patches/companionBattle.js",
         "js/patches/companionBond.js",
@@ -1282,6 +1291,7 @@
         "js/patches/monsterRanchCore.js",
         "js/patches/monsterRanchMutations.js",
         "js/patches/monsterRanchUi.js",
+        "js/patches/playerSkillTree.js",
         "js/patches/ranchCollectionUi.js",
         "js/patches/ranchSpeciesGrade.js"
       ],
@@ -1305,6 +1315,7 @@
         "tests/play-tune-system-value-pass.test.js",
         "tests/ranch-species-grade.test.js",
         "tests/release-candidate-audit.test.js",
+        "tests/session4-expansion.test.js",
         "tests/world-expansion-11-15.test.js"
       ],
       "docs": [
@@ -1317,6 +1328,7 @@
         "combat",
         "content-packs",
         "dom-safety",
+        "enemies",
         "engine",
         "progression",
         "screens",
@@ -1328,6 +1340,7 @@
         "content-packs",
         "discovery",
         "engine",
+        "screens",
         "settlement",
         "tests",
         "ui"
@@ -1358,11 +1371,13 @@
         "js/patches/monsterRanchCore.js",
         "js/patches/monsterRanchMutations.js",
         "js/patches/monsterRanchUi.js",
+        "js/patches/playerSkillTree.js",
         "js/patches/ranchCollectionUi.js",
         "js/patches/ranchSpeciesGrade.js",
         "js/patches/regionCodex.js",
         "js/patches/settlementRanch3.js",
         "js/patches/treasureHunt.js",
+        "js/screens/wayfarerTree.js",
         "tests/balance-audit-2.test.js",
         "tests/boss-companion-combat.test.js",
         "tests/boss-companion-simulation.test.js",
@@ -1382,6 +1397,7 @@
         "tests/play-tune-system-value-pass.test.js",
         "tests/ranch-species-grade.test.js",
         "tests/release-candidate-audit.test.js",
+        "tests/session4-expansion.test.js",
         "tests/world-expansion-11-15.test.js"
       ]
     },
@@ -1722,6 +1738,7 @@
         "tests/progression3-bounty-nemesis.test.js",
         "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
+        "tests/session4-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -1757,6 +1774,7 @@
         "chapters",
         "codex",
         "combat",
+        "companions",
         "content-packs",
         "engine",
         "progression",
@@ -1781,6 +1799,7 @@
         "js/data/enemyCodex2Discovery.js",
         "js/data/enemyCombat3.js",
         "js/data/enemyRankVariants2.js",
+        "js/data/monsterRanchSpecies.js",
         "js/data/observedBranchStages.js",
         "js/data/postCp3ConvergenceApex.js",
         "js/data/riftStages.js",
@@ -1875,6 +1894,7 @@
         "tests/progression3-bounty-nemesis.test.js",
         "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
+        "tests/session4-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -2994,6 +3014,7 @@
         "js/patches/job3LegacyPassives.js",
         "js/patches/job3SpecializationCore.js",
         "js/patches/jobConstellationRuntime.js",
+        "js/patches/playerSkillTree.js",
         "js/patches/progression3Combat.js",
         "js/patches/rune2Special.js",
         "js/patches/systemCleanupAwakeningV2.js",
@@ -3346,6 +3367,7 @@
         "js/screens/stageSelect.js",
         "js/screens/status.js",
         "js/screens/textBattle.js",
+        "js/screens/wayfarerTree.js",
         "js/screens/weaponCodex.js"
       ],
       "tests": [
@@ -3358,6 +3380,7 @@
         "balance",
         "chapters",
         "combat",
+        "companions",
         "enemies",
         "engine",
         "equipment",
@@ -3419,6 +3442,7 @@
         "js/patches/uiFoundationBootstrap.js",
         "js/patches/world2Core.js",
         "js/screens/equipmentFusion.js",
+        "js/screens/jobsPhase8.js",
         "tests/rift-entry.test.js"
       ]
     },
@@ -3727,6 +3751,7 @@
         "tests/runtime-regression-guards.test.js",
         "tests/secret-jobs-phase1.test.js",
         "tests/secret-jobs-phase2.test.js",
+        "tests/session4-expansion.test.js",
         "tests/settlement-compact-ui.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
@@ -4095,6 +4120,7 @@
         "tests/runtime-regression-guards.test.js",
         "tests/secret-jobs-phase1.test.js",
         "tests/secret-jobs-phase2.test.js",
+        "tests/session4-expansion.test.js",
         "tests/settlement-compact-ui.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
@@ -4512,6 +4538,7 @@
         "tests/region-codex.test.js",
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js",
+        "tests/session4-expansion.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
         "tests/special-tier-job-content.test.js",
@@ -4633,6 +4660,7 @@
         "tests/result-next-stage.test.js",
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js",
+        "tests/session4-expansion.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
         "tests/special-tier-job-content.test.js",
@@ -4827,6 +4855,7 @@
         "tests/monsterRanch1.test.js",
         "tests/phase12-companion-pack.test.js",
         "tests/ranch-species-grade.test.js",
+        "tests/session4-expansion.test.js",
         "tests/world-expansion-11-15.test.js"
       ]
     },
@@ -5545,6 +5574,7 @@
     "tests/region-codex.test.js",
     "tests/rift-entry.test.js",
     "tests/rune2-runtime-2-1.test.js",
+    "tests/session4-expansion.test.js",
     "tests/settlement-defense-rumor.test.js",
     "tests/settlement-incidents.test.js",
     "tests/special-tier-job-content.test.js",

@@ -1,547 +1,550 @@
 {
-  "version": 1,
-  "description": "System registry for the generated project map. `paths` are repo-relative prefixes used to bucket files: entries ending in '/' match directories, entries starting with '*.' match by file suffix, everything else matches by path prefix (exact file OR filename-family prefix inside a dir). Order matters — first match wins. Keep this small and stable; the detailed file list is generated into .dev/project-map.json.",
-  "systems": [
-    {
-      "id": "engine",
-      "title": "Bootstrap / persistent state manager / BattleEngine",
-      "paths": [
-        "js/main.js",
-        "js/state.js",
-        "js/battleEngine.js",
-        "js/battleLog.js",
-        "js/spell.js",
-        "js/audio.js",
-        "js/patches/patchUtils.js"
-      ],
-      "docs": [
-        "PROJECT_GUIDE.md",
-        "README.md"
-      ],
-      "concepts": [
-        "bootstrap",
-        "state",
-        "battle-engine"
-      ]
-    },
-    {
-      "id": "dom-safety",
-      "title": "DOM / MutationObserver patch safety helpers",
-      "paths": [
-        "js/patches/domSafety.js"
-      ],
-      "docs": [
-        "docs/MUTATION_OBSERVER_SAFETY.md"
-      ],
-      "concepts": [
-        "dom",
-        "mutation-observer",
-        "patch-safety"
-      ]
-    },
-    {
-      "id": "adventure4",
-      "title": "Adventure World 4.0 — session, routes, scenes, discovery",
-      "paths": [
-        "js/data/adventureWorld4",
-        "js/patches/adventureWorld4"
-      ],
-      "docs": [
-        "ADVENTURE_WORLD_4_ROADMAP.md",
-        "ADVENTURE_WORLD_4_W0_AUDIT.md",
-        "PROJECT_GUIDE.md"
-      ],
-      "concepts": [
-        "adventure",
-        "world4",
-        "living-world",
-        "realm",
-        "discovery",
-        "scene"
-      ]
-    },
-    {
-      "id": "abyss",
-      "title": "Abyss endgame dungeon",
-      "paths": [
-        "js/data/abyss",
-        "js/patches/abyss",
-        "js/screens/abyss.js"
-      ],
-      "docs": [
-        "PHASE14_FINAL_INTEGRATION_STATUS.md"
-      ],
-      "concepts": [
-        "abyss",
-        "endgame-dungeon"
-      ]
-    },
-    {
-      "id": "chapters",
-      "title": "Story chapters / stage definitions",
-      "paths": [
-        "js/data/chapters",
-        "js/data/storyChapters",
-        "js/data/stages.js",
-        "js/data/world2Stages.js",
-        "js/data/observedBranchStages.js",
-        "js/data/resultNextStage.js"
-      ],
-      "docs": [
-        "ROADMAP.md",
-        "LEVEL_ROADMAP_99999.md",
-        "STORY_CANON.md"
-      ],
-      "concepts": [
-        "story",
-        "stage",
-        "chapter"
-      ]
-    },
-    {
-      "id": "combat",
-      "title": "Combat math / skills / enemy AI extensions",
-      "paths": [
-        "js/data/combat",
-        "js/data/battle",
-        "js/data/skills",
-        "js/data/spells",
-        "js/data/bossEncounters",
-        "js/patches/combat",
-        "js/patches/battle",
-        "js/data/consumables"
-      ],
-      "docs": [
-        "PHASE5_BATTLE_INTEGRATION_3_COMPLETE.md"
-      ],
-      "concepts": [
-        "battle",
-        "combat",
-        "damage",
-        "skills"
-      ]
-    },
-    {
-      "id": "codex",
-      "title": "Enemy / Weapon / Region codex",
-      "paths": [
-        "js/data/codex",
-        "js/patches/codex",
-        "js/data/regionCodex",
-        "js/patches/regionCodex",
-        "js/patches/monsterCodex",
-        "js/patches/weaponCodexUi",
-        "js/patches/jobCodexUi"
-      ],
-      "docs": [
-        "LIVING_WORLD_DISCOVERY_ROADMAP.md"
-      ],
-      "concepts": [
-        "codex",
-        "region-codex",
-        "seen-flags"
-      ]
-    },
-    {
-      "id": "companions",
-      "title": "Companion / Monster Ranch",
-      "paths": [
-        "js/data/companion",
-        "js/patches/companion",
-        "js/data/monsterRanch",
-        "js/patches/monsterRanch",
-        "js/data/monsterMutations",
-        "js/data/ranch",
-        "js/patches/ranch"
-      ],
-      "docs": [
-        "LIVING_WORLD_DISCOVERY_ROADMAP.md"
-      ],
-      "concepts": [
-        "companion",
-        "ranch",
-        "monster",
-        "species"
-      ]
-    },
-    {
-      "id": "content-packs",
-      "title": "Story/Core-loop content packs (CP I–IV, CLR batches)",
-      "paths": [
-        "js/data/contentPack",
-        "js/patches/contentPack",
-        "js/data/coreLoopClr",
-        "js/patches/coreLoopClr"
-      ],
-      "docs": [
-        "CONTENT_PACK_II_ROADMAP.md",
-        "CONTENT_PACK_III_ROADMAP.md",
-        "CONTENT_PACK_IV_ROADMAP.md",
-        "CORE_LOOP_REWORK_ROADMAP.md"
-      ],
-      "concepts": [
-        "content-pack",
-        "core-loop"
-      ]
-    },
-    {
-      "id": "discovery",
-      "title": "Fishing / Archaeology / Treasure Hunt activities",
-      "paths": [
-        "js/data/archaeology",
-        "js/patches/archaeology",
-        "js/data/fishing",
-        "js/patches/fishing",
-        "js/data/treasureHunt",
-        "js/patches/treasureHunt"
-      ],
-      "docs": [
-        "LIVING_WORLD_DISCOVERY_ROADMAP.md"
-      ],
-      "concepts": [
-        "archaeology",
-        "fishing",
-        "treasure-hunt"
-      ]
-    },
-    {
-      "id": "enemies",
-      "title": "Enemy roster / encounters / bounty / nemesis",
-      "paths": [
-        "js/data/enemy",
-        "js/patches/enemy",
-        "js/data/enemies",
-        "js/data/encounter",
-        "js/patches/encounter",
-        "js/data/globalEnemySpecies",
-        "js/data/regionalEnemies",
-        "js/data/bount",
-        "js/patches/bount",
-        "js/data/nemesis",
-        "js/patches/nemesis",
-        "js/data/raidBosses",
-        "js/data/roamers"
-      ],
-      "docs": [
-        "ENEMY_ENCOUNTER_2_ROADMAP.md",
-        "ENEMY_3_BEHAVIOR_ECOLOGY_ROADMAP.md",
-        "ENEMY_2_CONTENT_CATALOG.md"
-      ],
-      "concepts": [
-        "enemy",
-        "encounter",
-        "bounty",
-        "nemesis"
-      ]
-    },
-    {
-      "id": "equipment",
-      "title": "Equipment 3.0 / gear / loot pipeline",
-      "paths": [
-        "js/data/equipment",
-        "js/patches/equipment",
-        "js/data/affixes",
-        "js/data/artifact",
-        "js/data/unique",
-        "js/patches/unique",
-        "js/data/weapon",
-        "js/patches/weapon",
-        "js/data/options4",
-        "js/patches/options4",
-        "js/data/loot3",
-        "js/patches/loot3",
-        "js/patches/smartLoot",
-        "js/patches/loot",
-        "js/data/endgameLoot",
-        "js/data/endgameReward",
-        "js/patches/endgameDrop",
-        "js/patches/endgameReward",
-        "js/data/gearOverhaul",
-        "js/patches/gearOverhaul",
-        "js/data/huntUniques"
-      ],
-      "docs": [
-        "GEAR_OVERHAUL_ROADMAP.md",
-        "GEAR_OVERHAUL_AUDIT.md",
-        "GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md"
-      ],
-      "concepts": [
-        "equipment",
-        "gear",
-        "loot",
-        "weapon",
-        "affix",
-        "artifact"
-      ]
-    },
-    {
-      "id": "jobs",
-      "title": "Job roster / fusion / C1 save migration map",
-      "paths": [
-        "js/data/job",
-        "js/patches/job",
-        "js/patches/phase8Job",
-        "js/data/secretJobs",
-        "js/patches/secretJobs",
-        "js/data/secretJob",
-        "js/patches/secretJob",
-        "js/data/fusion",
-        "js/patches/fusion"
-      ],
-      "docs": [
-        "PHASE8_JOB_FUSION_MATRIX.md",
-        "PHASE8_JOB_NAMING_AUDIT.md",
-        "PHASE8_JOB_COMPATIBILITY_AUDIT.md",
-        "C1_JOB_IDENTITY_AUDIT.md"
-      ],
-      "concepts": [
-        "job",
-        "class",
-        "fusion",
-        "migration"
-      ]
-    },
-    {
-      "id": "runes",
-      "title": "Rune 2.1",
-      "paths": [
-        "js/data/runes",
-        "js/data/rune",
-        "js/patches/rune",
-        "js/patches/legacyRuneRetirement.js"
-      ],
-      "docs": [
-        "RUNE_2_1_SPEC.md"
-      ],
-      "concepts": [
-        "rune",
-        "mark"
-      ]
-    },
-    {
-      "id": "settlement",
-      "title": "Settlement hub / incidents / seasons / ranch UI",
-      "paths": [
-        "js/data/settlement",
-        "js/patches/settlement",
-        "js/data/ch1Rumor",
-        "js/patches/ch1Rumor"
-      ],
-      "docs": [
-        "SETTLEMENT_3_LIVING_FRONTIER_ROADMAP.md",
-        "SETTLEMENT_FUTURE_IDEAS_DESIGN.md"
-      ],
-      "concepts": [
-        "settlement",
-        "incident",
-        "season",
-        "rumor"
-      ]
-    },
-    {
-      "id": "world",
-      "title": "World map / World Tier / Realm / Rift / Observed Branches",
-      "paths": [
-        "js/data/world",
-        "js/patches/world",
-        "js/data/regions",
-        "js/data/phase9",
-        "js/patches/phase9",
-        "js/data/observedBranch",
-        "js/patches/observedBranch",
-        "js/data/rift",
-        "js/patches/rift",
-        "js/data/exploration",
-        "js/patches/exploration",
-        "js/data/secretRealm",
-        "js/patches/secretRealm"
-      ],
-      "docs": [
-        "OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md",
-        "OBSERVED_BRANCHES_ACCESS_AND_TRANSCENDENTS.md",
-        "OBSERVED_BRANCHES_M12_AUDIT.md"
-      ],
-      "concepts": [
-        "world-tier",
-        "realm",
-        "rift",
-        "observed-branch",
-        "world-event"
-      ]
-    },
-    {
-      "id": "story-canon",
-      "title": "Story canon / narrative text",
-      "paths": [
-        "js/data/story",
-        "js/patches/story"
-      ],
-      "docs": [
-        "STORY_CANON.md",
-        "WORLD_LORE_BIBLE.md",
-        "PLAYER_FACING_LANGUAGE_POLICY.md"
-      ],
-      "concepts": [
-        "story",
-        "canon",
-        "lore"
-      ]
-    },
-    {
-      "id": "balance",
-      "title": "Numeric balance layers / reward curves",
-      "paths": [
-        "js/data/balance.js",
-        "js/data/numericSafety.js"
-      ],
-      "docs": [
-        "PHASE10_6_NUMERIC_SAFETY.md",
-        "LEVEL_ROADMAP_99999.md"
-      ],
-      "concepts": [
-        "balance",
-        "scaling",
-        "curve"
-      ]
-    },
-    {
-      "id": "progression",
-      "title": "Progression / phases / awakening / rebirth / endgame",
-      "paths": [
-        "js/data/progression",
-        "js/patches/progression",
-        "js/data/phase",
-        "js/patches/phase",
-        "js/data/postCp",
-        "js/patches/postCp",
-        "js/data/awakening",
-        "js/patches/awakening",
-        "js/patches/inheritance",
-        "js/data/inheritance",
-        "js/data/blessings",
-        "js/data/systemDeepening",
-        "js/patches/systemDeepening",
-        "js/data/endgame",
-        "js/patches/endgame",
-        "js/patches/status",
-        "js/data/statusCalculation",
-        "js/patches/levelRoadmap",
-        "js/patches/systemCleanup"
-      ],
-      "docs": [
-        "PHASE10_FINAL_AUDIT.md",
-        "LEVEL_ROADMAP_99999.md",
-        "POST_CP3_ENDGAME_ROADMAP.md",
-        "SYSTEM_DEEPENING_ROADMAP.md"
-      ],
-      "concepts": [
-        "progression",
-        "awakening",
-        "rebirth",
-        "phase",
-        "endgame"
-      ]
-    },
-    {
-      "id": "ui",
-      "title": "UI foundation / navigation / feedback patches",
-      "paths": [
-        "js/ui/",
-        "css/",
-        "index.html",
-        "js/patches/ui",
-        "js/patches/toast",
-        "js/patches/build",
-        "js/patches/stage",
-        "js/patches/home",
-        "js/patches/finalIntegrationUi.js",
-        "js/patches/overlayA11y.js"
-      ],
-      "docs": [
-        "UI_OVERHAUL_ROADMAP.md",
-        "UI_DESIGN_SYSTEM.md",
-        "UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md"
-      ],
-      "concepts": [
-        "ui",
-        "css",
-        "viewport",
-        "navigation"
-      ]
-    },
-    {
-      "id": "screens",
-      "title": "Screen renderers",
-      "paths": [
-        "js/screens/"
-      ],
-      "docs": [
-        "UI_OVERHAUL_ROADMAP.md"
-      ],
-      "concepts": [
-        "screen",
-        "renderer"
-      ]
-    },
-    {
-      "id": "tests",
-      "title": "Regression test suite",
-      "paths": [
-        "tests/"
-      ],
-      "docs": [
-        "CLAUDE.md"
-      ],
-      "concepts": [
-        "tests",
-        "regression"
-      ]
-    },
-    {
-      "id": "docs",
-      "title": "Project documentation corpus",
-      "paths": [
-        "docs/",
-        "*.md"
-      ],
-      "docs": [],
-      "concepts": [
-        "docs",
-        "handoff",
-        "roadmap"
-      ]
-    },
-    {
-      "id": "assets",
-      "title": "Static assets",
-      "paths": [
-        "assets/"
-      ],
-      "docs": [],
-      "concepts": [
-        "assets",
-        "images"
-      ]
-    },
-    {
-      "id": "tooling",
-      "title": "Dev tooling / simulations / CI",
-      "paths": [
-        "scripts/",
-        "dev",
-        ".dev/",
-        ".github/",
-        "package.json"
-      ],
-      "docs": [
-        "DEV_INFRA.md"
-      ],
-      "concepts": [
-        "tooling",
-        "ci",
-        "dev",
-        "simulation"
-      ]
-    }
-  ]
+ "version": 1,
+ "description": "System registry for the generated project map. `paths` are repo-relative prefixes used to bucket files: entries ending in '/' match directories, entries starting with '*.' match by file suffix, everything else matches by path prefix (exact file OR filename-family prefix inside a dir). Order matters — first match wins. Keep this small and stable; the detailed file list is generated into .dev/project-map.json.",
+ "systems": [
+  {
+   "id": "engine",
+   "title": "Bootstrap / persistent state manager / BattleEngine",
+   "paths": [
+    "js/main.js",
+    "js/state.js",
+    "js/battleEngine.js",
+    "js/battleLog.js",
+    "js/spell.js",
+    "js/audio.js",
+    "js/patches/patchUtils.js"
+   ],
+   "docs": [
+    "PROJECT_GUIDE.md",
+    "README.md"
+   ],
+   "concepts": [
+    "bootstrap",
+    "state",
+    "battle-engine"
+   ]
+  },
+  {
+   "id": "dom-safety",
+   "title": "DOM / MutationObserver patch safety helpers",
+   "paths": [
+    "js/patches/domSafety.js"
+   ],
+   "docs": [
+    "docs/MUTATION_OBSERVER_SAFETY.md"
+   ],
+   "concepts": [
+    "dom",
+    "mutation-observer",
+    "patch-safety"
+   ]
+  },
+  {
+   "id": "adventure4",
+   "title": "Adventure World 4.0 — session, routes, scenes, discovery",
+   "paths": [
+    "js/data/adventureWorld4",
+    "js/patches/adventureWorld4"
+   ],
+   "docs": [
+    "ADVENTURE_WORLD_4_ROADMAP.md",
+    "ADVENTURE_WORLD_4_W0_AUDIT.md",
+    "PROJECT_GUIDE.md"
+   ],
+   "concepts": [
+    "adventure",
+    "world4",
+    "living-world",
+    "realm",
+    "discovery",
+    "scene"
+   ]
+  },
+  {
+   "id": "abyss",
+   "title": "Abyss endgame dungeon",
+   "paths": [
+    "js/data/abyss",
+    "js/patches/abyss",
+    "js/screens/abyss.js"
+   ],
+   "docs": [
+    "PHASE14_FINAL_INTEGRATION_STATUS.md"
+   ],
+   "concepts": [
+    "abyss",
+    "endgame-dungeon"
+   ]
+  },
+  {
+   "id": "chapters",
+   "title": "Story chapters / stage definitions",
+   "paths": [
+    "js/data/chapters",
+    "js/data/storyChapters",
+    "js/data/stages.js",
+    "js/data/world2Stages.js",
+    "js/data/observedBranchStages.js",
+    "js/data/resultNextStage.js",
+    "js/data/beastTrail.js"
+   ],
+   "docs": [
+    "ROADMAP.md",
+    "LEVEL_ROADMAP_99999.md",
+    "STORY_CANON.md"
+   ],
+   "concepts": [
+    "story",
+    "stage",
+    "chapter"
+   ]
+  },
+  {
+   "id": "combat",
+   "title": "Combat math / skills / enemy AI extensions",
+   "paths": [
+    "js/data/combat",
+    "js/data/battle",
+    "js/data/skills",
+    "js/data/spells",
+    "js/data/bossEncounters",
+    "js/patches/combat",
+    "js/patches/battle",
+    "js/data/consumables"
+   ],
+   "docs": [
+    "PHASE5_BATTLE_INTEGRATION_3_COMPLETE.md"
+   ],
+   "concepts": [
+    "battle",
+    "combat",
+    "damage",
+    "skills"
+   ]
+  },
+  {
+   "id": "codex",
+   "title": "Enemy / Weapon / Region codex",
+   "paths": [
+    "js/data/codex",
+    "js/patches/codex",
+    "js/data/regionCodex",
+    "js/patches/regionCodex",
+    "js/patches/monsterCodex",
+    "js/patches/weaponCodexUi",
+    "js/patches/jobCodexUi"
+   ],
+   "docs": [
+    "LIVING_WORLD_DISCOVERY_ROADMAP.md"
+   ],
+   "concepts": [
+    "codex",
+    "region-codex",
+    "seen-flags"
+   ]
+  },
+  {
+   "id": "companions",
+   "title": "Companion / Monster Ranch",
+   "paths": [
+    "js/data/companion",
+    "js/patches/companion",
+    "js/data/monsterRanch",
+    "js/patches/monsterRanch",
+    "js/data/monsterMutations",
+    "js/data/ranch",
+    "js/patches/ranch",
+    "js/data/playerSkillTree.js",
+    "js/patches/playerSkillTree.js"
+   ],
+   "docs": [
+    "LIVING_WORLD_DISCOVERY_ROADMAP.md"
+   ],
+   "concepts": [
+    "companion",
+    "ranch",
+    "monster",
+    "species"
+   ]
+  },
+  {
+   "id": "content-packs",
+   "title": "Story/Core-loop content packs (CP I–IV, CLR batches)",
+   "paths": [
+    "js/data/contentPack",
+    "js/patches/contentPack",
+    "js/data/coreLoopClr",
+    "js/patches/coreLoopClr"
+   ],
+   "docs": [
+    "CONTENT_PACK_II_ROADMAP.md",
+    "CONTENT_PACK_III_ROADMAP.md",
+    "CONTENT_PACK_IV_ROADMAP.md",
+    "CORE_LOOP_REWORK_ROADMAP.md"
+   ],
+   "concepts": [
+    "content-pack",
+    "core-loop"
+   ]
+  },
+  {
+   "id": "discovery",
+   "title": "Fishing / Archaeology / Treasure Hunt activities",
+   "paths": [
+    "js/data/archaeology",
+    "js/patches/archaeology",
+    "js/data/fishing",
+    "js/patches/fishing",
+    "js/data/treasureHunt",
+    "js/patches/treasureHunt"
+   ],
+   "docs": [
+    "LIVING_WORLD_DISCOVERY_ROADMAP.md"
+   ],
+   "concepts": [
+    "archaeology",
+    "fishing",
+    "treasure-hunt"
+   ]
+  },
+  {
+   "id": "enemies",
+   "title": "Enemy roster / encounters / bounty / nemesis",
+   "paths": [
+    "js/data/enemy",
+    "js/patches/enemy",
+    "js/data/enemies",
+    "js/data/encounter",
+    "js/patches/encounter",
+    "js/data/globalEnemySpecies",
+    "js/data/regionalEnemies",
+    "js/data/bount",
+    "js/patches/bount",
+    "js/data/nemesis",
+    "js/patches/nemesis",
+    "js/data/raidBosses",
+    "js/data/roamers"
+   ],
+   "docs": [
+    "ENEMY_ENCOUNTER_2_ROADMAP.md",
+    "ENEMY_3_BEHAVIOR_ECOLOGY_ROADMAP.md",
+    "ENEMY_2_CONTENT_CATALOG.md"
+   ],
+   "concepts": [
+    "enemy",
+    "encounter",
+    "bounty",
+    "nemesis"
+   ]
+  },
+  {
+   "id": "equipment",
+   "title": "Equipment 3.0 / gear / loot pipeline",
+   "paths": [
+    "js/data/equipment",
+    "js/patches/equipment",
+    "js/data/affixes",
+    "js/data/artifact",
+    "js/data/unique",
+    "js/patches/unique",
+    "js/data/weapon",
+    "js/patches/weapon",
+    "js/data/options4",
+    "js/patches/options4",
+    "js/data/loot3",
+    "js/patches/loot3",
+    "js/patches/smartLoot",
+    "js/patches/loot",
+    "js/data/endgameLoot",
+    "js/data/endgameReward",
+    "js/patches/endgameDrop",
+    "js/patches/endgameReward",
+    "js/data/gearOverhaul",
+    "js/patches/gearOverhaul",
+    "js/data/huntUniques"
+   ],
+   "docs": [
+    "GEAR_OVERHAUL_ROADMAP.md",
+    "GEAR_OVERHAUL_AUDIT.md",
+    "GEAR_OVERHAUL_WEAPON_JOB_AUDIT.md"
+   ],
+   "concepts": [
+    "equipment",
+    "gear",
+    "loot",
+    "weapon",
+    "affix",
+    "artifact"
+   ]
+  },
+  {
+   "id": "jobs",
+   "title": "Job roster / fusion / C1 save migration map",
+   "paths": [
+    "js/data/job",
+    "js/patches/job",
+    "js/patches/phase8Job",
+    "js/data/secretJobs",
+    "js/patches/secretJobs",
+    "js/data/secretJob",
+    "js/patches/secretJob",
+    "js/data/fusion",
+    "js/patches/fusion"
+   ],
+   "docs": [
+    "PHASE8_JOB_FUSION_MATRIX.md",
+    "PHASE8_JOB_NAMING_AUDIT.md",
+    "PHASE8_JOB_COMPATIBILITY_AUDIT.md",
+    "C1_JOB_IDENTITY_AUDIT.md"
+   ],
+   "concepts": [
+    "job",
+    "class",
+    "fusion",
+    "migration"
+   ]
+  },
+  {
+   "id": "runes",
+   "title": "Rune 2.1",
+   "paths": [
+    "js/data/runes",
+    "js/data/rune",
+    "js/patches/rune",
+    "js/patches/legacyRuneRetirement.js"
+   ],
+   "docs": [
+    "RUNE_2_1_SPEC.md"
+   ],
+   "concepts": [
+    "rune",
+    "mark"
+   ]
+  },
+  {
+   "id": "settlement",
+   "title": "Settlement hub / incidents / seasons / ranch UI",
+   "paths": [
+    "js/data/settlement",
+    "js/patches/settlement",
+    "js/data/ch1Rumor",
+    "js/patches/ch1Rumor"
+   ],
+   "docs": [
+    "SETTLEMENT_3_LIVING_FRONTIER_ROADMAP.md",
+    "SETTLEMENT_FUTURE_IDEAS_DESIGN.md"
+   ],
+   "concepts": [
+    "settlement",
+    "incident",
+    "season",
+    "rumor"
+   ]
+  },
+  {
+   "id": "world",
+   "title": "World map / World Tier / Realm / Rift / Observed Branches",
+   "paths": [
+    "js/data/world",
+    "js/patches/world",
+    "js/data/regions",
+    "js/data/phase9",
+    "js/patches/phase9",
+    "js/data/observedBranch",
+    "js/patches/observedBranch",
+    "js/data/rift",
+    "js/patches/rift",
+    "js/data/exploration",
+    "js/patches/exploration",
+    "js/data/secretRealm",
+    "js/patches/secretRealm"
+   ],
+   "docs": [
+    "OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md",
+    "OBSERVED_BRANCHES_ACCESS_AND_TRANSCENDENTS.md",
+    "OBSERVED_BRANCHES_M12_AUDIT.md"
+   ],
+   "concepts": [
+    "world-tier",
+    "realm",
+    "rift",
+    "observed-branch",
+    "world-event"
+   ]
+  },
+  {
+   "id": "story-canon",
+   "title": "Story canon / narrative text",
+   "paths": [
+    "js/data/story",
+    "js/patches/story"
+   ],
+   "docs": [
+    "STORY_CANON.md",
+    "WORLD_LORE_BIBLE.md",
+    "PLAYER_FACING_LANGUAGE_POLICY.md"
+   ],
+   "concepts": [
+    "story",
+    "canon",
+    "lore"
+   ]
+  },
+  {
+   "id": "balance",
+   "title": "Numeric balance layers / reward curves",
+   "paths": [
+    "js/data/balance.js",
+    "js/data/numericSafety.js"
+   ],
+   "docs": [
+    "PHASE10_6_NUMERIC_SAFETY.md",
+    "LEVEL_ROADMAP_99999.md"
+   ],
+   "concepts": [
+    "balance",
+    "scaling",
+    "curve"
+   ]
+  },
+  {
+   "id": "progression",
+   "title": "Progression / phases / awakening / rebirth / endgame",
+   "paths": [
+    "js/data/progression",
+    "js/patches/progression",
+    "js/data/phase",
+    "js/patches/phase",
+    "js/data/postCp",
+    "js/patches/postCp",
+    "js/data/awakening",
+    "js/patches/awakening",
+    "js/patches/inheritance",
+    "js/data/inheritance",
+    "js/data/blessings",
+    "js/data/systemDeepening",
+    "js/patches/systemDeepening",
+    "js/data/endgame",
+    "js/patches/endgame",
+    "js/patches/status",
+    "js/data/statusCalculation",
+    "js/patches/levelRoadmap",
+    "js/patches/systemCleanup"
+   ],
+   "docs": [
+    "PHASE10_FINAL_AUDIT.md",
+    "LEVEL_ROADMAP_99999.md",
+    "POST_CP3_ENDGAME_ROADMAP.md",
+    "SYSTEM_DEEPENING_ROADMAP.md"
+   ],
+   "concepts": [
+    "progression",
+    "awakening",
+    "rebirth",
+    "phase",
+    "endgame"
+   ]
+  },
+  {
+   "id": "ui",
+   "title": "UI foundation / navigation / feedback patches",
+   "paths": [
+    "js/ui/",
+    "css/",
+    "index.html",
+    "js/patches/ui",
+    "js/patches/toast",
+    "js/patches/build",
+    "js/patches/stage",
+    "js/patches/home",
+    "js/patches/finalIntegrationUi.js",
+    "js/patches/overlayA11y.js"
+   ],
+   "docs": [
+    "UI_OVERHAUL_ROADMAP.md",
+    "UI_DESIGN_SYSTEM.md",
+    "UIX0_SOURCE_AND_OWNERSHIP_AUDIT.md"
+   ],
+   "concepts": [
+    "ui",
+    "css",
+    "viewport",
+    "navigation"
+   ]
+  },
+  {
+   "id": "screens",
+   "title": "Screen renderers",
+   "paths": [
+    "js/screens/"
+   ],
+   "docs": [
+    "UI_OVERHAUL_ROADMAP.md"
+   ],
+   "concepts": [
+    "screen",
+    "renderer"
+   ]
+  },
+  {
+   "id": "tests",
+   "title": "Regression test suite",
+   "paths": [
+    "tests/"
+   ],
+   "docs": [
+    "CLAUDE.md"
+   ],
+   "concepts": [
+    "tests",
+    "regression"
+   ]
+  },
+  {
+   "id": "docs",
+   "title": "Project documentation corpus",
+   "paths": [
+    "docs/",
+    "*.md"
+   ],
+   "docs": [],
+   "concepts": [
+    "docs",
+    "handoff",
+    "roadmap"
+   ]
+  },
+  {
+   "id": "assets",
+   "title": "Static assets",
+   "paths": [
+    "assets/"
+   ],
+   "docs": [],
+   "concepts": [
+    "assets",
+    "images"
+   ]
+  },
+  {
+   "id": "tooling",
+   "title": "Dev tooling / simulations / CI",
+   "paths": [
+    "scripts/",
+    "dev",
+    ".dev/",
+    ".github/",
+    "package.json"
+   ],
+   "docs": [
+    "DEV_INFRA.md"
+   ],
+   "concepts": [
+    "tooling",
+    "ci",
+    "dev",
+    "simulation"
+   ]
+  }
+ ]
 }

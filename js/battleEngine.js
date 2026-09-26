@@ -278,7 +278,7 @@ export class BattleEngine {
     // 巡回（Hunt）中、ごくまれに「名もなき強敵」（Roamer）が非Boss
     // スロットへ紛れ込む。1バトル1体まで。匂い袋で出現率を底上げできる。
     if (this.stage.hunt && !this._roamerSpawned && !ENEMY_TYPES[type]?.boss
-        && Math.random() < (HUNT_LAYER.ROAMER_CHANCE + (this._lureBonus || 0))) {
+        && Math.random() < (HUNT_LAYER.ROAMER_CHANCE + (this._lureBonus || 0) + (state.playerTreeRoamerBonus?.() || 0))) {
       const roamerId = pickRoamerForChapter(this.chapter?.num || 1);
       if (roamerId) { this._roamerSpawned = true; return this._spawnRoamer(roamerId); }
     }
@@ -635,7 +635,7 @@ export class BattleEngine {
     let dmg = Math.max(1, atk * (1 - mitigation));
     // 呪い巡回：全被ダメージを底上げするリスク側の代償（通常攻撃・
     // Boss特殊攻撃の両方に効く共通の乗算ポイント）。
-    if (this.stage.cursed) dmg *= HUNT_LAYER.CURSED_DMG_TAKEN_MULT;
+    if (this.stage.cursed) dmg *= 1 + (HUNT_LAYER.CURSED_DMG_TAKEN_MULT - 1) * (1 - (state.playerTreeHuntBonuses?.().cursedResist || 0));
     if (opts.mult == null) {
       // opts.multが指定されない＝予兆を経ない「通常攻撃」（Bossの通常攻撃含む）。
       // 実時間の「移動による回避」ぶんを補正するNORMAL_ATTACK_DAMAGE_MULTは
@@ -1825,10 +1825,12 @@ export class BattleEngine {
       if (extra) out.push(extra);
     }
 
+    const treeBonus = state.playerTreeUniqueBonus?.() || 0;
     const chance = isRare ? HUNT_LAYER.RARE_UNIQUE_CHANCE
       : (enemy.elite && this.stage.hunt) ? HUNT_LAYER.HUNT_ELITE_UNIQUE_CHANCE
       : enemy.elite ? HUNT_LAYER.ELITE_UNIQUE_CHANCE : 0;
-    if (chance > 0 && Math.random() < chance) {
+    const chanceWithBonus = chance + (chance > 0 ? treeBonus : 0);
+    if (chanceWithBonus > 0 && Math.random() < chanceWithBonus) {
       const pool = huntUniquesForChapter(chapterNum);
       if (pool.length > 0) {
         const item = pool[Math.floor(Math.random() * pool.length)];
@@ -1853,7 +1855,8 @@ export class BattleEngine {
   _rollDrop(dropCtx, opts = {}) {
     const table = this.stage.dropTable || [];
     if (table.length === 0) return null;
-    const abyssMult = this.stage.isAbyss ? (this.stage.dropMult || 1) * state.abyssDropRateMult() : (this.stage.dropMult || 1);
+    const huntBonus = 1 + (state.playerTreeHuntBonuses?.().dropMultBonus || 0);
+    const abyssMult = this.stage.isAbyss ? (this.stage.dropMult || 1) * state.abyssDropRateMult() : (this.stage.dropMult || 1) * huntBonus;
     const chance = ECONOMY.BASE_DROP_CHANCE * state.dropRateMult() * abyssMult * this._dropChanceBonusMult();
     if (!opts.guaranteed && Math.random() > chance) return null;
     let pool = table;
