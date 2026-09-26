@@ -14,6 +14,53 @@ Manual fallback: `python3 -m http.server 8000` → http://localhost:8000
 
 Stop: `Ctrl+C` in the terminal running `./dev play`.
 
+## IPHONE PLAY (Tailscale)
+
+The Mac serves Blade Vale over the tailnet — the iPhone never touches the
+public internet and you never type a port.
+
+**URL (bookmark this):**
+
+```text
+https://macbook-pro.tail44ad27.ts.net/bladevale/
+```
+
+1. iPhone must have Tailscale on (same tailnet as the Mac).
+2. Open the URL in Safari → play → close Safari anytime → reopen →
+   `はじめる` resumes the same save.
+3. Home Screen: Safari share sheet → `ホーム画面に追加` → the "Blade Vale"
+   icon opens the game fullscreen.
+
+**Saves:** the iPhone's save lives in Safari's storage for that URL —
+independent of any save on the Mac's own browser. Deleting the Home Screen
+icon does not delete the save; erasing Safari website data does.
+
+**Lifecycle (runs on the Mac, no Terminal needed during normal play):**
+
+```bash
+./dev remote start     # install + start (survives Mac restarts)
+./dev remote status    # is everything up? one-line answer per layer
+./dev remote restart   # bounce the game server (save is safe — it's in the browser)
+./dev remote stop      # fully remove: server + tailnet route + login auto-start
+./dev remote url       # print the iPhone URL
+```
+
+`./dev remote start` is a one-time setup; the service auto-starts at login
+and auto-restarts on crash via the existing LaunchAgent convention.
+
+**Page won't load on iPhone — diagnose top-down:**
+
+| `status` shows | meaning | fix |
+|---|---|---|
+| everything OK | Mac fine; iPhone problem | check Tailscale on iPhone, or Wi-Fi |
+| `tailscale : down` | Tailscale off on the Mac | open Tailscale app on the Mac |
+| `serve mount : not mounted` | route lost | `./dev remote restart` (then `start` if needed) |
+| `local server: ... 000` | game server down | `./dev remote start` |
+| `launchagent : not installed` | never set up / stopped | `./dev remote start` |
+| Mac asleep or off | — | wake the Mac; the service resumes itself |
+
+Server log if ever needed: `~/Library/Logs/bladevale-remote.log`.
+
 ## Fresh playthrough
 
 1. Title screen → `はじめる`.

@@ -12,6 +12,7 @@ import { runSaveCheck } from './saveCheck.mjs';
 import { runSmoke } from './smoke.mjs';
 import { runCheck } from './check.mjs';
 import { runPlay } from './play.mjs';
+import { runRemote } from './remote.mjs';
 
 const USAGE = `Blade Vale dev front door
 
@@ -32,6 +33,7 @@ authority
 
 play
   play                 launch a local server + browser — THE way to run the game
+  remote <sub>         tailnet-only iPhone access: start|stop|restart|status|url
 
 validation
   save-check           save schema + c1 job migration + migration tests
@@ -56,6 +58,7 @@ const COMMANDS = {
   smoke: runSmoke,
   check: runCheck,
   play: runPlay,
+  remote: runRemote,
 };
 
 const [cmd, ...args] = process.argv.slice(2);

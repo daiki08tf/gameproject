@@ -4,12 +4,12 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "main",
-      "head": "b857bef",
+      "head": "6a29128",
       "remote": "https://github.com/daiki08tf/gameproject.git"
     },
     "fileCounts": {
-      "total": 1089,
-      "code": 937,
+      "total": 1093,
+      "code": 939,
       "tests": 371
     }
   },
@@ -4459,6 +4459,7 @@
         "PHASE8_NAMING_AUDIT.md",
         "PHASE8_RUNTIME_INTEGRATION_NOTES.md",
         "PLAYER_FACING_LANGUAGE_POLICY.md",
+        "PLAYTEST.md",
         "POST_CP3_ENDGAME_ROADMAP.md",
         "POST_CP3_VERTICAL_EXTENSION_DESIGN.md",
         "PROJECT_GUIDE.md",
@@ -4499,6 +4500,7 @@
         "images"
       ],
       "files": [
+        "assets/ui/apple-touch-icon.png",
         "assets/ui/pixel-icons.png"
       ],
       "tests": [],
@@ -4535,6 +4537,8 @@
         "scripts/dev/lib/repo.mjs",
         "scripts/dev/map.mjs",
         "scripts/dev/play.mjs",
+        "scripts/dev/playDaemon.mjs",
+        "scripts/dev/remote.mjs",
         "scripts/dev/saveCheck.mjs",
         "scripts/dev/scope.mjs",
         "scripts/dev/smoke.mjs",
@@ -4584,6 +4588,7 @@
         "scripts/dev/handoff.mjs",
         "scripts/dev/impact.mjs",
         "scripts/dev/map.mjs",
+        "scripts/dev/playDaemon.mjs",
         "scripts/dev/saveCheck.mjs",
         "scripts/dev/scope.mjs",
         "scripts/dev/smoke.mjs",
