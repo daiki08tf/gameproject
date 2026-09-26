@@ -31,7 +31,7 @@ import { findStage } from './data/stages.js';
 import { ENEMY_TYPES } from './data/enemies.js';
 import { getItem, RARITY, rarityIndex } from './data/equipment.js';
 import { getRune } from './data/runes.js';
-import { DAMAGE_BUCKET, ECONOMY, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER, CAPS_LAYER, BOSS_AI_LAYER, resolveBossAIProfile, TEXT_BATTLE_LAYER } from './data/balance.js';
+import { DAMAGE_BUCKET, ECONOMY, ABYSS_EXPANSION_LAYER, WEAPON_CODEX_LAYER, CAPS_LAYER, BOSS_AI_LAYER, resolveBossAIProfile, TEXT_BATTLE_LAYER, HUNT_LAYER } from './data/balance.js';
 import { getBlessing } from './data/blessings.js';
 import { weaponDropPoolForStage, bossWeaponForChapter } from './data/weapons.js';
 import { sumPassivePower } from './data/combatStats.js';
@@ -60,11 +60,22 @@ const ENCOUNTER_GROUP_SIZE = TEXT_BATTLE_LAYER.ENCOUNTER_GROUP_SIZE;
 const FARMER_SURVIVE_CHANCE = 0.3;
 
 export class BattleEngine {
-  constructor(stageId, blessingId) {
+  constructor(stageId, blessingId, launchOpts) {
     const found = findStage(stageId, state.data.riftKeys || []);
     if (!found && stageId.startsWith('rift-')) throw Object.assign(new Error('裂界鍵が見つからないか、使用できません。'), { code: 'RIFT_KEY_UNAVAILABLE' });
     if (!found) throw new Error(`unknown stage: ${stageId}`);
     this.stage = found.stage;
+    // Hunt（巡回）モード：クリア済みStageの再挑戦は、launchOpts経由で
+    // 「Elite出現率＋ドロップ倍率」を持つStageコピーとして走らせる。
+    // Stageの元データ（CHAPTERS等の共有オブジェクト）には触れない。
+    if (launchOpts?.hunt && !this.stage.isAbyss) {
+      this.stage = {
+        ...this.stage,
+        hunt: true,
+        huntEliteChance: launchOpts.huntEliteChance ?? HUNT_LAYER.STORY_ELITE_CHANCE,
+        dropMult: launchOpts.dropMult ?? HUNT_LAYER.STORY_DROP_MULT,
+      };
+    }
     this.chapter = found.chapter;
     this.blessing = this.stage.isAbyss ? getBlessing(blessingId) : null;
     this._abyssReviveUsed = false;
@@ -275,6 +286,18 @@ export class BattleEngine {
         xp = Math.round(xp * rewardMult);
         gold = Math.round(gold * rewardMult);
       }
+    }
+
+    // Hunt（巡回）モード：クリア済みStageの周回では非Boss敵が一定率で
+    // Elite化する。素体倍率と撃破報酬倍率はAbyssのEliteと共通値を再利用
+    // するが、abyssEliteRewardMult（深淵ツリー報酬）は対象外。
+    else if (!t.boss && this.stage.huntEliteChance && Math.random() < this.stage.huntEliteChance) {
+      elite = true;
+      hp = Math.round(hp * ABYSS_EXPANSION_LAYER.ELITE_HP_MULT);
+      atk = Math.round(atk * ABYSS_EXPANSION_LAYER.ELITE_ATK_MULT);
+      def = Math.round(def * ABYSS_EXPANSION_LAYER.ELITE_DEF_MULT);
+      xp = Math.round(xp * ABYSS_EXPANSION_LAYER.ELITE_REWARD_MULT);
+      gold = Math.round(gold * ABYSS_EXPANSION_LAYER.ELITE_REWARD_MULT);
     }
 
     const enemy = {
@@ -1721,7 +1744,7 @@ export class BattleEngine {
   _rollDrop(dropCtx) {
     const table = this.stage.dropTable || [];
     if (table.length === 0) return null;
-    const abyssMult = this.stage.isAbyss ? (this.stage.dropMult || 1) * state.abyssDropRateMult() : 1;
+    const abyssMult = this.stage.isAbyss ? (this.stage.dropMult || 1) * state.abyssDropRateMult() : (this.stage.dropMult || 1);
     const chance = ECONOMY.BASE_DROP_CHANCE * state.dropRateMult() * abyssMult * this._dropChanceBonusMult();
     if (Math.random() > chance) return null;
     let pool = table;

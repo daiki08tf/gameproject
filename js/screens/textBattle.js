@@ -59,10 +59,10 @@ export class TextBattleScreen {
     this.el.retreatBtn.addEventListener('click', () => this._onForceRetreat());
   }
 
-  start(stageId, onEnd, blessingId) {
+  start(stageId, onEnd, blessingId, launchOpts) {
     if (this.engine?.stage.isRift && !this.engine.over && this.engine.stage.id === stageId) return;
     try {
-      this.engine = new BattleEngine(stageId, blessingId);
+      this.engine = new BattleEngine(stageId, blessingId, launchOpts);
     } catch (error) {
       if (error.code !== 'RIFT_KEY_UNAVAILABLE') throw error;
       queueMicrotask(() => onEnd?.({ cleared: false, retreated: true, keyMissing: true, rewards: { gold: 0, exp: 0 } }));
@@ -74,7 +74,7 @@ export class TextBattleScreen {
     this.locked = false;
     this.techMenuKind = null; // 'skill' | 'spell' | null（開いていない）
 
-    this.el.stageName.textContent = this.engine.stage.name;
+    this.el.stageName.textContent = this.engine.stage.name + (this.engine.stage.hunt ? '【巡回】' : '');
     this._pushLines(['戦闘開始！']);
     // 表示専用に最初の遭遇グループだけ先に見せる（ラウンドはまだ消費しない。
     // このグループの「出現直後の猶予」はBattleEngine側の_freshGroupPending

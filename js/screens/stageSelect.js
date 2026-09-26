@@ -13,6 +13,7 @@ import { world2KeyStageDescriptor } from '../data/world2Stages.js';
 import { ENEMY_TYPES } from '../data/enemies.js';
 import { knownObservedBranchesForPrimeRegion } from '../data/observedBranchDiscovery.js';
 import { observedBranchStageProgress, observedBranchHuntTargets, buildObservedBranchStage } from '../data/observedBranchStages.js';
+import { HUNT_LAYER } from '../data/balance.js';
 
 export function isStageDiscovered(chapter, stage, stageIndex) {
   if (!chapter || !stage) return false;
@@ -143,8 +144,9 @@ function renderObservedBranchStageCards(chapter, list, onPick) {
         hunt.className = 'stage-card branch' + (target.role === 'boss' ? ' boss' : '');
         hunt.dataset.stageId = target.stageId;
         hunt.dataset.stageState = 'next';
-        hunt.innerHTML = `<div><div class="name">${roleLabels[target.role]}：${target.name}</div><div class="rec">推奨Lv ${target.recLevel} / 戦利品候補 ${target.dropTable.length}種</div></div><div class="cleared">${target.role === 'boss' ? 'BOSS' : '→'}</div>`;
-        hunt.addEventListener('click', () => { Audio_.tap(); onPick(buildObservedBranchStage(target.stageId)); });
+        const huntElite = HUNT_LAYER.BRANCH_ELITE_CHANCE[target.role] ?? 0.2;
+        hunt.innerHTML = `<div><div class="name">${roleLabels[target.role]}：${target.name}</div><div class="rec">推奨Lv ${target.recLevel} / 戦利品候補 ${target.dropTable.length}種 / エリート${Math.round(huntElite * 100)}%・ドロップ×${HUNT_LAYER.BRANCH_DROP_MULT}</div></div><div class="cleared">${target.role === 'boss' ? 'BOSS' : '→'}</div>`;
+        hunt.addEventListener('click', () => { Audio_.tap(); onPick({ ...buildObservedBranchStage(target.stageId), hunt: true, huntEliteChance: huntElite, dropMult: HUNT_LAYER.BRANCH_DROP_MULT }); });
         list.appendChild(hunt);
       }
     }
@@ -168,8 +170,10 @@ export function renderStageSelect(chapterIndex, onPick) {
     card.className = 'stage-card' + (stage.boss ? ' boss' : '') + (stage.branch ? ' branch' : '') + (stage.bounty ? ' bounty' : '');
     const cleared = state.isStageCleared(stage.id);
     const sub = stage.bounty ? `${stage.bountyRank}級賞金首 / 推奨Lv ${stage.recLevel}` : `推奨Lv ${stage.recLevel}`;
-    card.innerHTML = `<div><div class="name">${stage.name}</div><div class="rec">${sub}</div></div><div class="cleared">${cleared ? 'CLEAR' : stage.boss ? 'BOSS' : ''}</div>`;
-    card.addEventListener('click', () => { Audio_.tap(); onPick(stage); });
+    card.innerHTML = `<div><div class="name">${stage.name}</div><div class="rec">${sub}</div></div><div class="cleared">${cleared ? 'CLEAR・巡回' : stage.boss ? 'BOSS' : ''}</div>`;
+    // クリア済みStageの再挑戦＝Hunt（巡回）：エリート出現＋ドロップ倍率UP。
+    // 進行中の初回挑戦（Story）とは報酬・敵構成が明示的に異なる。
+    card.addEventListener('click', () => { Audio_.tap(); onPick(cleared ? { ...stage, hunt: true, huntEliteChance: HUNT_LAYER.STORY_ELITE_CHANCE, dropMult: HUNT_LAYER.STORY_DROP_MULT } : stage); });
     list.appendChild(card);
   });
   renderObservedBranchStageCards(chapter, list, onPick);
@@ -193,6 +197,14 @@ export function renderStageConfirm(stage) {
   else if (stage.isAbyss) {const lines = [];if (stage.abyssRoute) lines.push(`${stage.abyssRoute.name}：${stage.abyssRoute.risk} ／ ◆ ${stage.abyssRoute.reward}`);if (stage.modifiers?.length) lines.push(`環境：${stage.modifiers.map(m => `${m.name}（${m.desc}）`).join(' ／ ')}`);if (stage.abyssPacts?.length) lines.push(`盟約：${stage.abyssPacts.map(p => p.name).join(' ／ ')}　危険度${stage.abyssPactDanger}`);modEl.textContent = lines.join('\n');modEl.style.whiteSpace = 'pre-line';modEl.classList.toggle('hidden', lines.length === 0);}
   else if (stage.observedBranch) {const label = stage.observedBranchLabel || '観測分岐';modEl.textContent = `${label}\nPrime世界とは異なる歴史が観測されている。`;modEl.style.whiteSpace = 'pre-line';modEl.classList.remove('hidden');}
   else {modEl.textContent = '';modEl.classList.add('hidden');}
+  // Hunt（巡回）モードは Stage 種別と直交するため、既存の種別表示に
+  // 追記する形で明示する（Story＝初回進行、Hunt＝周回ファーミングの
+  // 棲み分けを、出撃前に読めるようにする）。
+  if (stage.hunt) {
+    const elitePct = Math.round((stage.huntEliteChance || 0) * 100);
+    modEl.textContent = `${modEl.textContent ? modEl.textContent + '\n' : ''}巡回モード：エリート出現率${elitePct}% ／ ドロップ率×${stage.dropMult || 1}（Elite撃破でEXP・Gold UP）`;
+    modEl.style.whiteSpace = 'pre-line'; modEl.classList.remove('hidden');
+  }
   // 出撃前情報：何と戦うか（wave構成から敵名×数）と手持ちのどうぐを
   // 確認画面に出す。「準備→挑戦」の判断材料を与え、敵の姿を見てから
   // 道具を買いに戻る・装備を組み直す、というプレイループを作る。
