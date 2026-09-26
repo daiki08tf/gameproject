@@ -126,7 +126,7 @@ function describePlayerAction(result) {
       else lines.push(`${label}はまだ使えない`);
       return lines;
     }
-    lines.push(`「${result.name}」！`);
+    lines.push(result.companion ? `仲間「${result.name}」！` : `「${result.name}」！`);
     switch (result.techType) {
       case 'damage':
         for (const hit of result.targets || []) {
@@ -139,7 +139,7 @@ function describePlayerAction(result) {
         if ((result.targets || []).length === 0) lines.push('しかし、狙う相手がいなかった！');
         break;
       case 'heal':
-        lines.push(`HPを${result.healAmount}回復した！`);
+        lines.push(`${result.companion ? result.companionName + 'の' : ''}HPを${result.healAmount}回復した！`);
         if (result.mpRestored) lines.push(`MPを${result.mpRestored}回復した！`);
         if (result.buffed) lines.push('身体能力が上がった！');
         break;
