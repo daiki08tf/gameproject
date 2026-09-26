@@ -4,13 +4,13 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "main",
-      "head": "a652134",
+      "head": "23c3ffd",
       "remote": "https://github.com/daiki08tf/gameproject.git"
     },
     "fileCounts": {
-      "total": 1060,
-      "code": 908,
-      "tests": 367
+      "total": 1061,
+      "code": 909,
+      "tests": 368
     }
   },
   "systems": [
@@ -891,6 +891,7 @@
         "tests/result-next-stage.test.js",
         "tests/rift-entry.test.js",
         "tests/session4-expansion.test.js",
+        "tests/session5-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -1051,6 +1052,7 @@
         "tests/result-next-stage.test.js",
         "tests/rift-entry.test.js",
         "tests/session4-expansion.test.js",
+        "tests/session5-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -1326,6 +1328,7 @@
         "tests/ranch-species-grade.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/session4-expansion.test.js",
+        "tests/session5-expansion.test.js",
         "tests/world-expansion-11-15.test.js"
       ],
       "docs": [
@@ -1410,6 +1413,7 @@
         "tests/ranch-species-grade.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/session4-expansion.test.js",
+        "tests/session5-expansion.test.js",
         "tests/world-expansion-11-15.test.js"
       ]
     },
@@ -1751,6 +1755,7 @@
         "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/session4-expansion.test.js",
+        "tests/session5-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -1907,6 +1912,7 @@
         "tests/rareHuntContent.test.js",
         "tests/release-candidate-audit.test.js",
         "tests/session4-expansion.test.js",
+        "tests/session5-expansion.test.js",
         "tests/story-expansion-16-20.test.js",
         "tests/story-expansion-content.test.js",
         "tests/story-expansion-i-finale.test.js",
@@ -2920,6 +2926,7 @@
         "tests/phase11-core-story.test.js",
         "tests/phase11-modern-world-tease.test.js",
         "tests/phase11-world-mystery.test.js",
+        "tests/session5-expansion.test.js",
         "tests/story-canon.test.js",
         "tests/story-expansion-i-finale.test.js",
         "tests/story-expansion-ii-ch31.test.js",
@@ -2956,6 +2963,7 @@
         "tests/phase11-core-story.test.js",
         "tests/phase11-modern-world-tease.test.js",
         "tests/phase11-world-mystery.test.js",
+        "tests/session5-expansion.test.js",
         "tests/story-canon.test.js",
         "tests/story-expansion-i-finale.test.js",
         "tests/story-expansion-ii-ch31.test.js",
@@ -3765,6 +3773,7 @@
         "tests/secret-jobs-phase1.test.js",
         "tests/secret-jobs-phase2.test.js",
         "tests/session4-expansion.test.js",
+        "tests/session5-expansion.test.js",
         "tests/settlement-compact-ui.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
@@ -4134,6 +4143,7 @@
         "tests/secret-jobs-phase1.test.js",
         "tests/secret-jobs-phase2.test.js",
         "tests/session4-expansion.test.js",
+        "tests/session5-expansion.test.js",
         "tests/settlement-compact-ui.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
@@ -4674,6 +4684,7 @@
         "tests/rift-entry.test.js",
         "tests/rune2-runtime-2-1.test.js",
         "tests/session4-expansion.test.js",
+        "tests/session5-expansion.test.js",
         "tests/settlement-defense-rumor.test.js",
         "tests/settlement-incidents.test.js",
         "tests/special-tier-job-content.test.js",
@@ -4869,6 +4880,7 @@
         "tests/phase12-companion-pack.test.js",
         "tests/ranch-species-grade.test.js",
         "tests/session4-expansion.test.js",
+        "tests/session5-expansion.test.js",
         "tests/world-expansion-11-15.test.js"
       ]
     },
@@ -5349,6 +5361,7 @@
       ],
       "relatedTests": [
         "tests/phase11-world-mystery.test.js",
+        "tests/session5-expansion.test.js",
         "tests/story-canon.test.js"
       ]
     },
