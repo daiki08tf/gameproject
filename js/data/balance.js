@@ -46,6 +46,16 @@ export const EQUIPMENT_LAYER = {
 
   // スロットごとの基礎威力（章倍率・レアリティ倍率を掛ける前の値）
   BASE_POWER: { weapon: 4, shield: 4, head: 3, body: 4, accessory: 3 },
+
+  // 章立て装備パワー曲線（gearStatMult, chapters.js 経由）。
+  // 章が進むほど「装備」がプレイヤー火力の主軸を担うARPG的な設計。
+  // PIVOTまでは経済曲線chapterMultと同一（序盤の較正値を壊さない）、
+  // PIVOT以降は敵スケーリング同様に複利で伸ばす。攻撃系ステータスは
+  // 敵HPの複利成長に追従できるよう急め、耐久系ステータスは敵ATKの
+  // 複利成長（ATK_LATE_RATE=1.16）と同じ速度にして生存圧を一定に保つ。
+  GEAR_PIVOT_CHAPTER: 5,
+  GEAR_OFF_LATE_RATE: 1.28,   // atk/mag/spd/crit が受ける複利
+  GEAR_DEF_LATE_RATE: 1.16,   // def/hp/mp が受ける複利
 };
 
 // ---------------------------------------------------------
@@ -96,9 +106,16 @@ export const ENEMY_SCALING = {
   // さらに引き下げた。章5・10の到達値（シミュレーションで目標TTK帯に収まる
   // ことを確認済み）は変えず、EARLY_RATEを引き上げて章5時点の到達値が
   // 変わらないよう再フィットしている。
-  HP_BASE_MULT: 1.0,    HP_EARLY_RATE: 2.97, HP_LATE_RATE: 1.28,
+  // 【Session 2 再較正】LATE_RATE（6章以降の複利勾配）を下方修正した。
+  // 実測（scripts/progression-combat-sim.mjs）では、プレイヤー火力が
+  // 「レベル線形成長＋装備線形成長」のみのため、敵HP（指数×ロードマップ
+  // 倍率）との差が章が進むほど開き、章9以降のボス戦が200〜450ラウンドに
+  // 到達していた。装備側を複利化（GEAR_*_LATE_RATE）するのが主対策で、
+  // こちらは「早期に緩和しすぎて中盤が崩壊しない範囲」で緩めた補助調整。
+  // 章1〜5の到達値（旧較正の根拠となった範囲）は一切変更していない。
+  HP_BASE_MULT: 1.0,    HP_EARLY_RATE: 2.97, HP_LATE_RATE: 1.22,
   ATK_BASE_MULT: 0.75,  ATK_EARLY_RATE: 2.17, ATK_LATE_RATE: 1.16,
-  DEF_BASE_MULT: 0.45,  DEF_EARLY_RATE: 2.05, DEF_LATE_RATE: 1.22,
+  DEF_BASE_MULT: 0.45,  DEF_EARLY_RATE: 2.05, DEF_LATE_RATE: 1.15,
 
   // Boss専用のHPカーブ（Phase 6再シミュレーションで発覚した問題への対処）。
   // Boss素体（BOSS_BASE.hp=420）は元々、通常敵素体（NORMAL_BASE.hp=26）の
@@ -111,7 +128,23 @@ export const ENEMY_SCALING = {
   // 約2.2倍（序盤は約3.5倍）に収まるよう較正した。Bossを「壁」にする役割は
   // HPの絶対量ではなく、DEF＋新設のBoss AI（フェーズ2・予兆付き範囲攻撃／
   // 突進／遠距離攻撃／雑魚召喚）が担う設計（元指示10・11番）。
-  BOSS_HP_BASE_MULT: 1.19, BOSS_HP_EARLY_RATE: 1.99, BOSS_HP_LATE_RATE: 1.22,
+  BOSS_HP_BASE_MULT: 1.19, BOSS_HP_EARLY_RATE: 1.99, BOSS_HP_LATE_RATE: 1.17,
+};
+
+// ---------------------------------------------------------
+// Story / Hunt 棲み分け（Session 2）：クリア済みStageの再挑戦を「Hunt
+// （巡回・討伐周回）」として扱う。Storyは初回クリア報酬・章開放・ルーン
+// 解禁が主軸、Huntは装備ドロップ・Affix・Elite撃破報酬を追う周回が主軸。
+// Eliteの素体倍率・撃破報酬倍率は深淵の ABYSS_EXPANSION_LAYER.ELITE_* を
+// そのまま再利用する（Eliteという概念は共通）。
+// ---------------------------------------------------------
+export const HUNT_LAYER = {
+  // クリア済み本編Stageの再挑戦（周回ファーミング）
+  STORY_ELITE_CHANCE: 0.15,   // 非Boss敵がElite化する確率
+  STORY_DROP_MULT: 1.5,       // dropTable抽選確率の倍率
+  // Observed Branch の Branch Hunt（周回先）：役割で密度を変える
+  BRANCH_ELITE_CHANCE: { ecology: 0.20, deep: 0.40, boss: 0.25 },
+  BRANCH_DROP_MULT: 2.0,
 };
 
 // 章立てスケーリングの共通計算（1〜PIVOTは指数EARLY_RATE、PIVOT以降は

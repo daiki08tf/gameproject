@@ -33,13 +33,22 @@
 // equipment.jsのRARITYではなく元のEQUIPMENT_LAYER.RARITY_MULTを直接使う。
 import { WEAPON_TYPES } from './weaponTypes.js';
 import { EQUIPMENT_LAYER, WEAPON_CODEX_LAYER } from './balance.js';
+import { gearStatMult } from './chapters.js';
 
 // ---------------------------------------------------------
 // レベル倍率（章番号ではなく武器自身のrequiredLevelを軸にスケーリングする。
 // 章に紐付かない「どこでも拾いうる」武器のため）
+//
+// Session 2再較正：requiredLevel約9Lv＝1章相当という設計意図
+// （LEVEL_POWER_PER_LEVELのコメント参照）を保ちながら、乗算カーブを
+// 章立て装備と同じ gearStatMult に統一した。旧線形カーブは
+// LEVEL_POWER_BASE + Lv×0.045 でLv90時点でも×5.05に留まり、複利成長する
+// 敵HPに対してコーデックス武器自体が「スタッツ面で死んだコンテンツ」
+// になっていた。reqが低い序盤帯では新旧値がほぼ一致する
+// （Lv9: 旧1.41 → 新1.35、Lv45: 旧3.03 → 新3.17）。
 // ---------------------------------------------------------
 function levelMult(level) {
-  return WEAPON_CODEX_LAYER.LEVEL_POWER_BASE + level * WEAPON_CODEX_LAYER.LEVEL_POWER_PER_LEVEL;
+  return gearStatMult('atk', 1 + level / 9);
 }
 
 function roundWeaponStats(stats) {

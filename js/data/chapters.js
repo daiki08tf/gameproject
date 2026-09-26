@@ -6,8 +6,45 @@
    それぞれ装備・敵・ステージのデータを自動生成する。
    ============================================================ */
 
+import { EQUIPMENT_LAYER } from './balance.js';
+
 export function chapterMult(num) {
   return 1 + (num - 1) * 0.35;
+}
+
+// 章立て装備パワー曲線。経済曲線（chapterMult）は装備ドロップの見返り
+// 量としては残し、装備「ステータス」の伸びはこちらで管理する。
+// 敵側（ENEMY_SCALING）が章立てで複利成長するのに対し、従来は装備の
+// 伸びが線形（+35%/章）しかなかったため、後半章ほどTTKが爆発していた。
+// PIVOTまではchapterMultと同一値を返す（序盤の較正値・既存セーブの
+// 装備価値を変えない）。PIVOT以降はステータス種別ごとの複利で伸ばす：
+// 攻撃系は敵HPに、耐久系は敵ATKに追従する速度（詳細はbalance.js参照）。
+// spd/critは線形値ではなく「%予算」ステータス（critは上限、spdは攻撃
+// 間隔の下限で逓減）なので複利の対象は atk/mag のみに絞る。spd/crit/
+// 耐久系は緩い方のレートで伸ばし、表示値のインフレを防ぐ。
+const GEAR_OFFENSE_STATS = new Set(['atk', 'mag']);
+export function gearStatMult(stat, num) {
+  const pivot = EQUIPMENT_LAYER.GEAR_PIVOT_CHAPTER;
+  if (num <= pivot) return chapterMult(num);
+  const rate = GEAR_OFFENSE_STATS.has(stat)
+    ? EQUIPMENT_LAYER.GEAR_OFF_LATE_RATE
+    : EQUIPMENT_LAYER.GEAR_DEF_LATE_RATE;
+  return chapterMult(pivot) * Math.pow(rate, num - pivot);
+}
+
+// 手書き固定値装備（CP3報酬・賞金首固有・Abyssセット等）は、線形だった
+// 旧装備曲線に対して個別較正されている。曲線の複利化で通常装備が伸びた
+// 分だけ相対的に朽ちるため、「そのアイテムが手に入る章」をアンカーに
+// 新舊曲線比を掛けて設計時の立ち位置を保つ。anchorChapterがPIVOT以下
+// なら比率は1＝早期コンテンツの装備はそのまま。
+export function authoredStatRescale(stats, anchorChapter) {
+  const anchor = Math.max(1, Number(anchorChapter) || 1);
+  const out = {};
+  for (const k in stats) {
+    const ratio = gearStatMult(k, anchor) / chapterMult(anchor);
+    out[k] = Math.round(stats[k] * ratio * 10) / 10;
+  }
+  return out;
 }
 
 export const CHAPTER_SPECS = [
