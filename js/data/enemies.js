@@ -16,6 +16,7 @@ import { CHAPTER_EXPANSION_33 } from './chapters33.js';
 import { CHAPTER_EXPANSION_34 } from './chapters34.js';
 import { CHAPTER_EXPANSION_35 } from './chapters35.js';
 import { CHAPTER_EXPANSION_36 } from './chapters36.js';
+import { CHAPTER_EXPANSION_37_39 } from './chapters37to39.js';
 import { REGIONAL_ENEMY_EXPANSION, REGIONAL_ENEMY_ROLES } from './regionalEnemies2.js';
 import { OBSERVED_BRANCH_ECOLOGY, OBSERVED_BRANCH_ECOLOGY_ROLES } from './observedBranchEcology.js';
 import { OBSERVED_BRANCHES } from './observedBranches.js';
@@ -40,7 +41,7 @@ const BRANCH_BASE={hp:150,atk:20,def:9,speed:70,radius:26,color:'#d68b3a',xp:40,
 const E4_ROLE_BASES=Object.freeze({attacker:ATTACKER_BASE,caster:CASTER_BASE,trickster:TRICKSTER_BASE,support:SUPPORT_BASE,rare:RARE_BASE});
 function scale(base,name,num,meta={}){const isBoss=!!base.boss;return{...base,...meta,name,hp:Math.round(base.hp*(isBoss?bossHpMult(num):hpMult(num))),atk:Math.round(base.atk*atkMult(num)),def:Math.round(base.def*defMult(num)),xp:Math.round(base.xp*chapterMult(num)),gold:Math.round(base.gold*chapterMult(num))};}
 export const ENEMY_TYPES={grunt:scale(NORMAL_BASE,'ゴブリン',1),fast:scale(FAST_BASE,'コウモリ',1),tank:scale(TANK_BASE,'オーガ',1),boss_orcking:scale(BOSS_BASE,'オークキング',1),branch_goblin_chief:scale(BRANCH_BASE,'ゴブリンの頭目',1)};
-export const ALL_CHAPTER_SPECS=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_21_25,...CHAPTER_EXPANSION_26_29,...CHAPTER_EXPANSION_30,...CHAPTER_EXPANSION_31,...CHAPTER_EXPANSION_32,...CHAPTER_EXPANSION_33,...CHAPTER_EXPANSION_34,...CHAPTER_EXPANSION_35,...CHAPTER_EXPANSION_36];
+export const ALL_CHAPTER_SPECS=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_21_25,...CHAPTER_EXPANSION_26_29,...CHAPTER_EXPANSION_30,...CHAPTER_EXPANSION_31,...CHAPTER_EXPANSION_32,...CHAPTER_EXPANSION_33,...CHAPTER_EXPANSION_34,...CHAPTER_EXPANSION_35,...CHAPTER_EXPANSION_36,...CHAPTER_EXPANSION_37_39];
 for(const ch of ALL_CHAPTER_SPECS){
  ENEMY_TYPES[`${ch.id}_normal`]=scale(NORMAL_BASE,ch.enemies.normal,ch.num,{role:'normal',chapterId:ch.id});
  ENEMY_TYPES[`${ch.id}_fast`]=scale(FAST_BASE,ch.enemies.fast,ch.num,{role:'fast',chapterId:ch.id});
@@ -58,6 +59,29 @@ for(const ch of ALL_CHAPTER_SPECS){
  const t=scale(RARE_BASE,'獣径の主・DENLORD',5,{role:'rare',chapterId:'gaiden_beasttrail',speciesId:'gaiden:beasttrail:denlord',regional:true,behaviorTags:['rare','threat'],rareIdentity:true});
  t.hp=Math.round(t.hp*2.4);t.atk=Math.round(t.atk*1.5);t.def=Math.round(t.def*1.6);t.xp=Math.round(t.xp*2.2);t.gold=Math.round(t.gold*2.4);
  ENEMY_TYPES.bt_denlord=t;
+}
+
+/* 外伝「潮径」の巣 — 淀みと甲殻の生態系（Ch6帯にアンカー）。
+   tp_denlord は再生の主。Bossではなく番獣として勧誘可能。 */
+{
+ ENEMY_TYPES.tp_shambler=scale(NORMAL_BASE,'淀みの這い寄り',6,{role:'normal',chapterId:'gaiden_tidepath',regional:true});
+ ENEMY_TYPES.tp_skimmer=scale(FAST_BASE,'飛沫駆け',6,{role:'fast',chapterId:'gaiden_tidepath',regional:true});
+ ENEMY_TYPES.tp_bulwark=scale(TANK_BASE,'甲殻の壁獣',6,{role:'tank',chapterId:'gaiden_tidepath',regional:true});
+ ENEMY_TYPES.tp_rare=scale(RARE_BASE,'真珠殻の古亀',6,{role:'rare',chapterId:'gaiden_tidepath',regional:true,rareIdentity:true});
+ const t=scale(RARE_BASE,'潮径の主・TIDELORD',6,{role:'rare',chapterId:'gaiden_tidepath',speciesId:'gaiden:tidepath:denlord',regional:true,behaviorTags:['rare','threat'],rareIdentity:true});
+ t.hp=Math.round(t.hp*2.6);t.atk=Math.round(t.atk*1.35);t.def=Math.round(t.def*1.9);t.xp=Math.round(t.xp*2.2);t.gold=Math.round(t.gold*2.4);
+ ENEMY_TYPES.tp_denlord=t;
+}
+
+/* 外伝「灰径」の巣 — 葬いきれなかった亡者の群れ（Ch11帯にアンカー）。
+   af_denlord は死地の主。同じくBossではなく勧誘可能。 */
+{
+ ENEMY_TYPES.af_revenant=scale(NORMAL_BASE,'灰の亡兵',11,{role:'normal',chapterId:'gaiden_ashfield',regional:true});
+ ENEMY_TYPES.af_moth=scale(FAST_BASE,'煤羽の妖蛾',11,{role:'fast',chapterId:'gaiden_ashfield',regional:true});
+ ENEMY_TYPES.af_rare=scale(RARE_BASE,'王墓の大蜘蛛',11,{role:'rare',chapterId:'gaiden_ashfield',regional:true,rareIdentity:true});
+ const t=scale(RARE_BASE,'灰径の主・ASHLORD',11,{role:'rare',chapterId:'gaiden_ashfield',speciesId:'gaiden:ashfield:denlord',regional:true,behaviorTags:['rare','threat'],rareIdentity:true});
+ t.hp=Math.round(t.hp*2.2);t.atk=Math.round(t.atk*1.75);t.def=Math.round(t.def*1.4);t.xp=Math.round(t.xp*2.2);t.gold=Math.round(t.gold*2.4);
+ ENEMY_TYPES.af_denlord=t;
 }
 
 const STORY_REGION_NUMBERS=Object.freeze({ch1:1,...Object.fromEntries(ALL_CHAPTER_SPECS.map(ch=>[ch.id,ch.num]))});

@@ -86,7 +86,10 @@
     "js/data/world2Stages.js",
     "js/data/observedBranchStages.js",
     "js/data/resultNextStage.js",
-    "js/data/beastTrail.js"
+    "js/data/beastTrail.js",
+    "js/data/gaiden",
+    "js/data/denlords.js",
+    "js/patches/denlordLords.js"
    ],
    "docs": [
     "ROADMAP.md",

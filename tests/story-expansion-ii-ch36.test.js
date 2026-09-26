@@ -41,9 +41,9 @@ test('Ch36 named items resolve through the existing EFFECTS table, not an undefi
   assert.ok(Object.values(EFFECTS).includes(body.effects[0]));
 });
 
-test('Ch36 opens Arc VI as its own single-Chapter World3 Region',()=>{
+test('Ch36 opens Arc VI as the first Chapter of its World3 Region',()=>{
   const region=WORLD3_REGIONS.find(r=>r.id==='branch-record');
-  assert.deepEqual(region?.chapters,[36]);
+  assert.deepEqual(region?.chapters,[36,37,38,39]);
   assert.equal(region?.name,'分岐観測域');
   const shared=WORLD3_REGIONS.find(r=>r.id==='shared-observation');
   assert.ok(WORLD3_REGIONS.indexOf(shared)<WORLD3_REGIONS.indexOf(region));

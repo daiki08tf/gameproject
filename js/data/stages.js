@@ -14,6 +14,7 @@ import { CHAPTER_EXPANSION_33, CHAPTER_EXPANSION_REGION_TAGS_33 } from './chapte
 import { CHAPTER_EXPANSION_34, CHAPTER_EXPANSION_REGION_TAGS_34 } from './chapters34.js';
 import { CHAPTER_EXPANSION_35, CHAPTER_EXPANSION_REGION_TAGS_35 } from './chapters35.js';
 import { CHAPTER_EXPANSION_36, CHAPTER_EXPANSION_REGION_TAGS_36 } from './chapters36.js';
+import { CHAPTER_EXPANSION_37_39, CHAPTER_EXPANSION_REGION_TAGS_37_39 } from './chapters37to39.js';
 import { regionProfileForChapter } from './regionsPhase9.js';
 import { buildAbyssStage } from './abyss.js';
 import { buildSecretRealmStage } from './secretRealms.js';
@@ -21,6 +22,8 @@ import { buildRaidStage } from './raidBosses.js';
 import { buildObservedBranchStage } from './observedBranchStages.js';
 import { buildRiftStage } from './riftStages.js';
 import { BEAST_TRAIL_CHAPTER } from './beastTrail.js';
+import { TIDEPATH_CHAPTER } from './gaidenTidepath.js';
+import { ASHFIELD_CHAPTER } from './gaidenAshfield.js';
 
 const CHAPTER_1 = {
   id: 'ch1', num: 1, name: '第1章 はじまりの平原', stages: [
@@ -60,12 +63,12 @@ function buildExpandedChapter(ch){
   return{id:ch.id,num:ch.num,name:`第${ch.num}章 ${ch.name}`,lore:ch.lore,expanded:true,stages};
 }
 
-export const CHAPTERS=[CHAPTER_1,...CHAPTER_SPECS.map(buildChapter),...CHAPTER_EXPANSION_16_20.map(buildExpandedChapter),...CHAPTER_EXPANSION_21_25.map(buildExpandedChapter),...CHAPTER_EXPANSION_26_29.map(buildExpandedChapter),...CHAPTER_EXPANSION_30.map(buildExpandedChapter),...CHAPTER_EXPANSION_31.map(buildExpandedChapter),...CHAPTER_EXPANSION_32.map(buildExpandedChapter),...CHAPTER_EXPANSION_33.map(buildExpandedChapter),...CHAPTER_EXPANSION_34.map(buildExpandedChapter),...CHAPTER_EXPANSION_35.map(buildExpandedChapter),...CHAPTER_EXPANSION_36.map(buildExpandedChapter),BEAST_TRAIL_CHAPTER];
-const ALL_REGION_TAGS={...CHAPTER_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS_21_25,...CHAPTER_EXPANSION_REGION_TAGS_26_29,...CHAPTER_EXPANSION_REGION_TAGS_30,...CHAPTER_EXPANSION_REGION_TAGS_31,...CHAPTER_EXPANSION_REGION_TAGS_32,...CHAPTER_EXPANSION_REGION_TAGS_33,...CHAPTER_EXPANSION_REGION_TAGS_34,...CHAPTER_EXPANSION_REGION_TAGS_35,...CHAPTER_EXPANSION_REGION_TAGS_36};
+export const CHAPTERS=[CHAPTER_1,...CHAPTER_SPECS.map(buildChapter),...CHAPTER_EXPANSION_16_20.map(buildExpandedChapter),...CHAPTER_EXPANSION_21_25.map(buildExpandedChapter),...CHAPTER_EXPANSION_26_29.map(buildExpandedChapter),...CHAPTER_EXPANSION_30.map(buildExpandedChapter),...CHAPTER_EXPANSION_31.map(buildExpandedChapter),...CHAPTER_EXPANSION_32.map(buildExpandedChapter),...CHAPTER_EXPANSION_33.map(buildExpandedChapter),...CHAPTER_EXPANSION_34.map(buildExpandedChapter),...CHAPTER_EXPANSION_35.map(buildExpandedChapter),...CHAPTER_EXPANSION_36.map(buildExpandedChapter),...CHAPTER_EXPANSION_37_39.map(buildExpandedChapter),BEAST_TRAIL_CHAPTER,TIDEPATH_CHAPTER,ASHFIELD_CHAPTER];
+const ALL_REGION_TAGS={...CHAPTER_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS,...CHAPTER_EXPANSION_REGION_TAGS_21_25,...CHAPTER_EXPANSION_REGION_TAGS_26_29,...CHAPTER_EXPANSION_REGION_TAGS_30,...CHAPTER_EXPANSION_REGION_TAGS_31,...CHAPTER_EXPANSION_REGION_TAGS_32,...CHAPTER_EXPANSION_REGION_TAGS_33,...CHAPTER_EXPANSION_REGION_TAGS_34,...CHAPTER_EXPANSION_REGION_TAGS_35,...CHAPTER_EXPANSION_REGION_TAGS_36,...CHAPTER_EXPANSION_REGION_TAGS_37_39};
 for(const ch of CHAPTERS){
   const tags=ALL_REGION_TAGS[ch.id]||[],profile=regionProfileForChapter(ch.id);
   ch.regionProfile=profile;
-  for(const st of ch.stages){st.dropRegionTags=tags;if(profile){st.regionId=profile.id;st.regionTheme=profile.theme;st.fieldRule=profile.fieldRule;st.explorationEvents=profile.events;}}
+  for(const st of ch.stages){if(!st.dropRegionTags?.length)st.dropRegionTags=tags;if(profile){st.regionId=profile.id;st.regionTheme=profile.theme;st.fieldRule=profile.fieldRule;st.explorationEvents=profile.events;}}
 }
 export function finalStageOf(chapter){return chapter.stages.find(s=>s.boss)||chapter.stages[chapter.stages.length-1];}
 export function findStage(stageId,riftKeys=[]){

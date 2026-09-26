@@ -2,7 +2,7 @@
    Phase 11 / Story Expansion — Story Canon
    ============================================================ */
 
-export const STORY_CANON_VERSION = '3.0-story-expansion-ii-ch35';
+export const STORY_CANON_VERSION = '4.0-story-expansion-iii-ch39';
 
 export const CENTRAL_MYSTERY = Object.freeze({
   question: 'なぜBlade Valeの世界と現代世界はつながっているのか？',
@@ -44,6 +44,7 @@ export const STORY_ARCS = Object.freeze([
   {id:'arc3',chapters:[21,25],name:'外縁世界',purpose:'The Veilの外側ではなく、境界網に接続された外縁層を巡り、境界王座と観測中枢を発見する。',reveal:'Blade Valeは巨大な境界網の一ノード'},
   {id:'arc4',chapters:[26,30],name:'第八鍵と逆観測',purpose:'既知の七鍵体系から外れた接続を追い、機界の管理者も観測される側だと知り、外部文明との双方向認識へ到達する。',reveal:'第八鍵は外部から差し込まれた例外接続で、外側はこちらを認識している'},
   {id:'arc5',chapters:[31,35],name:'共観測',purpose:'双方向応答の手順、欠落する記録、双方が共有できる参照枠を追い、第八鍵が異なる観測領域を同期できる可能性へ進む。',reveal:'Ch35で第八鍵は短時間だけ共通参照点として安定し、Blade Valeと外側は同じ第三の境界現象を同時観測できた。接続は監視だけでなく協調観測にも使える。一方、終端には深緑の森の同一座標から相互に両立しない二つの輪郭が返り、その意味は未解決のまま残る'},
+  {id:'arc6',chapters:[36,39],name:'分岐航路',purpose:'同じ座標が複数の歴史へ分かれる事実を辿り、淘汰された記録の累層・二系統が照らし合う回廊・分岐を産み続ける核へ潜る。',reveal:'分岐は一度の事故ではなく今も続いており、「どちらか片方だけを真にする」機構が能動的に稼働している。分岐を始めた者が誰かはまだ見えない。'},
 ]);
 
 export const CLUE_LADDER = Object.freeze([

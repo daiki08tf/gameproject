@@ -52,7 +52,8 @@ test('chapter arcs preserve Ch1-30 and map Story Expansion II as Arc V', () => {
   assert.equal(storyArcForChapter(30)?.id, 'arc4');
   assert.equal(storyArcForChapter(31)?.id, 'arc5');
   assert.equal(storyArcForChapter(35)?.id, 'arc5');
-  assert.equal(storyArcForChapter(36), null);
+  assert.equal(storyArcForChapter(36)?.id, 'arc6');
+  assert.equal(storyArcForChapter(39)?.id, 'arc6');
 });
 
 test('clue ladder preserves modern-world evidence and advances through bidirectional to shared observation', () => {
@@ -72,6 +73,6 @@ test('clue ladder preserves modern-world evidence and advances through bidirecti
 test('writing rules protect mobile readability and progression separation', () => {
   assert.ok(STORY_WRITING_RULES.some(x => x.includes('mobile')));
   assert.ok(STORY_WRITING_RULES.some(x => x.includes('progression')));
-  assert.equal(STORY_ARCS.length, 5);
-  assert.equal(storyCanonSummary().arcCount, 5);
+  assert.equal(STORY_ARCS.length, 6);
+  assert.equal(storyCanonSummary().arcCount, 6);
 });

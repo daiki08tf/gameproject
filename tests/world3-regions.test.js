@@ -4,9 +4,9 @@ import { WORLD3_REGIONS, world3RegionForChapter } from '../js/data/world3Regions
 
 test('World regional hierarchy covers every implemented story chapter exactly once',()=>{
   const chapters=WORLD3_REGIONS.flatMap(r=>r.chapters);
-  assert.equal(chapters.length,36);
-  assert.deepEqual([...chapters].sort((a,b)=>a-b),Array.from({length:36},(_,i)=>i+1));
-  assert.equal(new Set(chapters).size,36);
+  assert.equal(chapters.length,39);
+  assert.deepEqual([...chapters].sort((a,b)=>a-b),Array.from({length:39},(_,i)=>i+1));
+  assert.equal(new Set(chapters).size,39);
 });
 
 test('The Veil and later Story Regions remain ordered through Arc VI',()=>{
@@ -19,7 +19,7 @@ test('The Veil and later Story Regions remain ordered through Arc VI',()=>{
   assert.deepEqual(outer?.chapters,[21,22,23,24,25]);
   assert.deepEqual(reverse?.chapters,[26,27,28,29,30]);
   assert.deepEqual(shared?.chapters,[31,32,33,34,35]);
-  assert.deepEqual(branch?.chapters,[36]);
+  assert.deepEqual(branch?.chapters,[36,37,38,39]);
   assert.ok(WORLD3_REGIONS.indexOf(veil)<WORLD3_REGIONS.indexOf(outer));
   assert.ok(WORLD3_REGIONS.indexOf(outer)<WORLD3_REGIONS.indexOf(reverse));
   assert.ok(WORLD3_REGIONS.indexOf(reverse)<WORLD3_REGIONS.indexOf(shared));

@@ -139,3 +139,5 @@ Content Pack III (Observation Reflux) and Content Pack IV are both complete. Obs
 3. M7's comparative Codex/Chronicle record across Prime/王樹領/深緑消失域 became the direct lead-in to Ch36, opening Arc VI, using the two Branches' accumulated records to partially recover the "missing observation interval" (`WORLD_LORE_BIBLE.md` open mysteries #8/#9) without resolving the larger external-civilization mysteries (#1/#2). **Shipped.**
 
 See `OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md`'s "Decision log" for the full rationale. This reused the existing Observed Branch / Adventure / Codex / Chronicle authorities throughout — no new parallel progression layer was invented.
+
+Ch37–39 (Arc VI continuation, 分岐航路) have shipped: the player descends through the pruned-record strata (淘汰累層), the twin-illumination corridor (双照回廊), and reaches the 分岐核, where an active mechanism — 単一化中枢ユニタス — keeps trying to collapse the two records back into one. The arc deliberately does NOT reveal who started the divergence (open mysteries #1/#2 and the connector/observation-reason remain unresolved); it only establishes that the split is still being generated and actively curated.

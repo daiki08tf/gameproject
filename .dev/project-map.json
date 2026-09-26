@@ -4,12 +4,12 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "main",
-      "head": "643d256",
+      "head": "a652134",
       "remote": "https://github.com/daiki08tf/gameproject.git"
     },
     "fileCounts": {
-      "total": 1055,
-      "code": 903,
+      "total": 1060,
+      "code": 908,
       "tests": 367
     }
   },
@@ -115,6 +115,7 @@
       "dependents": [
         "abyss",
         "adventure4",
+        "chapters",
         "codex",
         "combat",
         "companions",
@@ -219,6 +220,7 @@
         "js/patches/contentPackIVJ.js",
         "js/patches/coreLoopClr10Runtime.js",
         "js/patches/coreLoopClr18StoryDensityUi.js",
+        "js/patches/denlordLords.js",
         "js/patches/endgameDropContextFix.js",
         "js/patches/endgameGuidanceUi.js",
         "js/patches/enemy2EncounterPilot.js",
@@ -805,6 +807,10 @@
         "js/data/chapters34.js",
         "js/data/chapters35.js",
         "js/data/chapters36.js",
+        "js/data/chapters37to39.js",
+        "js/data/denlords.js",
+        "js/data/gaidenAshfield.js",
+        "js/data/gaidenTidepath.js",
         "js/data/observedBranchStages.js",
         "js/data/resultNextStage.js",
         "js/data/stages.js",
@@ -819,7 +825,8 @@
         "js/data/storyChapters34.js",
         "js/data/storyChapters35.js",
         "js/data/storyChapters36.js",
-        "js/data/world2Stages.js"
+        "js/data/world2Stages.js",
+        "js/patches/denlordLords.js"
       ],
       "tests": [
         "tests/abyss3-branching.test.js",
@@ -907,6 +914,7 @@
         "abyss",
         "balance",
         "enemies",
+        "engine",
         "world"
       ],
       "dependents": [
@@ -954,7 +962,9 @@
         "js/patches/adventureWorld4WorldRecords.js",
         "js/patches/bounty2Foundation.js",
         "js/patches/bountyFoundation.js",
+        "js/patches/companionRecruitment.js",
         "js/patches/coreLoopClr17LootIdentityUi.js",
+        "js/patches/denlordLords.js",
         "js/patches/enemy2EncounterPilot.js",
         "js/patches/enemy2EncounterTemplates.js",
         "js/patches/enemy2RankVariants.js",
@@ -1346,8 +1356,10 @@
         "ui"
       ],
       "importers": [
+        "js/data/companionBondSkills.js",
         "js/data/companionBreeding.js",
         "js/data/companionSkills.js",
+        "js/data/companionSynergies.js",
         "js/data/companions.js",
         "js/data/monsterRanch.js",
         "js/main.js",
@@ -3332,6 +3344,7 @@
       "importers": [
         "js/main.js",
         "js/patches/abyssRunUi.js",
+        "js/patches/companionBond.js",
         "js/patches/companionRecruitment.js",
         "js/patches/homeNavigation.js",
         "js/patches/monsterRanch2FacilitiesUi.js",
