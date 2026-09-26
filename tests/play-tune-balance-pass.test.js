@@ -12,7 +12,8 @@ import { ABYSS_CHALLENGES } from '../js/data/abyssChallenges.js';
 const read=p=>fs.readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
 
 test('balance pass: live story curve bridges Ch20 through Ch30 without level regression',()=>{
-  const bosses=CHAPTERS.filter(ch=>ch.num>=16&&ch.num<=30).map(ch=>({chapter:ch.num,level:Number(finalStageOf(ch).recLevel)}));
+  // Session 7 — 探索地点はアンカーnumを持つが主線曲線ではないので除外
+  const bosses=CHAPTERS.filter(ch=>ch.num>=16&&ch.num<=30&&!ch.gaiden&&!ch.sideLocation).map(ch=>({chapter:ch.num,level:Number(finalStageOf(ch).recLevel)}));
   for(let i=1;i<bosses.length;i++)assert.ok(bosses[i].level>=bosses[i-1].level,`Ch${bosses[i].chapter} regressed below Ch${bosses[i-1].chapter}`);
   const ch20=CHAPTERS.find(ch=>ch.num===20),ch21=CHAPTERS.find(ch=>ch.num===21),ch30=CHAPTERS.find(ch=>ch.num===30);
   assert.equal(finalStageOf(ch20).recLevel,3000);

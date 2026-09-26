@@ -6,7 +6,9 @@ import { PHASE9_REGION_PROFILES, phase9ExplorationEvents } from '../js/data/regi
 import { ENEMY_TYPES } from '../js/data/enemies.js';
 import { getItem } from '../js/data/equipment.js';
 
-const phase9Chapters=()=>CHAPTERS.filter(ch=>ch.num>=21&&ch.num<=25);
+// Session 7 — 探索地点はnumをアンカー章帯に合わせるため、正史章は
+// gaiden/sideLocationフラグで限定する（numだけでは識別できない）。
+const phase9Chapters=()=>CHAPTERS.filter(ch=>ch.num>=21&&ch.num<=25&&!ch.gaiden&&!ch.sideLocation);
 
 test('Phase 9.1 preserves canonical chapters 21 through 25 as later story chapters are appended',()=>{
   assert.ok(CHAPTERS.length>=25);

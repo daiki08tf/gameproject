@@ -49,7 +49,8 @@ test('UIX-6 batch 2 drops the decorative recruit-prompt icon instead of replacin
 test('UIX-6 batch 2 replaces bare glyph markers and decorative prefixes with text/non-pictographic symbols', () => {
   assert.match(monsterRanchUi, /mark=current\?\.id===x\.id\?' → 現在'/);
   assert.match(companionBattle, /シナジー: /);
-  assert.match(companionBattle, /仲間\$\{i\+1\}/);
+  // Session 7 — 隊列ラベル（前衛/中衛/後衛）が仲間位置のテキスト表記
+  assert.match(companionBattle, /companionFormationLabel/);
   assert.match(monsterRanch2FacilitiesUi, /forge-card-name">孵化場</);
   assert.match(monsterRanch2FacilitiesUi, /forge-card-name">配合卵</);
   assert.match(companion3Breeding, /forge-card-name">配合</);

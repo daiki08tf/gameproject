@@ -108,7 +108,9 @@ test('Session6: side locations never chain into or from main-story stage progres
   for (const ch of SIDE_LOCATION_CHAPTERS) {
     for (const s of ch.stages) assert.equal(nextStageAfter(s), null, `${s.id} must not chain (side content is self-contained)`);
   }
-  const lastMainBoss = CHAPTERS.find(c => c.num === 41).stages.find(s => s.boss);
+  // Session 7でArc VIII（ch42-45）が続いたため、終端Bossはnum45側。
+  // num41のBossは42-1へ繋がるのが正しい連鎖。
+  const lastMainBoss = CHAPTERS.find(c => c.num === 45).stages.find(s => s.boss);
   assert.equal(nextStageAfter(lastMainBoss), null);
 });
 
@@ -193,7 +195,8 @@ test('Session6: collection milestones report progress and pay out exactly once',
 test('Session6: companion orders are once-per-battle and reject without living companions', () => {
   fresh();
   const eng = new BattleEngine('1-1');
-  assert.deepEqual(Object.keys(COMPANION_ORDERS).sort(), ['brace', 'focus', 'unleash']);
+  // Session 7 で絆ゲート付き号令（protect/rally/charge）が追加された。
+  assert.deepEqual(Object.keys(COMPANION_ORDERS).sort(), ['brace', 'charge', 'focus', 'protect', 'rally', 'unleash']);
   assert.equal(eng.issueCompanionOrder('focus'), false, 'no companions → reject');
   assert.equal(eng.issueCompanionOrder('bogus'), false, 'unknown order → reject');
 });

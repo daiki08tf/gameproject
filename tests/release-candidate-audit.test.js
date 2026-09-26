@@ -5,6 +5,7 @@ import { CHAPTERS, findStage, finalStageOf } from '../js/data/stages.js';
 import { ENEMY_TYPES } from '../js/data/enemies.js';
 import { getItem, allItems, RARITY, SLOTS } from '../js/data/equipment.js';
 import { getRune } from '../js/data/runes.js';
+import { ROAMERS } from '../js/data/roamers.js';
 import { RANCH_REGION_SPECIES, RANCH_RECRUIT_BY_ENEMY_TYPE } from '../js/data/monsterRanchSpecies.js';
 import { getCompanionSkill } from '../js/data/companionSkills.js';
 import { abyssRecommendedLevel, abyssTargetItemPower } from '../js/data/abyssEndgame.js';
@@ -34,7 +35,9 @@ test('RC: story recommendations, rewards, waves and reward references stay valid
       assert.ok(finiteNonNegative(stage.rewards?.exp),`bad exp ${stage.id}`);
       assert.ok(Array.isArray(stage.waves)&&stage.waves.length>0,`no waves ${stage.id}`);
       for(const wave of stage.waves){
-        assert.ok(ENEMY_TYPES[wave.type],`missing enemy ${wave.type} from ${stage.id}`);
+        // Session 7 — 'roamer:<id>' waves resolve through the ROAMERS registry
+        const roamer=wave.type.startsWith('roamer:');
+        assert.ok(roamer?ROAMERS[wave.type.slice(7)]:ENEMY_TYPES[wave.type],`missing enemy ${wave.type} from ${stage.id}`);
         assert.ok(Number.isInteger(wave.count)&&wave.count>=1,`bad wave count ${stage.id}`);
       }
       assert.ok(resolveRewardItem(stage.firstClear?.itemId),`missing first-clear item ${stage.id}`);
