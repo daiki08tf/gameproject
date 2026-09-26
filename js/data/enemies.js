@@ -19,6 +19,7 @@ import { CHAPTER_EXPANSION_36 } from './chapters36.js';
 import { CHAPTER_EXPANSION_37_39 } from './chapters37to39.js';
 import { CHAPTER_EXPANSION_40_41 } from './chapters40to41.js';
 import { CHAPTER_EXPANSION_42_45 } from './chapters42to45.js';
+import { CHAPTER_EXPANSION_46_48 } from './chapters46to48.js';
 import { REGIONAL_ENEMY_EXPANSION, REGIONAL_ENEMY_ROLES } from './regionalEnemies2.js';
 import { OBSERVED_BRANCH_ECOLOGY, OBSERVED_BRANCH_ECOLOGY_ROLES } from './observedBranchEcology.js';
 import { OBSERVED_BRANCHES } from './observedBranches.js';
@@ -43,7 +44,7 @@ const BRANCH_BASE={hp:150,atk:20,def:9,speed:70,radius:26,color:'#d68b3a',xp:40,
 const E4_ROLE_BASES=Object.freeze({attacker:ATTACKER_BASE,caster:CASTER_BASE,trickster:TRICKSTER_BASE,support:SUPPORT_BASE,rare:RARE_BASE});
 function scale(base,name,num,meta={}){const isBoss=!!base.boss;return{...base,...meta,name,hp:Math.round(base.hp*(isBoss?bossHpMult(num):hpMult(num))),atk:Math.round(base.atk*atkMult(num)),def:Math.round(base.def*defMult(num)),xp:Math.round(base.xp*chapterMult(num)),gold:Math.round(base.gold*chapterMult(num))};}
 export const ENEMY_TYPES={grunt:scale(NORMAL_BASE,'ゴブリン',1),fast:scale(FAST_BASE,'コウモリ',1),tank:scale(TANK_BASE,'オーガ',1),boss_orcking:scale(BOSS_BASE,'オークキング',1),branch_goblin_chief:scale(BRANCH_BASE,'ゴブリンの頭目',1)};
-export const ALL_CHAPTER_SPECS=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_21_25,...CHAPTER_EXPANSION_26_29,...CHAPTER_EXPANSION_30,...CHAPTER_EXPANSION_31,...CHAPTER_EXPANSION_32,...CHAPTER_EXPANSION_33,...CHAPTER_EXPANSION_34,...CHAPTER_EXPANSION_35,...CHAPTER_EXPANSION_36,...CHAPTER_EXPANSION_37_39,...CHAPTER_EXPANSION_40_41,...CHAPTER_EXPANSION_42_45];
+export const ALL_CHAPTER_SPECS=[...CHAPTER_SPECS,...CHAPTER_EXPANSION_16_20,...CHAPTER_EXPANSION_21_25,...CHAPTER_EXPANSION_26_29,...CHAPTER_EXPANSION_30,...CHAPTER_EXPANSION_31,...CHAPTER_EXPANSION_32,...CHAPTER_EXPANSION_33,...CHAPTER_EXPANSION_34,...CHAPTER_EXPANSION_35,...CHAPTER_EXPANSION_36,...CHAPTER_EXPANSION_37_39,...CHAPTER_EXPANSION_40_41,...CHAPTER_EXPANSION_42_45,...CHAPTER_EXPANSION_46_48];
 for(const ch of ALL_CHAPTER_SPECS){
  ENEMY_TYPES[`${ch.id}_normal`]=scale(NORMAL_BASE,ch.enemies.normal,ch.num,{role:'normal',chapterId:ch.id});
  ENEMY_TYPES[`${ch.id}_fast`]=scale(FAST_BASE,ch.enemies.fast,ch.num,{role:'fast',chapterId:ch.id});

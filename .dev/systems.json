@@ -233,7 +233,9 @@
         "js/data/nemesis",
         "js/patches/nemesis",
         "js/data/raidBosses",
-        "js/data/roamers"
+        "js/data/roamers",
+        "js/data/mutations",
+        "js/patches/mutationRuntime"
       ],
       "docs": [
         "ENEMY_ENCOUNTER_2_ROADMAP.md",
@@ -339,7 +341,8 @@
         "js/data/settlement",
         "js/patches/settlement",
         "js/data/ch1Rumor",
-        "js/patches/ch1Rumor"
+        "js/patches/ch1Rumor",
+        "js/data/hiddenMerchants"
       ],
       "docs": [
         "SETTLEMENT_3_LIVING_FRONTIER_ROADMAP.md",
@@ -368,7 +371,11 @@
         "js/data/exploration",
         "js/patches/exploration",
         "js/data/secretRealm",
-        "js/patches/secretRealm"
+        "js/patches/secretRealm",
+        "js/data/rumorNetwork",
+        "js/patches/rumorNetwork",
+        "js/data/session8Locations",
+        "js/patches/session8World"
       ],
       "docs": [
         "OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md",
@@ -440,7 +447,8 @@
         "js/patches/status",
         "js/data/statusCalculation",
         "js/patches/levelRoadmap",
-        "js/patches/systemCleanup"
+        "js/patches/systemCleanup",
+        "js/patches/session8GrowthCurve"
       ],
       "docs": [
         "PHASE10_FINAL_AUDIT.md",

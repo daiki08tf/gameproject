@@ -17,6 +17,7 @@ import { observedBranchById } from '../data/observedBranches.js';
 import { huntUniquesForChapter } from '../data/huntUniques.js';
 import { ROAMERS, roamersForChapter } from '../data/roamers.js';
 import { HUNT_LAYER } from '../data/balance.js';
+import { FIELD_ABILITIES, requiredFieldAbilityIds } from '../data/fieldAbilities.js';
 
 export function isStageDiscovered(chapter, stage, stageIndex) {
   if (!chapter || !stage) return false;
@@ -169,9 +170,30 @@ export function renderStageSelect(chapterIndex, onPick) {
   list.innerHTML = '';
   chapter.stages.forEach((stage, stageIndex) => {
     if (!isStageDiscovered(chapter, stage, stageIndex)) return;
+    const cleared = state.isStageCleared(stage.id);
+    // Session 8 — Stage単位の探索門。深い層ほど仲間の探索能力が要る。
+    // requiresField：持っていなければ「道があるが進めない」鍵付きカード。
+    // climateGate ：Stage自体が気象の門を持つ（離宮の宝物庫など）。
+    if (stage.requiresField && !(state.fieldAbilityAvailable?.(stage.requiresField) ?? false)) {
+      const card = document.createElement('div');
+      card.className = 'stage-card locked' + (stage.boss ? ' boss' : '');
+      const missing = (requiredFieldAbilityIds(stage.requiresField) || [stage.requiresField]).map((a) => FIELD_ABILITIES[a]?.label || a).join('／');
+      card.innerHTML = `<div><div class="name">${stage.name}</div><div class="rec">${stage.fieldHint || '先へ進む術がない。'}${missing ? `<br>必要: ${missing}` : ''}</div></div><div class="cleared">LOCKED</div>`;
+      list.appendChild(card);
+      return;
+    }
+    if (stage.climateGate) {
+      const gateState = state.climateGateState?.(stage.climateGate, chapter) || 'open';
+      if (gateState !== 'open') {
+        const card = document.createElement('div');
+        card.className = 'stage-card locked' + (stage.boss ? ' boss' : '');
+        card.innerHTML = `<div><div class="name">${gateState === 'waiting' ? stage.name : '？？？'}</div><div class="rec">${stage.fieldHint || '今は道がない。天気か時間帯が違えば、あるいは。'}</div></div><div class="cleared">${gateState === 'waiting' ? 'SEALED' : '…'}</div>`;
+        list.appendChild(card);
+        return;
+      }
+    }
     const card = document.createElement('div');
     card.className = 'stage-card' + (stage.boss ? ' boss' : '') + (stage.branch ? ' branch' : '') + (stage.bounty ? ' bounty' : '');
-    const cleared = state.isStageCleared(stage.id);
     const sub = stage.bounty ? `${stage.bountyRank}級賞金首 / 推奨Lv ${stage.recLevel}` : `推奨Lv ${stage.recLevel}`;
     card.innerHTML = `<div><div class="name">${stage.name}</div><div class="rec">${sub}</div></div><div class="cleared">${cleared ? 'CLEAR・巡回' : stage.boss ? 'BOSS' : ''}</div>`;
     // クリア済みStageの再挑戦＝Hunt（巡回）：エリート出現＋ドロップ倍率UP。

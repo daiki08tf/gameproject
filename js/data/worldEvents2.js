@@ -130,6 +130,20 @@ export const WORLD_EVENT_CHAINS=Object.freeze({
    choice('応答を保存する',out('未知観測者の応答を封印ログとして保存した。',{flag:'machineObserverReply',discovery:'観測者の応答',keyFragments:3,chainEnd:true,tag:'observer'})),
    choice('接続を完全遮断する',out('通信路を焼き切り、未知存在からの追跡を止めた。',{flag:'machineObserverBlocked',discovery:'焼却された通信路',chainEnd:true,tag:'defense'}))]}
  ]},
+ whisper:{id:'whisper',name:'囁く風',minProgress:10,steps:[
+  {id:'whisper-1',name:'耳に残る風',text:'戦いの合間、風が言葉のような音を運んできた。「……まだ、ある」とだけ聞こえた。',choices:[
+   choice('風の方角を覚えておく',out('方角を記録した。風は同じ場所から吹いている。',{flag:'whisperHeard',discovery:'囁きの方角',next:1})),
+   choice('気のせいとして進む',out('足を止めなかった。だが風はまだ聞こえている。',{next:1}))]},
+  {id:'whisper-2',name:'同じ囁き',text:'別の土地で、まったく同じ囁きが聞こえた。今度ははっきりしている――「みずのした」「かねのね」と。',choices:[
+   choice('言葉を書き留める',out('「水の下」「鐘の音」。断片的だが、どこかの場所を指しているようだ。',{flag:'whisperWords',discovery:'水と鐘の囁き',next:2,tag:'rumor'})),
+   choice('仲間に聞いてみる',out('仲間も同じものを聞いていた。気のせいではない。',{next:2}))]},
+  {id:'whisper-3',name:'集まる噂',text:'宿場でも同じ話を耳にした。行商人が、傭兵が、読み手が――皆、別々の場所で同じ囁きを聞いている。噂は一箇所に集まっていく。',choices:[
+   choice('噂の出どころを辿る',out('辿ると、噂は皆「風が教えた」に行き着く。誰かが広めたのではなく、世界が囁いている。',{flag:'whisperConverged',discovery:'世界の噂の行き先',next:3,tag:'rumor'})),
+   choice('半分だけ信じる',out('信じるに足る形だけ残して記録した。残りは風に任せる。',{next:3}))]},
+  {id:'whisper-4',name:'囁きの答え',text:'囁きは続く。聞き続けた者には、いつか場所が分かるという。「おしえてはいない。ただ、あるだけだ」と風は言う。',choices:[
+   choice('噂帳に記す',out('囁きを噂帳に記した。いつか答え合わせができるだろう。',{flag:'whisperGuide',discovery:'囁きが指す場所',chainEnd:true,tag:'rumor'})),
+   choice('今は追わない',out('囁きは消えなかった。追わなくても、そこにある。',{flag:'whisperGuide',discovery:'囁きが指す場所',chainEnd:true}))]},
+ ]},
  nemesis:{id:'nemesis',name:'奴はまだ生きている',minProgress:12,requires:'nemesisEligible',steps:[
   {id:'nemesis-1',name:'血のついた武器',text:'討伐済みのはずの敵が使ったものと同じ傷跡が、折れた武器に残っている。',choices:[
    choice('血痕を追う',out('痕跡は通常の魔物より明確な意思を持って移動している。',{flag:'nemesisTrace',discovery:'宿敵の血痕',next:1})),
@@ -155,7 +169,12 @@ export const WORLD_EVENT_SINGLES=Object.freeze([
  {id:'meteor',name:'遠い流星',minProgress:8,text:'昼空を青白い流星が横切り、遠方へ落ちた。',choices:[choice('落下方向を記録する',out('地図に落下地点の方角を書き込んだ。',{flag:'meteorBearing',discovery:'流星の方角'})),choice('先を急ぐ',out('流星は雲の向こうへ消えた。'))]},
  {id:'lostMonster',name:'迷子の小魔物',minProgress:4,text:'戦意のない小型魔物が荷袋に頭を突っ込んでいる。',choices:[choice('餌を与える',out('警戒を解き、森へ戻っていった。',{flag:'kindToMonster',discovery:'魔物との小さな縁'})),choice('追い払う',out('魔物は一目散に逃げていった。'))]},
  {id:'storm',name:'境界の豪雨',minProgress:10,text:'晴天だった空が突然暗くなり、局地的な豪雨が降り始めた。',choices:[choice('雨宿りする',out('岩陰で古い刻印を見つけた。',{keyFragments:1,discovery:'雨に浮かぶ刻印'})),choice('強行する',out('ずぶ濡れになったが時間を失わず進んだ。'))]},
- {id:'grave',name:'名の消えた墓標',minProgress:6,text:'街道から少し外れた場所に、名だけ削られた墓標がある。',choices:[choice('手を合わせる',out('静かな風が吹き、奇妙な安心感が残った。',{flag:'namelessGravePrayer',discovery:'名なき墓標'})),choice('碑面を調べる',out('裏側に古い討伐隊の印を見つけた。',{flag:'oldPatrolMark',discovery:'古い討伐隊印'}))]}
+ {id:'grave',name:'名の消えた墓標',minProgress:6,text:'街道から少し外れた場所に、名だけ削られた墓標がある。',choices:[choice('手を合わせる',out('静かな風が吹き、奇妙な安心感が残った。',{flag:'namelessGravePrayer',discovery:'名なき墓標'})),choice('碑面を調べる',out('裏側に古い討伐隊の印を見つけた。',{flag:'oldPatrolMark',discovery:'古い討伐隊印'}))]},
+ // Session 8 — mutagenic field: while this event is pending
+ // resolution, enemy mutations are modestly likelier (the world's
+ // "discolored" state is live). The flag spreads into
+ // world2.lastEvent via materializeWorldEvent.
+ {id:'discolor',name:'色の違う獣',minProgress:12,mutagenic:true,text:'茂みの奥に、同種よりずっと色の薄い獣が一瞬だけ姿を見せた。図鑑にある個体ではない。',choices:[choice('じっと観察する',out('獣は逃げなかった。この個体は、この環境の中で「変わった」のかもしれない。',{flag:'discolorSeen',discovery:'色の違う獣の目撃',tag:'mutation'})),choice('追跡する',out('足跡は湿地へ消えた。追い切れないが、痕跡は新しい。',{flag:'discolorTrail',discovery:'変わった獣の足跡',tag:'mutation'}))]},
 ]);
 
 function conditionMet(condition,ctx){if(!condition)return true;if(condition.jobs&&!condition.jobs.includes(ctx.currentJobId))return false;if(condition.flag&&!ctx.flags?.[condition.flag])return false;return true;}

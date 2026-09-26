@@ -277,6 +277,10 @@ function describeEncounterStart(enemies, ev = {}) {
   for (const e of enemies) {
     if (e.roamer) lines.push(`……群れに、見知らぬ強敵「${e.name}」が紛れ込んでいる！`);
     else if (e.rare) lines.push(`……希少な個体「${e.name}」がいる！`);
+    // Session 8 — field mutation sighting. Rare enough that the
+    // encounter itself is the event.
+    if (e.mutated) lines.push(`……様子が違う。「${e.name}」は図鑑にない個体だ！`);
+    if (e.mutationReaction) lines.push(`……${e.mutationReaction}`);
   }
   // Session 7 — Boss intent readability。危険兆候と対処の読みを
   // 戦闘開始時の一行に載せる（数値ではなく傾向として）。

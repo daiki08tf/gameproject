@@ -59,6 +59,10 @@ export const REGIONAL_ENEMY_EXPANSION = Object.freeze({
   ch43:entry('黙録の巡回兵','未読頁の術師','棚潜みの撹乱体','書庫補助端末','読まれなかった書獣'),
   ch44:entry('野生分岐の爪獣','自生術の残響','囲い外の撹乱体','野放し補助端末','植えられなかった野獣'),
   ch45:entry('接続端の守索体','端末共鳴師','未接続撹乱体','畦束補助端末','端を越えた残響獣'),
+  // Session 8 — Arc IX 応答層。応える畦・噂の集まる谷・囁きの水源。
+  ch46:entry('応答の追撃体','返声術師','反響撹乱体','応答中継端末','二度答える残響獣'),
+  ch47:entry('集音の狩猟体','噂収集術師','伝聞撹乱体','集音補助端末','全てを聞いた集積獣'),
+  ch48:entry('水源の滲出体','湧声の術師','囁き撹乱体','聴取補助端末','泉底で聞き続ける獣'),
 });
 
 export function regionalEnemySet(chapterId){return REGIONAL_ENEMY_EXPANSION[chapterId]||null;}

@@ -464,6 +464,12 @@ button { font-family: inherit; }
 .job-card-top { display: flex; justify-content: space-between; align-items: center; }
 .job-card-name { font-weight: bold; }
 .mastered-badge { color: var(--dc-brass-300, var(--xp-color)); margin-left: 4px; }
+.mutation-badge { color: var(--dc-mist-300, #9fb3c8); border: 1px solid var(--dc-mist-500, #5f7285); border-radius: 2px; padding: 0 .35em; font-size: .72em; letter-spacing: .08em; vertical-align: .1em; margin-left: 4px; }
+.rank-drop-banner { padding: 10px 12px; margin: 8px 0; border: 1px solid var(--dc-brass-300, var(--xp-color)); background: rgba(201, 168, 106, .08); }
+.rank-drop-banner.primordial { border-color: #e8e2d0; background: rgba(232, 226, 208, .07); box-shadow: 0 0 18px rgba(232, 226, 208, .12); }
+.rank-drop-name { font-weight: 700; letter-spacing: .06em; color: var(--dc-brass-300, var(--xp-color)); }
+.rank-drop-banner.primordial .rank-drop-name { color: #e8e2d0; }
+.rank-drop-sub { font-size: .8em; opacity: .8; margin-top: 2px; }
 .job-card-lv { font-size: 12px; opacity: 0.8; }
 .job-card .bar { margin-top: 6px; }
 .job-card-req { font-size: 11px; opacity: 0.65; margin-top: 4px; }

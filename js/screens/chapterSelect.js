@@ -112,7 +112,16 @@ export function renderChapterSelect(onPick) {
     const unlocked=isChapterUnlocked(idx,(id)=>state.isStageCleared(id));
     const fieldOk=ch.requiresField?(state.fieldAbilityAvailable?.(ch.requiresField)??true):true;
     const foreshadowed=sideLocationForeshadowed(ch,(id)=>state.isStageCleared(id));
-    const vis=sideLocationVisibility(ch,{unlocked,foreshadowed,fieldOk});
+    // Session 8 — 噂の合点（requiresDiscovery）と気象の門（climateGate）。
+    // 合点が結ばれていない場所は世界に存在しない。合点済みでも気象が
+    // 違えば「今は道がない」＝foreshadow（???の気配カード）として出す。
+    const discoveryOk=!ch.requiresDiscovery||!!(state.data.world2?.discoveries?.[ch.requiresDiscovery]);
+    const gateState=ch.climateGate?(state.climateGateState?.(ch.climateGate,ch)||'open'):'open';
+    const openNow=unlocked&&fieldOk&&discoveryOk&&gateState==='open';
+    let vis=sideLocationVisibility(ch,{unlocked:unlocked&&discoveryOk,foreshadowed,fieldOk});
+    if(ch.climateGate&&openNow)vis=fieldOk?'open':'field-locked';
+    else if(ch.climateGate&&unlocked&&discoveryOk&&gateState==='waiting')vis='foreshadow';
+    else if(ch.requiresDiscovery&&unlocked&&!discoveryOk)vis=foreshadowed?'foreshadow':'hidden';
     if(vis==='hidden')return null;
     if(vis==='open'||vis==='field-locked'){
       if(!discovered[ch.id]){discovered[ch.id]=vis==='open'?'open':'locked';newlyVisible.push({ch,vis});}

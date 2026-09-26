@@ -40,6 +40,7 @@ import { weaponDropPoolForStage, bossWeaponForChapter } from './data/weapons.js'
 import { sumPassivePower } from './data/combatStats.js';
 import { hasRareAffix, highestAffixRarity } from './data/affixes.js';
 import { getConsumable, CONSUMABLE_DROP_CHANCE, pickConsumableDrop } from './data/consumables.js';
+import { MUTATIONS } from './data/mutations.js';
 
 const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -89,6 +90,9 @@ export class BattleEngine {
     this.chapter = found.chapter;
     this.blessing = this.stage.isAbyss ? getBlessing(blessingId) : null;
     this._abyssReviveUsed = false;
+    // Session 8 — 生きた世界の気象。worldClimate patchが未ロードの環境
+    // （単体テスト等）ではnullのまま＝天候効果なし、で完全に従来動作。
+    this._climate = state.climateForStage?.(this.stage) || null;
 
     const stats = state.getStats();
     this.player = {
@@ -285,7 +289,8 @@ export class BattleEngine {
     // 巡回（Hunt）中、ごくまれに「名もなき強敵」（Roamer）が非Boss
     // スロットへ紛れ込む。1バトル1体まで。匂い袋で出現率を底上げできる。
     if (this.stage.hunt && !this._roamerSpawned && !ENEMY_TYPES[type]?.boss
-        && Math.random() < (HUNT_LAYER.ROAMER_CHANCE + (this._lureBonus || 0) + (state.playerTreeRoamerBonus?.() || 0))) {
+        && Math.random() < (HUNT_LAYER.ROAMER_CHANCE + (this._lureBonus || 0) + (state.playerTreeRoamerBonus?.() || 0)
+            + (this._climate?.huntMods?.roamerChanceBonus || 0))) {
       const roamerId = pickRoamerForChapter(this.chapter?.num || 1);
       if (roamerId) { this._roamerSpawned = true; return this._spawnRoamer(roamerId); }
     }
@@ -316,7 +321,8 @@ export class BattleEngine {
     // Hunt（巡回）モード：クリア済みStageの周回では非Boss敵が一定率で
     // Elite化する。素体倍率と撃破報酬倍率はAbyssのEliteと共通値を再利用
     // するが、abyssEliteRewardMult（深淵ツリー報酬）は対象外。
-    else if (!t.boss && this.stage.huntEliteChance && Math.random() < this.stage.huntEliteChance) {
+    else if (!t.boss && this.stage.huntEliteChance
+        && Math.random() < Math.min(0.9, this.stage.huntEliteChance + (this._climate?.huntMods?.rareChanceBonus || 0))) {
       elite = true;
       hp = Math.round(hp * ABYSS_EXPANSION_LAYER.ELITE_HP_MULT);
       atk = Math.round(atk * ABYSS_EXPANSION_LAYER.ELITE_ATK_MULT);
@@ -1708,17 +1714,33 @@ export class BattleEngine {
     // Session 6: 探索地点の固有補正（stage.dropAffixBonus）を品質に少量乗せる。
     // Session 7: dropRankBonus（位階+1抽選の底上げ、秘密の狩場向け）と
     // locTags/affixBiasCats（地点署名Affixと場所のAffix傾向）を載せる。
+    // Session 8 — 変異個体撃破は位階抽選の底上げ＋Affix傾斜。
+    // mutationRuntime が enemy.mutationId を立てる。
+    const mutDef = MUTATIONS[enemy.mutationId] || null;
+    const mutBonus = Number(mutDef?.dropRankBonus) || 0;
+    const biasCats = [
+      ...(this.stage.affixBiasCats || this.chapter?.affixBiasCats || []),
+      ...(mutDef?.affixCats || []),
+    ];
     const dropCtx = {
       depth: this.stage.isAbyss ? (this.stage.abyssDepth || 0) : 0,
       elite: !!enemy.elite,
       boss: !!enemy.boss,
       bonus: Number(this.stage.dropAffixBonus) || 0,
-      rankBonus: Number(this.stage.dropRankBonus ?? this.chapter?.dropRankBonus) || 0,
+      rankBonus: (Number(this.stage.dropRankBonus ?? this.chapter?.dropRankBonus) || 0) + mutBonus
+        + (this._climate?.huntMods?.dropRankBonus || 0),
       locTags: this.stage.locTags || this.chapter?.locTags || null,
-      affixBiasCats: this.stage.affixBiasCats || this.chapter?.affixBiasCats || null,
+      affixBiasCats: biasCats.length ? biasCats : null,
+      mutationId: enemy.mutationId || null,
+      weatherId: this._climate?.weatherId || null,
+      daypartId: this._climate?.daypartId || null,
     };
     const drops = [];
     const dropInfo = this._rollDrop(dropCtx); if (dropInfo) drops.push(dropInfo);
+    // 変異個体は追加の武器抽選を1回行う（変異の「当たり」感）。
+    if (mutDef && Math.random() < Math.max(0, (mutDef.dropChanceMult || 1) - 1)) {
+      const mutDropInfo = this._rollWeaponDrop(dropCtx); if (mutDropInfo) drops.push(mutDropInfo);
+    }
     const weaponDropInfo = this._rollWeaponDrop(dropCtx); if (weaponDropInfo) drops.push(weaponDropInfo);
     const consumableDropInfo = this._rollConsumableDrop(); if (consumableDropInfo) drops.push(consumableDropInfo);
     // Chase層（Session 3）：Rare/Roamer/巡回Eliteの撃破は固有装備の

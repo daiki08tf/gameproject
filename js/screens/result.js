@@ -62,6 +62,18 @@ function renderLoot3Chase(result, itemsEl) {
   wrap.appendChild(chip);itemsEl.appendChild(wrap);
 }
 
+function renderVault(result,itemsEl){
+  const vault=result?.world2?.vault;
+  if(!vault||!vault.drops?.length)return;
+  const wrap=document.createElement('div');wrap.className='rank-drop-banner';wrap.style.display='block';
+  const head=document.createElement('div');head.className='rank-drop-name';head.textContent='TREASURE VAULT';wrap.appendChild(head);
+  const sub=document.createElement('div');sub.className='rank-drop-sub';sub.textContent='深部に残されていた拾い物。'+(vault.weatherId?'気象の影響で位階が揺れている。':'');wrap.appendChild(sub);
+  itemsEl.appendChild(wrap);
+  for(const d of vault.drops){const isPrim=d.rank==='primordial',isRelic=d.rank==='relic';const banner=document.createElement('div');banner.className=`rank-drop-banner${isPrim?' primordial':''}`;
+    banner.innerHTML=`<div class="rank-drop-name">${d.rankLabel?`【${d.rankLabel}】 `:''}${d.name}</div><div class="rank-drop-sub">${d.rankLabel?(isPrim?'原初の拾い物――同じ品は二度と拾えないかもしれない。':isRelic?'遺物級の拾い物。':'位階の高い拾い物。'):'拾い物。'}</div>`;
+    itemsEl.appendChild(banner);}
+}
+
 function renderWorldEvent(result,itemsEl){
   const event=result?.world2?.event;
   if(!event)return;
@@ -95,6 +107,7 @@ export function renderResult(result) {
     for(const drop of rune2Drops){const rune=getRune2(drop.id);if(!rune)continue;const chip=document.createElement('div');chip.className='result-item-chip';chip.style.color='var(--accent)';chip.textContent=`RUNE ${rune.name} +${drop.amount}刻（${drop.owned}刻）`;itemsEl.appendChild(chip);}
   }
   renderLoot3Chase(result,itemsEl);
+  renderVault(result,itemsEl);
   renderWorldEvent(result,itemsEl);
   renderPhase13(result,itemsEl);
   const equipBtn=document.getElementById('resultEquipBtn');equipBtn.classList.toggle('hidden',normalItems.length===0);
