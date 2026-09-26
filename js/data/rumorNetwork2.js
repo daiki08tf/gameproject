@@ -122,7 +122,7 @@ export const SESSION8_RUMOR_THREADS = Object.freeze([
     entries: [
       Object.freeze({ id: 'drowned_lord', type: 'initial', source: '漁師', order: 1, unlock: { type: 'stage', stageId: 'fg-2' },
         text: '「水没坑道のずっと先、湖の底に、昔の領主の離宮が丸ごと沈んでいる」という話を漁師がした。' }),
-      Object.freeze({ id: 'air_pockets', type: 'testimony', source: '潜りの名人', order: 2, unlock: { type: 'discovered', id: 'chain_sunken_manse' },
+      Object.freeze({ id: 'air_pockets', type: 'testimony', source: '潜りの名人', order: 2, unlock: { type: 'rumorEntryCount', rumorId: 'tide_scavenger', min: 2 },
         text: '離宮は水に沈んだが、中に空気の残る部屋がいくつもあるらしい。潜れる仲間がいれば、廊下の先まで辿れるだろう。' }),
       Object.freeze({ id: 'lift_rumor', type: 'testimony', source: '流れ着いた仕立て屋', order: 3, unlock: { type: 'stage', stageId: 'sm8-2' },
         text: '「昇降機が残っているはずよ。動くかどうかは――機械の仲間がいれば分かるでしょうね」' }),
