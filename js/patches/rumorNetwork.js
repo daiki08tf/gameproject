@@ -70,6 +70,9 @@ function isS8EntryUnlocked(unlock, ctx = {}) {
     case 'wildMutation': return wildMutationSeen(unlock.state || 'seen', unlock.mutationId);
     case 'wildMutationAny': return wildMutationSeen(unlock.state || 'seen', null);
     case 'mastery': return (Number(state.speciesMasteryLevel?.(unlock.speciesId)) || 0) >= (unlock.min || 1);
+    // 生態知識 — 「その種を野生で知っているか」。勧誘不要の知識軸
+    // （Species Mastery との分離は js/data/speciesMastery.js 冒頭参照）。
+    case 'ecology': return (Number(state.ecologyKnowledgeLevel?.(unlock.speciesId)) || 0) >= (unlock.min || 1);
     case 'rumorState': return rumorStateFor(unlock.rumorId) === (unlock.state || 'resolved');
     case 'rumorEntryCount': return rumorEntryCountFor(unlock.rumorId) >= (unlock.min || 1);
     case 'discovered': return !!w.discoveries[unlock.id];
@@ -189,17 +192,22 @@ state.rumorNetworkThreads = function rumorNetworkThreads() {
     .filter(Boolean);
 };
 
-// Hunting knowledge: a heard rumor sharpens the hunt. mutationRuntime
-// reads this for its rumorBoost — true when a KNOWN thread's intel
-// covers this enemy type or the chapter's climate.
+// Hunting knowledge: a HEARD rumor sharpens the hunt. mutationRuntime
+// reads this for its rumorBoost — true when a thread the player has
+// actually been told (rumorHearing) carries intel covering this enemy
+// type or the chapter's climate. If the hearing layer is not loaded
+// (test/light environments), unlocked entries alone qualify.
 state.rumorIntelBoostFor = function rumorIntelBoostFor(enemyType, chapterId) {
   const w = state.data.world2;
   if (!w?.discoveries) return false;
   const chapter = CHAPTERS.find((c) => c.id === chapterId) || null;
   const climate = chapter ? climateIdForChapter(chapter) : null;
+  const heardFn = state.isRumorEntryHeard;
   for (const rumor of SESSION8_RUMOR_THREADS) {
-    const rec = w.discoveries[`rumor:s8_${rumor.id}`];
+    const recId = `rumor:s8_${rumor.id}`;
+    const rec = w.discoveries[recId];
     if (!rec?.entries?.length) continue;
+    if (heardFn && !rec.entries.some((e) => heardFn.call(this, recId, e.id))) continue;
     const intel = rumor.intel || {};
     if (intel.enemyTypes?.includes(enemyType)) return true;
     if (climate && intel.climates?.includes(climate)) return true;

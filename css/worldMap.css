@@ -1,0 +1,131 @@
+/* World Map — 空間的な冒険選択（worldMapUi.js）
+   Dark Chronicle 準拠: 墨色の羊皮紙、鉄色の街道、文字による表示。
+   プラットフォーム絵文字は使わない（記号はテキストグリフのみ）。 */
+
+.worldmap-panel {
+  margin: 10px 0 14px;
+  border: 1px solid var(--dc-iron-500, #3a4350);
+  border-radius: var(--dc-radius-panel, 10px);
+  background: linear-gradient(160deg, rgba(16,20,27,.96), rgba(24,30,40,.94));
+  overflow: hidden;
+}
+.worldmap-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.worldmap-head .hint { font-size: 11px; }
+.worldmap-scroll {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: 62vh;
+}
+.worldmap-svg { display: block; width: 100%; height: auto; min-width: 560px; }
+
+/* 領域名キャプション */
+.wm-region-label {
+  font-size: 26px;
+  fill: rgba(240,240,245,.22);
+  letter-spacing: .2em;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+/* 街道 */
+.wm-road {
+  fill: none;
+  stroke: rgba(200,190,160,.28);
+  stroke-width: 4;
+  stroke-dasharray: 10 8;
+  stroke-linecap: round;
+}
+.wm-road-branch {
+  stroke-width: 2.5;
+  stroke-dasharray: 4 7;
+  stroke: rgba(200,190,160,.18);
+}
+
+/* ノード */
+.wm-node { cursor: pointer; }
+.wm-node .wm-shape {
+  fill: rgba(240,240,245,.9);
+  stroke: #1a1f2a;
+  stroke-width: 3;
+  transition: transform .12s ease;
+}
+.wm-node .wm-label {
+  font-size: 22px;
+  fill: rgba(240,240,245,.85);
+  text-anchor: middle;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: rgba(10,12,18,.9);
+  stroke-width: 4;
+}
+.wm-node .wm-sub {
+  font-size: 16px;
+  fill: rgba(200,180,120,.9);
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(10,12,18,.9);
+  stroke-width: 3;
+}
+.wm-node:active .wm-shape { transform: scale(1.15); transform-box: fill-box; transform-origin: center; }
+
+/* 状態 */
+.wm-node.wm-locked .wm-shape { fill: rgba(255,255,255,.14); stroke-dasharray: 3 3; }
+.wm-node.wm-locked .wm-label { fill: rgba(240,240,245,.3); }
+.wm-node.wm-cleared .wm-shape { fill: #9fb8a0; }
+.wm-node.wm-next .wm-shape { fill: var(--accent, #e8c35a); }
+.wm-node.wm-next { animation: wmNextPulse 1.8s ease-in-out infinite; }
+@keyframes wmNextPulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .wm-node.wm-next { animation: none; } }
+
+/* 探索地点・外伝 */
+.wm-node.kind-side .wm-shape { fill: rgba(180,200,230,.85); }
+.wm-node.kind-side.wm-foreshadow .wm-shape { fill: rgba(255,255,255,.12); stroke-dasharray: 3 3; }
+.wm-node.kind-side.wm-foreshadow .wm-label { fill: rgba(240,240,245,.3); }
+.wm-node.kind-side.wm-waiting .wm-shape { fill: rgba(160,170,200,.5); }
+.wm-node.kind-side.wm-field-locked .wm-shape { fill: rgba(200,140,80,.55); }
+.wm-node.kind-gaiden .wm-shape { fill: rgba(200,180,120,.85); }
+
+/* 街と商人 */
+.wm-node.wm-town .wm-shape { fill: #d8c99a; stroke-width: 4; }
+.wm-node.wm-town .wm-label { font-weight: 800; }
+.wm-node.wm-merchant .wm-shape { fill: #b89fd8; }
+
+/* 噂バッジ */
+.wm-rumor-badge .wm-badge-dot { fill: #2a3344; stroke: rgba(240,220,150,.85); stroke-width: 2; }
+.wm-rumor-badge .wm-badge-text { font-size: 15px; fill: #e8d79a; text-anchor: middle; font-weight: 700; }
+.wm-rumor-badge.wm-unheard .wm-badge-dot { fill: #6b4d1f; stroke: #ffd97a; animation: wmNextPulse 1.6s ease-in-out infinite; }
+
+/* 地形トーン — ノードの縁色で土地の雰囲気を出す */
+.terrain-forest .wm-shape { stroke: #4a6b4a; }
+.terrain-mountain .wm-shape, .terrain-volcano .wm-shape { stroke: #7a5a48; }
+.terrain-water .wm-shape { stroke: #4a6b8b; }
+.terrain-ruin .wm-shape, .terrain-cave .wm-shape { stroke: #6b6b7a; }
+.terrain-machine .wm-shape { stroke: #8b7a4a; }
+.terrain-veil .wm-shape, .terrain-branch .wm-shape, .terrain-stratum .wm-shape { stroke: #7a5a8b; }
+.terrain-ash .wm-shape, .terrain-grave .wm-shape { stroke: #8b8578; }
+.terrain-abyss .wm-shape { stroke: #5a3a5a; }
+.terrain-storm .wm-shape { stroke: #5a7a9b; }
+.terrain-desert .wm-shape { stroke: #a08a5a; }
+.terrain-ice .wm-shape { stroke: #7a9bb5; }
+.terrain-beast .wm-shape { stroke: #8b6a4a; }
+.terrain-unrecorded .wm-shape { stroke: #4a4a55; stroke-dasharray: 4 3; }
+
+/* 一覧の畳み込み */
+.worldmap-list-details {
+  border-top: 1px solid rgba(255,255,255,.08);
+  margin-top: 4px;
+}
+.worldmap-list-details > summary {
+  padding: 10px 6px;
+  font-weight: 700;
+  cursor: pointer;
+  color: rgba(240,240,245,.75);
+}
+.worldmap-list-details:not([open]) > .stage-list { display: none; }

@@ -36,7 +36,9 @@ BattleEngine.prototype._spawnEnemy = function mutationAwareSpawn(type, ...rest) 
   if (!cl) return enemy;
   const speciesId = RANCH_RECRUIT_BY_ENEMY_TYPE[enemy.type];
   const species = speciesId ? getCompanionSpecies(speciesId) : null;
-  const masteryLv = speciesId ? Math.max(0, Number(state.speciesMasteryLevel?.(speciesId)) || 0) : 0;
+  // 「野生でその種を知っている」ほど異常個体の兆候に気づく — 生態知識Lv。
+  // （仲間としての使い込み=種族熟練とは別軸。speciesMastery.js冒頭参照）
+  const masteryLv = speciesId ? Math.max(0, Number(state.ecologyKnowledgeLevel?.(speciesId)) || 0) : 0;
   const ctx = {
     weatherId: cl.weatherId, daypartId: cl.daypartId,
     chapterNum: this.chapter?.num || 0,

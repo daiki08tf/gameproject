@@ -144,19 +144,39 @@ test('Session6: species mastery curve reaches Lv5 at 200xp and benefits stay bou
   assert.ok(SPECIES_MASTERY.STAT_MULT_PER_LEVEL * SPECIES_MASTERY.MAX_LEVEL <= .075 + 1e-9, 'stat mult stays within +7.5%');
 });
 
-test('Session6: kill and recruit feed species mastery through the existing codex hooks', async () => {
+// 実機プレイテストの指摘で軸が分離された: 撃破は「生態知識」(ecoXp)へ、
+// 勧誘・共闘は「種族熟練」(exp)へ。未勧誘の種に熟練が乗らない契約を固定する。
+test('Session6: kills feed ecology knowledge, recruit/party feed species mastery', async () => {
   await installPatches();
   fresh();
   const enemy = { type: 'ch2_normal', rank: 'normal', name: 'test' };
   state.markCodexKill(enemy, null);
   let entry = state.speciesMasteryEntry('ch2_normal_companion');
   assert.equal(entry.kills, 1);
-  assert.equal(entry.exp, speciesMasteryKillXp(enemy));
+  assert.equal(entry.ecoXp, speciesMasteryKillXp(enemy), 'kill XP feeds ecology knowledge');
+  assert.equal(entry.exp, 0, 'kills must not raise mastery of a never-recruited species');
+  assert.equal(state.ecologyKnowledgeLevel('ch2_normal_companion'), speciesMasteryLevelFor(entry.ecoXp));
   state.markCodexRecruit('ch2_normal', 'normal');
   entry = state.speciesMasteryEntry('ch2_normal_companion');
   assert.equal(entry.recruits, 1);
-  assert.equal(entry.exp, speciesMasteryKillXp(enemy) + SPECIES_MASTERY.RECRUIT_XP);
-  assert.equal(state.speciesMasteryRecruitBonus('ch2_normal_companion'), entry.level * SPECIES_MASTERY.RECRUIT_BONUS_PER_LEVEL);
+  assert.equal(entry.exp, SPECIES_MASTERY.RECRUIT_XP);
+  // 勧誘率ボーナスは生態知識Lvが担う（野生で知るほど口説きやすい）。
+  const eco = state.ecologyKnowledgeEntry('ch2_normal_companion');
+  assert.equal(state.speciesMasteryRecruitBonus('ch2_normal_companion'), eco.level * SPECIES_MASTERY.RECRUIT_BONUS_PER_LEVEL);
+  // speciesMasteryLevel accessor（rumorNetworkが参照。以前は未定義で常時0）
+  assert.equal(state.speciesMasteryLevel('ch2_normal_companion'), entry.level);
+});
+
+test('Session6: legacy saves without ecoXp migrate ecoXp=exp on first gain', async () => {
+  await installPatches();
+  fresh();
+  // 旧セーブ形状 {exp,kills,recruits}（ecoXpなし）を再現
+  state.data.speciesMastery = { ch2_normal_companion: { exp: 40, kills: 30, recruits: 1 } };
+  const enemy = { type: 'ch2_normal', rank: 'normal', name: 'test' };
+  state.markCodexKill(enemy, null);
+  const eco = state.ecologyKnowledgeEntry('ch2_normal_companion');
+  assert.equal(eco.ecoXp, 40 + speciesMasteryKillXp(enemy), 'legacy entry keeps its earned knowledge');
+  assert.equal(state.speciesMasteryEntry('ch2_normal_companion').exp, 40, 'mastery exp is preserved');
 });
 
 test('Session6: boss-type enemies do not feed species mastery', async () => {

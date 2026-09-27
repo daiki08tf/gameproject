@@ -33,57 +33,93 @@ function ensureMastery() {
 }
 function ensureEntry(speciesId) {
   const root = ensureMastery();
-  return root[speciesId] ||= { exp: 0, kills: 0, recruits: 0 };
+  const e = root[speciesId] ||= { exp: 0, kills: 0, recruits: 0, ecoXp: 0 };
+  // 生態知識（ecoXp）後付け: 旧セーブでは撃破XPがexpに混ざっていた。
+  // 未保持エントリは「その時点で知っていた知識」として ecoXp=exp で開始する
+  // additive migration — 値を減らさず、新しい保存キーも増やさない。
+  if (e.ecoXp == null) e.ecoXp = Math.max(0, Number(e.exp) || 0);
+  return e;
 }
 // 勧誘可能な敵type → 種族id。Boss・召喚枠は種族知識の対象外。
 function speciesForEnemyType(enemyType) {
   return RECRUIT_SPECIES_BY_ENEMY_TYPE[enemyType] || null;
 }
-function gainSpeciesExp(speciesId, amount, { kill = false, recruit = false } = {}) {
+// 熟練exp（仲間として使いこなす軸）: 勧誘・共闘のみが伸ばす。
+function gainSpeciesExp(speciesId, amount, { recruit = false } = {}) {
   if (!speciesId || amount <= 0) return null;
   const e = ensureEntry(speciesId);
   const before = speciesMasteryLevelFor(e.exp);
   e.exp += Math.round(amount);
-  if (kill) e.kills += 1;
   if (recruit) e.recruits += 1;
   const after = speciesMasteryLevelFor(e.exp);
   return { speciesId, exp: e.exp, level: after, leveledUp: after > before };
 }
+// 生態知識（野生でその種を知る軸）: 撃破のみが伸ばす。勧誘は不要。
+function gainEcologyExp(speciesId, amount, { kill = false } = {}) {
+  if (!speciesId || amount <= 0) return null;
+  const e = ensureEntry(speciesId);
+  const before = speciesMasteryLevelFor(e.ecoXp);
+  e.ecoXp += Math.round(amount);
+  if (kill) e.kills += 1;
+  const after = speciesMasteryLevelFor(e.ecoXp);
+  return { speciesId, ecoXp: e.ecoXp, level: after, leveledUp: after > before };
+}
 
 state.speciesMasteryEntry = function speciesMasteryEntry(speciesId) {
   const e = ensureMastery()[speciesId];
-  if (!e) return { exp: 0, kills: 0, recruits: 0, level: 0, label: '' };
+  if (!e) return { exp: 0, kills: 0, recruits: 0, ecoXp: 0, level: 0, label: '' };
+  const ecoXp = e.ecoXp != null ? e.ecoXp : (Number(e.exp) || 0);
   const level = speciesMasteryLevelFor(e.exp);
-  return { exp: e.exp, kills: e.kills, recruits: e.recruits, level, label: speciesMasteryTierLabel(level) };
+  return { exp: e.exp, kills: e.kills, recruits: e.recruits, ecoXp, level, label: speciesMasteryTierLabel(level) };
+};
+// rumorNetwork / mutationRuntime が参照する公開accessor（未定義だったのを補う）。
+state.speciesMasteryLevel = function speciesMasteryLevel(speciesId) {
+  return this.speciesMasteryEntry(speciesId).level;
+};
+state.ecologyKnowledgeEntry = function ecologyKnowledgeEntry(speciesId) {
+  const e = this.speciesMasteryEntry(speciesId);
+  const level = speciesMasteryLevelFor(e.ecoXp);
+  return { kills: e.kills, ecoXp: e.ecoXp, level, label: speciesMasteryTierLabel(level) };
+};
+state.ecologyKnowledgeLevel = function ecologyKnowledgeLevel(speciesId) {
+  return this.ecologyKnowledgeEntry(speciesId).level;
 };
 state.speciesMasteryRecruitBonus = function speciesMasteryRecruitBonus(speciesId) {
-  const level = this.speciesMasteryEntry(speciesId).level;
+  // 勧誘率は「その種を野生で知っているか」=生態知識が担う。
+  const level = this.ecologyKnowledgeEntry(speciesId).level;
   return level * SPECIES_MASTERY.RECRUIT_BONUS_PER_LEVEL;
 };
 state.speciesMasteryStatMult = function speciesMasteryStatMult(speciesId) {
+  // 仲間能力の上積みは「仲間として使いこなす軸」=種族熟練が担う。
   const level = this.speciesMasteryEntry(speciesId).level;
   return 1 + level * SPECIES_MASTERY.STAT_MULT_PER_LEVEL;
 };
-// Codex/収集画面向け: 知っている種族の一覧を熟練順で返す。
+// Codex/収集画面向け: 知っている種族の一覧。生態知識Lvと種族熟練Lvを併記する。
 state.speciesMasterySummary = function speciesMasterySummary() {
   return Object.entries(ensureMastery())
-    .map(([speciesId, e]) => ({
-      speciesId,
-      name: getCompanionSpecies(speciesId)?.name || speciesId,
-      exp: e.exp, kills: e.kills, recruits: e.recruits,
-      level: speciesMasteryLevelFor(e.exp),
-      label: speciesMasteryTierLabel(speciesMasteryLevelFor(e.exp)),
-    }))
-    .sort((a, b) => b.level - a.level || b.exp - a.exp);
+    .map(([speciesId, e]) => {
+      const entry = this.speciesMasteryEntry(speciesId);
+      return {
+        speciesId,
+        name: getCompanionSpecies(speciesId)?.name || speciesId,
+        exp: entry.exp, kills: entry.kills, recruits: entry.recruits, ecoXp: entry.ecoXp,
+        level: entry.level,
+        ecologyLevel: speciesMasteryLevelFor(entry.ecoXp),
+        label: speciesMasteryTierLabel(entry.level),
+      };
+    })
+    .sort((a, b) => b.level - a.level || b.ecologyLevel - a.ecologyLevel || b.exp - a.exp);
 };
 
 /* Session 7 — Mastery 2.0: 知識行と Lv5 capstone。
    speciesMasteryIntel … その種について「分かっていること」の行。
-   speciesMasteryCapstone … Lv5到達か（勧誘素質floor判定用）。
+                        「野生で知る」情報なので生態知識Lvが駆動する。
+   speciesMasteryCapstone … Lv5到達か（勧誘素質floor判定用）。これは
+                        「仲間として極めた」側なので種族熟練Lvを見る。
    roamerIntelList … Roamer縄張り情報。遭遇=生息域、撃破=気配、
-                     種族熟練Lv3 or 撃破3 = 巣の場所まで分かる。 */
+                     生態知識Lv3 or 撃破3 = 巣の場所まで分かる。 */
 state.speciesMasteryIntel = function speciesMasteryIntel(speciesId) {
-  const level = this.speciesMasteryEntry(speciesId).level;
+  const level = this.ecologyKnowledgeEntry(speciesId).level;
   return speciesMasteryIntelLines(getCompanionSpecies(speciesId), level);
 };
 state.speciesMasteryCapstone = function speciesMasteryCapstone(speciesId) {
@@ -94,11 +130,11 @@ state.roamerIntelList = function roamerIntelList() {
   return Object.values(ROAMERS).map((r) => {
     const entry = codex[`roamer:${r.id}`] || {};
     const species = getCompanionSpecies(`roamer_${r.id}`);
-    const masteryLv = species ? this.speciesMasteryEntry(species.id).level : 0;
+    const ecoLv = species ? this.ecologyKnowledgeEntry(species.id).level : 0;
     let tier = 0;
     if (entry.seen || (entry.kills || 0) > 0) tier = 1;           // 出会った
     if ((entry.kills || 0) >= 1) tier = 2;                         // 倒した
-    if ((entry.kills || 0) >= 3 || masteryLv >= 3) tier = 3;       // 巣を知る
+    if ((entry.kills || 0) >= 3 || ecoLv >= 3) tier = 3;           // 巣を知る
     return {
       roamerId: r.id, name: r.name, tier,
       habitat: tier >= 1 ? r.territory?.habitat : null,
@@ -108,16 +144,18 @@ state.roamerIntelList = function roamerIntelList() {
   });
 };
 
-// 撃破 → 種族熟練。Codex記録と同じタイミングで走らせる。
+// 撃破 → 生態知識（ecoXp）。Codex記録と同じタイミングで走らせる。
+// 熟練expには入らない —— 「仲間にしたことのない種の熟練が勝手に上がる」
+// 実機プレイテストの指摘への対応。知識は野生で知る分で育つ。
 const prevMarkCodexKill = state.markCodexKill?.bind(state);
 if (prevMarkCodexKill) {
   state.markCodexKill = function masteryMarkCodexKill(enemy, stage = null) {
     const speciesId = speciesForEnemyType(enemy?.type);
     if (speciesId) {
-      const gain = gainSpeciesExp(speciesId, speciesMasteryKillXp(enemy), { kill: true });
+      const gain = gainEcologyExp(speciesId, speciesMasteryKillXp(enemy), { kill: true });
       if (gain?.leveledUp && typeof document !== 'undefined') {
         const name = getCompanionSpecies(speciesId)?.name || speciesId;
-        import('./toastFeedback.js').then(m => m.showToast(`[種族熟練] ${name} 熟練Lv${gain.level}`, 2400));
+        import('./toastFeedback.js').then(m => m.showToast(`[生態知識] ${name} 知識Lv${gain.level}`, 2400));
       }
     }
     return prevMarkCodexKill(enemy, stage);

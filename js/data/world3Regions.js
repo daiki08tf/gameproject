@@ -13,6 +13,12 @@ export const WORLD3_REGIONS=Object.freeze([
   Object.freeze({id:'shared-observation',name:'共観測域',subtitle:'返答・第八鍵・記録盲点・共通参照・共観測点を追う第五部',chapters:[31,32,33,34,35],tone:'handshake'}),
   Object.freeze({id:'branch-record',name:'分岐観測域',subtitle:'同じ座標が複数の歴史へ分かれていく第六部',chapters:[36,37,38,39],tone:'branch'}),
   Object.freeze({id:'stratum-band',name:'重層観測域',subtitle:'三つ以上の記録が同時に真とされる第七部',chapters:[40,41],tone:'stratum'}),
+  // 未踏帳外域 — Ch42–48 (chapters42to45.js / chapters46to48.js)。この章群は
+  // 以前はどの領域にも属さず chapterSelect が描画する領域ループの外にあった
+  // ため、データ上は存在するのに到達不能だった（side8_whitehollow の
+  // unlocksAfter:'42-5' も道連れで死蔵化）。領域への登録は到達性の修復で
+  // あり、章そのものは既存データのまま — 新しいStory権威は作らない。
+  Object.freeze({id:'unrecorded-band',name:'未踏帳外域',subtitle:'帳簿に記されなかった座標の畦道',chapters:[42,43,44,45,46,47,48],tone:'unrecorded'}),
 ]);
 
 export function world3RegionForChapter(chapterNumber){

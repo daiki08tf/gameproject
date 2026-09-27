@@ -143,7 +143,7 @@ export const SESSION8_RUMOR_THREADS = Object.freeze([
     entries: [
       Object.freeze({ id: 'walker_seen', type: 'initial', source: '巡回兵', order: 1, unlock: { type: 'weatherSeen', weatherId: 'ash' },
         text: '「灰降りの晩に墓標の間を歩く影を見た。追うと、灰の中に消えた」と巡回兵は震えていた。' }),
-      Object.freeze({ id: 'walker_codex', type: 'field', source: 'Codexの知識', order: 2, unlock: { type: 'mastery', speciesId: 'ash_soldier', min: 3 },
+      Object.freeze({ id: 'walker_codex', type: 'field', source: 'Codexの知識', order: 2, unlock: { type: 'ecology', speciesId: 'ash_soldier', min: 3 },
         text: '灰骸兵の生態を知る者なら推測できる――あれは死んだのではない。幽体化した個体が、灰の中でだけ実体を保っている。' }),
       Object.freeze({ id: 'walker_resolved', type: 'return', source: '自らの観測', order: 3, unlock: { type: 'wildMutation', state: 'killed', mutationId: 'ghostly' },
         text: '幽体の個体を斃した。消えたのではなく、灰に溶けていただけだった。', resolves: true }),
