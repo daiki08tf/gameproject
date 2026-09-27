@@ -90,6 +90,8 @@ import './patches/uniqueBranchEffects.js';
 import './patches/secretJobsPhase1.js';
 import './patches/secretJobCodexBridge.js';
 import './patches/secretJobsPhase2.js';
+import './patches/pacingWalls.js';
+import './patches/pacingMaterials.js';
 import { showAbyssRunChoice } from './patches/abyssRunUi.js';
 import { showToast } from './patches/toastFeedback.js';
 import { TextBattleScreen } from './screens/textBattle.js';

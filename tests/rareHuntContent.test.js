@@ -120,7 +120,11 @@ test('Rare撃破は必ず装備を1つ落とし、固有抽選を持つ', () => 
 test('巡回EliteはElite Affix（再生/狂乱/鉄壁/迅速）を持つ', () => {
   fresh();
   const eng = new BattleEngine('2-1', null, { hunt: true, huntEliteChance: 1 });
-  const e = eng._spawnEnemy('grunt');
+  // huntEliteChance は内部で Math.min(0.9, …) にcapされるため、
+  // 生の乱数だと約1割でelite化しない。意図（elite化時は必ずAffixを
+  // 持つ）を確実に検証するため乱数を固定する。0.85はelite判定
+  // (<0.9)だけを通し、手前のroamer/rare低確率ロールは通さない値。
+  const e = withRandom(() => eng._spawnEnemy('grunt'), 0.85);
   assert.equal(e.elite, true);
   assert.ok(e.enemy3EliteAffixId && ENEMY3_ELITE_AFFIXES[e.enemy3EliteAffixId], 'hunt elite must carry an affix');
 });

@@ -415,7 +415,9 @@
       "title": "Numeric balance layers / reward curves",
       "paths": [
         "js/data/balance.js",
-        "js/data/numericSafety.js"
+        "js/data/numericSafety.js",
+        "js/patches/pacingWalls.js",
+        "js/patches/pacingMaterials.js"
       ],
       "docs": [
         "PHASE10_6_NUMERIC_SAFETY.md",

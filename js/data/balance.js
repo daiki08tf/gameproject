@@ -661,3 +661,58 @@ export const TEXT_BATTLE_LAYER = {
   // 入門Boss」の設計意図として許容する（詳細は最終レポート参照）。
   TELEGRAPH_MULT_SCALE: 8,
 };
+
+// ============================================================
+// 人間実機プレイテスト反映：ハック＆スラッシュのペース配分レイヤー。
+// 「新ステージ連続クリアが続きすぎる」問題への対策として、章末前後に
+// 「関門（checkpoint）」を置き、周回プレイに目的を持たせる。
+// ENEMY_SCALING（指数カーブ）・chapterMult（線形報酬）は両方とも変更せず、
+// 関門ステージへの局所補正と撃破素材ドロップの2系統だけを追加する。
+// ============================================================
+export const PACING_WALL_LAYER = {
+  // 関門ステージ（stage.boss / midBoss / checkpoint）で、最後の非Boss
+  // 遭遇グループがElite化する（「番人」）。checkpointフラグのみの
+  // ステージでは最後の非Bossグループ全員、boss/midBossステージでは
+  // その先頭1体のみ。素体・報酬倍率・AffixはAbyss/巡回の既存Eliteを
+  // 再利用する（撃破報酬2.5倍 → 関門周回は素材・経験値でも旨い）。
+  GUARD_ELITE_PER_STAGE: 1,
+  // checkpoint番人隊は「硬いだけ」では壁にならない（tankのATK基礎値は
+  // 低く、1.3倍でも削りが主体）。最後の集団全員に追加の攻撃圧を掛け、
+  // 「押し切られる前に倒し切る/守り切る」判断が生まれる水準にする。
+  GUARD_GROUP_ATK_EXTRA: 1.25,
+  // checkpointステージ全体の雑魚攻撃圧（章の最深部＝危険地帯）。
+  // 小さい値に留める（Boss級の壁は別系統で作る）。
+  CHECKPOINT_TRASH_ATK_MULT: 1.10,
+  // 関門ボス本体の圧：周回（Lv上昇・装備更新）で上回れる範囲に留める
+  // ため、ATKは微増・HPはほんの少し。sideLocation/gaiden/abyss/bounty/
+  // branchには適用しない（メイン章 stage id 'N-M' のみ）。
+  BOSS_ATK_MULT: 1.25,
+  BOSS_HP_MULT: 1.12,
+  MIDBOSS_ATK_MULT: 1.12,
+  MIDBOSS_HP_MULT: 1.08,
+};
+
+export const PACING_MATERIAL_LAYER = {
+  // 撃破ごとの拠点素材ドロップ率。「周回が牧舎・拠点の副次進行を産む」
+  // 設計のため、モンスターの役割（role）に応じて素材傾向を付ける。
+  // 非Boss撃破1体あたりの確率（ENEMY_TYPESのroleで分岐）：
+  KILL_CHANCE: {
+    // 古木：どの魔物からも少量（戦闘の残滓）
+    wood:     { normal: .10, fast: .10, tank: .10 },
+    // 鉱石：重装系（tank）から多め、その他は稀
+    ore:      { normal: .03, fast: .02, tank: .16 },
+    // 魔獣皮：魔物全般から、素早い獣系（fast）と重装でやや多め
+    hide:     { normal: .08, fast: .12, tank: .12 },
+  },
+  // Elite/Rare/変異/巡回など「特別な個体」は素材ドロップ確率を倍化
+  // （モンスター狩りが牧舎素材収入に直結する）。
+  SPECIAL_MULT: 2,
+  // Boss撃破：確定で素材束 + 境界石（veilstone）は低確率。
+  // 牧舎・研究・変異ラボが早期に触れられるが、深淵ほど効率は良くない。
+  BOSS_BONUS: { wood: 1, ore: 1, hide: 2 },
+  BOSS_VEILSTONE_CHANCE: .5,
+  // 章Tier（recLevel/80）ごとに数量をわずかに底上げ（終盤の施設コスト
+  // インフレに合わせる）。序盤は1.0倍。
+  TIER_STEP_LEVEL: 80,
+  TIER_QUANTITY_BONUS: .5,
+};
