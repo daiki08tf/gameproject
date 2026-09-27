@@ -10,6 +10,22 @@
 #companionContent[data-ranch-tab='eggs']>#monsterRanch2Panel,#companionContent[data-ranch-tab='breeding']>#monsterRanch2Panel,#companionContent[data-ranch-tab='facilities']>#monsterRanch2Panel{display:block}
 #companionContent[data-ranch-tab='training']>#ranch2Advanced,#companionContent[data-ranch-tab='expeditions']>#ranch2Advanced,#companionContent[data-ranch-tab='research']>#ranch2Advanced{display:block}
 #companionContent #monsterRanch2Panel>.ranch2-section{display:none!important}
+
+/* Species Board — 1行=1ノードのコンパクト行。
+   実機指摘: btn-subの大きな四角が行を支配していた。強化は副アクション
+   なので、見た目は細いピル・タップ領域は44pxを確保する。 */
+#companionContent .ranch-board-row{display:flex;align-items:center;gap:8px;min-height:52px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+#companionContent .ranch-board-row:last-child{border-bottom:none}
+#companionContent .rb-main{flex:1 1 auto;min-width:0}
+#companionContent .rb-name{display:block;font-weight:700;font-size:13px}
+#companionContent .rb-desc{display:block;font-size:11px;color:rgba(240,240,245,.55);line-height:1.35}
+#companionContent .rb-lv{flex:0 0 auto;font-size:12px;font-variant-numeric:tabular-nums;color:rgba(240,240,245,.75)}
+#companionContent .rb-buy{flex:0 0 auto;min-height:44px;min-width:44px;padding:0 6px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center}
+#companionContent .rb-pill{display:inline-block;padding:5px 11px;border:1px solid rgba(214,183,106,.5);border-radius:999px;font-size:12px;font-weight:700;color:var(--dc-brass-300,#d4bd7a);background:rgba(214,183,106,.08);white-space:nowrap}
+#companionContent .rb-buy:active .rb-pill{transform:scale(.96)}
+#companionContent .rb-buy:disabled{cursor:default}
+#companionContent .rb-off .rb-pill{border-color:rgba(255,255,255,.14);color:rgba(240,240,245,.4);background:transparent}
+#companionContent .rb-max .rb-pill{border-color:transparent;color:rgba(159,184,160,.9);background:transparent}
 #companionContent[data-ranch-tab='facilities'] #monsterRanch2Panel>.ranch2-facility-item{display:block!important}
 #companionContent[data-ranch-tab='eggs'] #monsterRanch2Panel>.ranch2-eggs{display:block!important}
 #companionContent[data-ranch-tab='breeding'] #monsterRanch2Panel>.ranch2-breeding{display:block!important}

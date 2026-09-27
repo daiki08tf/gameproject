@@ -359,6 +359,7 @@
       "id": "world",
       "title": "World map / World Tier / Realm / Rift / Observed Branches",
       "paths": [
+        "js/data/worldMapVisibility",
         "js/data/world",
         "js/patches/world",
         "js/data/regions",

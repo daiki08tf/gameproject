@@ -23,7 +23,35 @@
   -webkit-overflow-scrolling: touch;
   max-height: 62vh;
 }
-.worldmap-svg { display: block; width: 100%; height: auto; min-width: 560px; }
+.worldmap-svg { display: block; width: 100%; height: auto; }
+
+/* 領域ナビ — 既知の地域だけを行き来する */
+.worldmap-region-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.wm-region-name {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: .08em;
+  color: rgba(240,240,245,.92);
+}
+.wm-region-btn {
+  min-height: 44px;
+  padding: 4px 10px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
+  color: rgba(240,240,245,.85);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.wm-region-btn:disabled { opacity: .35; cursor: default; }
 
 /* 領域名キャプション */
 .wm-region-label {
@@ -46,6 +74,11 @@
   stroke-width: 2.5;
   stroke-dasharray: 4 7;
   stroke: rgba(200,190,160,.18);
+}
+/* 噂・先端だけが見えている道 — うっすらとだけ */
+.wm-road-faint {
+  stroke: rgba(200,190,160,.12);
+  stroke-dasharray: 2 10;
 }
 
 /* ノード */
@@ -75,9 +108,11 @@
 }
 .wm-node:active .wm-shape { transform: scale(1.15); transform-box: fill-box; transform-origin: center; }
 
-/* 状態 */
-.wm-node.wm-locked .wm-shape { fill: rgba(255,255,255,.14); stroke-dasharray: 3 3; }
-.wm-node.wm-locked .wm-label { fill: rgba(240,240,245,.3); }
+/* 状態 — frontier は本編街道の「次の行き先」、rumored は噂・予兆の？？？ */
+.wm-node.wm-frontier .wm-shape,
+.wm-node.wm-rumored .wm-shape { fill: rgba(255,255,255,.14); stroke-dasharray: 3 3; }
+.wm-node.wm-frontier .wm-label,
+.wm-node.wm-rumored .wm-label { fill: rgba(240,240,245,.3); }
 .wm-node.wm-cleared .wm-shape { fill: #9fb8a0; }
 .wm-node.wm-next .wm-shape { fill: var(--accent, #e8c35a); }
 .wm-node.wm-next { animation: wmNextPulse 1.8s ease-in-out infinite; }
@@ -86,8 +121,7 @@
 
 /* 探索地点・外伝 */
 .wm-node.kind-side .wm-shape { fill: rgba(180,200,230,.85); }
-.wm-node.kind-side.wm-foreshadow .wm-shape { fill: rgba(255,255,255,.12); stroke-dasharray: 3 3; }
-.wm-node.kind-side.wm-foreshadow .wm-label { fill: rgba(240,240,245,.3); }
+.wm-node.kind-side.wm-rumored .wm-shape { fill: rgba(255,255,255,.12); }
 .wm-node.kind-side.wm-waiting .wm-shape { fill: rgba(160,170,200,.5); }
 .wm-node.kind-side.wm-field-locked .wm-shape { fill: rgba(200,140,80,.55); }
 .wm-node.kind-gaiden .wm-shape { fill: rgba(200,180,120,.85); }

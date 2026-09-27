@@ -4,13 +4,13 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "main",
-      "head": "6a50caa",
+      "head": "6fc342f",
       "remote": "https://github.com/daiki08tf/gameproject.git"
     },
     "fileCounts": {
-      "total": 1097,
-      "code": 942,
-      "tests": 371
+      "total": 1099,
+      "code": 944,
+      "tests": 372
     }
   },
   "systems": [
@@ -927,7 +927,8 @@
         "tests/world-expansion-11-15.test.js",
         "tests/world2-complete.test.js",
         "tests/world3-finalization.test.js",
-        "tests/world3-regions.test.js"
+        "tests/world3-regions.test.js",
+        "tests/worldMap-visibility.test.js"
       ],
       "docs": [
         "ROADMAP.md",
@@ -983,6 +984,7 @@
         "js/data/stages.js",
         "js/data/uniqueEquipment.js",
         "js/data/weapons.js",
+        "js/data/worldMapVisibility.js",
         "js/main.js",
         "js/patches/adventureWorld4HighLevelRuntime.js",
         "js/patches/adventureWorld4Ui.js",
@@ -1098,7 +1100,8 @@
         "tests/world-expansion-11-15.test.js",
         "tests/world2-complete.test.js",
         "tests/world3-finalization.test.js",
-        "tests/world3-regions.test.js"
+        "tests/world3-regions.test.js",
+        "tests/worldMap-visibility.test.js"
       ]
     },
     {
@@ -2769,6 +2772,7 @@
         "js/data/worldClimate.js",
         "js/data/worldEvents2.js",
         "js/data/worldMapLayout.js",
+        "js/data/worldMapVisibility.js",
         "js/data/worldTiers.js",
         "js/data/worldVeil.js",
         "js/patches/exploration1Core.js",
@@ -2854,7 +2858,8 @@
         "tests/world3-events.test.js",
         "tests/world3-finalization.test.js",
         "tests/world3-realms.test.js",
-        "tests/world3-regions.test.js"
+        "tests/world3-regions.test.js",
+        "tests/worldMap-visibility.test.js"
       ],
       "docs": [
         "OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md",
@@ -2911,6 +2916,7 @@
         "js/data/treasureHunt.js",
         "js/data/uniqueEquipment.js",
         "js/data/world2Stages.js",
+        "js/data/worldMapVisibility.js",
         "js/main.js",
         "js/patches/adventureWorld4HighLevelRuntime.js",
         "js/patches/adventureWorld4InvestigationUi.js",
@@ -3011,7 +3017,8 @@
         "tests/world3-events.test.js",
         "tests/world3-finalization.test.js",
         "tests/world3-realms.test.js",
-        "tests/world3-regions.test.js"
+        "tests/world3-regions.test.js",
+        "tests/worldMap-visibility.test.js"
       ]
     },
     {
@@ -3959,7 +3966,8 @@
         "tests/world3-events.test.js",
         "tests/world3-finalization.test.js",
         "tests/world3-realms.test.js",
-        "tests/world3-regions.test.js"
+        "tests/world3-regions.test.js",
+        "tests/worldMap-visibility.test.js"
       ],
       "tests": [
         "tests/abyss2-pacts.test.js",
@@ -4332,7 +4340,8 @@
         "tests/world3-events.test.js",
         "tests/world3-finalization.test.js",
         "tests/world3-realms.test.js",
-        "tests/world3-regions.test.js"
+        "tests/world3-regions.test.js",
+        "tests/worldMap-visibility.test.js"
       ],
       "docs": [
         "CLAUDE.md"
@@ -4835,7 +4844,8 @@
         "tests/unique2-named-weapon-chase.test.js",
         "tests/weapon-affix-visibility.test.js",
         "tests/world-expansion-11-15.test.js",
-        "tests/world3-regions.test.js"
+        "tests/world3-regions.test.js",
+        "tests/worldMap-visibility.test.js"
       ]
     },
     {
