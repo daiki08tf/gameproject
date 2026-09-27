@@ -45,7 +45,7 @@ test('UIX-7 phase 3a: three Blacksmith success moments that previously had sound
 
 test('UIX-7 phase 3a: two Rebirth success moments (inheritance, awakening claim) that previously had sound but no visual feedback now show a toast', () => {
   assert.match(rebirthModern, /import \{ showToast \} from '\.\.\/patches\/toastFeedback\.js';/);
-  assert.match(rebirthModern, /state\.performInheritance\(\); Audio_\.jobMastered\(\); showToast\('継承した！'\);/);
+  assert.match(rebirthModern, /if \(state\.performInheritance\(\)\) \{ Audio_\.jobMastered\(\); showToast\('継承した！'\); \}/);
   assert.match(rebirthModern, /state\.claimAwakeningV2\(\)\) \{ Audio_\.jobMastered\(\); showToast\(`覚醒Rank \$\{def\.rank\} 解放！`\);/);
 });
 

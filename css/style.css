@@ -179,6 +179,12 @@ button { font-family: inherit; }
   margin-bottom: 14px;
 }
 .subbar h2 { flex: 1; margin: 0; font-size: 18px; }
+/* 開拓拠点ヘッダのサブ画面遷移ボタン（生産/交易/研究）は2文字ラベル。
+   .btn-backの38px固定幅だと縦折り返しになるため内容幅+小さめ文字にする。 */
+#settlementScreen .subbar > .btn-back:not(#settlementBackBtn) {
+  width: auto; min-width: 38px; padding: 0 9px;
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+}
 
 .bar {
   position: relative;

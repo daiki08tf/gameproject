@@ -38,9 +38,10 @@ function renderInheritance(content) {
   const rows = STATS.map((key) => `<div class="status-row"><span>${LABEL[key]}</span><span>${Number(preview.sourceStats[key]||0).toLocaleString()} → <strong>${Number(preview.nextInheritedStats[key]||0).toLocaleString()}</strong></span></div>`).join('');
   const panel = document.createElement('div');
   panel.className = 'rebirth-panel';
-  panel.innerHTML = `<div class="section-heading">継承 — Character成長の周回</div><p class="sub">Character LvをLv.1へ戻し、育てた基礎能力の一部を次の周回へ継承します。Job Lv・MASTER・装備・仲間・Rune・図鑑・進行・覚醒Rankは維持されます。</p><p class="sub">今回の継承率：<strong>${Math.round(preview.ratePct*1000)/1000}%</strong> ／ 獲得BP：<strong>${preview.bonusPoints.toLocaleString()} pt</strong></p><div class="status-grid">${rows}</div><button class="btn-main" id="doInheritanceBtn">${inheritArmed ? '本当に継承する' : '継承する'}</button>${inheritArmed ? '<button class="btn-sub" id="cancelInheritanceBtn" style="width:100%;margin-top:8px;">やめる</button>' : ''}`;
+  const canDo = preview.canPerform;
+  panel.innerHTML = `<div class="section-heading">継承 — Character成長の周回</div><p class="sub">Character LvをLv.1へ戻し、育てた基礎能力の一部を次の周回へ継承します。Job Lv・MASTER・装備・仲間・Rune・図鑑・進行・覚醒Rankは維持されます。</p>${canDo ? `<p class="sub">今回の継承率：<strong>${Math.round(preview.ratePct*1000)/1000}%</strong> ／ 獲得BP：<strong>${preview.bonusPoints.toLocaleString()} pt</strong></p>` : `<p class="sub">今はまだ早い——この祭壇は、長い旅の終盤で積み上げた力を次の周回へ重ねる場所です。</p>`}<div class="status-grid">${rows}</div><button class="btn-main" id="doInheritanceBtn" ${canDo ? '' : 'disabled'}>${canDo ? (inheritArmed ? '本当に継承する' : '継承する') : `Lv.${preview.minLevel.toLocaleString()} で解放`}</button>${canDo && inheritArmed ? '<button class="btn-sub" id="cancelInheritanceBtn" style="width:100%;margin-top:8px;">やめる</button>' : ''}`;
   content.appendChild(panel);
-  panel.querySelector('#doInheritanceBtn').addEventListener('click', () => { if (!inheritArmed) { inheritArmed = true; renderRebirth(); return; } state.performInheritance(); Audio_.jobMastered(); showToast('継承した！'); inheritArmed = false; renderRebirth(); });
+  panel.querySelector('#doInheritanceBtn').addEventListener('click', () => { if (!inheritArmed) { inheritArmed = true; renderRebirth(); return; } if (state.performInheritance()) { Audio_.jobMastered(); showToast('継承した！'); } inheritArmed = false; renderRebirth(); });
   panel.querySelector('#cancelInheritanceBtn')?.addEventListener('click', () => { inheritArmed = false; renderRebirth(); });
 
   const allocation = document.createElement('div');

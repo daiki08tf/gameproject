@@ -4,12 +4,12 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "main",
-      "head": "6a29128",
+      "head": "6a50caa",
       "remote": "https://github.com/daiki08tf/gameproject.git"
     },
     "fileCounts": {
-      "total": 1093,
-      "code": 939,
+      "total": 1097,
+      "code": 942,
       "tests": 371
     }
   },
@@ -302,6 +302,7 @@
         "js/patches/regionCodex.js",
         "js/patches/regionCodexUi.js",
         "js/patches/riftKeyCore.js",
+        "js/patches/rumorHearing.js",
         "js/patches/rumorNetwork.js",
         "js/patches/rune2Core.js",
         "js/patches/rune2ObserveUi.js",
@@ -366,6 +367,7 @@
         "js/patches/weaponInstanceFoundation.js",
         "js/patches/world2Core.js",
         "js/patches/worldClimate.js",
+        "js/patches/worldMapUi.js",
         "js/patches/worldTierRuntime.js",
         "js/screens/abyss.js",
         "js/screens/blacksmith.js",
@@ -924,7 +926,8 @@
         "tests/story-expansion-ii-ch36.test.js",
         "tests/world-expansion-11-15.test.js",
         "tests/world2-complete.test.js",
-        "tests/world3-finalization.test.js"
+        "tests/world3-finalization.test.js",
+        "tests/world3-regions.test.js"
       ],
       "docs": [
         "ROADMAP.md",
@@ -1012,6 +1015,7 @@
         "js/patches/story11CoreJourney.js",
         "js/patches/world2Core.js",
         "js/patches/worldClimate.js",
+        "js/patches/worldMapUi.js",
         "js/screens/chapterSelect.js",
         "js/screens/stageSelect.js",
         "js/state.js",
@@ -1093,7 +1097,8 @@
         "tests/story-expansion-ii-ch36.test.js",
         "tests/world-expansion-11-15.test.js",
         "tests/world2-complete.test.js",
-        "tests/world3-finalization.test.js"
+        "tests/world3-finalization.test.js",
+        "tests/world3-regions.test.js"
       ]
     },
     {
@@ -1431,6 +1436,7 @@
         "js/patches/monsterRanch2Complete.js",
         "js/patches/monsterRanch2Facilities.js",
         "js/patches/monsterRanch2FacilitiesUi.js",
+        "js/patches/monsterRanchCompactUi.js",
         "js/patches/monsterRanchCore.js",
         "js/patches/monsterRanchMutations.js",
         "js/patches/monsterRanchUi.js",
@@ -2713,6 +2719,7 @@
         "js/patches/settlementTavern.js",
         "js/patches/settlementUi.js",
         "js/patches/worldClimate.js",
+        "js/patches/worldMapUi.js",
         "tests/adventure-world4-w30-w32.test.js",
         "tests/ch1-rumor-threads.test.js",
         "tests/core-loop-clr11.test.js",
@@ -2761,6 +2768,7 @@
         "js/data/world3Regions.js",
         "js/data/worldClimate.js",
         "js/data/worldEvents2.js",
+        "js/data/worldMapLayout.js",
         "js/data/worldTiers.js",
         "js/data/worldVeil.js",
         "js/patches/exploration1Core.js",
@@ -2770,10 +2778,12 @@
         "js/patches/phase9RegionalExplorationRuntime.js",
         "js/patches/phase9RegionalMasteryRuntime.js",
         "js/patches/riftKeyCore.js",
+        "js/patches/rumorHearing.js",
         "js/patches/rumorNetwork.js",
         "js/patches/session8World.js",
         "js/patches/world2Core.js",
         "js/patches/worldClimate.js",
+        "js/patches/worldMapUi.js",
         "js/patches/worldTierRuntime.js"
       ],
       "tests": [
@@ -2907,6 +2917,7 @@
         "js/patches/adventureWorld4LivingWorldRuntime.js",
         "js/patches/adventureWorld4RealmRegionRuntime.js",
         "js/patches/bounty2Combat.js",
+        "js/patches/ch1RumorThreadsCampfireUi.js",
         "js/patches/exploration1Core.js",
         "js/patches/finalIntegrationUi.js",
         "js/patches/mutationRuntime.js",
@@ -2923,10 +2934,12 @@
         "js/patches/settlementChronicle.js",
         "js/patches/settlementEndgameNetwork.js",
         "js/patches/settlementSeasons.js",
+        "js/patches/settlementUi.js",
         "js/patches/stageFirstNavigationUi.js",
         "js/patches/systemDeepeningPackC.js",
         "js/patches/world2Core.js",
         "js/patches/worldClimate.js",
+        "js/patches/worldMapUi.js",
         "js/patches/worldTierRuntime.js",
         "js/screens/abyss.js",
         "js/screens/chapterSelect.js",
@@ -3403,6 +3416,7 @@
         "css/style.css",
         "css/ui3.css",
         "css/uiFoundation.css",
+        "css/worldMap.css",
         "index.html",
         "js/patches/buildLoadoutsUi.js",
         "js/patches/buildReadabilityUi.js",
@@ -3453,10 +3467,12 @@
         "js/patches/companionRecruitment.js",
         "js/patches/homeNavigation.js",
         "js/patches/monsterRanch2FacilitiesUi.js",
+        "js/patches/rumorHearing.js",
         "js/patches/session8World.js",
         "js/patches/settlementUi.js",
         "js/patches/uiFoundationBootstrap.js",
         "js/patches/uniqueTrialUi.js",
+        "js/patches/worldMapUi.js",
         "js/screens/blacksmith.js",
         "js/screens/equipment.js",
         "js/screens/rebirthModern.js"
@@ -4818,7 +4834,8 @@
         "tests/treasure-hunt.test.js",
         "tests/unique2-named-weapon-chase.test.js",
         "tests/weapon-affix-visibility.test.js",
-        "tests/world-expansion-11-15.test.js"
+        "tests/world-expansion-11-15.test.js",
+        "tests/world3-regions.test.js"
       ]
     },
     {
@@ -5637,6 +5654,7 @@
     "js/patches/ranchSpeciesGrade.js",
     "js/patches/regionCodex.js",
     "js/patches/riftKeyCore.js",
+    "js/patches/rumorHearing.js",
     "js/patches/rumorNetwork.js",
     "js/patches/rune2Core.js",
     "js/patches/rune2Ui.js",
@@ -5673,6 +5691,7 @@
     "js/patches/weaponInstanceFoundation.js",
     "js/patches/world2Core.js",
     "js/patches/worldClimate.js",
+    "js/patches/worldMapUi.js",
     "js/patches/worldTierRuntime.js",
     "js/screens/abyss.js",
     "js/screens/blacksmith.js",

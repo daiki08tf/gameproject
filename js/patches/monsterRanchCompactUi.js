@@ -4,6 +4,7 @@
    changing Ranch progression, breeding, training or expedition logic.
    ============================================================ */
 import { appendIfDetached } from './domSafety.js';
+import { expandSpeciesGroup } from './ranchCollectionUi.js';
 
 const TABS = [
   ['companions', '仲間'],
@@ -18,6 +19,7 @@ const TABS = [
 let activeTab = 'companions';
 let searchQuery = '';
 let compactScheduled = false;
+let scrollToBoard = false; // set on 種族ボード tap -> scroll the opened board into view
 
 function ensureStyles(){
   if(document.querySelector('link[data-ranch-compact-style]')) return;
@@ -29,7 +31,12 @@ function ensureStyles(){
 }
 
 function summaryCard(root){
-  return [...root.children].find(el=>el.classList?.contains('forge-card')&&!el.classList.contains('ranch-card')&&el.id!=='monsterRanch2Panel'&&el.id!=='ranch2Advanced')||null;
+  // The real ranch summary card is the one titled モンスター牧場 — the first
+  // generic forge-card heuristic used to also match the 配合 panel and inject
+  // a duplicate tab nav + search box into it.
+  return [...root.children].find(el=>el.classList?.contains('forge-card')&&!el.classList.contains('ranch-card')&&el.id!=='monsterRanch2Panel'&&el.id!=='ranch2Advanced'&&el.querySelector(':scope > .forge-card-top .forge-card-name')?.textContent?.includes('モンスター牧場'))
+    ||[...root.children].find(el=>el.classList?.contains('forge-card')&&!el.classList.contains('ranch-card')&&el.id!=='monsterRanch2Panel'&&el.id!=='ranch2Advanced')
+    ||null;
 }
 
 function installTabs(root){
@@ -95,7 +102,9 @@ function compactCompanionCard(card){
   if(directSubs[0]) directSubs[0].classList.add('ranch-quick-meta');
 
   const actions=[...card.children].find(el=>el.classList?.contains('confirm-actions'))||null;
-  const board=[...card.children].find(el=>el.classList?.contains('forge-card')&&(el.textContent||'').includes('Species Board'))||null;
+  // The 変異系譜 card's footer also mentions "Species Board" — match on the
+  // card's own title, not textContent, or the wrong card escapes the details.
+  const board=[...card.children].find(el=>el.classList?.contains('forge-card')&&el.querySelector(':scope > .forge-card-name')?.textContent?.includes('Species Board'))||null;
   const details=document.createElement('details');
   details.className='ranch-compact-details';
   const summary=document.createElement('summary');
@@ -108,9 +117,12 @@ function compactCompanionCard(card){
     if(child===details) return;
     body.appendChild(child);
   });
-  if(board) body.appendChild(board);
   details.append(summary,body);
   if(actions) card.insertBefore(details,actions); else card.appendChild(details);
+  // Species Board lives as a DIRECT card child, not inside 個体詳細 —
+  // it only exists in the DOM while open, so burying it in the collapsed
+  // details made 「種族ボード」 look like a dead button (playtest report).
+  if(board) card.appendChild(board);
   card.dataset.ranchCompacted='true';
 }
 
@@ -158,6 +170,12 @@ function applyCompactRanch(){
     foldBondIntoDetails(card);
   });
   applyTab(root);
+  if(scrollToBoard){
+    scrollToBoard=false;
+    root.querySelectorAll(':scope > .ranch-card > .forge-card').forEach(el=>{
+      if(el.querySelector(':scope > .forge-card-name')?.textContent?.includes('Species Board')) el.scrollIntoView({block:'center',behavior:'smooth'});
+    });
+  }
 }
 
 function scheduleCompactRanch(){
@@ -171,6 +189,9 @@ if(root&&typeof MutationObserver!=='undefined'){
   new MutationObserver(scheduleCompactRanch).observe(root,{childList:true,subtree:true});
 }
 document.addEventListener('click',event=>{
+  const boardBtn=event.target?.closest?.('.ranch-board');
+  if(boardBtn){scrollToBoard=true;expandSpeciesGroup(boardBtn.dataset.species);}
+
   if(event.target?.closest?.('#goCompanionBtn,.ranch-fav,.ranch-slot,.ranch-board,.ranch-board-buy,.ranch-release,.ranch2-upgrade,.ranch2-hatch,#ranch2BreedEgg,#r2trainBtn,.r2exp,.r2claim')) scheduleCompactRanch();
 });
 scheduleCompactRanch();

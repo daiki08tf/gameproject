@@ -1,12 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WORLD3_REGIONS, world3RegionForChapter } from '../js/data/world3Regions.js';
+import { CHAPTERS } from '../js/data/stages.js';
 
 test('World regional hierarchy covers every implemented story chapter exactly once',()=>{
+  const mainIds=CHAPTERS.filter(c=>/^ch\d+$/.test(c.id)).map(c=>Number(c.id.slice(2))).sort((a,b)=>a-b);
   const chapters=WORLD3_REGIONS.flatMap(r=>r.chapters);
-  assert.equal(chapters.length,41);
-  assert.deepEqual([...chapters].sort((a,b)=>a-b),Array.from({length:41},(_,i)=>i+1));
-  assert.equal(new Set(chapters).size,41);
+  assert.equal(chapters.length,mainIds.length);
+  assert.deepEqual([...chapters].sort((a,b)=>a-b),mainIds);
+  assert.equal(new Set(chapters).size,mainIds.length);
 });
 
 test('The Veil and later Story Regions remain ordered through Arc VII',()=>{
@@ -38,4 +40,8 @@ test('The Veil and later Story Regions remain ordered through Arc VII',()=>{
   assert.equal(world3RegionForChapter(36)?.id,'branch-record');
   assert.equal(world3RegionForChapter(40)?.id,'stratum-band');
   assert.equal(world3RegionForChapter(41)?.id,'stratum-band');
+  const unrecorded=WORLD3_REGIONS.find(r=>r.id==='unrecorded-band');
+  assert.deepEqual(unrecorded?.chapters,[42,43,44,45,46,47,48]);
+  assert.equal(world3RegionForChapter(42)?.id,'unrecorded-band');
+  assert.equal(world3RegionForChapter(48)?.id,'unrecorded-band');
 });

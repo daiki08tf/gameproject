@@ -1,6 +1,6 @@
 /* Blade Vale — Settlement Compact UI (tabbed navigation for #settlementContent) */
 #settlementContent[data-settlement-compact='true']{display:flex;flex-direction:column}
-#settlementContent .settlement-compact-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;padding-bottom:2px}
+#settlementContent .settlement-compact-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;padding-bottom:2px;flex-shrink:0}
 #settlementContent .settlement-compact-nav::-webkit-scrollbar{display:none}
 #settlementContent .settlement-compact-tab{flex:0 0 auto;min-height:44px;padding:7px 12px;border:1px solid var(--dc-iron-500, rgba(255,255,255,.16));border-radius:999px;background:var(--dc-ink-800, rgba(255,255,255,.05));color:var(--dc-ash-300);font-size:12px;font-weight:750}
 #settlementContent .settlement-compact-tab.active{color:var(--dc-brass-300, #d4bd7a);border-color:rgba(214,183,106,.62);background:rgba(214,183,106,.1)}

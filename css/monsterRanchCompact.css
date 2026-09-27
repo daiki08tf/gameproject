@@ -1,6 +1,6 @@
 /* Blade Vale 3.0 — Monster Ranch Compact UI */
 #companionContent[data-ranch-compact='true']{display:flex;flex-direction:column;gap:8px}
-#companionContent .ranch-compact-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-top:8px;padding-bottom:2px}
+#companionContent .ranch-compact-nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-top:8px;padding-bottom:2px;flex-shrink:0}
 #companionContent .ranch-compact-nav::-webkit-scrollbar{display:none}
 #companionContent .ranch-compact-tab{flex:0 0 auto;min-height:44px;padding:7px 10px;border:1px solid var(--dc-iron-500, rgba(255,255,255,.16));border-radius:999px;background:var(--dc-ink-800, rgba(255,255,255,.05));color:var(--dc-ash-300);font-size:11px;font-weight:750}
 #companionContent .ranch-compact-tab.active{color:var(--dc-brass-300, #d4bd7a);border-color:rgba(214,183,106,.62);background:rgba(214,183,106,.1)}

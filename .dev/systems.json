@@ -375,7 +375,8 @@
         "js/data/rumorNetwork",
         "js/patches/rumorNetwork",
         "js/data/session8Locations",
-        "js/patches/session8World"
+        "js/patches/session8World",
+        "js/patches/rumorHearing"
       ],
       "docs": [
         "OBSERVED_BRANCHES_MULTIVERSE_ROADMAP.md",

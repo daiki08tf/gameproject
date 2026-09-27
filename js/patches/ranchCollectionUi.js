@@ -41,6 +41,15 @@ function esc(v) { return String(v ?? '').replaceAll('&', '&amp;').replaceAll('<'
 // individuals doesn't silently re-collapse on the player's very next click.
 const expandedSpecies = new Set();
 
+// monsterRanchCompactUi calls this when the Species Board is opened for a
+// species whose individuals are currently collapsed — otherwise the opened
+// board would render on a hidden card and look like a dead button.
+export function expandSpeciesGroup(speciesId) {
+  if (!speciesId || expandedSpecies.has(speciesId)) return;
+  expandedSpecies.add(speciesId);
+  render();
+}
+
 function groupBySpecies(root) {
   const groups = new Map();
   for (const card of root.querySelectorAll(':scope > .ranch-card')) {

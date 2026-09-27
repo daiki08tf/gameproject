@@ -33,6 +33,12 @@ function ensureSaveShape() {
     state.data.companionParty = state.data.companionParty.slice(0, PARTY_SIZE); changed = true;
   }
   if (state.data.starterCompanionGranted == null) { state.data.starterCompanionGranted = Object.keys(state.data.companionInstances || {}).length > 0; changed = true; }
+  // A corrupted seq (NaN/0/negative — seen in a real save as 'slime#NaN')
+  // makes every createCompanion() collide on one key per species and
+  // silently overwrite the previous individual. Reset it.
+  if (!Number.isFinite(state.data.nextCompanionSeq) || state.data.nextCompanionSeq < 1) {
+    state.data.nextCompanionSeq = 1; changed = true;
+  }
   if (changed) state.save();
 }
 ensureSaveShape();
@@ -41,7 +47,7 @@ function randomNature() { const ids = Object.keys(COMPANION_NATURES); return ids
 function randomRarity(minRarity = null) { const r=Math.random(); let rarity='normal'; if(r<.005)rarity='mythic'; else if(r<.025)rarity='legendary'; else if(r<.10)rarity='epic'; else if(r<.30)rarity='rare'; if(minRarity){const rolled=COMPANION_RARITY.indexOf(rarity),floor=COMPANION_RARITY.indexOf(minRarity);if(floor>=0&&rolled<floor)rarity=minRarity;} return rarity; }
 function talentForRarity(rarity){const idx=Math.max(0,COMPANION_RARITY.indexOf(rarity)),min=.94+idx*.018,max=1.06+idx*.028,roll=()=>Math.round((min+Math.random()*(max-min))*1000)/1000;return{hp:roll(),mp:roll(),atk:roll(),def:roll(),mag:roll(),spd:roll()};}
 
-state.createCompanion=function createCompanion(speciesId,opts={}){const species=getCompanionSpecies(speciesId);if(!species)return null;const id=`${speciesId}#${this.data.nextCompanionSeq++}`,rarity=opts.rarity||randomRarity(opts.minRarity||null);this.data.companionInstances[id]={speciesId,nickname:opts.nickname||null,level:Math.max(1,opts.level||1),exp:0,rarity,nature:opts.nature||randomNature(),talent:opts.talent||talentForRarity(rarity),origin:opts.origin||null,createdAt:Date.now(),...(opts.inheritedTraits?.length?{inheritedTraits:[...opts.inheritedTraits]}:{}),...(opts.provenance?{provenance:{...opts.provenance}}:{}),...(opts.wildMutation?{wildMutation:opts.wildMutation}:{})};this.data.companionCodex[speciesId]=true;this.save();return id;};
+state.createCompanion=function createCompanion(speciesId,opts={}){const species=getCompanionSpecies(speciesId);if(!species)return null;let id=`${speciesId}#${this.data.nextCompanionSeq++}`;while(this.data.companionInstances[id])id=`${speciesId}#${this.data.nextCompanionSeq++}`;const rarity=opts.rarity||randomRarity(opts.minRarity||null);this.data.companionInstances[id]={speciesId,nickname:opts.nickname||null,level:Math.max(1,opts.level||1),exp:0,rarity,nature:opts.nature||randomNature(),talent:opts.talent||talentForRarity(rarity),origin:opts.origin||null,createdAt:Date.now(),...(opts.inheritedTraits?.length?{inheritedTraits:[...opts.inheritedTraits]}:{}),...(opts.provenance?{provenance:{...opts.provenance}}:{}),...(opts.wildMutation?{wildMutation:opts.wildMutation}:{})};this.data.companionCodex[speciesId]=true;this.save();return id;};
 state.getCompanion=function getCompanion(instanceId){const inst=this.data.companionInstances[instanceId];if(!inst)return null;const species=getCompanionSpecies(inst.speciesId);if(!species)return null;return{id:instanceId,species,instance:inst,stats:companionStats(species,inst)};};
 state.companionList=function companionList(){return Object.keys(this.data.companionInstances).map(id=>this.getCompanion(id)).filter(Boolean).sort((a,b)=>b.instance.level-a.instance.level||a.species.name.localeCompare(b.species.name,'ja'));};
 

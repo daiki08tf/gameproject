@@ -51,6 +51,11 @@ const RAW_SCENES=[
     {id:'dates',phase:'resolution',title:'三つとも真',text:'三つの年月日はどれも同じ深さで刻まれている。訂正や重ね書きの跡はない——最初から、三つとも真として記された。',choices:[{id:'finish',label:'記録して進む'}]},
     {id:'gardener',phase:'resolution',title:'不在の圃主',text:'剪定鋏だけが整頓されて置かれている。柄には握り跡があるが、圃を管理する者の記録はどこにも残っていない。蒔いた者ではない誰かが、刈り続けている。',choices:[{id:'finish',label:'圃を後にする'}]},
   ]},
+  {id:'unrecorded-band-blank-waymark',name:'帳簿にない道標',tags:['investigation','mystery','unrecorded-band'],entryStepId:'observe',steps:[
+    {id:'observe',phase:'observation',title:'帳簿にない道標',text:'畦道の分かれ目に古い道標が立っている。刻まれた地名はどの帳簿にも載っていないが、矢印だけは確かに来た方角を指している。',choices:[{id:'touch',label:'刻字に触れてみる',nextStepId:'touch'},{id:'follow',label:'矢印の先を確かめる',nextStepId:'follow'},{id:'leave',label:'記録だけして進む'}]},
+    {id:'touch',phase:'resolution',title:'冷たい刻字',text:'指でなぞると刻字だけが冷たい。触れた箇所の文字がひとつずつ薄れ、離すと戻る——読まれることを、道標自身が拒んでいる。',choices:[{id:'finish',label:'刻まないまま離れる'}]},
+    {id:'follow',phase:'resolution',title:'指し示す空白',text:'矢印の先には平地しかない。だが振り返ると、道標は次の分かれ目でも待っていた。',choices:[{id:'finish',label:'次の道標を探す'}]},
+  ]},
 ];
 
 export const ADVENTURE4_CONTENT_PACK_II_SCENES=Object.freeze(RAW_SCENES.map(normalizeAdventure4Scene).filter(Boolean));
