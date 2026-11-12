@@ -237,6 +237,26 @@ function ensureStageResultContext(){
   return true;
 }
 
+// 既存の章カード → Stage カードの click をそのまま辿る（main.js の
+// goStageSelect / renderStageConfirm を通す）。独自に画面を切り替えないので、
+// 「戻る」の行き先や currentChapterIndex も通常の遷移と同じになる。
+// 途中のカードが見つからなければ、その手前の画面に留まるだけで何も壊さない。
+function openContinueStage(stageId){
+  if(!document.getElementById('chapterSelectScreen')?.classList.contains('active'))return;
+  const found=canonicalStageById(stageId);
+  const chapterIndex=found?.chapter?CHAPTERS.indexOf(found.chapter):-1;
+  if(chapterIndex<0)return;
+  const chapterCard=document.querySelector(`#chapterList [data-chapter-index="${chapterIndex}"]`);
+  if(!chapterCard)return;
+  chapterCard.click();
+  // 章カードの click が queueEnhance('stage') を積むので、その後ろで Stage カードを引く
+  queueMicrotask(()=>{
+    if(!document.getElementById('stageSelectScreen')?.classList.contains('active'))return;
+    const card=[...document.querySelectorAll('#stageList .stage-card[data-stage-id]')].find(el=>el.dataset.stageId===stageId);
+    if(card&&card.dataset.stageState!=='locked')card.click();
+  });
+}
+
 function queueEnhance(target){
   queueMicrotask(()=>{
     if(target==='chapter')enhanceStageFirstChapterList();
@@ -248,7 +268,16 @@ function queueEnhance(target){
 document.addEventListener('click',event=>{
   const target=event.target instanceof Element?event.target:null;
   if(!target)return;
-  if(target.closest('#goStageBtn')){selectedStageId=null;stageBattleArmed=false;queueEnhance('chapter');return;}
+  if(target.closest('#goStageBtn')){
+    selectedStageId=null;stageBattleArmed=false;queueEnhance('chapter');
+    // DBG-13: プレイヤー自身のタップ（isTrusted）で、かつボタンが「続ける X-Y」を
+    // 表示しているときだけ、その Stage の確認画面まで進める。下部ナビ「冒険」や
+    // 本ファイルの showExistingStageList() など、#goStageBtn を代理クリックして
+    // 章一覧を開くだけの経路（isTrusted=false）は従来どおり章一覧で止まる。
+    const continueId=event.isTrusted?target.closest('#goStageBtn').dataset.continueStageId:null;
+    if(continueId)queueMicrotask(()=>openContinueStage(continueId));
+    return;
+  }
   if(target.closest('#stageBackBtn')){queueEnhance('chapter');return;}
   // Entering a Chapter's Stage list for the first time (Chapter card click)
   // used to skip this decoration entirely — it previously only re-ran on the

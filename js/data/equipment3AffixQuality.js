@@ -64,6 +64,8 @@ export function affixRarityWeightsForItemPower(itemPower, ctx = {}) {
   for (const rarity of AFFIX_RARITY) {
     out[rarity] = BASE_RARITY_WEIGHT[rarity] * Math.exp(IP_RARITY_SLOPE[rarity] * p);
   }
+  // 裂界鍵「古代の」の相対倍率（endgameDropContextFix が載せる）
+  out.ancient *= Math.max(1, Number(ctx.ancientWeightMult) || 1);
   return out;
 }
 

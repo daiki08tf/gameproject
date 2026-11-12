@@ -13,6 +13,16 @@ function stageDropContext(engine, ctx = null) {
   const base = ctx && typeof ctx === 'object' ? ctx : {};
   const target = targetProfile(engine);
   const realm = stage.loot3Profile || null;
+  // DBG-14: 裂界鍵の報酬接頭辞（大いなる／伝説の／古代の）と深淵チャレンジ
+  // （猛攻／癒しなき深淵）は「Greater／Legendary／Ancient 出現率」を名乗るが、
+  // stage に載るだけでどの抽選にも届いていなかった。既存のドロップ文脈に
+  // 相対倍率として載せ、既存の抽選関数（greaterAffixChance /
+  // legendaryEffectChance / affixRarityWeightsForItemPower）がそれを読む。
+  // 「出現率+15%」は基礎確率に対する相対増（×1.15）として扱う。各関数の
+  // 既存上限 clamp はそのまま効く。
+  const rift = stage.isRift ? (stage.riftReward || null) : null;
+  const challenge = stage.isAbyss ? (stage.abyssChallengeRewards || null) : null;
+  const rel = (key) => (1 + Math.max(0, Number(rift?.[key]) || 0)) * (1 + Math.max(0, Number(challenge?.[key]) || 0));
   return {
     ...base,
     depth: stage.isAbyss ? Math.max(0, Math.floor(Number(stage.abyssDepth) || 0)) : Math.max(0, Math.floor(Number(base.depth) || 0)),
@@ -26,6 +36,9 @@ function stageDropContext(engine, ctx = null) {
     informationalOnly: !!realm?.informationalOnly,
     cursedChanceMult: (Number(base.cursedChanceMult) || 1) * (Number(target?.cursedChanceMult) || 1) * (Number(realm?.cursedChanceMult) || 1),
     legendaryChanceAdd: (Number(base.legendaryChanceAdd) || 0) + (Number(target?.legendaryChanceAdd) || 0) + (Number(realm?.legendaryChanceAdd) || 0),
+    greaterChanceMult: (Number(base.greaterChanceMult) || 1) * rel('greaterBonus'),
+    legendaryChanceMult: (Number(base.legendaryChanceMult) || 1) * rel('legendaryBonus'),
+    ancientWeightMult: (Number(base.ancientWeightMult) || 1) * rel('ancientBonus'),
   };
 }
 

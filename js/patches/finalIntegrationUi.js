@@ -65,6 +65,10 @@ function enhanceHome(){
   const actionLabel=n.suspended?'冒険を確認':n.stageId?`続ける　${n.stageId}`:'冒険を選ぶ';
   if(adventureLabel&&adventureLabel.textContent!==actionLabel)adventureLabel.textContent=actionLabel;
   if(adventure)adventure.setAttribute('aria-label',`${actionLabel}：${n.title}`);
+  // DBG-13: 「続ける X-Y」と表示している間だけ、その Stage id をボタンに載せる。
+  // stageFirstNavigationUi がこれを読んで Stage 確認画面まで直行させる
+  // （ラベルが約束している行き先と実際の着地点を一致させる）。
+  if(adventure){const continueId=!n.suspended&&n.stageId?n.stageId:'';if((adventure.dataset.continueStageId||'')!==continueId){if(continueId)adventure.dataset.continueStageId=continueId;else delete adventure.dataset.continueStageId;}}
   let sum=menu.querySelector('.phase14-home-summary');if(!sum){sum=document.createElement('div');sum.className='phase14-home-summary';goal.after(sum);}
   const equippedId=state.data.equipped?.weapon,baseItemId=state.data.weaponInstances?.[equippedId]?.itemId||equippedId,weapon=getItem(baseItemId);
   const storyStages=storyChapters().flatMap(chapter=>(chapter.stages||[]).filter(stage=>!stage.branch&&!stage.bounty));

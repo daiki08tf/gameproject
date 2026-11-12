@@ -677,6 +677,9 @@ button { font-family: inherit; }
 .tb-cmd-btn[disabled] { opacity: 0.35; cursor: default; }
 .tb-cmd-btn.tb-cmd-guard { border-color: var(--dc-observe-400); background: rgba(98,168,173,0.12); }
 .tb-cmd-btn.tb-cmd-flee { background: var(--dc-ink-700, rgba(255,255,255,0.05)); }
+.tb-cmd-btn.tb-cmd-auto { grid-column: 1 / -1; min-height: 44px; padding: 9px 6px; font-size: 13px; font-weight: normal; letter-spacing: 0.04em; color: var(--dc-ash-300, #b9bcc8); }
+.tb-cmd-btn.tb-cmd-auto.active { border-color: var(--dc-brass-300, var(--accent)); color: var(--dc-brass-300, var(--accent)); background: rgba(201,168,106,0.10); }
+.tb-log .tb-assist-note { color: var(--dc-observe-400, #62a8ad); }
 
 /* とくぎ・じゅもんの技一覧サブメニュー */
 .tb-tech-menu {

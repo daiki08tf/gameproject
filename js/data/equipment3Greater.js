@@ -28,6 +28,8 @@ export function greaterAffixChance(itemPower, ctx = {}) {
   if (ctx.boss) chance += 0.02;
   if (ctx.ex) chance += 0.03;
   if (ctx.nemesis) chance += 0.05;
+  // 裂界鍵「大いなる」／深淵チャレンジ「猛攻」の相対倍率（endgameDropContextFix が載せる）
+  chance *= Math.max(1, Number(ctx.greaterChanceMult) || 1);
   return clamp(chance, 0, 0.30);
 }
 

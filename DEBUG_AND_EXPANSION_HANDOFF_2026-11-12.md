@@ -9,6 +9,42 @@
 
 ---
 
+## 実施状況（2026-11-12 追記）
+
+| ID | 状態 | 内容 |
+|---|---|---|
+| DBG-11 | 原因特定・導線のみ対処 | Pacing pass の退行ではない。`9479339`（9/11）時点から同じで、こうげきのみ 40戦0勝。現行は こうげきのみ 2/60、**やくそう併用 51/60**、とくぎ＋やくそう 54/60。つまり 1-1 は初期所持のやくそう2個を使う前提の調整で、問題は「それが伝わらない」こと。難度は変えず、`js/patches/battleAssist.js` が第1章で HP 45% 以下・回復どうぐ所持・未使用のとき1戦1回だけ手引きをログに出す。**敵数値を下げるかどうかは未決（ユーザー判断）** |
+| DBG-12 | オート実装済み | `battleAssist.js` の「オート」。直前に手動で選んだ こうげき／ぼうぎょ／とくぎ／じゅもん を 300ms 間隔でくり返す。HP 35% 以下と Boss 出現で自動停止、どうぐ・にげるはくり返さない、戦闘開始ごとに OFF。`_onCommand` 経由なので報酬・他パッチの経路は手動と同一。セーブ追加なし。5-4 が 158 ラウンドかかる原因の切り分けは**未実施** |
+| DBG-13 | 修正済み | `続ける X-Y` はプレイヤー自身のタップのときだけ Stage 確認画面へ直行。下部ナビ「冒険」など `#goStageBtn` を代理クリックする経路は従来どおり章一覧で止まる（`event.isTrusted` で区別）。390×844 / 375×667 / 1280×800、初期・1-1 クリア後・全クリアの各セーブで確認 |
+| DBG-14 | 修正済み | 下記「DBG-14 の実装メモ」参照。回帰テスト `tests/rift-reward-wiring.test.js` |
+| DBG-21 | **新規・未着手** | 深淵チャレンジの `setBonus`（精鋭招来「Set出現率+30%」）、`eliteBonus`（同「Elite脅威+2」）、`bossTechniqueBonus` と `specialReward`（覇者の秘技）は、`stage.abyssChallengeRewards` に載るだけでどこからも読まれていない。DBG-14 と同じ種類の「名乗っているのに効かない」 |
+
+### DBG-14 の実装メモ
+
+- 経路: `riftKeys.js` / `abyssChallenges.js` のフィールド → `endgameDropContextFix.js::stageDropContext` が
+  `greaterChanceMult` / `legendaryChanceMult` / `ancientWeightMult` としてドロップ文脈に載せる →
+  既存の `greaterAffixChance` / `legendaryEffectChance` / `affixRarityWeightsForItemPower` が読む。新しい Loot authority は作っていない。
+- 「出現率+N%」は**基礎確率に対する相対増**として実装した（各関数の既存上限 clamp はそのまま）。
+  絶対加算と読むと `greaterBonus:.35` は上限 0.30 に常時張り付くため。
+- 実測（IP 8500・英雄の剣 3000 個、実際の `state.addItem` 経由）: Greater 13.4% → 17.5%、Legendary 27% → 36%、Ancient 3.1% → 3.4%。
+- 深淵チャレンジの「猛攻」（Greater +15%）と「癒しなき深淵」（Legendary +15%）も同じ経路で効くようになった。
+- **要判断**: `古代の`（`ancientBonus:.08`）は相対 ×1.08 だと体感できない。鍵の報酬として成立させるなら値の見直しが要る（数値はユーザー判断）。
+- 前回「要確認」とした `高位の` は鍵生成時（`riftKeys.js` の `rewardIpMult`）、`黄金の` は `stage.dropMult` 経由で、どちらも元から効いていた。
+
+### この実装で触ったファイル
+
+`js/patches/battleAssist.js`（新規）、`js/main.js`（import 1行）、`css/style.css`（オートボタンと手引きの色）、
+`js/patches/finalIntegrationUi.js`、`js/patches/stageFirstNavigationUi.js`、`js/patches/endgameDropContextFix.js`、
+`js/data/equipment3Greater.js`、`js/data/equipment3Legendary.js`、`js/data/equipment3AffixQuality.js`、
+`tests/rift-reward-wiring.test.js`（新規）。
+
+### 既知の残り
+
+- 375×667 の戦闘画面はオートボタン1行ぶんログ欄が狭くなる（実測 96px）。仲間 HUD が縦に大きいのが主因で、これは以前からの状態。
+- オートの間隔・停止閾値は `battleAssist.js` 冒頭の定数。設定画面（IMP-4）ができたらそこへ出す。
+
+---
+
 ## 0. 監査でやったこと（再現可能な形で）
 
 | 種別 | 内容 | 結果 |
