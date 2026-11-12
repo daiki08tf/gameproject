@@ -86,7 +86,11 @@ test('numeric safety snapshot reports unsafe values explicitly', () => {
 
 test('battle UI still uses bounded HP/MP ratios instead of fixed-width digit assumptions', () => {
   const src = fs.readFileSync(new URL('../js/screens/textBattle.js', import.meta.url), 'utf8');
-  assert.match(src, /p\.hp\s*\/\s*p\.maxHp\s*\*\s*100/);
-  assert.match(src, /p\.mp\s*\/\s*p\.maxMp\s*\*\s*100/);
+  // The battle HUD now goes through numericSafety itself (percentWidth clamps
+  // to 0..100 and survives a zero/NaN maximum; formatGameNumber never prints NaN).
+  assert.match(src, /import \{ percentWidth, formatGameNumber \} from '\.\.\/data\/numericSafety\.js'/);
+  assert.match(src, /percentWidth\(p\.hp, p\.maxHp\)/);
+  assert.match(src, /percentWidth\(p\.mp, p\.maxMp\)/);
+  assert.match(src, /formatGameNumber\(p\.maxHp\)/);
   assert.doesNotMatch(src, /slice\([^)]*\).*hp/i);
 });

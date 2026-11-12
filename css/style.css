@@ -715,24 +715,6 @@ button { font-family: inherit; }
 .tb-tech-item .tb-tech-cost { font-size: 12px; opacity: 0.8; }
 .tb-tech-empty { padding: 14px; text-align: center; opacity: 0.6; font-size: 13px; }
 
-/* Phase 8 Fusion command panel（fusionBattleUi.js）— コマンドグリッドと
-   同じDark Chronicleトーンで、観測色を職業ゲージの識別に使う */
-.tb-fusion-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
-  padding: 8px 10px;
-  border: 1px solid var(--dc-iron-500);
-  border-left: 2px solid var(--dc-observe-400);
-  border-radius: var(--dc-radius-panel, 8px);
-  background: rgba(13, 18, 24, .92);
-}
-.tb-fusion-label { font-size: 12px; color: var(--dc-ash-300); }
-.tb-fusion-bar { height: 8px; }
-.tb-fusion-bar .fill { background: linear-gradient(90deg, var(--dc-observe-400), var(--dc-brass-300)); }
-.tb-fusion-command { width: 100%; }
-
 /* Combat 2.0 skill-modifier badge（combat2SkillModifierUi.js） */
 .combat2-modifier-btn { margin-left: 8px; padding: 3px 7px; font-size: 11px; }
 

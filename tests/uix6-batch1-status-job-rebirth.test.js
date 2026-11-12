@@ -6,7 +6,6 @@ const status = readFileSync(new URL('../js/screens/status.js', import.meta.url),
 const rebirth = readFileSync(new URL('../js/screens/rebirthModern.js', import.meta.url), 'utf8');
 const jobCodexUi = readFileSync(new URL('../js/patches/jobCodexUi.js', import.meta.url), 'utf8');
 const jobsPhase8 = readFileSync(new URL('../js/screens/jobsPhase8.js', import.meta.url), 'utf8');
-const jobConstellation = readFileSync(new URL('../js/screens/jobConstellation.js', import.meta.url), 'utf8');
 const styleCss = readFileSync(new URL('../css/style.css', import.meta.url), 'utf8');
 const characterCss = readFileSync(new URL('../css/character.css', import.meta.url), 'utf8');
 
@@ -18,7 +17,6 @@ test('UIX-6 batch 1 removes rendered-UI emoji from Status, Rebirth and the Job s
     ['js/screens/rebirthModern.js', rebirth],
     ['js/patches/jobCodexUi.js', jobCodexUi],
     ['js/screens/jobsPhase8.js', jobsPhase8],
-    ['js/screens/jobConstellation.js', jobConstellation],
   ]) {
     assert.doesNotMatch(source, PICTOGRAPH, `${name} must not render platform emoji`);
   }
@@ -44,19 +42,8 @@ test('UIX-6 batch 1 gives Status/Rebirth/Character surfaces Dark Chronicle token
   assert.match(characterCss, /\.character-avatar \{[^}]*var\(--dc-brass-300/s);
 });
 
-test('UIX-6 batch 1 leaves the Job Constellation/Fusion Galaxy visual system untouched (deferred, no emoji present)', () => {
-  // jobConstellation.js and its inline styles (phase8JobUiStyles.js) already
-  // have zero rendered emoji and a deliberate space/star identity distinct
-  // from the rest of the app. Full token harmonization is real, separate
-  // work (many hardcoded #f2c94c/rgba(242,201,76,..) golds and glow
-  // box-shadows tied to mastered/discovered states) deferred to its own
-  // pass rather than a partial, unverified retouch inside this batch.
-  assert.doesNotMatch(jobConstellation, PICTOGRAPH);
-  assert.match(jobConstellation, /★|◇/); // decorative, non-pictographic — untouched by design
-});
-
 test('UIX-6 batch 1 introduces no new calculation authority — Status/Rebirth/Job read existing state only', () => {
-  for (const source of [status, rebirth, jobCodexUi, jobsPhase8, jobConstellation]) {
+  for (const source of [status, rebirth, jobCodexUi, jobsPhase8]) {
     assert.doesNotMatch(source, /localStorage/);
   }
   assert.match(status, /state\.getStats\(\)/);

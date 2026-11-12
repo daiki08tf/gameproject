@@ -36,7 +36,8 @@ test('every Rift reward prefix has a consumer for its field', () => {
   const keySource = fs.readFileSync(new URL('../js/data/riftKeys.js', import.meta.url), 'utf8');
   assert.equal(riftReward('greater').greaterBonus, 0.35);
   assert.equal(riftReward('legend').legendaryBonus, 0.20);
-  assert.equal(riftReward('ancient').ancientBonus, 0.08);
+  assert.equal(riftReward('ancient').ancientBonus, 1.0);
+  for (const id of ['greater', 'legend', 'power', 'treasure', 'ancient']) assert.ok(riftReward(id).desc, `${id} tells the player what it does`);
   for (const [field, ctxField] of [['greaterBonus', 'greaterChanceMult'], ['legendaryBonus', 'legendaryChanceMult'], ['ancientBonus', 'ancientWeightMult']]) {
     assert.match(ctxSource, new RegExp(`${ctxField}:[^\\n]*rel\\('${field}'\\)`));
   }

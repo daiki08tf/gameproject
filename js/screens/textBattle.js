@@ -8,6 +8,7 @@
 import { BattleEngine } from '../battleEngine.js';
 import { describeRound, describeBattleEnd } from '../battleLog.js';
 import { Audio_ } from '../audio.js';
+import { percentWidth, formatGameNumber } from '../data/numericSafety.js';
 
 const MAX_LOG_LINES = 200; // ログが際限なく伸びないよう上限を設ける
 
@@ -151,10 +152,12 @@ export class TextBattleScreen {
   _render() {
     const { engine } = this;
     const p = engine.player;
-    this.el.hpFill.style.width = `${Math.max(0, p.hp / p.maxHp * 100)}%`;
-    this.el.hpText.textContent = `HP ${Math.max(0, Math.round(p.hp))}/${p.maxHp}`;
-    this.el.mpFill.style.width = `${p.maxMp > 0 ? Math.max(0, p.mp / p.maxMp * 100) : 0}%`;
-    this.el.mpText.textContent = `${Math.max(0, Math.round(p.mp))}/${p.maxMp}`;
+    // 数値表示の境界は numericSafety に寄せる：NaN/Infinity を画面に出さず、
+    // 高レベル帯の大きな HP/MP は桁区切りで読めるようにする（DBG-05）。
+    this.el.hpFill.style.width = `${percentWidth(p.hp, p.maxHp)}%`;
+    this.el.hpText.textContent = `HP ${formatGameNumber(Math.max(0, p.hp))}/${formatGameNumber(p.maxHp)}`;
+    this.el.mpFill.style.width = `${percentWidth(p.mp, p.maxMp)}%`;
+    this.el.mpText.textContent = `${formatGameNumber(Math.max(0, p.mp))}/${formatGameNumber(p.maxMp)}`;
     this._renderPlayerBuffs();
 
     const remaining = Math.max(0, engine.totalToDefeat - engine.defeated);

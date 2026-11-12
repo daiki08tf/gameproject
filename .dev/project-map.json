@@ -4,13 +4,13 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "1688fb3",
+      "head": "b33e841",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
-      "total": 1106,
-      "code": 950,
-      "tests": 374
+      "total": 1098,
+      "code": 942,
+      "tests": 372
     }
   },
   "systems": [
@@ -257,9 +257,6 @@
         "js/patches/fishing.js",
         "js/patches/fishingCodexUi.js",
         "js/patches/fishingUi.js",
-        "js/patches/fusionBattleIntegration.js",
-        "js/patches/fusionBattleUi.js",
-        "js/patches/fusionCombatRuntime.js",
         "js/patches/gearOverhaulCraftingConsolidation.js",
         "js/patches/inheritanceBalanceUi.js",
         "js/patches/inheritanceCore.js",
@@ -379,9 +376,7 @@
         "js/screens/equipment.js",
         "js/screens/equipment4.js",
         "js/screens/equipmentFusion.js",
-        "js/screens/fusionGalaxy.js",
         "js/screens/home.js",
-        "js/screens/jobConstellation.js",
         "js/screens/jobsPhase8.js",
         "js/screens/rebirthModern.js",
         "js/screens/result.js",
@@ -2410,7 +2405,6 @@
         "migration"
       ],
       "files": [
-        "js/data/fusionCombatIdentity.js",
         "js/data/fusionConstellation.js",
         "js/data/fusionRuntime.js",
         "js/data/job3Specializations.js",
@@ -2423,9 +2417,6 @@
         "js/data/jobsPhase8.js",
         "js/data/secretJobPhase2.js",
         "js/data/secretJobs.js",
-        "js/patches/fusionBattleIntegration.js",
-        "js/patches/fusionBattleUi.js",
-        "js/patches/fusionCombatRuntime.js",
         "js/patches/job3LegacyPassives.js",
         "js/patches/job3SpecializationCore.js",
         "js/patches/jobConstellationRuntime.js",
@@ -2445,8 +2436,6 @@
         "tests/job3-specialization.test.js",
         "tests/jobFusion.test.js",
         "tests/phase8-constellation-finale.test.js",
-        "tests/phase8-fusion-battle-integration.test.js",
-        "tests/phase8-fusion-combat.test.js",
         "tests/phase8-job-ui-data.test.js",
         "tests/phase8-live-job-switching.test.js",
         "tests/phase8-runtime.test.js",
@@ -2467,8 +2456,7 @@
       "dependsOn": [
         "balance",
         "combat",
-        "engine",
-        "screens"
+        "engine"
       ],
       "dependents": [
         "codex",
@@ -2480,7 +2468,6 @@
         "world"
       ],
       "importers": [
-        "js/data/fusionCombatIdentity.js",
         "js/data/fusionConstellation.js",
         "js/data/fusionRuntime.js",
         "js/data/jobFusionRegistry.js",
@@ -2489,7 +2476,6 @@
         "js/data/progression3.js",
         "js/main.js",
         "js/patches/buildReadabilityUi.js",
-        "js/patches/fusionCombatRuntime.js",
         "js/patches/job3LegacyPassives.js",
         "js/patches/job3SpecializationCore.js",
         "js/patches/jobCodexUi.js",
@@ -2502,8 +2488,6 @@
         "js/patches/secretJobsPhase1.js",
         "js/patches/secretJobsPhase2.js",
         "js/screens/blacksmith.js",
-        "js/screens/fusionGalaxy.js",
-        "js/screens/jobConstellation.js",
         "js/screens/jobsPhase8.js",
         "js/state.js",
         "tests/c1-job-identity-migration.test.js",
@@ -2515,8 +2499,6 @@
         "tests/job3-specialization.test.js",
         "tests/jobFusion.test.js",
         "tests/phase8-constellation-finale.test.js",
-        "tests/phase8-fusion-battle-integration.test.js",
-        "tests/phase8-fusion-combat.test.js",
         "tests/phase8-job-ui-data.test.js",
         "tests/phase8-live-job-switching.test.js",
         "tests/phase8-runtime.test.js",
@@ -3187,6 +3169,7 @@
         "js/patches/weaponInstanceFoundation.js",
         "js/screens/blacksmith.js",
         "js/screens/stageSelect.js",
+        "js/screens/textBattle.js",
         "js/state.js",
         "tests/balance-audit-2.test.js",
         "tests/boss-companion-simulation.test.js",
@@ -3532,9 +3515,7 @@
         "js/screens/equipment.js",
         "js/screens/equipment4.js",
         "js/screens/equipmentFusion.js",
-        "js/screens/fusionGalaxy.js",
         "js/screens/home.js",
-        "js/screens/jobConstellation.js",
         "js/screens/jobs.js",
         "js/screens/jobsPhase8.js",
         "js/screens/rebirthModern.js",
@@ -3574,7 +3555,6 @@
         "enemies",
         "engine",
         "equipment",
-        "jobs",
         "progression",
         "runes",
         "story-canon",
@@ -3606,7 +3586,6 @@
         "js/patches/contentPackIVJ.js",
         "js/patches/enemy2LevelFoundation.js",
         "js/patches/enemy2RankVariants.js",
-        "js/patches/fusionBattleUi.js",
         "js/patches/gearOverhaulCraftingConsolidation.js",
         "js/patches/monsterRanch2Complete.js",
         "js/patches/postCp3ConvergenceApexCombat.js",
@@ -3875,8 +3854,6 @@
         "tests/phase14-final-integration.test.js",
         "tests/phase14-mobile-command-regression.test.js",
         "tests/phase8-constellation-finale.test.js",
-        "tests/phase8-fusion-battle-integration.test.js",
-        "tests/phase8-fusion-combat.test.js",
         "tests/phase8-job-ui-data.test.js",
         "tests/phase8-live-job-switching.test.js",
         "tests/phase8-runtime.test.js",
@@ -4251,8 +4228,6 @@
         "tests/phase14-final-integration.test.js",
         "tests/phase14-mobile-command-regression.test.js",
         "tests/phase8-constellation-finale.test.js",
-        "tests/phase8-fusion-battle-integration.test.js",
-        "tests/phase8-fusion-combat.test.js",
         "tests/phase8-job-ui-data.test.js",
         "tests/phase8-live-job-switching.test.js",
         "tests/phase8-runtime.test.js",

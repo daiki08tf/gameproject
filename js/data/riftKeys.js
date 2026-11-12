@@ -5,8 +5,11 @@ const DANGERS=[
  {id:'haste',name:'加速',enemySpeedMult:1.30,score:2},{id:'scarcity',name:'枯渇',healMult:.55,score:3},{id:'cataclysm',name:'終末',enemyHpMult:1.25,enemyAtkMult:1.25,score:4}
 ];
 const REWARDS=[
- {id:'greater',name:'大いなる',greaterBonus:.35},{id:'legend',name:'伝説の',legendaryBonus:.20},{id:'power',name:'高位の',itemPowerBonus:.12},
- {id:'treasure',name:'黄金の',dropMult:1.50},{id:'ancient',name:'古代の',ancientBonus:.08}
+ // *Bonus は基礎確率に対する相対増（endgameDropContextFix が 1+値 の倍率として抽選へ渡す）。
+ // ancientBonus は Ancient Option の抽選重みに掛かる。基礎が 0.15%〜5% と小さいので、
+ // 旧値 .08（×1.08）では体感できなかった。×2 にして他の接頭辞と同程度の実効差（高 IP で +3pt 前後）にする。
+ {id:'greater',name:'大いなる',desc:'Greater Option 出現率 ×1.35',greaterBonus:.35},{id:'legend',name:'伝説の',desc:'Legendary 効果 出現率 ×1.2',legendaryBonus:.20},{id:'power',name:'高位の',desc:'Item Power +12%',itemPowerBonus:.12},
+ {id:'treasure',name:'黄金の',desc:'ドロップ率 ×1.5',dropMult:1.50},{id:'ancient',name:'古代の',desc:'Ancient Option 出現率 ×2',ancientBonus:1.0}
 ];
 function hash(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
 function rng(seed){let x=seed||1;return()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return (x>>>0)/4294967296;};}

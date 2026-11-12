@@ -17,6 +17,9 @@
 | DBG-12 | オート実装済み | `battleAssist.js` の「オート」。直前に手動で選んだ こうげき／ぼうぎょ／とくぎ／じゅもん を 300ms 間隔でくり返す。HP 35% 以下と Boss 出現で自動停止、どうぐ・にげるはくり返さない、戦闘開始ごとに OFF。`_onCommand` 経由なので報酬・他パッチの経路は手動と同一。セーブ追加なし。5-4 が 158 ラウンドかかる原因の切り分けは**未実施** |
 | DBG-13 | 修正済み | `続ける X-Y` はプレイヤー自身のタップのときだけ Stage 確認画面へ直行。下部ナビ「冒険」など `#goStageBtn` を代理クリックする経路は従来どおり章一覧で止まる（`event.isTrusted` で区別）。390×844 / 375×667 / 1280×800、初期・1-1 クリア後・全クリアの各セーブで確認 |
 | DBG-14 | 修正済み | 下記「DBG-14 の実装メモ」参照。回帰テスト `tests/rift-reward-wiring.test.js` |
+| DBG-15 | 撤去済み | 融合戦闘は意図的な引退だった：`tests/c1-job-identity-migration.test.js` が「`main.js` は `fusionCombatRuntime`/`fusionBattleIntegration`/`fusionBattleUi` を読み込まない」ことを既に固定しており、C0/C1 監査も 105 融合職を deprecated と明記している。復活させると `state.data.fusionCombat` という新セーブルートも生える。よって `fusionCombatIdentity.js`、`fusionBattleIntegration.js`、`fusionBattleUi.js`、`fusionCombatRuntime.js`、`screens/fusionGalaxy.js`、`screens/jobConstellation.js` と、対応する `.tb-fusion-*` CSS を削除。`weaponBuildSynergy.js` は実行時ロジックではなくテストが使う設計カタログなので残置 |
+| DBG-05 | 解消 | `numericSafety.js` に実際の利用者を作った：戦闘 HUD の HP/MP バー幅（`percentWidth`）と数値表示（`formatGameNumber`、桁区切り・NaN 非表示） |
+| DBG-11 | **確定：現状維持** | ユーザー判断「負けのペナルティがないゲームなので 1-1 の難度はそのまま」。手引きのみで完了 |
 | DBG-21 | **新規・未着手** | 深淵チャレンジの `setBonus`（精鋭招来「Set出現率+30%」）、`eliteBonus`（同「Elite脅威+2」）、`bossTechniqueBonus` と `specialReward`（覇者の秘技）は、`stage.abyssChallengeRewards` に載るだけでどこからも読まれていない。DBG-14 と同じ種類の「名乗っているのに効かない」 |
 
 ### DBG-14 の実装メモ
@@ -28,7 +31,8 @@
   絶対加算と読むと `greaterBonus:.35` は上限 0.30 に常時張り付くため。
 - 実測（IP 8500・英雄の剣 3000 個、実際の `state.addItem` 経由）: Greater 13.4% → 17.5%、Legendary 27% → 36%、Ancient 3.1% → 3.4%。
 - 深淵チャレンジの「猛攻」（Greater +15%）と「癒しなき深淵」（Legendary +15%）も同じ経路で効くようになった。
-- **要判断**: `古代の`（`ancientBonus:.08`）は相対 ×1.08 だと体感できない。鍵の報酬として成立させるなら値の見直しが要る（数値はユーザー判断）。
+- `古代の` は `ancientBonus` を .08 → 1.0（Ancient Option の抽選重み ×2）に調整した。旧値では 3.1% → 3.4% で体感できなかったため。調整後の実測は 3.1% → 6.0%（同条件）で、他の接頭辞と同程度の実効差（+3〜9pt）に揃う。
+- 鍵の確認画面の「報酬特性」に効果の説明を併記するようにした（例: `古代の（Ancient Option 出現率 ×2）`）。`riftKeys.js` の各 REWARD に `desc` を追加。
 - 前回「要確認」とした `高位の` は鍵生成時（`riftKeys.js` の `rewardIpMult`）、`黄金の` は `stage.dropMult` 経由で、どちらも元から効いていた。
 
 ### この実装で触ったファイル
@@ -37,6 +41,17 @@
 `js/patches/finalIntegrationUi.js`、`js/patches/stageFirstNavigationUi.js`、`js/patches/endgameDropContextFix.js`、
 `js/data/equipment3Greater.js`、`js/data/equipment3Legendary.js`、`js/data/equipment3AffixQuality.js`、
 `tests/rift-reward-wiring.test.js`（新規）。
+
+### DBG-15 の撤去で変更したテスト（死んだコードだけを検証していたもの）
+
+- 削除: `tests/phase8-fusion-combat.test.js`（3件）、`tests/phase8-fusion-battle-integration.test.js`（2件）— 対象データごと撤去。
+- `tests/battle-mobile-scroll.test.js` — 読み込まれていない `fusionBattleUi.js` 内の CSS 文字列を照合していた。実際に読み込まれる `css/finalIntegration.css` を照合するよう書き換え、ローダーの存在確認を1件追加（3件 → 4件）。
+- `tests/job-constellation-ui.test.js` — 旧 `screens/jobConstellation.js` のソース照合2件を削除。データ・ランタイム側の8件は維持。
+- `tests/uix6-batch1-status-job-rebirth.test.js` — 旧星盤画面の「未着手のまま」確認1件を削除、他のリストから当該ファイルを除外。
+- `tests/uix4-battle-result-suite.test.js` — リストから `fusionBattleUi.js` と `.tb-fusion-panel` の照合行を除外。
+- `tests/rift-entry.test.js` — 旧 Fusion start デコレータに対する1件を削除。
+- `tests/phase10-6-numeric-safety.test.js` — HUD が `numericSafety` を実際に使うことを確認する内容へ更新。
+- 合計 1936 → 1928 件。生きているコードへの検証は減らしていない。
 
 ### 既知の残り
 

@@ -193,27 +193,3 @@ test('Stage-first Rift detail replaces Story action and removes stale Hunt contr
   assert.equal(nodes.stageFirstHuntContext, undefined);
   assert.equal(state.riftKeys().length, 1);
 });
-
-
-test('existing Fusion start decorator does not render an absent engine after missing-key rejection', async () => {
-  const source = fs.readFileSync(new URL('../js/patches/fusionBattleUi.js', import.meta.url), 'utf8');
-  const binding = source.split('\n').find(line => line.startsWith('TextBattleScreen.prototype.start='));
-  const decorated = { prototype: {} };
-  let paints = 0;
-  vm.runInNewContext(binding, {
-    TextBattleScreen: decorated, originalStart: TextBattleScreen.prototype.start,
-    ensureBattleViewportStyles() {}, ensureUi() { paints++; },
-  });
-  const battle = screen();
-  battle._render = () => { assert.ok(battle.engine); paints++; };
-  let result;
-  decorated.prototype.start.call(battle, 'rift-missing', value => { result = value; });
-  await Promise.resolve();
-  assert.equal(result.keyMissing, true);
-  assert.equal(paints, 0);
-  const key = state.addRiftKey(10);
-  decorated.prototype.start.call(battle, `rift-${key.id}`, () => {});
-  assert.ok(battle.engine.aliveEnemies.length);
-  assert.ok(paints > 0);
-  assert.equal(state.riftKeys().length, 0);
-});
