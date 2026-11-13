@@ -209,7 +209,18 @@ let selectedBlessingId = null;
 
 export function renderStageConfirm(stage) {
   document.getElementById('confirmStageName').textContent = stage.name;
-  document.getElementById('confirmStageRec').textContent = stage.itemPowerTarget ? `推奨Lv ${stage.recLevel} / 目標IP ${stage.itemPowerTarget}` : `推奨Lv ${stage.recLevel}`;
+  // 推奨 Lv だけでは「いまの自分で足りるか」が読めないので、現在 Lv との差を言葉で添える（色に頼らない）。
+  // 本編の関門・ボスには、Pacing pass / オート戦闘の挙動を一言で予告する。
+  const recEl = document.getElementById('confirmStageRec');
+  const recBase = stage.itemPowerTarget ? `推奨Lv ${stage.recLevel} / 目標IP ${stage.itemPowerTarget}` : `推奨Lv ${stage.recLevel}`;
+  const myLv = Number(state.characterLevel) || 0, rec = Number(stage.recLevel) || 0;
+  const gap = rec > 0 && myLv > 0 ? (myLv - rec) / rec : null;
+  const gapWord = gap == null ? '' : gap >= 0.1 ? '余裕あり' : gap >= 0 ? '適正' : gap >= -0.1 ? 'やや不足' : '大きく不足';
+  const mainStage = /^\d+-\d+$/.test(String(stage.id || '')) && !stage.branch && !stage.hunt;
+  const wallNote = !mainStage ? '' : (stage.boss || stage.midBoss) ? '\nボス戦：オートはボスの出現で止まる。技の予兆が出たら「ぼうぎょ」。'
+    : stage.checkpoint ? '\n関門：最後の一団が番人（エリート）になる。回復どうぐの残りを確かめておく。' : '';
+  recEl.textContent = recBase + (gapWord ? ` ／ 現在Lv ${myLv.toLocaleString()}（${gapWord}）` : '') + wallNote;
+  recEl.style.whiteSpace = 'pre-line';
   const rewardText = stage.bounty ? `討伐報酬: 経験値 ${stage.rewards.exp} / ゴールド ${stage.rewards.gold} / 初回討伐で固有の戦利品` : `クリア報酬: 経験値 ${stage.rewards.exp} / ゴールド ${stage.rewards.gold}${stage.firstClear ? '（初回クリアで装備入手）' : ''}`;
   document.getElementById('confirmStageRewards').textContent = rewardText;
   const modEl = document.getElementById('confirmModifiers');
