@@ -52,7 +52,7 @@ function renderSession(container, spotId, session, onEnd, lastHit = null) {
       return;
     }
     const reward = rewardText(result.gained);
-    container.innerHTML = `<div class="forge-card-sub" style="margin-top:8px;">${escapeHtml(result.fish.name)}を釣り上げた！${result.first ? '（初めての記録）' : `（累計${result.caught}匹）`}${reward ? `<br>獲得: ${reward}` : ''}<br>（「糸を垂らす」を押すと再挑戦できる）</div>`;
+    container.innerHTML = `<div class="forge-card-sub" style="margin-top:8px;">${escapeHtml(result.fish.name)}を釣り上げた！${result.first ? '（初めての記録）' : `（累計${result.caught}匹）`}${reward ? `<br>獲得: ${reward}` : ''}${result.companionReaction ? `<br>${escapeHtml(result.companionReaction.text)}` : ''}<br>（「糸を垂らす」を押すと再挑戦できる）</div>`;
   }));
 }
 

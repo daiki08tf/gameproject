@@ -79,7 +79,7 @@ function renderSession(container, session, onEnd) {
     }
     const reward = rewardText(result.gained);
     const recordReward = rewardText(result.recordGained);
-    container.innerHTML = `<div class="forge-card-sub" style="margin-top:8px;">${escapeHtml(result.incident.fragment.name)}を掘り出した！${reward ? `<br>獲得: ${reward}` : ''}</div><div class="forge-card-sub" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:8px;"><b>${escapeHtml(result.record.name)}</b><br>${escapeHtml(result.record.text)}${recordReward ? `<br>獲得: ${recordReward}` : ''}</div>`;
+    container.innerHTML = `<div class="forge-card-sub" style="margin-top:8px;">${escapeHtml(result.incident.fragment.name)}を掘り出した！${reward ? `<br>獲得: ${reward}` : ''}</div><div class="forge-card-sub" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:8px;"><b>${escapeHtml(result.record.name)}</b><br>${escapeHtml(result.record.text)}${recordReward ? `<br>獲得: ${recordReward}` : ''}${result.companionReaction ? `<br>${escapeHtml(result.companionReaction.text)}` : ''}</div>`;
   }));
 }
 
@@ -128,7 +128,7 @@ function render() {
     section.querySelectorAll(`.settlement-incident-lead[data-incident="${id}"]`).forEach((leadBtn) => leadBtn.remove());
     const reward = rewardText(result.gained);
     const recordReward = rewardText(result.recordGained);
-    container.innerHTML = `<div class="forge-card-sub" style="margin-top:8px;">手がかりを頼りに見つけ出した！${reward ? `<br>獲得: ${reward}` : ''}</div><div class="forge-card-sub" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:8px;"><b>${escapeHtml(result.record.name)}</b><br>${escapeHtml(result.record.text)}${recordReward ? `<br>獲得: ${recordReward}` : ''}</div>`;
+    container.innerHTML = `<div class="forge-card-sub" style="margin-top:8px;">手がかりを頼りに見つけ出した！${reward ? `<br>獲得: ${reward}` : ''}</div><div class="forge-card-sub" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:8px;"><b>${escapeHtml(result.record.name)}</b><br>${escapeHtml(result.record.text)}${recordReward ? `<br>獲得: ${recordReward}` : ''}${result.companionReaction ? `<br>${escapeHtml(result.companionReaction.text)}` : ''}</div>`;
   }));
 }
 

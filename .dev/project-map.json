@@ -4,11 +4,11 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "db9870d",
+      "head": "4b6b7ee",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
-      "total": 1109,
+      "total": 1110,
       "code": 951,
       "tests": 374
     }
@@ -1451,6 +1451,7 @@
         "js/patches/companionSynergy.js",
         "js/patches/contentPackIICD.js",
         "js/patches/contentPackIIIB.js",
+        "js/patches/fishing.js",
         "js/patches/homeNavigation.js",
         "js/patches/monsterRanch2Complete.js",
         "js/patches/monsterRanch2Facilities.js",
@@ -1464,6 +1465,8 @@
         "js/patches/ranchCollectionUi.js",
         "js/patches/ranchSpeciesGrade.js",
         "js/patches/regionCodex.js",
+        "js/patches/regionCodexUi.js",
+        "js/patches/settlementIncidents.js",
         "js/patches/settlementRanch3.js",
         "js/patches/speciesMastery.js",
         "js/patches/treasureHunt.js",
@@ -4509,6 +4512,7 @@
         "INTEGRATION_NOTES.md",
         "LEVEL_ROADMAP_99999.md",
         "LIVING_WORLD_DISCOVERY_ROADMAP.md",
+        "NEXT_WORK_HANDOFF_2026-11-13.md",
         "OBSERVED_BRANCHES_ACCESS_AND_TRANSCENDENTS.md",
         "OBSERVED_BRANCHES_M0_AUDIT.md",
         "OBSERVED_BRANCHES_M12_AUDIT.md",

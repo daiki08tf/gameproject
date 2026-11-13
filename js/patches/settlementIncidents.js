@@ -22,6 +22,7 @@ import { state } from '../state.js';
 import { resolveExcavationRound, rollExcavationCue, excavationDifficultyProfile, computeArchaeologyReward } from '../data/archaeology.js';
 import { SETTLEMENT_INCIDENTS, settlementIncidentEligible, getSettlementIncident, pursuitRoundLimit } from '../data/settlementIncidents.js';
 import { CHAPTERS } from '../data/stages.js';
+import { companionDiscoveryReaction } from '../data/companionDiscoveryReactions.js';
 import { BattleEngine } from '../battleEngine.js';
 import { showToast } from './toastFeedback.js';
 import './settlementDefense.js'; // 追跡は拠点防衛と同じ戦闘開始・解決の口（prepare/resolveSettlementDefense）を借りる
@@ -122,7 +123,8 @@ function grantAndResolve(incidentId, reward) {
   if (recordReward.gold > 0) { state.data.gold = Math.max(0, (Number(state.data.gold) || 0) + recordReward.gold); recordGained.gold = recordReward.gold; }
   state.settlementIncidents(); // re-sync the Rumor Notebook entry to the now-resolved state
   state.save();
-  return { ok: true, outcome: 'resolved', incident, gained, recordGained, record: incident.record };
+  const companionReaction = companionDiscoveryReaction('settlement', state.activeCompanions?.() || []); // 文章だけ。報酬には触れない
+  return { ok: true, outcome: 'resolved', incident, gained, recordGained, record: incident.record, companionReaction };
 }
 
 // ---- kind: 'archaeology' (謎の遺物漂着) -----------------------------------

@@ -44,11 +44,15 @@ test('a companion instance nickname takes priority over the species name (matche
   assert.equal(reaction.companionName, 'シロ');
 });
 
-test('every declared reaction rule has real flavor text and targets a family that genuinely exists in the companion roster', () => {
+test('every declared reaction rule has real flavor text and targets a family or role that genuinely exists in the companion roster', () => {
   const companionsSrc = read('js/data/companions.js') + read('js/data/monsterRanchSpecies.js') + read('js/data/phase12CompanionPack.js');
   for (const [kind, rule] of Object.entries(COMPANION_DISCOVERY_REACTIONS)) {
-    assert.equal(typeof rule.family, 'string', `${kind} must target a real family string`);
-    assert.match(companionsSrc, new RegExp(`family:'${rule.family}'`), `family '${rule.family}' (used by ${kind}) must actually exist in the companion roster, not an invented category`);
+    // A rule targets exactly one existing tag: a species family, or (since the
+    // 2026-11 continuation) a species role. Either way it must already exist in
+    // the roster -- the point of this test is "no invented categories".
+    assert.equal(Number(typeof rule.family === 'string') + Number(typeof rule.role === 'string'), 1, `${kind} must target exactly one of family/role`);
+    if (rule.family) assert.match(companionsSrc, new RegExp(`family:'${rule.family}'`), `family '${rule.family}' (used by ${kind}) must actually exist in the companion roster, not an invented category`);
+    if (rule.role) assert.match(companionsSrc, new RegExp(`role:'${rule.role}'`), `role '${rule.role}' (used by ${kind}) must actually exist in the companion roster, not an invented category`);
     assert.equal(typeof rule.text('X'), 'string');
     assert.ok(rule.text('X').length > 0);
   }
@@ -76,5 +80,21 @@ test('No platform emoji introduced by the C6-8 reaction feature', () => {
   const PICTOGRAPH = /\p{Extended_Pictographic}/u;
   for (const file of ['js/data/companionDiscoveryReactions.js']) {
     assert.doesNotMatch(read(file), PICTOGRAPH, `${file} must not introduce platform emoji`);
+  }
+});
+
+test('C6-8 continuation: fishing / region / settlement reactions match existing tags and stay flavor-only', () => {
+  const aquatic = { id: 'a#1', species: { name: '飛沫駆け', family: 'aquatic' }, instance: {} };
+  const guardian = { id: 'g#1', species: { name: '氷玻璃兵', family: 'construct', role: 'guardian' }, instance: {} };
+  const support = { id: 's#1', species: { name: '夢喰い蝶', family: 'spirit', role: 'support' }, instance: {} };
+  assert.match(companionDiscoveryReaction('fishing', [aquatic]).text, /飛沫駆け/);
+  assert.equal(companionDiscoveryReaction('fishing', [guardian, support]), null);
+  assert.match(companionDiscoveryReaction('region', [guardian]).text, /氷玻璃兵/);
+  assert.equal(companionDiscoveryReaction('region', [aquatic]), null);
+  assert.match(companionDiscoveryReaction('settlement', [support]).text, /夢喰い蝶/);
+  // spirit-family support still triggers the family rule it already had
+  assert.ok(companionDiscoveryReaction('treasureHunt', [support]));
+  for (const [file, kind] of [['js/patches/fishing.js', 'fishing'], ['js/patches/settlementIncidents.js', 'settlement'], ['js/patches/regionCodexUi.js', 'region']]) {
+    assert.match(read(file), new RegExp(`companionDiscoveryReaction\\('${kind}', state\\.activeCompanions\\?\\.\\(\\) \\|\\| \\[\\]\\)`), `${file} asks for the ${kind} reaction`);
   }
 });

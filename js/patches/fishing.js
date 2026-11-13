@@ -8,6 +8,7 @@
    OUTCOME of a catch (Codex entry + materials) is saved.
    ============================================================ */
 import { state } from '../state.js';
+import { companionDiscoveryReaction } from '../data/companionDiscoveryReactions.js';
 import './rune2Core.js'; // guarantees getStats()/getStatBreakdown() already include the codex+rune layers before we chain fish on top
 import { chainMethod } from './patchUtils.js';
 import {
@@ -91,7 +92,9 @@ state.fishingAction = function fishingAction(action) {
     gained.gold = reward.gold;
   }
   state.save();
-  return { ok: true, outcome: 'caught', fish, first, gained, caught: entry.caught, spotId };
+  // C6-8 の続き：文章だけのリアクション（報酬・確率には触れない）
+  const companionReaction = companionDiscoveryReaction('fishing', state.activeCompanions?.() || []);
+  return { ok: true, outcome: 'caught', fish, first, gained, caught: entry.caught, spotId, companionReaction };
 };
 
 state.fishCodex = function fishCodex() {

@@ -5,6 +5,7 @@
    per region -- see data/regionCodex.js for the full rationale.
    ============================================================ */
 import { state } from '../state.js';
+import { companionDiscoveryReaction } from '../data/companionDiscoveryReactions.js';
 import './regionCodex.js'; // guarantees state.regionCodexList() exists
 
 function escapeHtml(v) { return String(v ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;'); }
@@ -52,6 +53,9 @@ function render() {
   box.dataset.regionCodex = '1';
   box.className = 'forge-card';
   box.innerHTML = `<div class="forge-card-name">地域の記録</div><div class="sub">生物・釣果・発掘・宝探し・主脅威・レア個体・ルーン ―― この地で分かっていることを、地域ごとにまとめて確認できる。</div>${bundles.map(regionCard).join('')}`;
+  // C6-8 の続き：縄張り型の仲間を連れていると、地域の記録に一言添える（文章だけ）
+  const reaction = companionDiscoveryReaction('region', state.activeCompanions?.() || []);
+  if (reaction) { const line = document.createElement('div'); line.className = 'forge-card-sub'; line.dataset.regionCodexReaction = '1'; line.textContent = reaction.text; box.appendChild(line); }
   const heading = [...root.querySelectorAll('h3')].find((h) => h.textContent?.includes('魔物一覧')) || root.querySelector('h3');
   root.insertBefore(box, heading || root.firstChild?.nextSibling || null);
 }
