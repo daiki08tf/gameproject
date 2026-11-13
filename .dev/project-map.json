@@ -4,7 +4,7 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "9d37ba8",
+      "head": "57ab4b2",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {

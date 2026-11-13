@@ -45,6 +45,8 @@ function resolveDrop(itemId) {
   return { name: itemId, color: '', equipment3: null, headline: null };
 }
 
+const LOOT_VISIBLE = 3; // 見出しなしの戦利品を、折りたたまずに見せる件数
+
 function appendDropChip(itemsEl, resolved) {
   const wrap = document.createElement('div');wrap.className = `result-drop-wrap${resolved.equipment3 ? ` eq3-${resolved.equipment3.quality}` : ''}`;
   if (resolved.headline) {const headline=document.createElement('div');headline.className='result-loot-headline';headline.textContent=resolved.headline;wrap.appendChild(headline);}
@@ -138,7 +140,18 @@ export function renderResult(result) {
   const normalItems=Array.isArray(result.items)?result.items:[],rune2Drops=Array.isArray(result.rune2Drops)?result.rune2Drops:[];
   if(normalItems.length===0&&rune2Drops.length===0&&!result.world2?.event&&!result.loot3Chase&&!result.phase13)itemsEl.innerHTML='<span class="hint" style="opacity:.6;font-size:12px;">ドロップなし</span>';
   else{
-    for(const itemId of normalItems)appendDropChip(itemsEl,resolveDrop(itemId));
+    // B4: 戦利品が多いと一覧が縦に伸び、主操作のボタンが画面外へ出る。見出しつき（SPECIAL DROP 等の
+    // 注目品）は必ず見せ、それ以外は先頭 LOOT_VISIBLE 件まで。残りは「ほか N 件」に畳む（順序は変えない）。
+    const resolvedDrops=normalItems.map((itemId)=>resolveDrop(itemId));
+    const plainTotal=resolvedDrops.filter((r)=>!r.headline).length;
+    let plainShown=0,more=null,moreCount=0;
+    for(const resolved of resolvedDrops){
+      const visible=resolved.headline||plainShown<LOOT_VISIBLE||plainTotal<=LOOT_VISIBLE+1;
+      if(visible){if(!resolved.headline)plainShown++;appendDropChip(itemsEl,resolved);continue;}
+      if(!more){more=document.createElement('details');more.className='result-loot-more';more.appendChild(document.createElement('summary'));}
+      appendDropChip(more,resolved);moreCount++;
+    }
+    if(more){more.querySelector('summary').textContent=`ほか ${moreCount} 件の戦利品`;itemsEl.appendChild(more);}
     for(const drop of rune2Drops){const rune=getRune2(drop.id);if(!rune)continue;const chip=document.createElement('div');chip.className='result-item-chip';chip.style.color='var(--accent)';chip.textContent=`RUNE ${rune.name} +${drop.amount}刻（${drop.owned}刻）`;itemsEl.appendChild(chip);}
   }
   renderBattleReport(result,itemsEl);
