@@ -1,5 +1,5 @@
 import { BattleEngine } from '../battleEngine.js';
-import { battleTempoMult } from '../data/balance.js';
+import { battleTempoMult, BATTLE_TEMPO_LAYER } from '../data/balance.js';
 
 // Combat 3.x difficulty retune.
 // The original enemy tables were calibrated for the retired real-time/contact-damage
@@ -32,6 +32,11 @@ BattleEngine.prototype._spawnEnemy = function(type) {
     enemy.hp = Math.max(1, Math.round(enemy.hp * battleTempoMult(n, enemy.boss ? 'BOSS_HP_AT_TO' : 'HP_AT_TO')));
     enemy.maxHp = enemy.hp;
     enemy.atk = Math.max(1, Math.round(enemy.atk * battleTempoMult(n, enemy.boss ? 'BOSS_ATK_AT_TO' : 'ATK_AT_TO')));
+  } else if (this.stage?.isAbyss && String(this.stage.id || '').startsWith('abyss-')) {
+    const L = BATTLE_TEMPO_LAYER;
+    enemy.hp = Math.max(1, Math.round(enemy.hp * (enemy.boss ? L.ABYSS_BOSS_HP : L.ABYSS_HP)));
+    enemy.maxHp = enemy.hp;
+    enemy.atk = Math.max(1, Math.round(enemy.atk * (enemy.boss ? L.ABYSS_BOSS_ATK : L.ABYSS_ATK)));
   }
   return enemy;
 };

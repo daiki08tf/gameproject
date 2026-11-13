@@ -19,6 +19,7 @@ import { deriveCombatStats } from './data/combatStats.js';
 import { getConsumable } from './data/consumables.js';
 
 const SAVE_KEY = 'bladevale_save_v1';
+const CORRUPT_BACKUP_KEY = 'bladevale_save_v1__corrupt';
 
 function defaultSave() {
   return {
@@ -65,19 +66,42 @@ function defaultSave() {
 
 class StateManager {
   constructor() {
+    // 永続化の健全性（セーブデータには含めない実行時フラグ）
+    this.saveHealth = { loadFailed: false, corruptBackup: false, saveFailed: false };
     this.data = this._load();
   }
 
   _load() {
+    let raw = null;
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
+      raw = localStorage.getItem(SAVE_KEY);
       if (raw) return { ...defaultSave(), ...migrateC1JobSaveBack(JSON.parse(raw)) };
-    } catch (e) { /* ignore corrupt save */ }
+    } catch (e) {
+      // 壊れたセーブは初期化するが、以前はそのまま次の save() で上書きされて
+      // 元データが完全に失われていた。生の文字列を退避キーへ残してから初期化する
+      // （state.data のルートは増やさない。localStorage の別キー）。
+      this.saveHealth.corruptBackup = false;
+      if (raw) {
+        try { localStorage.setItem(CORRUPT_BACKUP_KEY, raw); this.saveHealth.corruptBackup = true; } catch (e2) { /* storage unavailable */ }
+      }
+      this.saveHealth.loadFailed = true;
+    }
     return defaultSave();
   }
 
   save() {
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(this.data)); } catch (e) { /* storage unavailable */ }
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(this.data));
+      this.saveHealth.saveFailed = false;
+    } catch (e) {
+      // 容量超過・プライベートモード等。握りつぶすと「保存されていないこと」に
+      // プレイヤーが気づけないので、状態を残してイベントで知らせる（表示は saveSafety.js）。
+      const first = !this.saveHealth.saveFailed;
+      this.saveHealth.saveFailed = true;
+      if (first && typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+        try { window.dispatchEvent(new CustomEvent('bladevale-save-failed')); } catch (e2) { /* no-op */ }
+      }
+    }
   }
 
   resetAll() {

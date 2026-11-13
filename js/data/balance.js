@@ -715,6 +715,21 @@ export const BATTLE_TEMPO_LAYER = {
   ATK_AT_TO: 5,
   BOSS_HP_AT_TO: 0.5,
   BOSS_ATK_AT_TO: 5,
+  // ATK_TO より先の章でも、プレイヤーの耐久（HP・DEF・回復量）は敵 ATK
+  // （ENEMY_SCALING の LATE_RATE=1.16/章）より速く伸びる。実ゲーム計測で
+  // 11〜15 章の通常戦の被ダメージが最大 HP の 8% まで落ちていたため、
+  // ATK_TO 以降は章ごとに ATK_LATE_RATE を複利で掛け、ATK_LATE_TO で頭打ちにする。
+  ATK_LATE_RATE: 1.17,
+  ATK_LATE_TO: 15,
+  // 深淵（stage id が abyss-*）。実ゲーム計測（20章クリア直後から 40 階）で
+  // 1 階 14〜68 ラウンド・被ダメージは最大 HP の 2〜30% と、調整前の本編中盤と
+  // 同じ「長いが危険がない」状態だった。深淵は盟約・誓約・分かれ道で自分から
+  // 危険を積む場所なので、素の倍率は本編終盤（HP×0.25 / ATK×15）より控えめにする。
+  // 秘境・機械界・深層観測は深淵ステージを雛形にするが id が違うので対象外。
+  ABYSS_HP: 0.4,
+  ABYSS_ATK: 6,
+  ABYSS_BOSS_HP: 0.6,
+  ABYSS_BOSS_ATK: 6,
 };
 export function battleTempoMult(chapterNum, key) {
   const L = BATTLE_TEMPO_LAYER;
@@ -723,7 +738,9 @@ export function battleTempoMult(chapterNum, key) {
   const from = hp ? L.HP_FROM : L.ATK_FROM, to = hp ? L.HP_TO : L.ATK_TO;
   if (!Number.isFinite(n) || n <= from) return 1;
   const t = Math.min(1, (n - from) / Math.max(1, to - from));
-  return 1 + (Number(L[key]) - 1) * t;
+  const base = 1 + (Number(L[key]) - 1) * t;
+  if (hp || n <= L.ATK_TO) return base;
+  return base * Math.pow(Number(L.ATK_LATE_RATE) || 1, Math.min(n, L.ATK_LATE_TO) - L.ATK_TO);
 }
 
 export const PACING_MATERIAL_LAYER = {

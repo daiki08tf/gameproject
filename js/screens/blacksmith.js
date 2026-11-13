@@ -56,7 +56,13 @@ function renderEnhanceTab(content) {
     return;
   }
 
-  for (const id of candidates) {
+  // 並び順：装備中 → いま強化できるもの → それ以外。所持武器が増えると、押せない
+  // ボタンだけのカードが上に並んで目的の武器まで長くスクロールする必要があった。
+  const equippedId = state.data.equipped.weapon;
+  const rank = (id) => (id === equippedId ? 0 : (state.canEnhanceWeapon(id) || state.canEnhanceWeapon(id, true)) ? 1 : 2);
+  const ordered = [...candidates].map((id, index) => ({ id, index, rank: rank(id) })).sort((x, y) => x.rank - y.rank || x.index - y.index).map((x) => x.id);
+
+  for (const id of ordered) {
     const item = getItem(id);
     if (!item) continue;
     const level = state.weaponEnhanceLevel(id);
@@ -71,18 +77,20 @@ function renderEnhanceTab(content) {
     const canDoEssence = state.canEnhanceWeapon(id, true);
 
     const card = document.createElement('div');
-    card.className = 'forge-card';
+    card.className = 'forge-card forge-enhance-card' + (id === equippedId ? ' is-equipped' : '') + (!maxed && !canDo && !canDoEssence ? ' is-idle' : '');
     card.innerHTML = `
       <div class="forge-card-top">
-        <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name}</div>
+        <div class="forge-card-name" style="color:${RARITY[item.rarity].color}">${item.name}${id === equippedId ? ' <span class="forge-equipped-tag">装備中</span>' : ''}</div>
         <div>Lv.${level}/${maxLevel}</div>
       </div>
       <div class="forge-card-sub">強化ボーナス +${level * 5}%　／　素材(同じ武器)所持: ${spare}個 ／ 次の強化に必要: ${maxed ? '-' : `${need}個`}
         ／ 武器の欠片所持: ${state.data.weaponEssence}個 ／ 欠片で必要: ${maxed ? '-' : `${essenceNeed}個`}</div>
+      <div class="forge-enhance-actions">
       <button class="forge-card-btn" data-mode="copy" ${maxed || !canDo ? 'disabled' : ''}>
         ${maxed ? 'MAX' : `合成強化する（素材×${need} + Gold${cost}）`}
       </button>
-      ${maxed ? '' : `<button class="forge-card-btn" data-mode="essence" ${canDoEssence ? '' : 'disabled'} style="margin-top:6px;">武器の欠片で強化する（欠片×${essenceNeed} + Gold${cost}）</button>`}
+      ${maxed ? '' : `<button class="forge-card-btn" data-mode="essence" ${canDoEssence ? '' : 'disabled'}>武器の欠片で強化する（欠片×${essenceNeed} + Gold${cost}）</button>`}
+      </div>
     `;
     card.querySelector('[data-mode="copy"]').addEventListener('click', () => {
       if (state.enhanceWeapon(id)) { Audio_.pickup(); renderBlacksmith(); }

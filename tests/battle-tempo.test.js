@@ -20,6 +20,8 @@ test('chapter 1 is untouched and the ramp ends at the configured values', () => 
   assert.ok(close(battleTempoMult(48, 'HP_AT_TO'), L.HP_AT_TO), 'flat after the ramp');
   assert.ok(close(battleTempoMult(L.ATK_TO, 'ATK_AT_TO'), L.ATK_AT_TO));
   assert.ok(close(battleTempoMult(L.ATK_TO, 'BOSS_ATK_AT_TO'), L.BOSS_ATK_AT_TO));
+  assert.ok(close(battleTempoMult(L.ATK_LATE_TO, 'ATK_AT_TO'), L.ATK_AT_TO * Math.pow(L.ATK_LATE_RATE, L.ATK_LATE_TO - L.ATK_TO)));
+  assert.equal(battleTempoMult(48, 'ATK_AT_TO'), battleTempoMult(L.ATK_LATE_TO, 'ATK_AT_TO'), 'attack growth stops at ATK_LATE_TO');
   assert.equal(battleTempoMult(L.ATK_FROM, 'ATK_AT_TO'), 1, 'attack pressure starts after ATK_FROM');
 });
 
@@ -33,7 +35,9 @@ test('the ramp is monotonic: enemies only get shorter-lived and harder-hitting',
 
 test('it is applied once, only to story chapters, and ENEMY_SCALING is left as calibrated', () => {
   const src = fs.readFileSync(new URL('../js/patches/combat3DifficultyRebalance.js', import.meta.url), 'utf8');
-  assert.equal(src.match(/battleTempoMult\(/g).length, 2, 'one HP and one ATK application');
+  assert.equal(src.match(/battleTempoMult\(/g).length, 2, 'one HP and one ATK application for story chapters');
+  // Abyss proper gets its own flat multipliers; templates built from Abyss stages (secret realms etc.) do not.
+  assert.match(src, /else if \(this\.stage\?\.isAbyss && String\(this\.stage\.id \|\| ''\)\.startsWith\('abyss-'\)\)/);
   assert.match(src, /\/\^ch\\d\+\$\/\.test\(this\.chapter\?\.id \|\| ''\) && !this\.stage\?\.isAbyss && !this\.stage\?\.isRift/);
   const others = fs.readdirSync(new URL('../js/patches/', import.meta.url)).filter((f) => f !== 'combat3DifficultyRebalance.js')
     .filter((f) => fs.readFileSync(new URL(`../js/patches/${f}`, import.meta.url), 'utf8').includes('battleTempoMult'));

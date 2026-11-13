@@ -60,3 +60,20 @@
   border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.2));
   box-shadow: none;
 }
+
+/* 2回押し確定（confirmTap.js）の待機状態 */
+.confirm-armed { border-color: var(--dc-danger-500, #c9505f) !important; color: var(--dc-danger-300, #ff8a94) !important; }
+
+/* 鍛冶屋・強化：2つの強化ボタンを横並びにしてカード高さを約半分に。
+   いま強化できない武器のカードは控えめにし、装備中の武器に目印を付ける。 */
+#blacksmithScreen .forge-enhance-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+#blacksmithScreen .forge-enhance-actions .forge-card-btn { margin-top: 0 !important; min-height: 48px; padding: 6px 8px; font-size: 12px; line-height: 1.35; }
+#blacksmithScreen .forge-enhance-actions .forge-card-btn:only-child { grid-column: 1 / -1; }
+#blacksmithScreen .forge-enhance-card.is-idle { opacity: 0.6; }
+#blacksmithScreen .forge-enhance-card.is-equipped { border-left: 2px solid var(--dc-brass-300, #c9a86a); }
+#blacksmithScreen .forge-equipped-tag { margin-left: 6px; padding: 1px 6px; border: 1px solid var(--dc-brass-300, #c9a86a); color: var(--dc-brass-300, #c9a86a); font-size: 11px; font-weight: normal; }
+
+/* 職業一覧：「詳細」「転職」を縦積みから横並びにして、1職業あたりの高さを抑える
+   （1画面に見える職業数を増やす）。ボタンの大きさは下限のまま保つ。 */
+#jobsScreen .phase8-job-actions { display: flex; flex-direction: row; align-items: center; gap: 6px; }
+#jobsScreen .phase8-job-actions .job-card-btn { margin-top: 0; min-width: 72px; padding: 8px 14px; }

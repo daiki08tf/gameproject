@@ -58,7 +58,9 @@ function withNonAbyssStageDropMult(engine, fn) {
 
 function withTargetSetWeights(engine, fn) {
   const profile = targetProfile(engine);
-  const mult = Math.max(1, Number(profile?.setWeightMult) || 1);
+  // 深淵チャレンジ「精鋭招来」の Set出現率+30%（DBG-21）も同じ重み調整に載せる
+  const challengeSet = engine?.stage?.isAbyss ? Math.max(0, Number(engine.stage.abyssChallengeRewards?.setBonus) || 0) : 0;
+  const mult = Math.max(1, Number(profile?.setWeightMult) || 1) * (1 + challengeSet);
   const original = engine?.stage?.dropTable;
   if (mult === 1 || !Array.isArray(original) || !original.some(d => isSetDropId(d?.itemId))) return fn();
   engine.stage.dropTable = original.map(d => isSetDropId(d?.itemId) ? { ...d, weight: (Number(d.weight) || 0) * mult } : d);

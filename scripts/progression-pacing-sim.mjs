@@ -14,6 +14,13 @@
    levels gained, drops, settlement materials, and per-run income —
    so a pacing change can be measured before/after, not guessed.
 
+   LIMITATION: the PATCHES list below is hand-maintained and is NOT the
+   game's module graph (js/main.js + what the screens import). It lacks
+   ~20 modules, including progression3OuterStory (chapter 21-30 levels), so
+   results past chapter 20 are wrong and earlier chapters drift a little.
+   Use scripts/browser-pacing-sim.cjs (the real page in headless Chromium)
+   for balance decisions; keep this for quick offline iteration.
+
    Usage:
      node scripts/progression-pacing-sim.mjs                # ch1..ch5
      node scripts/progression-pacing-sim.mjs --to 10        # further

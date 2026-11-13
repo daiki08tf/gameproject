@@ -77,12 +77,17 @@ for(const ch of CHAPTERS){
   for(const st of ch.stages){if(!st.dropRegionTags?.length)st.dropRegionTags=tags;if(profile){st.regionId=profile.id;st.regionTheme=profile.theme;st.fieldRule=profile.fieldRule;st.explorationEvents=profile.events;}}
 }
 export function finalStageOf(chapter){return chapter.stages.find(s=>s.boss)||chapter.stages[chapter.stages.length-1];}
-export function findStage(stageId,riftKeys=[]){
+// abyssContext: { pactIds, challengeIds }。深淵画面は盟約・誓約つきでステージを
+// 組んで見せるが、戦闘は stageId だけを受け取ってここで組み直す。以前はその際に
+// 盟約・誓約を渡しておらず、画面に出る危険度・報酬が戦闘に一切反映されていなかった
+// （DBG-23）。裂界鍵と同じく、呼び出し側（BattleEngine）が現在の選択を明示的に渡す。
+// 省略時は従来どおり素の深淵ステージ（データ層は state を import しない）。
+export function findStage(stageId,riftKeys=[],abyssContext=null){
  if(stageId.startsWith('rift-')){const key=riftKeys.find(key=>key?.id===stageId.slice(5)),stage=buildRiftStage(key);return stage?{chapter:null,stage}:null;}
  if(stageId.startsWith('abyss-')){
   const raw=stageId.slice('abyss-'.length),[depthText,routeId]=raw.split('~');
   const depth=parseInt(depthText,10);
-  if(Number.isFinite(depth)&&depth>=1)return{chapter:null,stage:buildAbyssStage(depth,[],routeId?{routeId}: {})};
+  if(Number.isFinite(depth)&&depth>=1){const pactIds=Array.isArray(abyssContext?.pactIds)?abyssContext.pactIds:[],challengeIds=Array.isArray(abyssContext?.challengeIds)?abyssContext.challengeIds:[];return{chapter:null,stage:buildAbyssStage(depth,pactIds,{...(routeId?{routeId}:{}),challengeIds})};}
   return null;
  }
  if(stageId.startsWith('secret-')){const stage=buildSecretRealmStage(stageId);return stage?{chapter:null,stage}:null;}

@@ -65,7 +65,10 @@ const FARMER_SURVIVE_CHANCE = 0.3;
 
 export class BattleEngine {
   constructor(stageId, blessingId, launchOpts) {
-    const found = findStage(stageId, state.data.riftKeys || []);
+    // 深淵の盟約・誓約は「いま選んでいるもの」を戦闘開始時に確定させる（DBG-23）。
+    // buildAbyssStage 側が不正 ID の除去と、深度ごとの盟約数上限の切り詰めを行う。
+    const abyssContext = { pactIds: state.data.abyssPacts || [], challengeIds: state.data.abyssChallenges || [] };
+    const found = findStage(stageId, state.data.riftKeys || [], abyssContext);
     if (!found && stageId.startsWith('rift-')) throw Object.assign(new Error('裂界鍵が見つからないか、使用できません。'), { code: 'RIFT_KEY_UNAVAILABLE' });
     if (!found) throw new Error(`unknown stage: ${stageId}`);
     this.stage = found.stage;

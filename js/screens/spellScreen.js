@@ -34,6 +34,9 @@ export function initSpellScreen() {
     if (pendingRestore) {
       // 2段階目のタップ：実際に上書きして復活する
       try {
+        // 上書き前の現セーブを 1 世代だけ退避（じゅもんの貼り間違いからの復旧用）
+        const current = localStorage.getItem(SPELL_TARGET_SAVE_KEY);
+        if (current) { try { localStorage.setItem(`${SPELL_TARGET_SAVE_KEY}__before_spell`, current); } catch (e) { /* 退避できなくても復活自体は続行 */ } }
         localStorage.setItem(SPELL_TARGET_SAVE_KEY, JSON.stringify(pendingRestore));
       } catch (e) {
         msg.textContent = '保存に失敗しました（ブラウザのストレージが使えない可能性があります）';

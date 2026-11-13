@@ -4,6 +4,7 @@
    Save-compatible companion instances, 3-slot party, EXP growth and UI.
    ============================================================ */
 import { state } from '../state.js';
+import { confirmTap } from './confirmTap.js';
 import {
   COMPANION_RARITY,
   COMPANION_RARITY_LABEL,
@@ -127,10 +128,10 @@ function renderCompanionScreen(){
   content.innerHTML=`<div class="forge-card"><div class="forge-card-name">編成（最大3体・隊列）</div>${partySummary}<div class="forge-card-sub">${FORMATION_HINT}</div></div>${cards}`;
   content.querySelectorAll('.companion-slot-btn').forEach(btn=>btn.addEventListener('click',()=>{state.setCompanionSlot(Number(btn.dataset.slot),btn.dataset.id);renderCompanionScreen();}));
   content.querySelectorAll('.companion-unset-btn').forEach(btn=>btn.addEventListener('click',()=>{state.setCompanionSlot(Number(btn.dataset.slot),null);renderCompanionScreen();}));
-  content.querySelectorAll('.companion-evolve-btn').forEach(btn=>btn.addEventListener('click',()=>{const c=state.getCompanion(btn.dataset.id),e=state.companionEvolutionInfo?.(btn.dataset.id);if(!c||!e?.canEvolve)return;if(!window.confirm(`${c.instance.nickname||c.species.name}を${e.name}へ進化させますか？`))return;state.evolveCompanion(btn.dataset.id);renderCompanionScreen();}));
-  content.querySelectorAll('.companion-release-btn').forEach(btn=>btn.addEventListener('click',()=>{const c=state.getCompanion(btn.dataset.id);if(!c)return;const name=c.instance.nickname||c.species.name;if(!window.confirm(`${name}を帰しますか？`))return;state.releaseCompanion(btn.dataset.id);renderCompanionScreen();}));
+  content.querySelectorAll('.companion-evolve-btn').forEach(btn=>btn.addEventListener('click',()=>{const c=state.getCompanion(btn.dataset.id),e=state.companionEvolutionInfo?.(btn.dataset.id);if(!c||!e?.canEvolve)return;if(!confirmTap(btn,`${c.instance.nickname||c.species.name}を${e.name}へ進化させますか？`))return;state.evolveCompanion(btn.dataset.id);renderCompanionScreen();}));
+  content.querySelectorAll('.companion-release-btn').forEach(btn=>btn.addEventListener('click',()=>{const c=state.getCompanion(btn.dataset.id);if(!c)return;const name=c.instance.nickname||c.species.name;if(!confirmTap(btn,`${name}を帰しますか？ 元には戻せません。`))return;state.releaseCompanion(btn.dataset.id);renderCompanionScreen();}));
 }
-function installCompanionUI(){const menu=document.querySelector('.home-menu');if(menu&&!document.getElementById('goCompanionBtn')){const btn=document.createElement('button');btn.id='goCompanionBtn';btn.className='menu-card';btn.innerHTML='<span class="menu-icon" aria-hidden="true"></span><span>仲間</span>';menu.appendChild(btn);btn.addEventListener('click',()=>{renderCompanionScreen();showScreen('companionScreen');});}if(!document.getElementById('companionScreen')){const section=document.createElement('section');section.id='companionScreen';section.className='screen';section.innerHTML='<header class="subbar"><button class="btn-back" id="companionBackBtn">←</button><h2>仲間</h2></header><div id="companionContent" class="blacksmith-content"></div>';document.body.insertBefore(section,document.querySelector('.toast'));document.getElementById('companionBackBtn').addEventListener('click',()=>showScreen('homeScreen'));}}
+function installCompanionUI(){const menu=document.querySelector('.home-menu');if(menu&&!document.getElementById('goCompanionBtn')){const btn=document.createElement('button');btn.id='goCompanionBtn';btn.className='menu-card';btn.innerHTML='<span class="menu-icon" aria-hidden="true"></span><span>仲間</span>';menu.appendChild(btn);btn.addEventListener('click',()=>{renderCompanionScreen();showScreen('companionScreen');});}if(!document.getElementById('companionScreen')){const section=document.createElement('section');section.id='companionScreen';section.className='screen';section.innerHTML='<header class="subbar"><button class="btn-back" id="companionBackBtn">←</button><h2>仲間</h2></header><div id="companionContent" class="blacksmith-content"></div>';document.body.insertBefore(section,document.querySelector('.toast'));document.getElementById('companionBackBtn')?.addEventListener('click',()=>showScreen('homeScreen'));}}
 installCompanionUI();
 state.companionSpecies=COMPANION_SPECIES;
 state.companionPartySize=PARTY_SIZE;

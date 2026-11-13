@@ -206,7 +206,7 @@ export function renderWorldMap() {
     const st = model.nodes.get(node.id)?.state || 'open';
     const idx = node.kind === 'town' || node.kind === 'merchant' ? -1 : chapterIndexById(node.id);
     const ch = idx >= 0 ? CHAPTERS[idx] : null;
-    let cls = `wm-node terrain-${node.terrain || 'plain'} kind-${node.kind}`;
+    let cls = `wm-node terrain-${node.terrain || 'plain'} kind-${node.kind || 'stage'}`;
     let label = node.label;
     let sub = '';
 
