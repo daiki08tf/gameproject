@@ -4,13 +4,13 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "8a31701",
+      "head": "db9870d",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
-      "total": 1104,
-      "code": 946,
-      "tests": 373
+      "total": 1109,
+      "code": 951,
+      "tests": 374
     }
   },
   "systems": [
@@ -174,7 +174,9 @@
         "js/patches/battle2RoadmapComplete.js",
         "js/patches/battleIntegration3.js",
         "js/patches/battleIntegration3Final.js",
+        "js/patches/battleReport.js",
         "js/patches/battleRewardAccountingFix.js",
+        "js/patches/beginnerGuideUi.js",
         "js/patches/bounty2Combat.js",
         "js/patches/bounty2Foundation.js",
         "js/patches/bountyFoundation.js",
@@ -1015,6 +1017,7 @@
         "js/patches/settlementArena.js",
         "js/patches/settlementChronicle.js",
         "js/patches/settlementDefense.js",
+        "js/patches/settlementIncidents.js",
         "js/patches/stageFirstNavigationUi.js",
         "js/patches/story11CoreJourney.js",
         "js/patches/world2Core.js",
@@ -1119,6 +1122,7 @@
       "files": [
         "js/data/battle2Tactics.js",
         "js/data/battleGroups.js",
+        "js/data/battleReport.js",
         "js/data/bossEncounters.js",
         "js/data/combat2Elements.js",
         "js/data/combat2SkillModifiers.js",
@@ -1132,6 +1136,7 @@
         "js/patches/battleCompactUi.js",
         "js/patches/battleIntegration3.js",
         "js/patches/battleIntegration3Final.js",
+        "js/patches/battleReport.js",
         "js/patches/battleRewardAccountingFix.js",
         "js/patches/combat2DebugSafety.js",
         "js/patches/combat2ElementAffixes.js",
@@ -1148,6 +1153,7 @@
       ],
       "tests": [
         "tests/battle-integration3-final.test.js",
+        "tests/battle-report.test.js",
         "tests/battle2-roadmap.test.js",
         "tests/ch3-forgotten-ruins.test.js",
         "tests/combat2-debug-pass.test.js",
@@ -1194,7 +1200,8 @@
         "progression",
         "screens",
         "tests",
-        "tooling"
+        "tooling",
+        "ui"
       ],
       "importers": [
         "js/battleEngine.js",
@@ -1205,6 +1212,8 @@
         "js/patches/battleAssist.js",
         "js/patches/battleIntegration3.js",
         "js/patches/battleIntegration3Final.js",
+        "js/patches/battleReport.js",
+        "js/patches/beginnerGuideUi.js",
         "js/patches/codexUi.js",
         "js/patches/combat2ElementCore.js",
         "js/patches/combat2SkillModifierUi.js",
@@ -1221,6 +1230,7 @@
         "js/state.js",
         "scripts/deep-survey-acceptance.js",
         "tests/battle-integration3-final.test.js",
+        "tests/battle-report.test.js",
         "tests/battle2-roadmap.test.js",
         "tests/ch3-forgotten-ruins.test.js",
         "tests/combat2-debug-pass.test.js",
@@ -2656,6 +2666,7 @@
       ],
       "tests": [
         "tests/adventure-world4-w30-w32.test.js",
+        "tests/battle-report.test.js",
         "tests/ch1-rumor-threads.test.js",
         "tests/core-loop-clr11.test.js",
         "tests/pacing-pass.test.js",
@@ -2726,6 +2737,7 @@
         "js/patches/worldClimate.js",
         "js/patches/worldMapUi.js",
         "tests/adventure-world4-w30-w32.test.js",
+        "tests/battle-report.test.js",
         "tests/ch1-rumor-threads.test.js",
         "tests/core-loop-clr11.test.js",
         "tests/pacing-pass.test.js",
@@ -3448,6 +3460,8 @@
         "css/usability.css",
         "css/worldMap.css",
         "index.html",
+        "js/data/beginnerGuide.js",
+        "js/patches/beginnerGuideUi.js",
         "js/patches/buildLoadoutsUi.js",
         "js/patches/buildReadabilityUi.js",
         "js/patches/confirmTap.js",
@@ -3461,7 +3475,9 @@
         "js/ui/pixelIcons.js",
         "js/ui/uiFoundation.js"
       ],
-      "tests": [],
+      "tests": [
+        "tests/battle-report.test.js"
+      ],
       "docs": [
         "UI_OVERHAUL_ROADMAP.md",
         "UI_DESIGN_SYSTEM.md",
@@ -3471,6 +3487,7 @@
         "adventure4",
         "chapters",
         "codex",
+        "combat",
         "companions",
         "content-packs",
         "discovery",
@@ -3489,11 +3506,13 @@
         "equipment",
         "screens",
         "settlement",
+        "tests",
         "world"
       ],
       "importers": [
         "js/main.js",
         "js/patches/abyssRunUi.js",
+        "js/patches/beginnerGuideUi.js",
         "js/patches/companionBattle.js",
         "js/patches/companionBond.js",
         "js/patches/companionFoundation.js",
@@ -3505,13 +3524,15 @@
         "js/patches/rumorHearing.js",
         "js/patches/saveSafety.js",
         "js/patches/session8World.js",
+        "js/patches/settlementIncidents.js",
         "js/patches/settlementUi.js",
         "js/patches/uiFoundationBootstrap.js",
         "js/patches/uniqueTrialUi.js",
         "js/patches/worldMapUi.js",
         "js/screens/blacksmith.js",
         "js/screens/equipment.js",
-        "js/screens/rebirthModern.js"
+        "js/screens/rebirthModern.js",
+        "tests/battle-report.test.js"
       ]
     },
     {
@@ -3655,6 +3676,7 @@
         "tests/battle-integration3-final.test.js",
         "tests/battle-integration3.test.js",
         "tests/battle-mobile-scroll.test.js",
+        "tests/battle-report.test.js",
         "tests/battle-tempo.test.js",
         "tests/battle2-roadmap.test.js",
         "tests/boss-companion-combat.test.js",
@@ -4030,6 +4052,7 @@
         "tests/battle-integration3-final.test.js",
         "tests/battle-integration3.test.js",
         "tests/battle-mobile-scroll.test.js",
+        "tests/battle-report.test.js",
         "tests/battle-tempo.test.js",
         "tests/battle2-roadmap.test.js",
         "tests/boss-companion-combat.test.js",
@@ -4396,6 +4419,7 @@
         "settlement",
         "story-canon",
         "tooling",
+        "ui",
         "world"
       ],
       "dependents": [],
@@ -5440,6 +5464,7 @@
         "settlement"
       ],
       "relatedTests": [
+        "tests/battle-report.test.js",
         "tests/core-loop-clr11.test.js",
         "tests/pacing-pass.test.js",
         "tests/region-codex.test.js",
@@ -5642,6 +5667,7 @@
     "js/patches/archaeology.js",
     "js/patches/awakening3Imprints.js",
     "js/patches/battleIntegration3.js",
+    "js/patches/beginnerGuideUi.js",
     "js/patches/bounty2Combat.js",
     "js/patches/bounty2Foundation.js",
     "js/patches/buildLoadoutsUi.js",

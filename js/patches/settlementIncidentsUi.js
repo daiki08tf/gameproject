@@ -38,6 +38,11 @@ const CUE_LEGEND_HTML = EXCAVATION_CUE_GUIDE
 
 function incidentBody(incident) {
   if (incident.resolved) return '';
+  if (incident.kind === 'pursuit') {
+    // 追跡：既存の戦闘を制限ラウンド以内に終える。戦闘は拠点防衛と同じ口から始める。
+    if (!incident.pursuit) return '<div class="forge-card-sub" style="margin-top:6px;">追える場所がまだない（本編の通常ステージをクリアすると追跡できる）。</div>';
+    return `<div class="forge-card-sub" style="margin-top:6px;">逃走先：${escapeHtml(incident.pursuit.stageId)} ${escapeHtml(incident.pursuit.stageName)} ／ <b>${incident.pursuit.limit}ラウンド以内</b>に戦闘を終えると追いつく。超えても失うものはなく、何度でも追える。</div><button class="forge-card-btn settlement-incident-pursue" data-incident="${incident.id}" style="margin-top:8px;">追跡する（戦闘）</button>`;
+  }
   if (incident.kind === 'investigation') {
     const leads = (incident.leads || []).map((lead) => `<button class="forge-card-btn settlement-incident-lead" data-incident="${incident.id}" data-lead="${lead.id}">${escapeHtml(lead.text)}</button>`).join('');
     return `<div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;">${leads}</div>`;
@@ -103,6 +108,9 @@ function render() {
       setAllStartButtonsDisabled(section, true);
       renderSession(container, result, () => setAllStartButtonsDisabled(section, false));
     }
+  }));
+  section.querySelectorAll('.settlement-incident-pursue').forEach((btn) => btn.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('settlement-defense-start', { detail: { incidentId: btn.dataset.incident } }));
   }));
   section.querySelectorAll('.settlement-incident-lead').forEach((btn) => btn.addEventListener('click', () => {
     const id = btn.dataset.incident;

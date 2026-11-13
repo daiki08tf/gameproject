@@ -77,7 +77,31 @@ export const SETTLEMENT_INCIDENTS = Object.freeze([
     reward: { hide: 4, gold: 50 },
     record: { name: '住民失踪の記録', text: '森の奥、崖から足を滑らせて動けなくなっていたところを見つけた。薬草を探して踏み込みすぎたらしい。手当てをして、無事に連れ帰った。', reward: { wood: 3, gold: 30 } },
   },
+  {
+    // 第3の型 kind:'pursuit'（追跡）。発掘（合図を読む）・調査（手がかりを選ぶ）と
+    // 重ならない解決手段として「既存の戦闘を、制限ラウンド以内に終える」を使う。
+    // 戦う相手は新規に作らず、プレイヤーが最後にクリアした本編の通常ステージ
+    // （= いまの実力に合った既存ステージ）をそのまま走る。新しい戦闘 authority・
+    // 敵データ・報酬経路は増やさない。制限を超えても失うものはなく、何度でも追える
+    // （他の2種と同じ「外しても罰はない」調子）。
+    id: 'nightThief',
+    name: '夜盗の逃走',
+    kind: 'pursuit',
+    minHall: 4,
+    desc: '倉庫の備蓄を抱えた夜盗が、街道の先へ逃げ込んだ。追いつくには、道中の魔物を手早く片付けるしかない。もたつけば、足跡は消える。',
+    // 制限ラウンド = roundsBase + 敵の総数 × roundsPerEnemy（切り上げ）
+    roundsBase: 2,
+    roundsPerEnemy: 1,
+    reward: { ore: 4, gold: 70 },
+    record: { name: '夜盗追跡の記録', text: '魔物の群れを抜けた先で、荷を下ろして息をついていた夜盗に追いついた。盗まれた備蓄は、ほとんど手つかずのまま戻ってきた。', reward: { wood: 2, gold: 30 } },
+  },
 ]);
+
+// 追跡の制限ラウンド。stage は既存の Stage オブジェクト（waves を数えるだけ）。
+export function pursuitRoundLimit(incident, stage) {
+  const enemies = (stage?.waves || []).reduce((n, w) => n + Math.max(1, Number(w.count) || 1), 0);
+  return Math.max(3, Math.ceil((Number(incident?.roundsBase) || 0) + enemies * (Number(incident?.roundsPerEnemy) || 1)));
+}
 
 export function settlementIncidentEligible(incident, ctx = {}) {
   return (ctx.hall || 0) >= (incident.minHall || 0);

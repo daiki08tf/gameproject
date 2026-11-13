@@ -109,6 +109,25 @@ function defeatGuidance(result){
   return tips.length?'\n次の一手：'+tips.slice(0,3).join(' ／ '):'';
 }
 
+// 戦闘レポート（EXP-4）：与ダメージの内訳と被ダメージ源。数字で「何が効いたか／何に削られたか」を
+// 見せる。集計は patches/battleReport.js が結果オブジェクトに載せたものを読むだけ。
+function renderBattleReport(result,itemsEl){
+  const rep=result?.battleReport;if(!rep||(!rep.dealt&&!rep.taken))return;
+  const pct=(v)=>`${Math.round(v*100)}%`,num=(v)=>Number(v||0).toLocaleString('ja-JP');
+  const box=document.createElement('details');box.className='result-battle-report';
+  // 敗北時は「何に削られたか」が次の一手に直結するので最初から開く
+  if(!result.cleared&&!result.retreated)box.open=true;
+  const head=document.createElement('summary');head.textContent=`戦闘レポート — ${rep.rounds}ラウンド ／ 与 ${num(rep.dealt)} ／ 被 ${num(rep.taken)}`;box.appendChild(head);
+  const line=(label,text)=>{const row=document.createElement('div');row.className='result-report-row';const k=document.createElement('span');k.className='result-report-key';k.textContent=label;const v=document.createElement('span');v.textContent=text;row.append(k,v);box.appendChild(row);};
+  if(rep.sources.length)line('内訳',rep.sources.map((s)=>`${s.label} ${pct(s.share)}`).join(' ／ '));
+  line('火力',`1ラウンド平均 ${num(rep.dealtPerRound)}${rep.biggestHit?` ／ 最大 ${num(rep.biggestHit.amount)}（${rep.biggestHit.label}）`:''}${rep.critRate>0?` ／ 会心 ${pct(rep.critRate)}`:''}`);
+  if(rep.taken>0){
+    line('被ダメージ',`最大HPの ${rep.takenVsMaxHp.toFixed(1)} 倍${rep.biggestTaken?` ／ 最大の一撃 ${num(rep.biggestTaken.amount)}（${rep.biggestTaken.label}${rep.biggestTaken.special?'の技':''}）`:''}`);
+    if(rep.threats.length)line('被弾元',rep.threats.map((t)=>`${t.label} ${pct(t.share)}`).join(' ／ '));
+  }
+  itemsEl.appendChild(box);
+}
+
 export function renderResult(result) {
   const title=document.getElementById('resultTitle'),stats=document.getElementById('resultStats'),itemsEl=document.getElementById('resultItems');
   const panel=title.closest('.panel');
@@ -122,6 +141,7 @@ export function renderResult(result) {
     for(const itemId of normalItems)appendDropChip(itemsEl,resolveDrop(itemId));
     for(const drop of rune2Drops){const rune=getRune2(drop.id);if(!rune)continue;const chip=document.createElement('div');chip.className='result-item-chip';chip.style.color='var(--accent)';chip.textContent=`RUNE ${rune.name} +${drop.amount}刻（${drop.owned}刻）`;itemsEl.appendChild(chip);}
   }
+  renderBattleReport(result,itemsEl);
   renderLoot3Chase(result,itemsEl);
   renderVault(result,itemsEl);
   renderWorldEvent(result,itemsEl);

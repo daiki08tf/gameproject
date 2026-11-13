@@ -721,6 +721,20 @@ export const BATTLE_TEMPO_LAYER = {
   // ATK_TO 以降は章ごとに ATK_LATE_RATE を複利で掛け、ATK_LATE_TO で頭打ちにする。
   ATK_LATE_RATE: 1.17,
   ATK_LATE_TO: 15,
+  // 外縁編（21〜33 章あたり）。実ゲーム計測（1〜48 章通し、2 系列）で、21〜30 章は
+  // 「こうげき連打」でも壁が 1 つも無く、章ボスが 7〜10 ラウンドで沈んでいた
+  // （被ダメージは最大 HP の 0.05〜0.6 倍）。一方 36〜38 章は Lv 上限付近で成長が
+  // 止まるため既に十分きつい（一律に上げると 38-8 で詰む）。そこで追加倍率は
+  // 「山」にする：OUTER_FROM→OUTER_PEAK_FROM で上げ、OUTER_PEAK_TO まで保ち、
+  // OUTER_END で 1.0 に戻す。対象は敵 ATK とボス HP（通常敵の HP は据え置き）。
+  OUTER_FROM: 20, OUTER_PEAK_FROM: 26, OUTER_PEAK_TO: 30, OUTER_END: 34,
+  OUTER_ATK: 1.35,
+  OUTER_BOSS_HP: 1.35,
+  // 終盤の緩和（34 章〜）。Character Lv は 1 万手前で頭打ちになり、以降の成長は
+  // 覚醒・継承・装備厳選など本編外の系統が担う。計測用プレイヤー（レベルと自動装備のみ）は
+  // 36〜38 章で通常ステージにも詰まる系列があったため、TAIL_FROM から章ごとに
+  // 敵 ATK 倍率を TAIL_STEP ずつ下げ、TAIL_FLOOR で止める（HP 側は短期戦のまま）。
+  TAIL_FROM: 33, TAIL_STEP: 0.075, TAIL_FLOOR: 0.55,
   // 深淵（stage id が abyss-*）。実ゲーム計測（20章クリア直後から 40 階）で
   // 1 階 14〜68 ラウンド・被ダメージは最大 HP の 2〜30% と、調整前の本編中盤と
   // 同じ「長いが危険がない」状態だった。深淵は盟約・誓約・分かれ道で自分から
@@ -739,8 +753,14 @@ export function battleTempoMult(chapterNum, key) {
   if (!Number.isFinite(n) || n <= from) return 1;
   const t = Math.min(1, (n - from) / Math.max(1, to - from));
   const base = 1 + (Number(L[key]) - 1) * t;
-  if (hp || n <= L.ATK_TO) return base;
-  return base * Math.pow(Number(L.ATK_LATE_RATE) || 1, Math.min(n, L.ATK_LATE_TO) - L.ATK_TO);
+  const outerT = n <= L.OUTER_FROM || n >= L.OUTER_END ? 0
+    : n < L.OUTER_PEAK_FROM ? (n - L.OUTER_FROM) / Math.max(1, L.OUTER_PEAK_FROM - L.OUTER_FROM)
+    : n <= L.OUTER_PEAK_TO ? 1
+    : (L.OUTER_END - n) / Math.max(1, L.OUTER_END - L.OUTER_PEAK_TO);
+  if (hp) return key === 'BOSS_HP_AT_TO' ? base * (1 + (L.OUTER_BOSS_HP - 1) * outerT) : base;
+  if (n <= L.ATK_TO) return base;
+  const tail = n <= L.TAIL_FROM ? 1 : Math.max(L.TAIL_FLOOR, 1 - L.TAIL_STEP * (n - L.TAIL_FROM));
+  return base * Math.pow(Number(L.ATK_LATE_RATE) || 1, Math.min(n, L.ATK_LATE_TO) - L.ATK_TO) * (1 + (L.OUTER_ATK - 1) * outerT) * tail;
 }
 
 export const PACING_MATERIAL_LAYER = {

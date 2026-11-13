@@ -21,7 +21,19 @@ test('chapter 1 is untouched and the ramp ends at the configured values', () => 
   assert.ok(close(battleTempoMult(L.ATK_TO, 'ATK_AT_TO'), L.ATK_AT_TO));
   assert.ok(close(battleTempoMult(L.ATK_TO, 'BOSS_ATK_AT_TO'), L.BOSS_ATK_AT_TO));
   assert.ok(close(battleTempoMult(L.ATK_LATE_TO, 'ATK_AT_TO'), L.ATK_AT_TO * Math.pow(L.ATK_LATE_RATE, L.ATK_LATE_TO - L.ATK_TO)));
-  assert.equal(battleTempoMult(48, 'ATK_AT_TO'), battleTempoMult(L.ATK_LATE_TO, 'ATK_AT_TO'), 'attack growth stops at ATK_LATE_TO');
+  assert.equal(battleTempoMult(L.OUTER_FROM, 'ATK_AT_TO'), battleTempoMult(L.ATK_LATE_TO, 'ATK_AT_TO'), 'flat between ATK_LATE_TO and the outer chapters');
+  // Outer chapters (21+): attack and boss HP ramp once more, trash HP does not.
+  const flat = battleTempoMult(L.OUTER_FROM, 'ATK_AT_TO');
+  assert.ok(close(battleTempoMult(L.OUTER_PEAK_FROM, 'ATK_AT_TO'), flat * L.OUTER_ATK));
+  assert.ok(close(battleTempoMult(L.OUTER_PEAK_TO, 'BOSS_HP_AT_TO'), L.BOSS_HP_AT_TO * L.OUTER_BOSS_HP));
+  assert.ok(close(battleTempoMult(L.OUTER_FROM, 'BOSS_HP_AT_TO'), L.BOSS_HP_AT_TO));
+  // ...and it is a bump, not a plateau: chapters near the level cap are already hard enough.
+  assert.ok(battleTempoMult(L.OUTER_END, 'ATK_AT_TO') <= flat);
+  // Past TAIL_FROM attack pressure eases off (the level cap stops player growth) down to a floor.
+  assert.ok(close(battleTempoMult(L.TAIL_FROM, 'ATK_AT_TO') / (1 + (L.OUTER_ATK - 1) * ((L.OUTER_END - L.TAIL_FROM) / (L.OUTER_END - L.OUTER_PEAK_TO))), flat));
+  assert.ok(close(battleTempoMult(48, 'ATK_AT_TO'), flat * L.TAIL_FLOOR));
+  assert.ok(battleTempoMult(40, 'ATK_AT_TO') < battleTempoMult(34, 'ATK_AT_TO'));
+  assert.ok(close(battleTempoMult(48, 'BOSS_HP_AT_TO'), L.BOSS_HP_AT_TO));
   assert.equal(battleTempoMult(L.ATK_FROM, 'ATK_AT_TO'), 1, 'attack pressure starts after ATK_FROM');
 });
 

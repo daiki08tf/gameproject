@@ -483,7 +483,9 @@
         "js/patches/finalIntegrationUi.js",
         "js/patches/overlayA11y.js",
         "js/patches/confirmTap.js",
-        "js/patches/saveSafety.js"
+        "js/patches/saveSafety.js",
+        "js/patches/beginnerGuideUi.js",
+        "js/data/beginnerGuide.js"
       ],
       "docs": [
         "UI_OVERHAUL_ROADMAP.md",

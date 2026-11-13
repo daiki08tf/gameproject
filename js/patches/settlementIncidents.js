@@ -20,7 +20,11 @@
    ============================================================ */
 import { state } from '../state.js';
 import { resolveExcavationRound, rollExcavationCue, excavationDifficultyProfile, computeArchaeologyReward } from '../data/archaeology.js';
-import { SETTLEMENT_INCIDENTS, settlementIncidentEligible, getSettlementIncident } from '../data/settlementIncidents.js';
+import { SETTLEMENT_INCIDENTS, settlementIncidentEligible, getSettlementIncident, pursuitRoundLimit } from '../data/settlementIncidents.js';
+import { CHAPTERS } from '../data/stages.js';
+import { BattleEngine } from '../battleEngine.js';
+import { showToast } from './toastFeedback.js';
+import './settlementDefense.js'; // 追跡は拠点防衛と同じ戦闘開始・解決の口（prepare/resolveSettlementDefense）を借りる
 
 const META_KEY = '__settlement3';
 function meta() {
@@ -43,13 +47,29 @@ function ensureWorld() {
 // state.settlementIncidents() and syncRumorNotebook() below -- same split
 // treasureHunt.js's computeTreasureHunts()/syncRumorNotebook() already
 // established, so syncing never recomputes by calling back into itself.
+// 追跡の舞台：最後にクリアした本編の通常ステージ（Boss・中Boss・関門・分岐を除く）。
+// 進行に合わせて自然に移るので、専用の敵・難度表を持たずに「いまの実力相応」になる。
+function pursuitTarget(incident) {
+  let found = null;
+  for (const chapter of CHAPTERS) {
+    if (!/^ch\d+$/.test(chapter.id || '')) continue;
+    for (const stage of chapter.stages || []) {
+      if (stage.boss || stage.midBoss || stage.checkpoint || stage.branch || stage.bounty) continue;
+      if (state.isStageCleared(stage.id)) found = stage;
+    }
+  }
+  return found ? { stageId: found.id, stageName: found.name, limit: pursuitRoundLimit(incident, found) } : null;
+}
+
 function computeIncidents() {
   const c = ctx();
   const m = meta();
   return SETTLEMENT_INCIDENTS.map((incident) => {
     const eligible = settlementIncidentEligible(incident, c);
     const resolved = !!m.resolved[incident.id];
-    return { ...incident, eligible, resolved, active: eligible && !resolved };
+    const entry = { ...incident, eligible, resolved, active: eligible && !resolved };
+    if (incident.kind === 'pursuit' && entry.active) entry.pursuit = pursuitTarget(incident);
+    return entry;
   });
 }
 
@@ -158,4 +178,57 @@ state.investigateSettlementIncidentLead = function investigateSettlementIncident
   if (!lead) return { ok: false, reason: 'unknown-lead' };
   if (!lead.correct) return { ok: true, outcome: 'miss', lead };
   return grantAndResolve(incidentId, incident.reward || {});
+};
+
+
+/* ---- kind:'pursuit' — 既存の戦闘を制限ラウンド以内に終える ----
+   戦闘の開始と結果の受け取りは、main.js が拠点防衛用に既に持っている
+   'settlement-defense-start' → prepareSettlementDefenseBattle() →
+   resolveSettlementDefense() の口をそのまま使う（main.js は無変更）。
+   追跡インシデントの id のときだけここで受け、それ以外は従来の防衛処理へ流す。 */
+let pendingPursuit = null;   // { incidentId, stageId, limit } — 成功するまで保持（「もう一度」でも数える）
+let lastFinishedBattle = null; // { stageId, rounds } — 実行時のみ。セーブしない
+
+// 結果はリザルト画面が出たあとに知らせる。戦闘終了の瞬間は他のトースト（図鑑・仲間加入など）が
+// 続けて出るため、同時に出すと上書きされて読めない。
+function announce(text) { setTimeout(() => showToast(text, 4600), 1100); }
+
+const previousFinishBattle = BattleEngine.prototype._finishBattle;
+BattleEngine.prototype._finishBattle = function incidentFinishBattle(cleared, retreated) {
+  lastFinishedBattle = { stageId: this.stage?.id || null, rounds: Number(this.round) || 0 };
+  return previousFinishBattle.call(this, cleared, retreated);
+};
+
+const previousPrepareDefense = state.prepareSettlementDefenseBattle;
+state.prepareSettlementDefenseBattle = function prepareIncidentOrDefense(id) {
+  const base = getSettlementIncident(id);
+  if (base?.kind !== 'pursuit') return previousPrepareDefense?.call(this, id) || null;
+  const incident = this.settlementIncidents().find((x) => x.id === id);
+  if (!incident?.active || !incident.pursuit) return null;
+  let stage = null;
+  for (const chapter of CHAPTERS) { stage = (chapter.stages || []).find((x) => x.id === incident.pursuit.stageId) || stage; }
+  if (!stage) return null;
+  pendingPursuit = { incidentId: id, stageId: stage.id, limit: incident.pursuit.limit };
+  // main.js は渡した stage オブジェクトの settlementDefenseIncidentId を見て結果を返してくる。
+  // 共有の Stage データは汚さず、コピーに印を付けて渡す（戦闘自体は stage.id で既存 Stage を走る）。
+  return { ...stage, settlementDefenseIncidentId: id };
+};
+
+const previousResolveDefense = state.resolveSettlementDefense;
+state.resolveSettlementDefense = function resolveIncidentOrDefense(id, cleared) {
+  if (getSettlementIncident(id)?.kind !== 'pursuit') return previousResolveDefense?.call(this, id, cleared);
+  const pending = pendingPursuit;
+  if (!pending || pending.incidentId !== id) return { ok: false, reason: 'noPending' };
+  const rounds = lastFinishedBattle?.stageId === pending.stageId ? lastFinishedBattle.rounds : Infinity;
+  if (!cleared || rounds > pending.limit) {
+    announce(cleared
+      ? `取り逃がした…（${rounds}ラウンド／${pending.limit}ラウンド以内）。もう一度追える。`
+      : '追跡は失敗した。態勢を整えれば、また追える。');
+    return { ok: true, outcome: 'miss', rounds, limit: pending.limit };
+  }
+  pendingPursuit = null;
+  const incident = getSettlementIncident(id);
+  const result = grantAndResolve(id, incident.reward || {});
+  announce(`${incident.name}：${rounds}ラウンドで追いついた！ 報酬を受け取った。`);
+  return { ...result, rounds, limit: pending.limit };
 };

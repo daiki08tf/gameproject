@@ -95,6 +95,8 @@ import './patches/pacingMaterials.js';
 import './patches/saveSafety.js';
 import './patches/battleCompactUi.js';
 import './patches/battleAssist.js';
+import './patches/battleReport.js';
+import './patches/beginnerGuideUi.js';
 import { showAbyssRunChoice } from './patches/abyssRunUi.js';
 import { showToast } from './patches/toastFeedback.js';
 import { TextBattleScreen } from './screens/textBattle.js';

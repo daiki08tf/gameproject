@@ -760,3 +760,20 @@ button { font-family: inherit; }
 .tb-companion-toggle { display: block; margin-top: 4px; min-height: 36px; padding: 6px 10px; font-size: 12px; text-align: left; }
 #tbCompanionHud .tb-order-row button, #tbBattle2Tactics button { min-height: 36px; padding: 6px 10px !important; font-size: 12px !important; }
 #tbCompanionHud { line-height: 1.5; }
+
+/* ---- 戦闘レポート（result.js renderBattleReport）---- */
+.result-battle-report { width: 100%; margin-top: 8px; padding: 8px 10px; border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.2)); border-left: 2px solid var(--dc-observe-400, #62a8ad); background: var(--dc-ink-900, rgba(0,0,0,0.3)); text-align: left; font-size: 12px; line-height: 1.6; }
+.result-battle-report > summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; color: var(--dc-ash-100, #f0f0f5); font-weight: bold; }
+.result-report-row { display: grid; grid-template-columns: 5.5em minmax(0, 1fr); gap: 8px; padding: 3px 0; border-top: 1px solid var(--dc-iron-700, rgba(255,255,255,0.08)); color: var(--dc-ash-300, #b9bcc8); }
+.result-report-key { color: var(--dc-observe-400, #62a8ad); }
+
+/* ---- 旅の手引き（beginnerGuideUi.js）---- */
+.beginner-guide-card { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 10px 12px; text-align: left; border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.2)); border-left: 2px solid var(--dc-brass-300, #c9a86a); border-radius: var(--dc-radius-panel, 8px); background: var(--dc-ink-800, rgba(255,255,255,0.06)); color: var(--dc-ash-100, #f0f0f5); cursor: pointer; }
+.beginner-guide-kicker { font-size: 11px; letter-spacing: 0.08em; color: var(--dc-brass-300, #c9a86a); }
+.beginner-guide-card strong { font-size: 15px; }
+.beginner-guide-hint { font-size: 12px; color: var(--dc-ash-300, #b9bcc8); line-height: 1.5; }
+.beginner-guide-steps { display: flex; gap: 4px; margin-top: 4px; }
+.beginner-guide-steps i { flex: 1 1 0; height: 3px; background: var(--dc-iron-500, rgba(255,255,255,0.2)); }
+.beginner-guide-steps i.done { background: var(--dc-brass-300, #c9a86a); }
+.beginner-guide-steps i.next { background: var(--dc-observe-400, #62a8ad); }
+.home-menu.beginner-guide-active [data-endgame-guide] { display: none; }
