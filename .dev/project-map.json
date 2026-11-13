@@ -4,7 +4,7 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "4b6b7ee",
+      "head": "1f061ed",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
@@ -1294,6 +1294,7 @@
         "dom-safety",
         "enemies",
         "engine",
+        "equipment",
         "jobs",
         "runes",
         "world"
@@ -2219,6 +2220,7 @@
       "dependents": [
         "abyss",
         "adventure4",
+        "codex",
         "combat",
         "content-packs",
         "enemies",
@@ -2283,6 +2285,7 @@
         "js/patches/loot3RealmChaseRewards.js",
         "js/patches/loot3RealmTargetFarm.js",
         "js/patches/options4Fusion.js",
+        "js/patches/regionCodex.js",
         "js/patches/rune2Special.js",
         "js/patches/session8World.js",
         "js/patches/smartLoot4EquipmentUi.js",

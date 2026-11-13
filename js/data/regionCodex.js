@@ -56,6 +56,9 @@ export function regionCodexBundle(regionId, sources = {}) {
   // a region's already-defined rare types (`sources.rareEncounters`,
   // built in the runtime patch) have been discovered.
   const rareEncounters = (sources.rareEncounters || []).filter((r) => r.regionId === regionId);
+  // 地域固有装備（huntUniques.js の regionId つき Hunt Unique）。所持判定は
+  // 実行時パッチが既存の state.ownsItem() で付けた `owned` を読むだけ。
+  const uniques = (sources.regionUniques || []).filter((u) => u.regionId === regionId);
   // C8-4 -- Unique/Rune target per region, the last item of C8's
   // originally-listed bundle. Rune 2.1 already gives each numbered Story
   // chapter exactly one Rune (data/runes2.js's RUNE2_DEFS, `chapter`
@@ -77,6 +80,7 @@ export function regionCodexBundle(regionId, sources = {}) {
     rareTotal: rareEncounters.length,
     runesOwned: runes.filter((r) => r.owned).length,
     runesTotal: runes.length,
+    uniques,
   };
 }
 

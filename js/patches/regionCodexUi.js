@@ -28,7 +28,7 @@ function hiddenThreatLine(hiddenThreats) {
 }
 
 function regionCard(bundle) {
-  const { region, faunaSeen, faunaTotal, fishingSpot, fishSeen, fishTotal, archaeologySite, treasureHunts, bosses, hiddenThreats, rareSeen, rareTotal, runesOwned, runesTotal } = bundle;
+  const { region, faunaSeen, faunaTotal, fishingSpot, fishSeen, fishTotal, archaeologySite, treasureHunts, bosses, hiddenThreats, rareSeen, rareTotal, runesOwned, runesTotal, uniques } = bundle;
   const lines = [];
   lines.push(`既知の生物 ${faunaSeen}/${faunaTotal}`);
   if (fishingSpot) lines.push(`釣果（${escapeHtml(fishingSpot.name)}） ${fishSeen}/${fishTotal}`);
@@ -41,6 +41,11 @@ function regionCard(bundle) {
   if (hiddenThreat) lines.push(hiddenThreat);
   if (rareTotal) lines.push(`レア個体 遭遇 ${rareSeen}/${rareTotal}`);
   if (runesTotal) lines.push(`ルーン 入手 ${runesOwned}/${runesTotal}`);
+  // 地域固有装備：入手するまで名前は伏せ、どの章で狙えるかだけ示す（Boss 名を伏せるのと同じ流儀）
+  for (const u of uniques || []) {
+    const range = `${u.huntChapters[0]}〜${u.huntChapters[1]}章の巡回・レア個体`;
+    lines.push(u.owned ? `固有装備 ${escapeHtml(u.name)}（入手済み）` : `固有装備 ？？？（${range}で狙える）`);
+  }
   return `<div class="forge-card-sub" style="margin:4px 0;"><b>${escapeHtml(region.name)}</b>　${escapeHtml(region.subtitle)}<br>${lines.join('　/　')}</div>`;
 }
 

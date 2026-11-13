@@ -8,6 +8,8 @@
    file only aggregates; it never writes state.data.
    ============================================================ */
 import { state } from '../state.js';
+import { baseItemId } from '../data/equipment.js';
+import { HUNT_UNIQUES } from '../data/huntUniques.js';
 import './fishing.js'; // guarantees state.fishingSpots() exists
 import './archaeology.js'; // guarantees state.archaeologySites() exists
 import './treasureHunt.js'; // guarantees state.treasureHunts() exists
@@ -74,6 +76,24 @@ function runes() {
     .filter(Boolean);
 }
 
+// 地域固有装備：huntUniques.js の regionId つき Hunt Unique を、既存の所持判定つきで並べる。
+// 新しい入手フラグは作らない（いま持っている＝ state.ownsItem、武器は一度でも入手＝ weaponCodexSeen）。
+// 装備はドロップごとに `${itemId}#${seq}` のインスタンス ID で所持・装備されるので、
+// 素の id との一致（state.ownsItem）だけでは拾えない。基底 id で照合する。
+function ownsBase(itemId) {
+  if (state.isWeaponCodexSeen?.(itemId)) return true;
+  const held = [...Object.entries(state.data.inventory || {}).filter(([, n]) => n > 0).map(([id]) => id), ...Object.values(state.data.equipped || {})];
+  return held.some((id) => id && baseItemId(id) === itemId);
+}
+
+function regionUniques() {
+  return HUNT_UNIQUES.filter((u) => u.regionId).map((u) => ({
+    id: u.id, name: u.name, slot: u.slot, regionId: u.regionId, huntChapters: u.huntChapters,
+    effectNames: (u.effects || []).map((e) => e.name).filter(Boolean),
+    owned: ownsBase(u.id),
+  }));
+}
+
 state.regionCodexList = function regionCodexList() {
   const sources = {
     faunaSpecies: faunaSpecies(),
@@ -83,6 +103,7 @@ state.regionCodexList = function regionCodexList() {
     treasureHunts: this.treasureHunts?.() || [],
     rareEncounters: rareEncounters(),
     runes: runes(),
+    regionUniques: regionUniques(),
   };
   const isStageCleared = (id) => this.isStageCleared(id);
   const bossCtx = { isStageCleared, isChapterUnlocked: (idx) => isChapterUnlocked(idx, isStageCleared) };

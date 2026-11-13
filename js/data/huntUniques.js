@@ -19,6 +19,38 @@ const u = (def) => {
 };
 
 export const HUNT_UNIQUES = Object.freeze([
+  // ---- 地域固有（定命 4 地域に各 1 本。regionId を持ち、その地域の章でだけ狙える）----
+  // 「その地域で狩る理由」を装備側に作る（C8 Region Identity の未着手だった角度）。
+  // ドロップ経路は他の Hunt Unique と同じ（huntUniquesForChapter → Rare / Roamer / 巡回 Elite の抽選）。
+  // 効果は既存の kind だけを使い、数値を積むのではなく「その地域らしい立ち回り」を後押しする。
+  u({ id:'uq_region_frontier_ward', name:'開拓者の楯・WAYSTEAD', slot:'shield', regionId:'frontier',
+    rarity:'legendary', unique:true, anchor:2, huntChapters:[1,4],
+    stats:{ def:22, hp:48 },
+    effects:[{ trigger:'onGuard', kind:'healOnGuard', name:'野営の心得', power:.07 }],
+    lore:'開拓碑より古い時代の楯。構えて息を整えるたび、野営の夜のように傷がふさがる。',
+  }),
+  u({ id:'uq_region_elemental_loop', name:'四境の環・QUADRANT', slot:'accessory', regionId:'elemental',
+    rarity:'legendary', unique:true, anchor:6, huntChapters:[5,8],
+    stats:{ mag:40, mp:55, crit:3 },
+    effects:[{ trigger:'onSkill', kind:'spellEcho', name:'四色の反響', chance:.16, spellOnly:true }],
+    lore:'火・水・風・魔の境で拾われた環。唱えた呪文が、山肌に跳ね返るようにもう一度響く。',
+  }),
+  u({ id:'uq_region_fracture_shroud', name:'裂け目の外套・RIFTSHROUD', slot:'body', regionId:'fracture',
+    rarity:'legendary', unique:true, anchor:10, huntChapters:[9,12],
+    stats:{ def:124, hp:250, spd:9 },
+    effects:[{ trigger:'onEvade', kind:'evadeCritBuff', name:'歪みの残像', power:18, turns:2 }],
+    lore:'時空の歪みに半ば呑まれた外套。かわした一撃の残像が、次の一太刀の狙いを教える。',
+  }),
+  u({ id:'uq_region_lastmortal_edge', name:'機城以前の刃・PRIMEVAL', slot:'weapon', weaponType:'sword', regionId:'last-mortal',
+    rarity:'legendary', unique:true, anchor:14, huntChapters:[13,15],
+    stats:{ atk:225, crit:6, spd:4 },
+    effects:[
+      { trigger:'passive', kind:'deathlineBoost', name:'最果ての一線', power:.25, threshold:.3 },
+      { trigger:'onHit', kind:'lastHitBonus', name:'止めの型', power:.18 },
+    ],
+    lore:'黒鉄機城が建つ前から外郭に埋もれていた刃。持ち主が追い詰められるほど、切っ先が冴える。',
+  }),
+
   // ---- 早期（Ch2〜9）----
   u({ id:'uq_hunt_bloodmist_knife', name:'血霞の短刃・MIST', slot:'weapon', weaponType:'dagger',
     rarity:'legendary', unique:true, anchor:3, huntChapters:[2,10],
@@ -123,6 +155,9 @@ export const HUNT_UNIQUES = Object.freeze([
 const BY_ID = new Map(HUNT_UNIQUES.map(i => [i.id, i]));
 
 export function huntUniqueById(id) { return BY_ID.get(id) || null; }
+
+// 地域固有（regionId を持つもの）。Region Codex が「この地域で狙える固有装備」を出すのに使う。
+export function huntUniquesForRegion(regionId) { return HUNT_UNIQUES.filter(i => i.regionId === regionId); }
 
 // その章のStageでドロップしうる固有の候補リスト。
 export function huntUniquesForChapter(chapterNum) {
