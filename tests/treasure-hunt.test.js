@@ -14,7 +14,8 @@ function read(relPath) {
 }
 
 test('C5 Treasure Hunt: one chain per region in this first slice, each rooted at a real Archaeology site (the C4 loop-back)', () => {
-  assert.equal(TREASURE_HUNT_CHAINS.length, 4);
+  // First slice: the 4 mortal regions. Second slice (2026-11): The Veil.
+  assert.equal(TREASURE_HUNT_CHAINS.length, 5);
   const ids = TREASURE_HUNT_CHAINS.map((c) => c.id);
   assert.equal(new Set(ids).size, ids.length, 'no duplicate chain ids');
   for (const chain of TREASURE_HUNT_CHAINS) {

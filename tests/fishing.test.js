@@ -11,7 +11,9 @@ import { state } from '../js/state.js';
 import '../js/patches/fishing.js';
 
 test('C3 Fishing: several regions ship in this first slice, each with a spot and a named master fish', () => {
-  assert.equal(FISHING_SPOTS.length, 4);
+  // First slice: the 4 mortal regions. Second slice (2026-11): The Veil. One spot per covered region.
+  assert.equal(FISHING_SPOTS.length, 5);
+  assert.equal(new Set(FISHING_SPOTS.map((s) => s.regionId)).size, FISHING_SPOTS.length, 'exactly one spot per region');
   for (const spot of FISHING_SPOTS) {
     assert.ok(WORLD3_REGIONS.some((r) => r.id === spot.regionId), `${spot.id} must reference a real World 3.0 region`);
     const pool = FISH_SPECIES.filter((f) => f.regionId === spot.regionId);
@@ -20,8 +22,9 @@ test('C3 Fishing: several regions ship in this first slice, each with a spot and
   }
 });
 
-test('Roster expansion: 29 fish across the 4 regions, at least 6 regular fish per region, all ids unique', () => {
-  assert.equal(FISH_SPECIES.length, 29);
+test('Roster expansion: 29 fish across the 4 mortal regions plus 8 for The Veil, at least 6 regular fish per region, all ids unique', () => {
+  assert.equal(FISH_SPECIES.filter((f) => f.regionId !== 'veil').length, 29);
+  assert.equal(FISH_SPECIES.length, 37);
   const ids = FISH_SPECIES.map((f) => f.id);
   assert.equal(new Set(ids).size, ids.length, 'no duplicate fish ids');
   for (const spot of FISHING_SPOTS) {

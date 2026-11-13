@@ -4,7 +4,7 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "1f061ed",
+      "head": "473fd01",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
@@ -1697,6 +1697,7 @@
       "tests": [
         "tests/archaeology.test.js",
         "tests/fishing.test.js",
+        "tests/region-codex.test.js",
         "tests/settlement-incidents.test.js",
         "tests/treasure-hunt.test.js"
       ],
@@ -1730,6 +1731,7 @@
         "js/patches/treasureHuntUi.js",
         "tests/archaeology.test.js",
         "tests/fishing.test.js",
+        "tests/region-codex.test.js",
         "tests/settlement-incidents.test.js",
         "tests/treasure-hunt.test.js"
       ]

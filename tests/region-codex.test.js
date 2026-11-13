@@ -18,15 +18,25 @@ function read(relPath) {
 // aggregation of existing Fishing/Archaeology/Treasure Hunt/fauna data --
 // no new content, no new save data.
 
-test('regionCodexRegions() only covers the 4 mortal regions Fishing/Archaeology/Treasure Hunt already reach, not the 5 later, unbuilt ones', () => {
+import { FISHING_SPOTS } from '../js/data/fishing.js';
+import { ARCHAEOLOGY_SITES } from '../js/data/archaeology.js';
+import { TREASURE_HUNT_CHAINS } from '../js/data/treasureHunt.js';
+
+test('regionCodexRegions() only covers the regions Fishing/Archaeology/Treasure Hunt already reach (4 mortal + The Veil), not the later, unbuilt ones', () => {
   const regions = regionCodexRegions();
   const ids = regions.map((r) => r.id);
-  assert.deepEqual(ids, ['frontier', 'elemental', 'fracture', 'last-mortal']);
-  assert.equal(regions.length, WORLD3_REGIONS.filter((r) => r.tone === 'mortal').length, 'must match every "mortal" tone region, not an arbitrary subset');
+  assert.deepEqual(ids, ['frontier', 'elemental', 'fracture', 'last-mortal', 'veil']);
+  for (const tone of ['mortal']) assert.ok(WORLD3_REGIONS.filter((r) => r.tone === tone).every((r) => ids.includes(r.id)), 'every "mortal" tone region stays covered');
+  // The rule is unchanged: a region is listed only once all three discovery systems reach it.
+  for (const id of ids) {
+    assert.ok(FISHING_SPOTS.some((s) => s.regionId === id), `${id} has a fishing spot`);
+    assert.ok(ARCHAEOLOGY_SITES.some((s) => s.regionId === id), `${id} has an archaeology site`);
+    assert.ok(TREASURE_HUNT_CHAINS.some((c) => c.regionId === id), `${id} has a treasure hunt`);
+  }
 });
 
 test('regionCodexBundle() returns null for a region outside the covered set, and for an unknown id -- never a misleadingly empty bundle', () => {
-  assert.equal(regionCodexBundle('veil', {}), null);
+  assert.equal(regionCodexBundle('outer-world', {}), null);
   assert.equal(regionCodexBundle('not-a-real-region', {}), null);
 });
 

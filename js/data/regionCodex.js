@@ -31,7 +31,7 @@ import { WORLD3_REGIONS } from './world3Regions.js';
 // Regions with at least one of Fishing/Archaeology already built for
 // them -- see the file header for why later regions are excluded rather
 // than shown empty.
-const COVERED_REGION_IDS = Object.freeze(['frontier', 'elemental', 'fracture', 'last-mortal']);
+const COVERED_REGION_IDS = Object.freeze(['frontier', 'elemental', 'fracture', 'last-mortal', 'veil']);
 
 export function regionCodexRegions() {
   return WORLD3_REGIONS.filter((r) => COVERED_REGION_IDS.includes(r.id));

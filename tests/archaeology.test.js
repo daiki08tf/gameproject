@@ -16,7 +16,9 @@ function read(relPath) {
 }
 
 test('C4 Archaeology: one site per region in this first slice, each with a real fragment roster and exactly one Reconstructed Record', () => {
-  assert.equal(ARCHAEOLOGY_SITES.length, 4);
+  // First slice: the 4 mortal regions. Second slice (2026-11): The Veil. One site per covered region.
+  assert.equal(ARCHAEOLOGY_SITES.length, 5);
+  assert.equal(new Set(ARCHAEOLOGY_SITES.map((s) => s.regionId)).size, ARCHAEOLOGY_SITES.length, 'exactly one site per region');
   for (const site of ARCHAEOLOGY_SITES) {
     assert.ok(WORLD3_REGIONS.some((r) => r.id === site.regionId), `${site.id} must reference a real World 3.0 region`);
     const pool = fragmentsForSite(site.id);

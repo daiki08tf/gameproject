@@ -34,6 +34,8 @@ export const ARCHAEOLOGY_SITES = Object.freeze([
   { id: 'elemental_tower', regionId: 'elemental', name: '四境連峰・崩落した観測塔', desc: '火・水・風・魔が交差するこの山域を、かつて誰かが観測しようとした跡。塔はとうに崩れ落ちている。' },
   { id: 'fracture_ruins', regionId: 'fracture', name: '境界裂域・古戦場の地下遺構', desc: '古戦場の地下に、時空の歪みに半ば呑まれた遺構が眠っている。掘り出すたび、記録の一部が欠けていることに気づく。' },
   { id: 'last_mortal_outerworks', regionId: 'last-mortal', name: '人界最奥・黒鉄機城外郭遺構', desc: '黒鉄機城の外周に埋もれた、機城建造よりさらに古い遺構。何のための施設だったのかは、まだ分からない。' },
+  // 第2スライス（2026-11）：The Veil（Ch16-20）。舞台は第17章「白夜の聖都」の聖典庫。
+  { id: 'veil_scripture_vault', regionId: 'veil', name: 'The Veil・聖典庫の沈み棚', desc: '夜のない無人の聖都に、棚ごと床下へ沈んだ書庫がある。誰かが意図して沈めたのか、重みで落ちただけなのかは分からない。' },
 ]);
 
 // rarity is purely a Codex/collection label; it does not gate anything by
@@ -61,6 +63,11 @@ export const ARTIFACT_FRAGMENTS = Object.freeze([
   { id: 'last_mortal_seal', siteId: 'last_mortal_outerworks', regionId: 'last-mortal', name: '封鎖式の刻印', rarity: 'uncommon', weight: 6, difficulty: 3, reward: { veilstone: 2, ore: 2 }, flavor: '「封鎖」を意味する古い刻印。機城の中枢記録にあった言葉と、同じ系統の文字に見える。' },
   { id: 'last_mortal_log', siteId: 'last_mortal_outerworks', regionId: 'last-mortal', name: '稼働記録の残滓', rarity: 'uncommon', weight: 5, difficulty: 3, reward: { veilstone: 3, gold: 40 }, flavor: 'かろうじて読める範囲に「外部観測」の語が繰り返し現れる。機城の中枢記録と同じ語だ。' },
   { id: 'last_mortal_wiring', siteId: 'last_mortal_outerworks', regionId: 'last-mortal', name: '人界外への配線束', rarity: 'rare', weight: 3, difficulty: 4, reward: { veilstone: 4, gold: 80 }, flavor: '配線は遺構の外へ、人界の外へ向かって伸びたまま途切れている。何につながっていたのかは、まだ分からない。' },
+
+  { id: 'veil_recess_rubbing', siteId: 'veil_scripture_vault', regionId: 'veil', name: '七つの窪みの拓本', rarity: 'common', weight: 9, difficulty: 3, reward: { ore: 4 }, flavor: '石版の窪みを紙に写し取ったもの。窪みは七つ。並び方に、まだ規則は見つからない。' },
+  { id: 'veil_scripture_leaf', siteId: 'veil_scripture_vault', regionId: 'veil', name: '焼け残った聖典の頁', rarity: 'common', weight: 8, difficulty: 3, reward: { wood: 4, hide: 2 }, flavor: '「天より来る者」という語だけが、どの頁にも繰り返し残っている。' },
+  { id: 'veil_star_chart', siteId: 'veil_scripture_vault', regionId: 'veil', name: '観測者の星図片', rarity: 'uncommon', weight: 5, difficulty: 4, reward: { veilstone: 3, ore: 2 }, flavor: '砂海に落ちたものの軌道を、逆向きに辿った図。線は空の途中で途切れている。' },
+  { id: 'veil_boundary_stake', siteId: 'veil_scripture_vault', regionId: 'veil', name: '境界標の芯', rarity: 'rare', weight: 3, difficulty: 4, reward: { veilstone: 5, gold: 120 }, flavor: '境目を示すために打たれた杭の芯。どちら側から打たれたのかは、形からは分からない。' },
 ]);
 
 // One authored Reconstructed Record per site, unlocked once every one of
@@ -73,6 +80,7 @@ export const RECONSTRUCTED_RECORDS = Object.freeze([
   { id: 'elemental_record', siteId: 'elemental_tower', name: '四境観測者たちの記録', text: '観測儀・刻印板・記録筒・術式図。この山域を観測しようとした者たちがいたことは分かるが、観測の目的そのものは、崩れた塔と共に失われている。', reward: { ore: 6, veilstone: 3, gold: 60 } },
   { id: 'fracture_record', siteId: 'fracture_ruins', name: '消えた戦の記録', text: '指揮杖・軍旗・石板・墓標。この地で確かに戦があったことは分かる。だが誰と、何のために戦ったのかを示す部分だけが、判で押したように欠け続けている。', reward: { hide: 6, veilstone: 4, gold: 80 } },
   { id: 'last_mortal_record', siteId: 'last_mortal_outerworks', name: '機城建造以前の記録', text: '機導板・封鎖式・稼働記録・配線束。黒鉄機城は、この遺構の上に、その意図を受け継ぐ形で建てられたように見える。「封鎖」「外部観測」――中枢記録にあった言葉の起源が、ここにある。', reward: { ore: 8, veilstone: 6, gold: 120 } },
+  { id: 'veil_record', siteId: 'veil_scripture_vault', name: '境界を数えた者たちの記録', text: '拓本・聖典の頁・星図・境界標。並べると、誰かがこの世界の「端」を数えようとしていたことが分かる。境界は一枚の壁ではなく、いくつもの結び目が連なった網のようなものだった、と記録は読める。数え終えた者がいたのかどうかは、どこにも残っていない。', reward: { ore: 10, veilstone: 8, gold: 180 } },
 ]);
 
 const SITE_INDEX = new Map(ARCHAEOLOGY_SITES.map((s) => [s.id, s]));

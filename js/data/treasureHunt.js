@@ -65,6 +65,16 @@ export const TREASURE_HUNT_CHAINS = Object.freeze([
     resolutionText: '外郭遺構の最奥で、保管庫が見つかった。機城よりさらに古い時代の品が、静かに眠っていた。',
     reward: { ore: 12, veilstone: 8, gold: 260 },
   },
+  // 第2スライス（2026-11）：The Veil（Ch16-20）
+  {
+    id: 'veil_cache', regionId: 'veil', siteId: 'veil_scripture_vault',
+    name: 'The Veil・巡礼者の預け物',
+    rumorText: '無人の聖都に、最後の巡礼者が何かを預けたまま戻らなかった、という噂を聞く。',
+    clueText: '掘り出した聖典の頁の余白に、預け場所を示すらしい書き込みがあった。書かれた目印は、もう沈んでいるらしい。',
+    decodedText: '星図片の線と書き込みを重ねると、目印の位置が分かった――沈み棚のいちばん下、水に浸かった段だ。',
+    resolutionText: '水に浸かった段から、封をした包みが見つかった。中身は旅の路銀と、宛先の消えた手紙だった。',
+    reward: { ore: 14, veilstone: 10, gold: 340 },
+  },
 ]);
 
 const CHAIN_INDEX = new Map(TREASURE_HUNT_CHAINS.map((c) => [c.id, c]));

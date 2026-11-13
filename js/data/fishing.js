@@ -29,6 +29,9 @@ export const FISHING_SPOTS = Object.freeze([
   { id: 'elemental_hotspring', regionId: 'elemental', name: '四境連峰・境の湧水場', desc: '火・水・風・魔が交差する地形のせいか、水温も魚の色も場所ごとに違う。' },
   { id: 'fracture_rift_pool', regionId: 'fracture', name: '境界裂域・裂け目の水溜まり', desc: '時空が歪み始めた地帯に、なぜか澄んだ水場だけが残っている。' },
   { id: 'last_mortal_deep', regionId: 'last-mortal', name: '人界最奥・最果ての淵', desc: '人の世で最も奥まった場所。ここまで釣りに来る者は多くない。' },
+  // 第2スライス（2026-11）：The Veil（Ch16-20）。舞台は第16章「沈みゆく聖海」。
+  // 定命4地域の語彙（開拓・四境・古戦場・機城）とは重ねず、聖海・聖都・砂海・月蝕の章名から取る。
+  { id: 'veil_sunken_tidepool', regionId: 'veil', name: 'The Veil・沈都の潮溜まり', desc: '海底から浮上した聖都の縁に、潮が引いても残る水場がある。底の石畳が、まだ道の形をしている。' },
 ]);
 
 // rarity is purely a Codex/collection label; it does not gate anything by
@@ -71,6 +74,15 @@ export const FISH_SPECIES = Object.freeze([
   { id: 'blackiron_shark', regionId: 'last-mortal', name: '黒鉄鮫', rarity: 'rare', weight: 3, difficulty: 4, reward: { ore: 6, veilstone: 2 }, statTarget: 'atk', flavor: '黒鉄機城の近くの淵に潜む、小柄だが凶暴な魚。' },
   { id: 'eclipse_fish', regionId: 'last-mortal', name: '蝕月魚', rarity: 'rare', weight: 2, difficulty: 5, reward: { veilstone: 4, gold: 50 }, statTarget: 'mag', flavor: '月のない夜にだけ、淵の底から浮かび上がってくる。' },
   { id: 'last_mortal_nushi', regionId: 'last-mortal', name: 'ヌシ・人界最奥の主', rarity: 'master', weight: 1, difficulty: 6, reward: { veilstone: 5, gold: 300 }, master: true, statTarget: 'hp', flavor: '人の世で最も深いこの淵の、誰も釣り上げたことのない主。' },
+
+  { id: 'sunken_rockfish', regionId: 'veil', name: '沈都メバル', rarity: 'common', weight: 9, difficulty: 3, reward: { ore: 4, hide: 2 }, statTarget: 'hp', flavor: '沈んだ街道の瓦礫を巣にしている。人の通った跡を好むらしい。' },
+  { id: 'foam_jelly', regionId: 'veil', name: '泡影クラゲ', rarity: 'common', weight: 9, difficulty: 3, reward: { veilstone: 2 }, statTarget: 'mp', flavor: '泡と見分けがつかない。触れると、少しのあいだ音が遠くなる。' },
+  { id: 'coral_hermit', regionId: 'veil', name: '珊瑚ヤドリ', rarity: 'common', weight: 8, difficulty: 3, reward: { ore: 5 }, statTarget: 'def', flavor: '砕けた珊瑚の欠片を、殻の代わりに背負っている。' },
+  { id: 'whitenight_fish', regionId: 'veil', name: '白夜ウオ', rarity: 'uncommon', weight: 6, difficulty: 4, reward: { veilstone: 2, wood: 3 }, statTarget: 'mag', flavor: '夜のない聖都の水路から流れてきたらしく、目を閉じることがない。' },
+  { id: 'stardust_goby', regionId: 'veil', name: '星屑ハゼ', rarity: 'uncommon', weight: 5, difficulty: 4, reward: { ore: 4, veilstone: 2 }, statTarget: 'spd', flavor: '砂海に落ちた星の欠片を、餌と間違えて呑んでいる。' },
+  { id: 'eclipse_angler', regionId: 'veil', name: '月蝕アンコウ', rarity: 'rare', weight: 3, difficulty: 5, reward: { veilstone: 4, gold: 80 }, statTarget: 'atk', flavor: '提げた灯りが、月の欠け方に合わせて明滅する。' },
+  { id: 'seam_eel', regionId: 'veil', name: '境目ウナギ', rarity: 'rare', weight: 2, difficulty: 6, reward: { veilstone: 5 }, statTarget: 'spd', flavor: '頭と尾が、別々の水面から出ていることがある。' },
+  { id: 'veil_nushi', regionId: 'veil', name: 'ヌシ・聖海の主', rarity: 'master', weight: 1, difficulty: 6, reward: { veilstone: 7, gold: 400 }, master: true, statTarget: 'mp', flavor: '聖都が浮上した日から、沈んだ祭壇の上をずっと回り続けている。釣り上げても、また同じ場所へ戻っていく。' },
 ]);
 
 const SPOT_INDEX = new Map(FISHING_SPOTS.map((s) => [s.id, s]));
