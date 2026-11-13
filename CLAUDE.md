@@ -2,6 +2,8 @@
 
 ## Current active program
 
+**Next work queue: `NEXT_WORK_HANDOFF_2026-11-13.md`** — an ordered task list (T1–T5 additions, B1–B6 polish) with files, steps, acceptance criteria and a progress table to update after every task. Start there.
+
 **Confirmed runtime debug fixes** currently precede further UI Overhaul (UIX) production work. Read `CODEBASE_DEBUG_AUDIT_2026-09-05.md` for the current debug backlog.
 
 - PR #408: mobile Option Fusion fix merged.
