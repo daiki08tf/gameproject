@@ -263,3 +263,17 @@ export function autoEquipBest() {
   decorateFusionRows();
   decorateSmartLootFilters();
 }
+
+// B5: スロットを選んだあとの導線。候補一覧はスロット群の下に描かれるので、画面外に出ていることがある。
+// 選択後に一覧を見える位置へ寄せる（DOM は書き換えない。候補なしの文言は equipment.js が既に出している）。
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (event) => {
+    const slot = event.target?.closest?.('#paperdoll .equip-slot');
+    if (!slot) return;
+    requestAnimationFrame(() => {
+      const picker = document.getElementById('equipPicker');
+      if (!picker || !document.getElementById('equipmentScreen')?.classList.contains('active')) return;
+      picker.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+  });
+}

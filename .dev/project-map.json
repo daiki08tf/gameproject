@@ -4,7 +4,7 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "473fd01",
+      "head": "9d37ba8",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
@@ -3173,6 +3173,7 @@
         "js/data/runes.js",
         "js/data/weapons.js",
         "js/main.js",
+        "js/patches/battleIntegration3.js",
         "js/patches/combat2DebugSafety.js",
         "js/patches/combat3DifficultyRebalance.js",
         "js/patches/companionBattle.js",

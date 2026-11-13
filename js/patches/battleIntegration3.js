@@ -8,6 +8,7 @@
    - Existing Break / Boss telegraph / Companion tactics remain authoritative
    ============================================================ */
 import { state } from '../state.js';
+import { formatGameNumber } from '../data/numericSafety.js';
 import { BattleEngine } from '../battleEngine.js';
 import { TextBattleScreen } from '../screens/textBattle.js';
 import { ensureCodexEntry } from '../data/codex.js';
@@ -97,6 +98,9 @@ function enrichEnemyCards(screen){
     }
     const known=tacticalKnowledge(enemy);
     const parts=[];
+    // B6: 解析が進んだ敵（役割が判明している敵）だけ、HP を数値でも出す。未解析の敵はバーのみのまま
+    // （「解析すると読める情報が増える」既存の段階づけを崩さない）。
+    if(known.role) parts.push(`HP ${formatGameNumber(Math.max(0,enemy.hp))}/${formatGameNumber(enemy.maxHp)}`);
     if(known.role) parts.push(`ROLE ${known.role.name||known.role.id||''}`);
     const elementText=elementKnowledgeText(known.elements);
     if(elementText) parts.push(elementText);
