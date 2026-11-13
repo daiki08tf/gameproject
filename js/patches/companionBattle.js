@@ -212,7 +212,7 @@ TextBattleScreen.prototype._render=function patchedCompanionRender(){originalRen
   // 号令ボタン: 1戦闘に各1回。使用済みは無効化し、発行したら即再描画。
   // Session 7 — 絆Lv不足の号令は鍵付きで表示し、解放条件を教える。
   const engine=this.engine,used=engine._ordersUsed||{},maxBond=maxPartyBond(engine);
-  const row=document.createElement('div');row.style.cssText='display:flex;gap:6px;margin-top:4px;flex-wrap:wrap';
+  const row=document.createElement('div');row.className='tb-order-row';row.style.cssText='display:flex;gap:6px;margin-top:4px;flex-wrap:wrap';
   for(const order of Object.values(COMPANION_ORDERS)){
     const locked=order.bondReq&&maxBond<order.bondReq;
     const btn=document.createElement('button');btn.type='button';btn.className='btn-sub';btn.style.cssText='padding:3px 8px;font-size:11px';

@@ -37,14 +37,19 @@ function applyPreset(index){
 function render(){
   const screen=document.getElementById('equipmentScreen'),layout=screen?.querySelector('.equip-layout');if(!layout)return;
   let box=screen.querySelector('#phase14Loadouts');if(!box){box=document.createElement('div');box.id='phase14Loadouts';box.className='forge-card phase14-loadouts';layout.prepend(box);}
-  box.innerHTML='<div class="forge-card-name">BUILD PRESET</div><div class="forge-card-sub">現在の6装備枠を3つまで保存。消失した装備があるプリセットは適用しない。</div>';
+  // 使用頻度の低い機能が装備画面の最上部を常時占有していたので、既定で畳む。
+  // 開閉状態は画面を開いている間だけ保持（再描画で閉じ直さない）。保存済みの数は見出しに出す。
+  const wasOpen=box.querySelector('details')?.open||false;
+  const saved=data().loadouts.filter(Boolean).length;
+  box.innerHTML=`<details class="phase14-loadout-details"${wasOpen?' open':''}><summary>ビルドプリセット（保存 ${saved}/3）</summary><div class="forge-card-sub">現在の6装備枠を3つまで保存。消失した装備があるプリセットは適用しない。</div></details>`;
+  const host=box.querySelector('details');
   const row=document.createElement('div');row.className='phase14-loadout-row';
   data().loadouts.forEach((preset,index)=>{
     const unit=document.createElement('div');unit.className='phase14-loadout-unit';
     const label=document.createElement('span');label.textContent=`P${index+1}${preset?' ●':' —'}`;unit.appendChild(label);
     const apply=document.createElement('button');apply.className='btn-sub';apply.textContent='適用';const check=canApply(preset);apply.disabled=!check.ok;apply.title=check.ok?'この装備セットへ切替':check.reason;apply.addEventListener('click',()=>applyPreset(index));unit.appendChild(apply);
     const save=document.createElement('button');save.className='btn-sub';save.textContent=preset?'上書き':'保存';save.addEventListener('click',()=>savePreset(index));unit.appendChild(save);row.appendChild(unit);
-  });box.appendChild(row);
+  });host.appendChild(row);
 }
 document.addEventListener('click',e=>{if(e.target?.closest?.('#goEquipBtn,#autoEquipBtn,.equip-slot,.pick-row button'))queueMicrotask(render);});
 render();

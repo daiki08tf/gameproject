@@ -21,6 +21,15 @@ export function enemy2ActivityId(stage){
   return'story';
 }
 
+// 戦闘中の表示名から、隊列・役割の接頭辞（【前衛】等）と Variant 名、末尾の Lv 表記を外した素の種名。
+export function enemy2PlainName(enemy){
+  let name=String(enemy?.name||'');
+  if(enemy?.variantName&&name.startsWith(enemy.variantName))name=name.slice(String(enemy.variantName).length);
+  return name.replace(/^(?:【[^】]*】)+/,'').replace(/\s*Lv\.?\s*[\d,]+$/,'').trim();
+}
+// 保存済みの種名が内部ID（英数字とコロンだけ）のままかどうか。
+export function isRawEcologyName(name){return /^[a-z0-9_]+(?::[a-z0-9_]+)+$/i.test(String(name||''));}
+
 export function enemy2EcologyIdentity(enemy){
   if(!enemy||enemy.boss)return null;
   // 名もなき強敵（Roamer）は地域種ではなく徘徊者として記録する。
@@ -28,7 +37,11 @@ export function enemy2EcologyIdentity(enemy){
   if(enemy.roamerId)return{key:`roamer:${enemy.roamerId}`,name:String(enemy.name||enemy.roamerId),kind:'roamer',enemyType:enemy.type};
   if(enemy.speciesId){
     const species=globalEnemySpecies(enemy.speciesId);
-    return{key:`global:${enemy.speciesId}`,name:species?.name||enemy.speciesId,kind:'global',speciesId:enemy.speciesId};
+    // 地域種の speciesId は 'regional:ch1:normal' / 'global:bat' のような内部IDで、
+    // globalEnemySpecies() には登録が無い（271種）。以前はこの内部IDがそのまま
+    // 図鑑の種名として保存・表示されていた。key は既存セーブとの互換のため変えず、
+    // 表示名だけ敵自身の名前から取る。
+    return{key:`global:${enemy.speciesId}`,name:species?.name||enemy2PlainName(enemy)||enemy.speciesId,kind:'global',speciesId:enemy.speciesId};
   }
   const type=enemy.type||enemy.enemyType;
   if(!type)return null;
@@ -46,7 +59,8 @@ export function recordEnemy2Discovery(entries,enemy,stage,{kill=false}={}){
   const identity=enemy2EcologyIdentity(enemy);if(!identity)return null;
   const ecology=ensureEnemy2Ecology(entries);
   const e=ecology[identity.key]||(ecology[identity.key]={name:identity.name,kind:identity.kind,speciesId:identity.speciesId||null,enemyType:identity.enemyType||null,seen:true,kills:0,variants:[],ranks:[],activities:[],regionTags:[],maxLevel:0});
-  e.seen=true;e.name ||= identity.name;e.variants=cleanList(e.variants);e.ranks=cleanList(e.ranks);e.activities=cleanList(e.activities);e.regionTags=cleanList(e.regionTags);
+  e.seen=true;e.name ||= identity.name;if(isRawEcologyName(e.name)&&!isRawEcologyName(identity.name))e.name=identity.name; // 旧セーブの内部ID名は次の遭遇で直る
+  e.variants=cleanList(e.variants);e.ranks=cleanList(e.ranks);e.activities=cleanList(e.activities);e.regionTags=cleanList(e.regionTags);
   if(kill)e.kills=Math.max(0,Number(e.kills)||0)+1;
   const level=safeLevel(enemy);if(level)e.maxLevel=Math.max(Number(e.maxLevel)||0,level);
   if(enemy.variantId)addUnique(e.variants,enemy.variantId);

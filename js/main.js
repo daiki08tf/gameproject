@@ -92,6 +92,7 @@ import './patches/secretJobCodexBridge.js';
 import './patches/secretJobsPhase2.js';
 import './patches/pacingWalls.js';
 import './patches/pacingMaterials.js';
+import './patches/battleCompactUi.js';
 import './patches/battleAssist.js';
 import { showAbyssRunChoice } from './patches/abyssRunUi.js';
 import { showToast } from './patches/toastFeedback.js';

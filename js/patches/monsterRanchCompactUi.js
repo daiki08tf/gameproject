@@ -41,6 +41,7 @@ function summaryCard(root){
 
 function installTabs(root){
   const summary=summaryCard(root);
+  if(summary&&!summary.classList.contains('ranch-summary-card')) summary.classList.add('ranch-summary-card');
   if(!summary||summary.querySelector('.ranch-compact-nav')) return;
   const nav=document.createElement('div');
   nav.className='ranch-compact-nav';

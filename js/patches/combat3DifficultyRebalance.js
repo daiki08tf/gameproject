@@ -1,4 +1,5 @@
 import { BattleEngine } from '../battleEngine.js';
+import { battleTempoMult } from '../data/balance.js';
 
 // Combat 3.x difficulty retune.
 // The original enemy tables were calibrated for the retired real-time/contact-damage
@@ -24,6 +25,14 @@ BattleEngine.prototype._spawnEnemy = function(type) {
   enemy.maxHp = enemy.hp;
   enemy.atk = Math.max(1, Math.round(enemy.atk * mult.atk));
   enemy.def = Math.max(0, Math.round(enemy.def * mult.def));
+  // Battle Tempo: 本編章（chapter id が chN）の敵だけ、章番号に応じて短く・痛くする。
+  // 深淵・裂界・秘境・外伝・探索地点は chapter が無い／id が chN でないので対象外。
+  if (/^ch\d+$/.test(this.chapter?.id || '') && !this.stage?.isAbyss && !this.stage?.isRift) {
+    const n = this.chapter.num;
+    enemy.hp = Math.max(1, Math.round(enemy.hp * battleTempoMult(n, enemy.boss ? 'BOSS_HP_AT_TO' : 'HP_AT_TO')));
+    enemy.maxHp = enemy.hp;
+    enemy.atk = Math.max(1, Math.round(enemy.atk * battleTempoMult(n, enemy.boss ? 'BOSS_ATK_AT_TO' : 'ATK_AT_TO')));
+  }
   return enemy;
 };
 

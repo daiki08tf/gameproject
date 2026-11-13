@@ -692,6 +692,40 @@ export const PACING_WALL_LAYER = {
   MIDBOSS_HP_MULT: 1.08,
 };
 
+// ---------------------------------------------------------
+// Battle Tempo（2026-11 リバランス）：本編章の「負けないが長い」消耗戦の是正。
+//
+// 実測（scripts/progression-pacing-sim.mjs --to 15、seed 42/7/99）:
+//   - 通常ステージ 15〜50 ラウンド、関門・ボス 50〜100 ラウンド（5-4 は 158）
+//   - 6-1〜15-5 の 83 ステージが連続で初見突破（壁が 1〜5 章にしか無い）
+// 原因は章が進むほど「敵 HP の伸び > プレイヤー火力の伸び」かつ
+// 「敵 ATK の伸び < プレイヤー耐久の伸び」になっていること。ENEMY_SCALING の
+// 較正値そのものは触らず（深淵・裂界・秘境も同じ表を使うため）、本編章の
+// 敵にだけ章番号で補間する倍率を掛けて「短く・痛く」する。
+//   倍率 = FROM_CHAPTER 以前は 1.0、TO_CHAPTER 以降は *_AT_TO、間は線形補間。
+// Boss は HP を削りすぎると壁でなくなるので別係数。
+// 適用箇所は combat3DifficultyRebalance.js の _spawnEnemy ラッパー1か所のみ。
+// ---------------------------------------------------------
+export const BATTLE_TEMPO_LAYER = {
+  // HP と ATK は別々の区間で補間する：長期戦は 3 章から始まるので HP は早く下げ切り、
+  // ATK は 1〜5 章に既にある関門（Pacing pass）を壊さないよう 8 章までかけて上げる。
+  HP_FROM: 1, HP_TO: 4,
+  ATK_FROM: 2, ATK_TO: 8,
+  HP_AT_TO: 0.25,
+  ATK_AT_TO: 5,
+  BOSS_HP_AT_TO: 0.5,
+  BOSS_ATK_AT_TO: 5,
+};
+export function battleTempoMult(chapterNum, key) {
+  const L = BATTLE_TEMPO_LAYER;
+  const n = Number(chapterNum);
+  const hp = key === 'HP_AT_TO' || key === 'BOSS_HP_AT_TO';
+  const from = hp ? L.HP_FROM : L.ATK_FROM, to = hp ? L.HP_TO : L.ATK_TO;
+  if (!Number.isFinite(n) || n <= from) return 1;
+  const t = Math.min(1, (n - from) / Math.max(1, to - from));
+  return 1 + (Number(L[key]) - 1) * t;
+}
+
 export const PACING_MATERIAL_LAYER = {
   // 撃破ごとの拠点素材ドロップ率。「周回が牧舎・拠点の副次進行を産む」
   // 設計のため、モンスターの役割（role）に応じて素材傾向を付ける。

@@ -57,10 +57,28 @@ const TO = Number(args.get('to') || 5);
 const FARM = Number(args.get('farm') || 8);   // farm runs allowed per loss
 const MAX_TRY = Number(args.get('tries') || 6); // attempts per stage
 const QUIET = !!args.get('quiet');
+// --farmStep N: retry the wall after every N farm runs instead of always
+// spending the whole --farm budget (a real player stops farming once strong
+// enough; the fixed budget overshoots and hides the next several walls).
+const FARM_STEP = Number(args.get('farmStep') || FARM);
+// --tempo "HP_AT_TO=0.5,ATK_AT_TO=1.3": override BATTLE_TEMPO_LAYER for tuning runs.
+if (args.get('tempo')) {
+  const { BATTLE_TEMPO_LAYER } = await import(`${ROOT}/js/data/balance.js`);
+  for (const pair of String(args.get('tempo')).split(',')) { const [k, v] = pair.split('='); if (k in BATTLE_TEMPO_LAYER) BATTLE_TEMPO_LAYER[k] = Number(v); }
+}
 
 /* ---- player model (shared shape with progression-combat-sim) ---- */
 function pickCommand(eng) {
   const hpRatio = eng.player.hp / eng.player.maxHp;
+  // --policy casual: what the in-game Auto does plus the obvious manual step —
+  // attack every round, drink a herb when Auto hands control back at low HP.
+  if (args.get('policy') === 'casual') {
+    const own = eng.availableConsumables(), has = (id) => own.find((o) => o.id === id);
+    if (hpRatio < 0.35 && has('item_hiherb')) return { type: 'item', itemId: 'item_hiherb' };
+    if (hpRatio < 0.35 && has('item_herb')) return { type: 'item', itemId: 'item_herb' };
+    const t0 = eng.aliveEnemies[0];
+    return { type: 'attack', targetId: t0 && t0.id };
+  }
   const skills = eng.availableSkills().filter((t) => eng._probeTechnique('skill', t.id).ok);
   const spells = eng.availableSpells().filter((t) => eng._probeTechnique('spell', t.id).ok);
   const heal = spells.find((t) => t.type === 'heal');
@@ -86,7 +104,27 @@ function playStage(stageId) {
   let eng;
   try { eng = new BattleEngine(stageId); } catch (e) { return { cleared: false, rounds: 0, error: e.message, result: null }; }
   let out;
-  do { out = eng.advanceTurn(pickCommand(eng)); } while (!out.over && eng.round < 800);
+  // --diag <stageId>: print what one battle actually looks like (who hits whom for how much).
+  const diag = args.get('diag') === stageId ? { seen: new Map(), cmds: {}, minHp: 1, taken: 0, lastHp: eng.player.hp, healed: 0 } : null;
+  do {
+    const cmd = pickCommand(eng);
+    out = eng.advanceTurn(cmd);
+    if (diag) {
+      diag.cmds[cmd.type + (cmd.techId ? ':' + cmd.techId : cmd.itemId ? ':' + cmd.itemId : '')] = (diag.cmds[cmd.type + (cmd.techId ? ':' + cmd.techId : cmd.itemId ? ':' + cmd.itemId : '')] || 0) + 1;
+      for (const e of eng.enemies) if (!diag.seen.has(e.id)) diag.seen.set(e.id, `${e.name}${e.boss ? '[BOSS]' : e.elite ? '[ELITE]' : ''} hp${e.maxHp} atk${e.atk} def${e.def}`);
+      const d = eng.player.hp - diag.lastHp; if (d < 0) diag.taken -= d; else diag.healed += d; diag.lastHp = eng.player.hp;
+      diag.minHp = Math.min(diag.minHp, eng.player.hp / eng.player.maxHp);
+    }
+  } while (!out.over && eng.round < 800);
+  if (diag) {
+    const p = eng.player, st = state.getStats();
+    console.log(`DIAG ${stageId} lv${state.characterLevel} job=${state.currentJobId} rounds=${eng.round} cleared=${!!eng.finalResult?.cleared}`);
+    console.log(`  player maxHp=${p.maxHp} atk=${p.atk} def=${p.def} mag=${p.mag} spd=${p.spd} | taken=${Math.round(diag.taken)} (${(diag.taken / p.maxHp).toFixed(2)}x maxHp) healed=${Math.round(diag.healed)} minHp=${(diag.minHp * 100).toFixed(0)}%`);
+    console.log(`  cmds ${JSON.stringify(diag.cmds)}`);
+    console.log(`  enemies(${diag.seen.size}) ${[...new Set(diag.seen.values())].slice(0, 8).join(' | ')}`);
+    const totalHp = eng.enemies.reduce((s2, e) => s2 + (e.maxHp || 0), 0);
+    console.log(`  totalEnemyHp=${totalHp} => player dmg/round≈${Math.round(totalHp / eng.round)}; companions=${(eng.companions || eng.party || []).length}`);
+  }
   return { cleared: !!eng.finalResult?.cleared, rounds: eng.round, result: eng.finalResult };
 }
 
@@ -147,7 +185,7 @@ for (const ch of CHAPTERS) {
       firstTry = false;
       // farm the highest-recLevel cleared stage — the "same stage farming" route
       const farmTarget = cleared().sort((a, b) => b.recLevel - a.recLevel)[0];
-      for (let g = 0; g < FARM && farmTarget; g++) {
+      for (let g = 0; g < FARM_STEP && farmTarget; g++) {
         maintain();
         const gr = playStage(farmTarget.id);
         accrue(gr.result);

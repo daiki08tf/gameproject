@@ -4,13 +4,13 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "b33e841",
+      "head": "e341f9e",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
-      "total": 1098,
-      "code": 942,
-      "tests": 372
+      "total": 1101,
+      "code": 944,
+      "tests": 373
     }
   },
   "systems": [
@@ -1128,6 +1128,7 @@
         "js/data/spells.js",
         "js/patches/battle2RoadmapComplete.js",
         "js/patches/battleAssist.js",
+        "js/patches/battleCompactUi.js",
         "js/patches/battleIntegration3.js",
         "js/patches/battleIntegration3Final.js",
         "js/patches/battleRewardAccountingFix.js",
@@ -3106,6 +3107,7 @@
       ],
       "tests": [
         "tests/balance-audit-2.test.js",
+        "tests/battle-tempo.test.js",
         "tests/boss-companion-simulation.test.js",
         "tests/gearScaling.test.js",
         "tests/huntMode.test.js",
@@ -3151,6 +3153,7 @@
         "js/data/weapons.js",
         "js/main.js",
         "js/patches/combat2DebugSafety.js",
+        "js/patches/combat3DifficultyRebalance.js",
         "js/patches/companionBattle.js",
         "js/patches/equipment3GearFoundation.js",
         "js/patches/equipment3SetBonuses.js",
@@ -3172,6 +3175,7 @@
         "js/screens/textBattle.js",
         "js/state.js",
         "tests/balance-audit-2.test.js",
+        "tests/battle-tempo.test.js",
         "tests/boss-companion-simulation.test.js",
         "tests/gearScaling.test.js",
         "tests/huntMode.test.js",
@@ -3440,6 +3444,7 @@
         "css/style.css",
         "css/ui3.css",
         "css/uiFoundation.css",
+        "css/usability.css",
         "css/worldMap.css",
         "index.html",
         "js/patches/buildLoadoutsUi.js",
@@ -3568,6 +3573,7 @@
         "js/patches/adventureWorld4Ui.js",
         "js/patches/battle2RoadmapComplete.js",
         "js/patches/battleAssist.js",
+        "js/patches/battleCompactUi.js",
         "js/patches/battleIntegration3.js",
         "js/patches/battleIntegration3Final.js",
         "js/patches/combat2SkillModifierUi.js",
@@ -3642,6 +3648,7 @@
         "tests/battle-integration3-final.test.js",
         "tests/battle-integration3.test.js",
         "tests/battle-mobile-scroll.test.js",
+        "tests/battle-tempo.test.js",
         "tests/battle2-roadmap.test.js",
         "tests/boss-companion-combat.test.js",
         "tests/boss-companion-simulation.test.js",
@@ -4016,6 +4023,7 @@
         "tests/battle-integration3-final.test.js",
         "tests/battle-integration3.test.js",
         "tests/battle-mobile-scroll.test.js",
+        "tests/battle-tempo.test.js",
         "tests/battle2-roadmap.test.js",
         "tests/boss-companion-combat.test.js",
         "tests/boss-companion-simulation.test.js",
@@ -5493,6 +5501,7 @@
       ],
       "relatedTests": [
         "tests/balance-audit-2.test.js",
+        "tests/battle-tempo.test.js",
         "tests/boss-companion-simulation.test.js",
         "tests/core-loop-clr21-hunt.test.js",
         "tests/gearScaling.test.js",

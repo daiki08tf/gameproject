@@ -11,14 +11,25 @@ import { ABYSS_EXPANSION_LAYER, HUNT_LAYER, ECONOMY } from '../js/data/balance.j
 
 function fresh() { state.data = state.defaultData ? state.defaultData() : state.data; }
 
+// _spawnEnemy rolls several independent chances (hunt elite, roamer, mutation,
+// rank variants). With live Math.random a rare roll occasionally replaced the
+// spawned grunt, so the elite/normal comparison below failed a few percent of
+// runs. Pin the roll to a mid value: it still passes the huntEliteChance:1
+// check and never lands in the low-probability replacement branches.
+function withRandom(fn, value = 0.5) {
+  const orig = Math.random;
+  Math.random = () => value;
+  try { return fn(); } finally { Math.random = orig; }
+}
+
 test('launchOpts.hunt でElite化・報酬倍率・dropMultが有効になる', () => {
   fresh();
   const eng = new BattleEngine('1-1', null, { hunt: true, huntEliteChance: 1, dropMult: 2 });
   assert.equal(eng.stage.hunt, true);
   assert.equal(eng.stage.huntEliteChance, 1);
-  const e = eng._spawnEnemy('grunt');
+  const e = withRandom(() => eng._spawnEnemy('grunt'));
   assert.equal(e.elite, true);
-  const normal = new BattleEngine('1-1')._spawnEnemy('grunt');
+  const normal = withRandom(() => new BattleEngine('1-1')._spawnEnemy('grunt'));
   assert.equal(e.hp, Math.round(normal.hp * ABYSS_EXPANSION_LAYER.ELITE_HP_MULT));
   assert.equal(e.xp, Math.round(normal.xp * ABYSS_EXPANSION_LAYER.ELITE_REWARD_MULT));
 });

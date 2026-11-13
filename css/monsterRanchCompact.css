@@ -50,3 +50,10 @@
 #companionContent #monsterRanch2Panel,#companionContent #ranch2Advanced{margin:0!important;padding:10px 11px!important}
 #companionContent #monsterRanch2Panel>.forge-card,#companionContent #ranch2Advanced>.forge-card{margin-top:7px!important}
 @media(max-width:390px){#companionContent .ranch-compact-tab{padding:6px 9px;font-size:10px}#companionContent .ranch-card>.confirm-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* 配合フォーム（companion3Breeding.js が先頭に prepend する）は「配合」タブでだけ出す。
+   以前は全タブで、しかもタブ行より上に常時表示されていた。概要カード（タブ行を持つ）を必ず先頭に。 */
+#companionContent[data-ranch-tab]>#companion3BreedingPanel{display:none}
+#companionContent[data-ranch-tab='breeding']>#companion3BreedingPanel{display:block}
+#companionContent>.ranch-summary-card{order:-1}
+#companionContent #companion3BreedingPanel select{min-height:44px;font-size:14px}
