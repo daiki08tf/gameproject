@@ -191,9 +191,8 @@ state.investigateSettlementIncidentLead = function investigateSettlementIncident
 let pendingPursuit = null;   // { incidentId, stageId, limit } — 成功するまで保持（「もう一度」でも数える）
 let lastFinishedBattle = null; // { stageId, rounds } — 実行時のみ。セーブしない
 
-// 結果はリザルト画面が出たあとに知らせる。戦闘終了の瞬間は他のトースト（図鑑・仲間加入など）が
-// 続けて出るため、同時に出すと上書きされて読めない。
-function announce(text) { setTimeout(() => showToast(text, 4600), 1100); }
+// 戦闘終了の瞬間は他のトースト（図鑑・仲間加入など）も続けて出るが、showToast がキューで順に出す。
+function announce(text) { showToast(text, 4200); }
 
 const previousFinishBattle = BattleEngine.prototype._finishBattle;
 BattleEngine.prototype._finishBattle = function incidentFinishBattle(cleared, retreated) {

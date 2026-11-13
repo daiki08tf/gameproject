@@ -29,13 +29,26 @@ function assist(screen) {
   return screen._assist;
 }
 
-function stopAuto(screen, reason) {
+const STOP_NOTE_MS = 2600;
+
+function stopAuto(screen, reason, shortReason) {
   const a = assist(screen);
   if (a.timer) { clearTimeout(a.timer); a.timer = null; }
   if (!a.auto) return;
   a.auto = false;
-  if (reason && screen.engine && !screen.engine.over) screen._pushLines([`<span class="tb-assist-note">オート停止：${reason}</span>`]);
+  if (reason && screen.engine && !screen.engine.over) {
+    screen._pushLines([`<span class="tb-assist-note">オート停止：${reason}</span>`]);
+    // ログは流れるので、止まった理由をボタン自身にも少しのあいだ出す
+    a.stopNote = shortReason || reason;
+    a.stopNoteUntil = Date.now() + STOP_NOTE_MS;
+    setTimeout(() => { if (screen._assist === a && screen.engine && !screen.engine.over) screen._render(); }, STOP_NOTE_MS + 50);
+  }
 }
+
+// 周回の継続：「もう一度」で同じステージを続けて回すとき、前の戦闘をオートで勝ち切っていたなら
+// 次の戦闘もオートで始める。セーブには持たない（このページを開いている間だけの記憶）。
+// Boss・低 HP では従来どおり自動で止まるので、危険な場面で勝手に進むことはない。
+let carry = null; // { stageId }
 
 function hpRatio(engine) {
   const p = engine.player;
@@ -85,17 +98,21 @@ function tick(screen) {
   if (!document.getElementById('textBattleScreen')?.classList.contains('active')) { stopAuto(screen); return; }
   // サブメニュー操作中・コマンド解決中は割り込まない
   if (screen.locked || screen.techMenuKind) { scheduleTick(screen); return; }
-  if (hpRatio(engine) <= AUTO_STOP_HP) { stopAuto(screen, 'HPが低下した。'); screen._render(); return; }
+  if (hpRatio(engine) <= AUTO_STOP_HP) { stopAuto(screen, 'HPが低下した。', 'HP低下で停止'); screen._render(); return; }
   if (!a.bossAck && engine.aliveEnemies.some((e) => e.boss)) {
     a.bossAck = true;
-    stopAuto(screen, '強敵が現れた。続けるならもう一度オートを。');
+    stopAuto(screen, '強敵が現れた。続けるならもう一度オートを。', '強敵出現で停止');
     screen._render();
     return;
   }
   a.fromAuto = true;
   try { screen._onCommand(nextAutoCommand(screen)); } finally { a.fromAuto = false; }
   if (a.auto && engine && !engine.over) scheduleTick(screen);
-  else stopAuto(screen);
+  else {
+    // オートのまま勝ち切った戦闘だけ、同じステージの次戦へ引き継ぐ
+    carry = a.auto && engine.over && engine.finalResult?.cleared ? { stageId: engine.stage?.id || null, last: a.last } : null;
+    stopAuto(screen);
+  }
 }
 
 function ensureAutoButton(screen) {
@@ -131,7 +148,18 @@ const previousStart = TextBattleScreen.prototype.start;
 TextBattleScreen.prototype.start = function battleAssistStart(...args) {
   stopAuto(this);
   this._assist = null;
-  return previousStart.apply(this, args);
+  const resume = carry && carry.stageId === args[0] ? carry : null;
+  carry = null;
+  const out = previousStart.apply(this, args);
+  if (resume && this.engine && !this.engine.over && this.engine.stage?.id === resume.stageId) {
+    const a = assist(this);
+    a.auto = true;
+    a.last = resume.last || null;
+    a.resumed = true;
+    scheduleTick(this);
+    this._render();
+  }
+  return out;
 };
 
 const previousOnCommand = TextBattleScreen.prototype._onCommand;
@@ -156,6 +184,7 @@ TextBattleScreen.prototype._onCommand = function battleAssistOnCommand(command) 
 
 const previousForceRetreat = TextBattleScreen.prototype._onForceRetreat;
 TextBattleScreen.prototype._onForceRetreat = function battleAssistForceRetreat() {
+  carry = null;
   stopAuto(this);
   return previousForceRetreat.call(this);
 };
@@ -167,7 +196,10 @@ TextBattleScreen.prototype._render = function battleAssistRender() {
   const btn = ensureAutoButton(this);
   if (!btn) return;
   const a = assist(this);
-  const label = a.auto ? `オート中：${commandLabel(this)}（タップで停止）` : `オート：${commandLabel(this)}をくり返す`;
+  const noted = !a.auto && a.stopNote && Date.now() < (a.stopNoteUntil || 0);
+  const label = a.auto ? `オート中：${commandLabel(this)}（タップで停止）`
+    : noted ? `${a.stopNote} ― タップで再開`
+    : `オート：${commandLabel(this)}をくり返す`;
   if (btn.textContent !== label) btn.textContent = label;
   if (btn.classList.contains('active') !== a.auto) btn.classList.toggle('active', a.auto);
   const disabled = this.engine.over;
