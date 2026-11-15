@@ -783,3 +783,12 @@ button { font-family: inherit; }
 .result-loot-more > summary { min-height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; color: var(--dc-ash-300, #b9bcc8); border: 1px dashed var(--dc-iron-500, rgba(255,255,255,0.2)); }
 .result-loot-more[open] > summary { margin-bottom: 6px; }
 .result-loot-more .result-drop-wrap { margin-top: 4px; }
+
+/* ---- 地域研究（regionCodexUi.js researchHtml）---- */
+.region-research { margin: 2px 0 10px; padding: 0 10px; border-left: 2px solid var(--dc-observe-400, #62a8ad); font-size: 12px; line-height: 1.7; }
+.region-research > summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; color: var(--dc-observe-400, #62a8ad); font-weight: bold; }
+.region-research-task { color: var(--dc-ash-300, #b9bcc8); }
+.region-research-task.done { color: var(--dc-ash-100, #f0f0f5); }
+.region-research-tier { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--dc-iron-700, rgba(255,255,255,0.08)); }
+.region-research-tier .btn-sub { min-height: 40px; padding: 6px 14px; font-size: 12px; flex: 0 0 auto; }
+.region-research-state { color: var(--dc-ash-300, #b9bcc8); flex: 0 0 auto; }

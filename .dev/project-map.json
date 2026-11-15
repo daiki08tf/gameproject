@@ -4,12 +4,12 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "26091d3",
+      "head": "c4debd7",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
-      "total": 1112,
-      "code": 952,
+      "total": 1114,
+      "code": 954,
       "tests": 374
     }
   },
@@ -303,6 +303,7 @@
         "js/patches/ranchCollectionUi.js",
         "js/patches/ranchSpeciesGrade.js",
         "js/patches/regionCodex.js",
+        "js/patches/regionCodexResearch.js",
         "js/patches/regionCodexUi.js",
         "js/patches/riftKeyCore.js",
         "js/patches/rumorHearing.js",
@@ -1124,6 +1125,7 @@
         "js/data/battleGroups.js",
         "js/data/battleReport.js",
         "js/data/bossEncounters.js",
+        "js/data/buildDiagnosis.js",
         "js/data/combat2Elements.js",
         "js/data/combat2SkillModifiers.js",
         "js/data/combat2WeaponTechniques.js",
@@ -1270,12 +1272,14 @@
         "js/data/codex.js",
         "js/data/collectionMilestones.js",
         "js/data/regionCodex.js",
+        "js/data/regionCodexResearch.js",
         "js/patches/codexEnemyKnowledge.js",
         "js/patches/codexFoundation.js",
         "js/patches/codexUi.js",
         "js/patches/jobCodexUi.js",
         "js/patches/monsterCodexCompactUi.js",
         "js/patches/regionCodex.js",
+        "js/patches/regionCodexResearch.js",
         "js/patches/regionCodexUi.js"
       ],
       "tests": [
@@ -1318,6 +1322,7 @@
         "js/patches/homeNavigation.js",
         "js/patches/mutationRuntime.js",
         "js/patches/regionCodex.js",
+        "js/patches/regionCodexResearch.js",
         "js/patches/regionCodexUi.js",
         "js/patches/speciesMastery.js",
         "tests/codex-endgame-activity-tracking.test.js",
@@ -5662,6 +5667,7 @@
     "js/data/jobIdentityMigration.js",
     "js/data/observedBranchStages.js",
     "js/data/regionCodex.js",
+    "js/data/regionCodexResearch.js",
     "js/data/speciesMastery.js",
     "js/main.js",
     "js/patches/abyss2Pacts.js",
@@ -5740,6 +5746,7 @@
     "js/patches/progressionCore.js",
     "js/patches/ranchSpeciesGrade.js",
     "js/patches/regionCodex.js",
+    "js/patches/regionCodexResearch.js",
     "js/patches/riftKeyCore.js",
     "js/patches/rumorHearing.js",
     "js/patches/rumorNetwork.js",
@@ -5855,7 +5862,5 @@
     "tests/unique2-named-weapon-chase.test.js",
     "tests/weapon-affix-visibility.test.js"
   ],
-  "unmappedFiles": [
-    "js/data/buildDiagnosis.js"
-  ]
+  "unmappedFiles": []
 }

@@ -74,6 +74,7 @@ export function regionCodexBundle(regionId, sources = {}) {
     fishingSpot,
     fishSeen: regionFish.filter((f) => f.seen).length,
     fishTotal: regionFish.length,
+    masterCaught: regionFish.some((f) => f.master && f.seen), // 地域研究の課題が読む
     archaeologySite,
     treasureHunts,
     rareSeen: rareEncounters.filter((r) => r.seen).length,

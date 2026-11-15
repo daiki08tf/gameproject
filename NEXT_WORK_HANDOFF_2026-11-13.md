@@ -25,7 +25,7 @@
 | B6 | 敵カードの HP 数値 | 完了 | 役割が判明している敵（`tacticalKnowledge().role`）だけ攻略情報行に `HP 現在/最大` を表示。未解析はバーのみ |
 | T5 | 釣り・考古学・宝探しを外縁世界以降へ | 未着手 | T3 の型が固まってから |
 | N1 | ビルド診断（`EXPANSION_IDEAS` A1） | 完了 | `js/data/buildDiagnosis.js`（純粋関数、9 型）。戦闘レポートに種別集計 `kinds` を追加。リザルトのレポート内とステータス画面「現在のビルド」に表示。表示のみ・保存なし |
-| N2 | 地域研究（B1） | 未着手 | |
+| N2 | 地域研究（B1） | 完了 | `js/data/regionCodexResearch.js`（課題は地域図鑑の集計から自動判定、最大 9 件）＋ `js/patches/regionCodexResearch.js`。段階報酬 3 段（3 件／6 件／全件、後の地域ほど増える）。受け取り記録は既存の `state.data.claimedMilestones`。地域図鑑の各地域に折りたたみで表示 |
 | N3 | ボスの隠し条件ドロップ（A2） | 未着手 | 先に phase13 の CHALLENGE RECORD / REMATCH+ との重なりを確認 |
 | N4 | Nemesis の足跡（C1） | 未着手 | |
 | N5 | 連続巡回（A3） | 未着手 | 負けても失わず倍率だけ戻す方針で実装（ユーザー未回答のため安全側） |

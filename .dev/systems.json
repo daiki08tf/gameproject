@@ -112,6 +112,7 @@
       "paths": [
         "js/data/combat",
         "js/data/battle",
+        "js/data/buildDiagnosis.js",
         "js/data/skills",
         "js/data/spells",
         "js/data/bossEncounters",

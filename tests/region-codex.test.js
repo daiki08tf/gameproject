@@ -250,3 +250,21 @@ test('No platform emoji introduced by the Region Codex feature', () => {
     assert.doesNotMatch(read(file), PICTOGRAPH, `${file} must not introduce platform emoji`);
   }
 });
+
+test('region research derives every task from the existing bundle and only stores claim flags in the existing milestone table', async () => {
+  const { regionResearchTasks, regionResearchSummary, regionResearchRewardFor } = await import('../js/data/regionCodexResearch.js');
+  const bundle = { region: { id: 'frontier' }, faunaSeen: 3, faunaTotal: 6, fishingSpot: { name: 'X' }, fishSeen: 5, fishTotal: 7, masterCaught: false,
+    archaeologySite: { name: 'Y', foundCount: 4, totalCount: 4, recordUnlocked: true }, treasureHunts: [{ stage: 'resolved' }], rareSeen: 0, rareTotal: 4,
+    bosses: [{ cleared: true }, { cleared: false }], hiddenThreats: [{ cleared: false }], uniques: [{ owned: false }] };
+  const tasks = regionResearchTasks(bundle);
+  assert.deepEqual(tasks.filter((t) => t.done).map((t) => t.id), ['fauna', 'fish', 'record', 'treasure']);
+  // a region without a fishing spot simply has no fishing tasks
+  assert.ok(!regionResearchTasks({ ...bundle, fishingSpot: null }).some((t) => t.id === 'fish' || t.id === 'master'));
+  const summary = regionResearchSummary(bundle, 1, (id) => id === 'research:frontier:1');
+  assert.equal(summary.done, 4);
+  assert.deepEqual(summary.tiers.map((t) => [t.need, t.reached, t.claimed]), [[3, true, true], [6, false, false], [9, false, false]]);
+  assert.ok(regionResearchRewardFor(1, 2).gold > regionResearchRewardFor(1, 0).gold, 'later regions pay more');
+  const runtime = fs.readFileSync(new URL('../js/patches/regionCodexResearch.js', import.meta.url), 'utf8');
+  assert.match(runtime, /this\.data\.claimedMilestones \|\|= \{\}/);
+  assert.equal((runtime.match(/this\.data\.[a-zA-Z0-9_]+/g) || []).filter((x) => !['this.data.claimedMilestones', 'this.data.gold'].includes(x)).length, 0, 'no other save field is touched');
+});
