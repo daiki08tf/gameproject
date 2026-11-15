@@ -4,6 +4,8 @@
 
 **Next work queue: `NEXT_WORK_HANDOFF_2026-11-13.md`** — an ordered task list (T1–T5 additions, B1–B6 polish) with files, steps, acceptance criteria and a progress table to update after every task. Start there.
 
+Idea backlogs: `EXPANSION_IDEAS_2026-11-15.md` (new elements; its top six — build diagnosis, region research, boss conditions, Nemesis trail, hunt chain, challenge letters — are shipped as N1–N6) and `EXISTING_SYSTEMS_REVIEW_2026-11-15.md` (extensions and polish for systems that already exist, with the evidence behind each).
+
 **Confirmed runtime debug fixes** currently precede further UI Overhaul (UIX) production work. Read `CODEBASE_DEBUG_AUDIT_2026-09-05.md` for the current debug backlog.
 
 - PR #408: mobile Option Fusion fix merged.
