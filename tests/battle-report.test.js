@@ -81,3 +81,26 @@ test('build diagnosis names what the fight and the gear actually did, and is dis
   const src = fs.readFileSync(new URL('../js/data/buildDiagnosis.js', import.meta.url), 'utf8');
   assert.doesNotMatch(src, /import .*state|localStorage|statMult|\.atk\s*[*+]?=/, 'a label never feeds back into stats or the save');
 });
+
+test('boss conditions: one readable condition per mortal chapter boss, paid once through existing rewards', async () => {
+  const { bossConditionFor, evaluateBossCondition, bossConditionClaimId } = await import('../js/data/battleBossConditions.js');
+  const { CHAPTERS } = await import('../js/data/stages.js');
+  const { huntUniqueById } = await import('../js/data/huntUniques.js');
+  const conds = CHAPTERS.slice(0, 15).map((ch) => bossConditionFor(ch.stages.find((s) => s.boss)));
+  assert.ok(conds.every(Boolean));
+  assert.ok(conds.every((c) => c.label.length > 0 && c.rewardText.length > 0), 'every condition is stated in words up front');
+  assert.equal(new Set(conds.map((c) => c.type)).size, 4, 'all four condition kinds are used');
+  const withUnique = conds.filter((c) => c.reward.itemId);
+  assert.deepEqual(withUnique.map((c) => c.chapter), [4, 8, 12, 15], 'the last boss of each mortal region guarantees its regional unique');
+  for (const c of withUnique) assert.ok(huntUniqueById(c.reward.itemId)?.regionId, 'reward is an existing regional Hunt Unique');
+  assert.equal(new Set(withUnique.map((c) => c.type)).size > 1, true, 'region-ending bosses do not all share one condition');
+  assert.equal(bossConditionFor(CHAPTERS[15].stages.find((s) => s.boss)), null, 'chapter 16+ is out of scope for now');
+  assert.equal(bossConditionFor({ id: '1-2' }), null);
+  const c1 = conds[0];
+  assert.equal(evaluateBossCondition(c1, { rounds: c1.limit, itemsUsed: 9, hpRatio: 0, companionsDown: 3 }).met, true);
+  assert.equal(evaluateBossCondition(c1, { rounds: c1.limit + 1, itemsUsed: 0, hpRatio: 1, companionsDown: 0 }).met, false);
+  const runtime = fs.readFileSync(new URL('../js/patches/battleBossConditions.js', import.meta.url), 'utf8');
+  assert.match(runtime, /state\.data\.claimedMilestones \|\|= \{\}/, 'claims live in the existing milestone table');
+  assert.match(runtime, /if \(verdict\.met && !already\)/, 'the reward is granted only on the first achievement');
+  assert.equal(bossConditionClaimId('1-5'), 'bosscond:1-5');
+});

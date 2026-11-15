@@ -112,6 +112,15 @@ function defeatGuidance(result){
   return tips.length?'\n次の一手：'+tips.slice(0,3).join(' ／ '):'';
 }
 
+// ボスの隠し条件（A2）：達成・未達成と、この戦闘での実績値を 1 枚で返す。
+function renderBossCondition(result,itemsEl){
+  const c=result?.bossCondition;if(!c)return;
+  const box=document.createElement('div');box.className='result-boss-condition'+(c.met?' met':'');
+  const head=c.granted?`条件達成 ― ${c.granted} を得た`:c.met?(c.already?'条件達成（報酬は受け取り済み）':'条件達成'):'条件は未達成';
+  box.textContent=`【討伐条件】${c.label}\n${head}（今回：${c.detail}）${c.met||c.already?'':`\n達成すると：${c.rewardText}`}`;
+  box.style.whiteSpace='pre-line';itemsEl.appendChild(box);
+}
+
 // 戦闘レポート（EXP-4）：与ダメージの内訳と被ダメージ源。数字で「何が効いたか／何に削られたか」を
 // 見せる。集計は patches/battleReport.js が結果オブジェクトに載せたものを読むだけ。
 function renderBattleReport(result,itemsEl){
@@ -158,6 +167,7 @@ export function renderResult(result) {
     if(more){more.querySelector('summary').textContent=`ほか ${moreCount} 件の戦利品`;itemsEl.appendChild(more);}
     for(const drop of rune2Drops){const rune=getRune2(drop.id);if(!rune)continue;const chip=document.createElement('div');chip.className='result-item-chip';chip.style.color='var(--accent)';chip.textContent=`RUNE ${rune.name} +${drop.amount}刻（${drop.owned}刻）`;itemsEl.appendChild(chip);}
   }
+  renderBossCondition(result,itemsEl);
   renderBattleReport(result,itemsEl);
   renderLoot3Chase(result,itemsEl);
   renderVault(result,itemsEl);

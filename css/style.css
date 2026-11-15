@@ -792,3 +792,7 @@ button { font-family: inherit; }
 .region-research-tier { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--dc-iron-700, rgba(255,255,255,0.08)); }
 .region-research-tier .btn-sub { min-height: 40px; padding: 6px 14px; font-size: 12px; flex: 0 0 auto; }
 .region-research-state { color: var(--dc-ash-300, #b9bcc8); flex: 0 0 auto; }
+
+/* ---- ボスの隠し条件（result.js renderBossCondition）---- */
+.result-boss-condition { width: 100%; margin-top: 8px; padding: 8px 10px; border: 1px solid var(--dc-iron-500, rgba(255,255,255,0.2)); border-left: 2px solid var(--dc-ash-300, #b9bcc8); text-align: left; font-size: 12px; line-height: 1.6; color: var(--dc-ash-300, #b9bcc8); }
+.result-boss-condition.met { border-left-color: var(--dc-brass-300, #c9a86a); color: var(--dc-ash-100, #f0f0f5); }

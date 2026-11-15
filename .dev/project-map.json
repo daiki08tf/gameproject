@@ -4,12 +4,12 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "c4debd7",
+      "head": "54a0951",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
-      "total": 1114,
-      "code": 954,
+      "total": 1116,
+      "code": 956,
       "tests": 374
     }
   },
@@ -172,6 +172,7 @@
         "js/patches/archaeologyUi.js",
         "js/patches/awakening3Imprints.js",
         "js/patches/battle2RoadmapComplete.js",
+        "js/patches/battleBossConditions.js",
         "js/patches/battleIntegration3.js",
         "js/patches/battleIntegration3Final.js",
         "js/patches/battleReport.js",
@@ -1122,6 +1123,7 @@
       ],
       "files": [
         "js/data/battle2Tactics.js",
+        "js/data/battleBossConditions.js",
         "js/data/battleGroups.js",
         "js/data/battleReport.js",
         "js/data/bossEncounters.js",
@@ -1135,6 +1137,7 @@
         "js/data/spells.js",
         "js/patches/battle2RoadmapComplete.js",
         "js/patches/battleAssist.js",
+        "js/patches/battleBossConditions.js",
         "js/patches/battleCompactUi.js",
         "js/patches/battleIntegration3.js",
         "js/patches/battleIntegration3Final.js",
@@ -1191,7 +1194,8 @@
         "engine",
         "equipment",
         "progression",
-        "screens"
+        "screens",
+        "world"
       ],
       "dependents": [
         "codex",
@@ -1212,6 +1216,7 @@
         "js/main.js",
         "js/patches/battle2RoadmapComplete.js",
         "js/patches/battleAssist.js",
+        "js/patches/battleBossConditions.js",
         "js/patches/battleIntegration3.js",
         "js/patches/battleIntegration3Final.js",
         "js/patches/battleReport.js",
@@ -2247,6 +2252,7 @@
         "js/data/abyss.js",
         "js/data/abyssEndgame.js",
         "js/data/adventureWorld4HorizontalGear.js",
+        "js/data/battleBossConditions.js",
         "js/data/bounty2.js",
         "js/data/combat2WeaponTechniques.js",
         "js/data/endgameGuidance.js",
@@ -2914,6 +2920,7 @@
         "adventure4",
         "chapters",
         "codex",
+        "combat",
         "content-packs",
         "discovery",
         "enemies",
@@ -2928,6 +2935,7 @@
       "importers": [
         "js/data/adventureWorld4Regions.js",
         "js/data/archaeology.js",
+        "js/data/battleBossConditions.js",
         "js/data/contentPackIVH.js",
         "js/data/coreLoopClr19.js",
         "js/data/endgameGuidance.js",
@@ -5660,6 +5668,7 @@
   "saveSurfaces": [
     "js/battleEngine.js",
     "js/data/archaeology.js",
+    "js/data/battleBossConditions.js",
     "js/data/collectionMilestones.js",
     "js/data/companionSynergies.js",
     "js/data/consumables.js",
@@ -5684,6 +5693,7 @@
     "js/patches/adventureWorld4Ui.js",
     "js/patches/archaeology.js",
     "js/patches/awakening3Imprints.js",
+    "js/patches/battleBossConditions.js",
     "js/patches/battleIntegration3.js",
     "js/patches/beginnerGuideUi.js",
     "js/patches/bounty2Combat.js",

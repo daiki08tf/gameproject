@@ -219,7 +219,10 @@ export function renderStageConfirm(stage) {
   const mainStage = /^\d+-\d+$/.test(String(stage.id || '')) && !stage.branch && !stage.hunt;
   const wallNote = !mainStage ? '' : (stage.boss || stage.midBoss) ? '\nボス戦：オートはボスの出現で止まる。技の予兆が出たら「ぼうぎょ」。'
     : stage.checkpoint ? '\n関門：最後の一団が番人（エリート）になる。回復どうぐの残りを確かめておく。' : '';
-  recEl.textContent = recBase + (gapWord ? ` ／ 現在Lv ${myLv.toLocaleString()}（${gapWord}）` : '') + wallNote;
+  // ボスの隠し条件（A2）は、最初から読める形で出す
+  const cond = state.bossConditionStatus?.(stage);
+  const condNote = cond ? `\n討伐条件：${cond.label} → ${cond.claimed ? '達成済み' : cond.rewardText}` : '';
+  recEl.textContent = recBase + (gapWord ? ` ／ 現在Lv ${myLv.toLocaleString()}（${gapWord}）` : '') + wallNote + condNote;
   recEl.style.whiteSpace = 'pre-line';
   const rewardText = stage.bounty ? `討伐報酬: 経験値 ${stage.rewards.exp} / ゴールド ${stage.rewards.gold} / 初回討伐で固有の戦利品` : `クリア報酬: 経験値 ${stage.rewards.exp} / ゴールド ${stage.rewards.gold}${stage.firstClear ? '（初回クリアで装備入手）' : ''}`;
   document.getElementById('confirmStageRewards').textContent = rewardText;
