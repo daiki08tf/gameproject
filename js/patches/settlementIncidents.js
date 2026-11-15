@@ -20,7 +20,7 @@
    ============================================================ */
 import { state } from '../state.js';
 import { resolveExcavationRound, rollExcavationCue, excavationDifficultyProfile, computeArchaeologyReward } from '../data/archaeology.js';
-import { SETTLEMENT_INCIDENTS, settlementIncidentEligible, getSettlementIncident, pursuitRoundLimit } from '../data/settlementIncidents.js';
+import { SETTLEMENT_INCIDENTS, settlementIncidentEligible, settlementIncidentResolved, settlementIncidentResolveToken, getSettlementIncident, pursuitRoundLimit } from '../data/settlementIncidents.js';
 import { CHAPTERS } from '../data/stages.js';
 import { companionDiscoveryReaction } from '../data/companionDiscoveryReactions.js';
 import { BattleEngine } from '../battleEngine.js';
@@ -36,7 +36,12 @@ function meta() {
   return m.incidents;
 }
 
-function ctx() { return { hall: state.settlementLevel?.('hall') || 0 }; }
+function ctx() {
+  // 宿敵：既存の賞金首 Nemesis（負けて Lv が上がった相手）。名前は拠点防衛の予告と同じ取り方をする。
+  const active = state.activeBountyNemesis?.() || null;
+  const preview = active ? state.settlementDefenseNemesisPreview?.() : null;
+  return { hall: state.settlementLevel?.('hall') || 0, nemesis: active ? { id: active.id, losses: active.losses || 0, level: active.level || 0, name: preview?.name || '宿敵' } : null };
+}
 
 function ensureWorld() {
   state.data.world2 ??= {};
@@ -67,8 +72,9 @@ function computeIncidents() {
   const m = meta();
   return SETTLEMENT_INCIDENTS.map((incident) => {
     const eligible = settlementIncidentEligible(incident, c);
-    const resolved = !!m.resolved[incident.id];
+    const resolved = settlementIncidentResolved(incident, m.resolved[incident.id], c);
     const entry = { ...incident, eligible, resolved, active: eligible && !resolved };
+    if (incident.requiresNemesis && c.nemesis) { entry.name = `${incident.name}：${c.nemesis.name}`; entry.desc = incident.desc.replaceAll('{nemesis}', c.nemesis.name); }
     if (incident.kind === 'pursuit' && entry.active) entry.pursuit = pursuitTarget(incident);
     return entry;
   });
@@ -113,7 +119,9 @@ state.settlementIncidents = function settlementIncidents() {
 function grantAndResolve(incidentId, reward) {
   const incident = getSettlementIncident(incidentId);
   const m = meta();
-  m.resolved[incidentId] = true;
+  m.resolved[incidentId] = settlementIncidentResolveToken(incident, ctx());
+  // 宿敵の足跡：既存の Nemesis 情報フラグを立てる（次の対決での弱体は既存の仕組みが処理する）
+  if (incident.nemesisFlag) state.applyNemesisEventFlag?.(incident.nemesisFlag);
   const gained = Object.keys(reward || {}).filter((k) => k !== 'gold').length
     ? (state.addSettlementMaterials?.(reward) || {}) : {};
   if (reward?.gold > 0) { state.data.gold = Math.max(0, (Number(state.data.gold) || 0) + reward.gold); gained.gold = reward.gold; }

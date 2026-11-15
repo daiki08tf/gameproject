@@ -95,6 +95,27 @@ export const SETTLEMENT_INCIDENTS = Object.freeze([
     reward: { ore: 4, gold: 70 },
     record: { name: '夜盗追跡の記録', text: '魔物の群れを抜けた先で、荷を下ろして息をついていた夜盗に追いついた。盗まれた備蓄は、ほとんど手つかずのまま戻ってきた。', reward: { wood: 2, gold: 30 } },
   },
+  {
+    // 宿敵の足跡（EXPANSION C1 / ロードマップ C12 の入口）。追跡型をそのまま使い、
+    // 「宿敵が世界の中で動いている」ことを、噂帳の目撃談と拠点の出来事として見せる。
+    //   - 発生条件：いま育っている宿敵（敗北で Lv が上がった賞金首）がいること。
+    //   - 解決：追跡に成功すると、既存の state.applyNemesisEventFlag('nemesisWeakness') で
+    //     「弱点情報」を得る（次の対決で敵 DEF が下がる既存の仕組み）。新しい効果は作らない。
+    //   - 宿敵ごと・敗北ごとに 1 回。同じ相手にまた負ければ、また足跡が現れる。
+    //   - 宿敵用の通貨・タイマーは無い（C12 の禁止事項）。放置しても失うものはない。
+    id: 'nemesisTrail',
+    name: '宿敵の足跡',
+    kind: 'pursuit',
+    minHall: 2,
+    requiresNemesis: true,
+    perNemesis: true,
+    desc: '{nemesis}を街道筋で見た、という話が届いた。こちらを打ち負かしたあの相手が、まだ近くをうろついている。足跡が新しいうちに追えば、手の内のひとつも掴めるかもしれない。',
+    roundsBase: 2,
+    roundsPerEnemy: 1,
+    reward: { hide: 3, gold: 60 },
+    nemesisFlag: 'nemesisWeakness',
+    record: { name: '宿敵追跡の記録', text: '魔物の群れを抜けた先に、まだ新しい野営の跡があった。残された痕から、あの相手の癖と、庇っている古傷が読み取れた。次に会うときは、こちらが狙う番だ。', reward: { gold: 40 } },
+  },
 ]);
 
 // 追跡の制限ラウンド。stage は既存の Stage オブジェクト（waves を数えるだけ）。
@@ -104,7 +125,18 @@ export function pursuitRoundLimit(incident, stage) {
 }
 
 export function settlementIncidentEligible(incident, ctx = {}) {
+  if (incident.requiresNemesis && !ctx.nemesis) return false;
   return (ctx.hall || 0) >= (incident.minHall || 0);
+}
+
+// 解決済みの判定。通常は一度きり（true）。perNemesis の出来事は「どの宿敵の、何敗目の足跡か」を
+// 印として持ち、相手や敗北数が変わればまた未解決に戻る。
+export function settlementIncidentResolved(incident, stored, ctx = {}) {
+  if (!incident.perNemesis) return !!stored;
+  return !!ctx.nemesis && stored === settlementIncidentResolveToken(incident, ctx);
+}
+export function settlementIncidentResolveToken(incident, ctx = {}) {
+  return incident.perNemesis ? `${ctx.nemesis?.id || ''}:${ctx.nemesis?.losses || 0}` : true;
 }
 export function getSettlementIncident(id) {
   return SETTLEMENT_INCIDENTS.find((x) => x.id === id) || null;

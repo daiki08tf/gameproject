@@ -104,3 +104,23 @@ test('boss conditions: one readable condition per mortal chapter boss, paid once
   assert.match(runtime, /if \(verdict\.met && !already\)/, 'the reward is granted only on the first achievement');
   assert.equal(bossConditionClaimId('1-5'), 'bosscond:1-5');
 });
+
+test('nemesis trail: a pursuit incident that exists only while a Nemesis is active and recurs per defeat', async () => {
+  const { settlementIncidentEligible, settlementIncidentResolved, settlementIncidentResolveToken } = await import('../js/data/settlementIncidents.js');
+  const trail = SETTLEMENT_INCIDENTS.find((x) => x.id === 'nemesisTrail');
+  assert.equal(trail.kind, 'pursuit');
+  assert.equal(settlementIncidentEligible(trail, { hall: 9 }), false, 'no Nemesis, no incident');
+  const ctx = { hall: 9, nemesis: { id: 'b1', losses: 2 } };
+  assert.equal(settlementIncidentEligible(trail, ctx), true);
+  const token = settlementIncidentResolveToken(trail, ctx);
+  assert.equal(settlementIncidentResolved(trail, token, ctx), true);
+  assert.equal(settlementIncidentResolved(trail, token, { hall: 9, nemesis: { id: 'b1', losses: 3 } }), false, 'losing again reopens it');
+  assert.equal(settlementIncidentResolved(trail, token, { hall: 9, nemesis: { id: 'b2', losses: 2 } }), false, 'a different Nemesis reopens it');
+  // ordinary incidents are still once-only booleans
+  const thief = SETTLEMENT_INCIDENTS.find((x) => x.id === 'nightThief');
+  assert.equal(settlementIncidentResolveToken(thief, ctx), true);
+  assert.equal(settlementIncidentResolved(thief, true, {}), true);
+  const patch = fs.readFileSync(new URL('../js/patches/settlementIncidents.js', import.meta.url), 'utf8');
+  assert.match(patch, /state\.applyNemesisEventFlag\?\.\(incident\.nemesisFlag\)/, 'the payoff goes through the existing Nemesis intel flag');
+  assert.equal(trail.nemesisFlag, 'nemesisWeakness');
+});

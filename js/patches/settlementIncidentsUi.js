@@ -51,6 +51,8 @@ function incidentBody(incident) {
 }
 
 function incidentCard(incident) {
+  // 宿敵の足跡は、宿敵がいない間は欄そのものを出さない（「拠点が発展すると…」の案内は当てはまらない）
+  if (!incident.eligible && incident.requiresNemesis) return '';
   if (!incident.eligible) {
     return `<div class="forge-card" style="padding:10px 12px;"><div class="forge-card-top"><div class="forge-card-name">???</div><strong>未発生</strong></div><div class="forge-card-sub">拠点がもう少し発展すると、何かが起こるかもしれない。</div></div>`;
   }
