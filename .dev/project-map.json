@@ -4,11 +4,11 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "57ab4b2",
+      "head": "a63f6f0",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
-      "total": 1110,
+      "total": 1111,
       "code": 951,
       "tests": 374
     }
@@ -4503,6 +4503,7 @@
         "ENEMY_ENCOUNTER_2_E8_STORY_MIGRATION.md",
         "ENEMY_ENCOUNTER_2_E9_ENDGAME_INTEGRATION.md",
         "ENEMY_ENCOUNTER_2_ROADMAP.md",
+        "EXPANSION_IDEAS_2026-11-15.md",
         "GAME_CONTENT_CATALOG.md",
         "GEAR_OVERHAUL_AUDIT.md",
         "GEAR_OVERHAUL_OPTION_CATALOG.md",
