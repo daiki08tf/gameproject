@@ -135,3 +135,23 @@ test('hunt chain: a session-only streak that scales the existing hunt launch opt
   assert.match(src, /if \(!hunt\) \{ streak = 0;/, 'any non-hunt battle resets it');
   assert.match(src, /streak = result\?\.cleared \? Math\.min\(HUNT_LAYER\.CHAIN_MAX, streak \+ 1\) : 0;/, 'a loss or retreat resets only the multiplier');
 });
+
+test('challenge letter: a shareable code that round-trips, detects typos and reseeds deterministically', async () => {
+  const L = await import('../js/data/abyssChallengeLetter.js');
+  const letter = { depth: 120, pactIds: ['blood', 'iron'], challengeIds: ['vitality', 'drought'], seed: 1234567 };
+  const code = L.encodeChallengeLetter(letter);
+  assert.match(code, /^BV(-[0-9A-Z]+){5}$/);
+  assert.deepEqual(L.decodeChallengeLetter(code), { ok: true, ...letter });
+  assert.deepEqual(L.decodeChallengeLetter(` ${code.toLowerCase()} `), { ok: true, ...letter }, 'case and stray spaces are forgiven');
+  assert.equal(L.decodeChallengeLetter(code.replace(/.$/, (c) => (c === 'Z' ? 'Y' : 'Z'))).reason, 'check');
+  assert.equal(L.decodeChallengeLetter('hello').ok, false);
+  const a = L.seededRandom(42), b = L.seededRandom(42), c = L.seededRandom(43);
+  const seqA = [a(), a(), a()], seqB = [b(), b(), b()];
+  assert.deepEqual(seqA, seqB);
+  assert.notDeepEqual(seqA, [c(), c(), c()]);
+  assert.ok(seqA.every((v) => v >= 0 && v < 1));
+  const runtime = fs.readFileSync(new URL('../js/patches/abyssChallengeLetter.js', import.meta.url), 'utf8');
+  assert.match(runtime, /if \(letter\.depth > best\) return \{ ok: false, reason: 'depth'/, 'a letter cannot skip floors the receiver has not reached');
+  assert.match(runtime, /finally \{\s*state\.data\.abyssPacts = savedPacts;\s*state\.data\.abyssChallenges = savedChallenges;/, 'the receiver\'s own pact selection is restored');
+  assert.doesNotMatch(runtime, /state\.save\(/, 'accepting or running a letter writes nothing to the save by itself');
+});

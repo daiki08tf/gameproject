@@ -112,6 +112,14 @@ function defeatGuidance(result){
   return tips.length?'\n次の一手：'+tips.slice(0,3).join(' ／ '):'';
 }
 
+// 挑戦状（D1）：同じ符号で戦った相手と見比べるための結果 1 行。
+function renderChallengeLetter(result,itemsEl){
+  const c=result?.challengeLetter;if(!c)return;
+  const box=document.createElement('div');box.className='result-challenge-letter';box.style.whiteSpace='pre-line';
+  box.textContent=`【挑戦状】${c.code}\n${c.description}\n結果：${c.cleared?`${c.rounds}ラウンドで突破 ／ 残HP ${c.hpPct}%`:`${c.rounds}ラウンドで力尽きた`}`;
+  itemsEl.appendChild(box);
+}
+
 // 連続巡回（A3）：いまの連勝と、次の巡回に掛かる上乗せを 1 行で。
 function renderHuntChain(result,itemsEl){
   const c=result?.huntChain;if(!c||(!c.after&&!c.broken))return;
@@ -179,6 +187,7 @@ export function renderResult(result) {
   }
   renderBossCondition(result,itemsEl);
   renderHuntChain(result,itemsEl);
+  renderChallengeLetter(result,itemsEl);
   renderBattleReport(result,itemsEl);
   renderLoot3Chase(result,itemsEl);
   renderVault(result,itemsEl);

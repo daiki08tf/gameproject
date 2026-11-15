@@ -4,12 +4,12 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "c3dc3f0",
+      "head": "69aaf3f",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
-      "total": 1117,
-      "code": 957,
+      "total": 1119,
+      "code": 959,
       "tests": 374
     }
   },
@@ -142,6 +142,7 @@
         "js/main.js",
         "js/patches/abyss2Pacts.js",
         "js/patches/abyss3Challenges.js",
+        "js/patches/abyssChallengeLetter.js",
         "js/patches/abyssRunBuild.js",
         "js/patches/abyssRunUi.js",
         "js/patches/adventureWorld4BuildExpressionRuntime.js",
@@ -687,6 +688,7 @@
       ],
       "files": [
         "js/data/abyss.js",
+        "js/data/abyssChallengeLetter.js",
         "js/data/abyssChallenges.js",
         "js/data/abyssEndgame.js",
         "js/data/abyssPacts.js",
@@ -696,6 +698,7 @@
         "js/data/abyssTree.js",
         "js/patches/abyss2Pacts.js",
         "js/patches/abyss3Challenges.js",
+        "js/patches/abyssChallengeLetter.js",
         "js/patches/abyssRunBuild.js",
         "js/patches/abyssRunUi.js",
         "js/screens/abyss.js"
@@ -737,6 +740,8 @@
         "engine",
         "equipment",
         "progression",
+        "screens",
+        "settlement",
         "ui",
         "world"
       ],
@@ -753,6 +758,7 @@
       ],
       "importers": [
         "js/data/abyss.js",
+        "js/data/abyssChallengeLetter.js",
         "js/data/bounty2.js",
         "js/data/endgameGuidance.js",
         "js/data/phase12BoundaryRuins.js",
@@ -768,6 +774,7 @@
         "js/main.js",
         "js/patches/abyss2Pacts.js",
         "js/patches/abyss3Challenges.js",
+        "js/patches/abyssChallengeLetter.js",
         "js/patches/abyssRunBuild.js",
         "js/patches/bounty2Combat.js",
         "js/patches/companionRecruitment.js",
@@ -2718,12 +2725,14 @@
         "world"
       ],
       "dependents": [
+        "abyss",
         "adventure4",
         "tests",
         "ui",
         "world"
       ],
       "importers": [
+        "js/patches/abyssChallengeLetter.js",
         "js/patches/adventureWorld4LivingWorldRuntime.js",
         "js/patches/adventureWorld4RealmRegionRuntime.js",
         "js/patches/ch1RumorThreads.js",
@@ -3606,6 +3615,7 @@
         "world"
       ],
       "dependents": [
+        "abyss",
         "adventure4",
         "combat",
         "companions",
@@ -3622,6 +3632,7 @@
       ],
       "importers": [
         "js/main.js",
+        "js/patches/abyssChallengeLetter.js",
         "js/patches/adventureWorld4LivingWorldUi.js",
         "js/patches/adventureWorld4Ui.js",
         "js/patches/battle2RoadmapComplete.js",
@@ -5684,6 +5695,7 @@
     "js/main.js",
     "js/patches/abyss2Pacts.js",
     "js/patches/abyss3Challenges.js",
+    "js/patches/abyssChallengeLetter.js",
     "js/patches/abyssRunBuild.js",
     "js/patches/adventureWorld4DiscoveryRuntime.js",
     "js/patches/adventureWorld4EventChainRuntime.js",
