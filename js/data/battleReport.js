@@ -8,14 +8,16 @@
    ============================================================ */
 
 export function createBattleReport() {
-  return { rounds: 0, dealt: 0, taken: 0, crits: 0, hits: 0, bySource: new Map(), byEnemy: new Map(), biggestHit: null, biggestTaken: null };
+  // kinds: 与ダメージを「こうげき／とくぎ／じゅもん／仲間／継続」に分けた合計（ビルド診断が読む）
+  return { rounds: 0, dealt: 0, taken: 0, crits: 0, hits: 0, bySource: new Map(), byEnemy: new Map(), kinds: { attack: 0, skill: 0, spell: 0, companion: 0, dot: 0 }, biggestHit: null, biggestTaken: null };
 }
 
 function plainName(name) { return String(name || '').replace(/^(?:【[^】]*】)+/, '').trim() || '？？？'; }
 
-function addSource(report, label, amount) {
+function addSource(report, label, amount, kind) {
   if (!(amount > 0)) return;
   report.dealt += amount;
+  if (kind && report.kinds) report.kinds[kind] = (report.kinds[kind] || 0) + amount;
   report.bySource.set(label, (report.bySource.get(label) || 0) + amount);
 }
 
@@ -23,7 +25,7 @@ function recordPlayerAction(report, r) {
   if (!r || r.blocked) return;
   if (r.action === 'attack') {
     const dmg = Number(r.damage) || 0;
-    addSource(report, 'こうげき', dmg);
+    addSource(report, 'こうげき', dmg, 'attack');
     report.hits += Number(r.hitCount) || (dmg > 0 ? 1 : 0);
     report.crits += Number(r.criticalCount) || (r.critical ? 1 : 0);
     if (dmg > 0 && (!report.biggestHit || dmg > report.biggestHit.amount)) report.biggestHit = { amount: dmg, label: 'こうげき' };
@@ -37,7 +39,7 @@ function recordPlayerAction(report, r) {
   const label = r.companion ? `仲間：${r.companionName || '？？？'}` : (r.name || (r.action === 'spell' ? 'じゅもん' : 'とくぎ'));
   for (const t of targets) {
     const dmg = Number(t.damage) || 0;
-    addSource(report, label, dmg);
+    addSource(report, label, dmg, r.companion ? 'companion' : r.action === 'spell' ? 'spell' : 'skill');
     if (dmg > 0) report.hits += 1;
     if (t.critical) report.crits += 1;
     if (dmg > 0 && (!report.biggestHit || dmg > report.biggestHit.amount)) report.biggestHit = { amount: dmg, label };
@@ -60,7 +62,7 @@ export function recordBattleEvents(report, events) {
     if (!ev) continue;
     if (ev.type === 'playerAction') recordPlayerAction(report, ev.result);
     else if (ev.type === 'enemyAction') recordEnemyAction(report, ev.result);
-    else if (ev.type === 'dotTick') addSource(report, '継続ダメージ', Number(ev.amount) || 0);
+    else if (ev.type === 'dotTick') addSource(report, '継続ダメージ', Number(ev.amount) || 0, 'dot');
   }
   return report;
 }
@@ -79,6 +81,7 @@ export function summarizeBattleReport(report, { rounds = 0, maxHp = 0 } = {}) {
     dealt: Math.round(report.dealt),
     dealtPerRound: Math.round(report.dealt / r),
     sources: top(report.bySource, report.dealt, 4),
+    kinds: { ...(report.kinds || {}) },
     critRate: report.hits > 0 ? report.crits / report.hits : 0,
     biggestHit: report.biggestHit ? { ...report.biggestHit, amount: Math.round(report.biggestHit.amount) } : null,
     taken: Math.round(report.taken),
@@ -87,3 +90,9 @@ export function summarizeBattleReport(report, { rounds = 0, maxHp = 0 } = {}) {
     biggestTaken: report.biggestTaken ? { ...report.biggestTaken, amount: Math.round(report.biggestTaken.amount) } : null,
   };
 }
+
+// 直近の戦闘レポート（このページを開いている間だけ。保存しない）。ビルド診断・ステータス画面が読む。
+// 画面側がパッチを import して読み込み順を変えてしまわないよう、置き場はデータ層にする。
+let lastReport = null;
+export function rememberBattleReport(summary) { lastReport = summary || null; }
+export function lastBattleReport() { return lastReport; }

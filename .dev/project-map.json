@@ -4,12 +4,12 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "a63f6f0",
+      "head": "26091d3",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
-      "total": 1111,
-      "code": 951,
+      "total": 1112,
+      "code": 952,
       "tests": 374
     }
   },
@@ -1227,6 +1227,7 @@
         "js/patches/progression3Combat.js",
         "js/screens/blacksmith.js",
         "js/screens/result.js",
+        "js/screens/status.js",
         "js/state.js",
         "scripts/deep-survey-acceptance.js",
         "tests/battle-integration3-final.test.js",
@@ -5854,5 +5855,7 @@
     "tests/unique2-named-weapon-chase.test.js",
     "tests/weapon-affix-visibility.test.js"
   ],
-  "unmappedFiles": []
+  "unmappedFiles": [
+    "js/data/buildDiagnosis.js"
+  ]
 }

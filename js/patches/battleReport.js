@@ -5,11 +5,12 @@
  * コマンド・イベント・戦闘結果そのものは変更しない（result.battleReport を足すのみ）。
  */
 import { BattleEngine } from '../battleEngine.js';
-import { createBattleReport, recordBattleEvents, summarizeBattleReport } from '../data/battleReport.js';
+import { createBattleReport, recordBattleEvents, summarizeBattleReport, rememberBattleReport } from '../data/battleReport.js';
 
 function attach(engine, result) {
   if (!result || result.battleReport || !engine._battleReport) return;
   result.battleReport = summarizeBattleReport(engine._battleReport, { rounds: engine.round, maxHp: engine.player?.maxHp });
+  rememberBattleReport(result.battleReport);
 }
 
 const previousAdvanceTurn = BattleEngine.prototype.advanceTurn;

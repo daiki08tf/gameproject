@@ -67,3 +67,17 @@ test('beginner guide is derived from existing state and ends at the chapter 1 bo
   const ui = fs.readFileSync(new URL('../js/patches/beginnerGuideUi.js', import.meta.url), 'utf8');
   assert.doesNotMatch(ui, /state\.save\(|state\.data\.[a-zA-Z0-9_.]+\s*=[^=]/, 'the guide writes nothing to the save');
 });
+
+test('build diagnosis names what the fight and the gear actually did, and is display-only', async () => {
+  const { classifyBuild, buildLabel, BUILD_ARCHETYPES } = await import('../js/data/buildDiagnosis.js');
+  assert.equal(classifyBuild(null, []), null, 'no material, no label');
+  const crit = classifyBuild({ dealt: 1000, kinds: { attack: 640, skill: 210, spell: 0, companion: 150, dot: 0 }, critRate: 0.38 }, [{ kind: 'critExtraAttack' }, { kind: 'critSpdBuff' }]);
+  assert.equal(crit.primary.id, 'crit');
+  assert.equal(buildLabel(classifyBuild({ dealt: 1000, kinds: { attack: 100, skill: 100, companion: 700, dot: 100 } }, [])), BUILD_ARCHETYPES.companion.name);
+  assert.equal(classifyBuild(null, [{ kind: 'hitApplyDot' }, { kind: 'dotStackDmg' }]).primary.id, 'dot', 'gear alone is enough before any battle');
+  // equipped-but-unused effects lose to what the battle actually shows
+  const mixed = classifyBuild({ dealt: 1000, kinds: { attack: 50, skill: 0, spell: 900, companion: 50, dot: 0 }, critRate: 0 }, [{ kind: 'critAdd' }]);
+  assert.equal(mixed.primary.id, 'spell');
+  const src = fs.readFileSync(new URL('../js/data/buildDiagnosis.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /import .*state|localStorage|statMult|\.atk\s*[*+]?=/, 'a label never feeds back into stats or the save');
+});

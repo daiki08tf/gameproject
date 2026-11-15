@@ -1,4 +1,6 @@
 import { state } from '../state.js';
+import { classifyBuild, buildLabel } from '../data/buildDiagnosis.js';
+import { lastBattleReport } from '../data/battleReport.js';
 import { getItem, RARITY } from '../data/equipment.js';
 import { describeAffix, AFFIX_RARITY_COLOR, AFFIX_RARITY_LABEL } from '../data/affixes.js';
 import { Audio_ } from '../audio.js';
@@ -31,6 +33,7 @@ function basicView(job, stats, c) {
   const power = Math.round(stats.hp * 0.18 + stats.mp * 0.12 + stats.atk * 2.1 + stats.def * 1.7 + stats.mag * 1.8 + stats.spd * 1.3);
   return `<div class="character-hero-card"><div class="character-avatar">${(job.name || '').charAt(0) || '?'}</div><div class="character-identity"><div class="character-job">${job.name}</div><div class="character-meta">Character Lv.${state.characterLevel} ・ ${tier} Lv.${state.currentJobLevel} ・ ${mastered ? 'MASTER' : '未MASTER'}</div></div><div class="character-power"><small>総合戦力</small><strong>${power.toLocaleString()}</strong></div></div>
   <div class="status-section"><h3>基本ステータス <span class="character-hint">ATK / DEF / MAG / SPD はタップで内訳</span></h3><div class="status-grid">${statRow('HP',stats.hp)}${statRow('MP',stats.mp)}${statRow('ATK',stats.atk,'atk')}${breakdownBlock('atk')}${statRow('DEF',stats.def,'def')}${breakdownBlock('def')}${statRow('MAG',stats.mag,'mag')}${breakdownBlock('mag')}${statRow('SPD',stats.spd,'spd')}${breakdownBlock('spd')}</div></div>
+  ${buildDiagnosisHtml()}
   <div class="status-section"><h3>戦闘ハイライト</h3><div class="character-metric-grid"><div class="character-metric"><span>会心率</span><strong>${pct(c.critPct/100)}</strong></div><div class="character-metric"><span>会心Damage</span><strong>×${c.critDamageMult.toFixed(2)}</strong></div><div class="character-metric"><span>Armor Pen</span><strong>${pct(c.armorPen)}</strong></div><div class="character-metric"><span>回避率</span><strong>${pct(c.evasion)}</strong></div><div class="character-metric"><span>Boss Damage</span><strong>${signPct(c.bossDmgBonus)}</strong></div><div class="character-metric"><span>Drop倍率</span><strong>×${c.dropMult.toFixed(2)}</strong></div></div></div>`;
 }
 
@@ -89,6 +92,14 @@ function ensureCharacterChrome() {
   if (title) title.textContent = 'キャラクター';
   const btn = document.getElementById('goStatusBtn');
   if (btn) { const label = btn.querySelector('span:last-child'); if (label) label.textContent = 'キャラクター'; btn.classList.add('character-entry'); }
+}
+
+// ビルド診断：直近の戦闘レポート（あれば）と現在の装備効果から導出する。表示のみで、効果は持たない。
+function buildDiagnosisHtml(){
+  const report=lastBattleReport(),d=classifyBuild(report,state.getEquippedEffects?.()||[]);
+  if(!d)return '<div class="status-section"><h3>現在のビルド</h3><p class="character-hint">まだ傾向が出ていない。戦闘を終えるか、固有効果のある装備を付けると表示される。</p></div>';
+  const row=(a)=>`<div class="character-metric"><span>${a.name}</span><strong style="font-size:12px;font-weight:normal;">${a.reasons.join('／')||a.desc}</strong></div>`;
+  return `<div class="status-section"><h3>現在のビルド：${buildLabel(d)}</h3><div class="character-metric-grid">${row(d.primary)}${d.secondary?row(d.secondary):''}</div><p class="character-hint">${report?'直近の戦闘と装備効果から判定。':'装備効果から判定（戦闘後はその稼ぎ方も加味する）。'}表示のみで、能力には影響しない。</p></div>`;
 }
 
 export function renderStatus() {

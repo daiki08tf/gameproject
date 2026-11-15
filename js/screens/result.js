@@ -1,4 +1,5 @@
 import { state } from '../state.js';
+import { classifyBuild, buildLabel } from '../data/buildDiagnosis.js';
 import { getItem, RARITY, rarityIndex } from '../data/equipment.js';
 import { describeAffix } from '../data/affixes.js';
 import { getRune } from '../data/runes.js';
@@ -121,6 +122,9 @@ function renderBattleReport(result,itemsEl){
   if(!result.cleared&&!result.retreated)box.open=true;
   const head=document.createElement('summary');head.textContent=`戦闘レポート — ${rep.rounds}ラウンド ／ 与 ${num(rep.dealt)} ／ 被 ${num(rep.taken)}`;box.appendChild(head);
   const line=(label,text)=>{const row=document.createElement('div');row.className='result-report-row';const k=document.createElement('span');k.className='result-report-key';k.textContent=label;const v=document.createElement('span');v.textContent=text;row.append(k,v);box.appendChild(row);};
+  // ビルド診断（表示のみ）：この戦闘の稼ぎ方と装備効果から「何型か」を言葉にする
+  const diagnosis=classifyBuild(rep,state.getEquippedEffects?.()||[]);
+  if(diagnosis)line('ビルド',`${buildLabel(diagnosis)} ― ${[...diagnosis.primary.reasons,...(diagnosis.secondary?.reasons||[])].slice(0,3).join('／')||diagnosis.primary.desc}`);
   if(rep.sources.length)line('内訳',rep.sources.map((s)=>`${s.label} ${pct(s.share)}`).join(' ／ '));
   line('火力',`1ラウンド平均 ${num(rep.dealtPerRound)}${rep.biggestHit?` ／ 最大 ${num(rep.biggestHit.amount)}（${rep.biggestHit.label}）`:''}${rep.critRate>0?` ／ 会心 ${pct(rep.critRate)}`:''}`);
   if(rep.taken>0){
