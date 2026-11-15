@@ -4,12 +4,12 @@
     "generator": "scripts/dev/map.mjs",
     "git": {
       "branch": "claude/trusting-curie-nl357m",
-      "head": "54a0951",
+      "head": "c3dc3f0",
       "remote": "https://github.com/daiki08tf/gameproject"
     },
     "fileCounts": {
-      "total": 1116,
-      "code": 956,
+      "total": 1117,
+      "code": 957,
       "tests": 374
     }
   },
@@ -1139,6 +1139,7 @@
         "js/patches/battleAssist.js",
         "js/patches/battleBossConditions.js",
         "js/patches/battleCompactUi.js",
+        "js/patches/battleHuntChain.js",
         "js/patches/battleIntegration3.js",
         "js/patches/battleIntegration3Final.js",
         "js/patches/battleReport.js",
@@ -3187,6 +3188,7 @@
         "js/data/runes.js",
         "js/data/weapons.js",
         "js/main.js",
+        "js/patches/battleHuntChain.js",
         "js/patches/battleIntegration3.js",
         "js/patches/combat2DebugSafety.js",
         "js/patches/combat3DifficultyRebalance.js",
@@ -3625,6 +3627,7 @@
         "js/patches/battle2RoadmapComplete.js",
         "js/patches/battleAssist.js",
         "js/patches/battleCompactUi.js",
+        "js/patches/battleHuntChain.js",
         "js/patches/battleIntegration3.js",
         "js/patches/battleIntegration3Final.js",
         "js/patches/combat2SkillModifierUi.js",

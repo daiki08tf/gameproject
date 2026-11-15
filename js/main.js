@@ -97,6 +97,7 @@ import './patches/battleCompactUi.js';
 import './patches/battleAssist.js';
 import './patches/battleReport.js';
 import './patches/battleBossConditions.js';
+import './patches/battleHuntChain.js';
 import './patches/beginnerGuideUi.js';
 import { showAbyssRunChoice } from './patches/abyssRunUi.js';
 import { showToast } from './patches/toastFeedback.js';

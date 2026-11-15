@@ -124,3 +124,14 @@ test('nemesis trail: a pursuit incident that exists only while a Nemesis is acti
   assert.match(patch, /state\.applyNemesisEventFlag\?\.\(incident\.nemesisFlag\)/, 'the payoff goes through the existing Nemesis intel flag');
   assert.equal(trail.nemesisFlag, 'nemesisWeakness');
 });
+
+test('hunt chain: a session-only streak that scales the existing hunt launch options and never becomes a Hunt level', async () => {
+  const { HUNT_LAYER, huntChainBonus } = await import('../js/data/balance.js');
+  assert.deepEqual(huntChainBonus(0), { streak: 0, dropMult: 1, eliteAdd: 0, capped: false });
+  assert.equal(huntChainBonus(99).streak, HUNT_LAYER.CHAIN_MAX);
+  assert.ok(Math.abs(huntChainBonus(HUNT_LAYER.CHAIN_MAX).dropMult - (1 + HUNT_LAYER.CHAIN_DROP_PER_WIN * HUNT_LAYER.CHAIN_MAX)) < 1e-9);
+  const src = fs.readFileSync(new URL('../js/patches/battleHuntChain.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /import .*state|localStorage|state\.data/, 'the streak is never saved');
+  assert.match(src, /if \(!hunt\) \{ streak = 0;/, 'any non-hunt battle resets it');
+  assert.match(src, /streak = result\?\.cleared \? Math\.min\(HUNT_LAYER\.CHAIN_MAX, streak \+ 1\) : 0;/, 'a loss or retreat resets only the multiplier');
+});

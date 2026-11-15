@@ -112,6 +112,16 @@ function defeatGuidance(result){
   return tips.length?'\n次の一手：'+tips.slice(0,3).join(' ／ '):'';
 }
 
+// 連続巡回（A3）：いまの連勝と、次の巡回に掛かる上乗せを 1 行で。
+function renderHuntChain(result,itemsEl){
+  const c=result?.huntChain;if(!c||(!c.after&&!c.broken))return;
+  const box=document.createElement('div');box.className='result-hunt-chain'+(c.after?' on':'');
+  box.textContent=c.after
+    ?`連続巡回 ${c.after}連勝 ― 次の巡回：ドロップ率 ×${c.next.dropMult.toFixed(1)} ／ エリート出現 +${Math.round(c.next.eliteAdd*100)}%${c.next.capped?'（上限）':''}`
+    :`連続巡回が途切れた（${c.before}連勝まで）。手に入れた品はそのまま。`;
+  itemsEl.appendChild(box);
+}
+
 // ボスの隠し条件（A2）：達成・未達成と、この戦闘での実績値を 1 枚で返す。
 function renderBossCondition(result,itemsEl){
   const c=result?.bossCondition;if(!c)return;
@@ -168,6 +178,7 @@ export function renderResult(result) {
     for(const drop of rune2Drops){const rune=getRune2(drop.id);if(!rune)continue;const chip=document.createElement('div');chip.className='result-item-chip';chip.style.color='var(--accent)';chip.textContent=`RUNE ${rune.name} +${drop.amount}刻（${drop.owned}刻）`;itemsEl.appendChild(chip);}
   }
   renderBossCondition(result,itemsEl);
+  renderHuntChain(result,itemsEl);
   renderBattleReport(result,itemsEl);
   renderLoot3Chase(result,itemsEl);
   renderVault(result,itemsEl);

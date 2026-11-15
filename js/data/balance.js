@@ -163,7 +163,20 @@ export const HUNT_LAYER = {
   CURSED_DROP_BONUS: 2.0,          // dropMultへの追加乗算
   CURSED_ELITE_BONUS: 0.15,        // Elite出現率への加算
   CURSED_REWARD_MULT: 1.3,         // EXP/Gold
+  // 連続巡回（EXPANSION A3）：巡回を続けて勝つほど、次の巡回のドロップ率とElite出現率が上がる。
+  // 負け・撤退・巡回以外の戦闘で 0 に戻る。失うのは倍率だけで、手に入れた品は失わない
+  // （このゲームの「負けても失わない」方針を守る）。連勝数は保存しない（ページを開いている間だけ）。
+  // Hunt Lv のような恒久進行にはしない — Hard architecture constraints の禁止事項。
+  CHAIN_DROP_PER_WIN: 0.10,        // 1連勝ごとに dropMult ×(1 + 0.10)
+  CHAIN_ELITE_PER_WIN: 0.03,       // 1連勝ごとに Elite出現率 +3pt
+  CHAIN_MAX: 5,                    // 5連勝で頭打ち（ドロップ ×1.5 / Elite +15pt）
 };
+
+// 連勝数 → その巡回に掛かる上乗せ。純粋関数（表示と適用の両方がこれを読む）。
+export function huntChainBonus(streak) {
+  const n = Math.max(0, Math.min(HUNT_LAYER.CHAIN_MAX, Math.floor(Number(streak) || 0)));
+  return { streak: n, dropMult: 1 + HUNT_LAYER.CHAIN_DROP_PER_WIN * n, eliteAdd: HUNT_LAYER.CHAIN_ELITE_PER_WIN * n, capped: n >= HUNT_LAYER.CHAIN_MAX };
+}
 
 // 章立てスケーリングの共通計算（1〜PIVOTは指数EARLY_RATE、PIVOT以降は
 // EARLY_RATEで到達した値を起点にLATE_RATEでさらに伸ばす、2区間の
